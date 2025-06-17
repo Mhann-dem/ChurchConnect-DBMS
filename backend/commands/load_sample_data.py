@@ -2,11 +2,7 @@ from django.core.management.base import BaseCommand
 from members.models import Member
 from families.models import Family
 from groups.models import Group
-# Ensure 'pledges' app is in INSTALLED_APPS and 'models.py' exists in 'pledges'
-try:
-    from pladges.models import Pledge
-except ModuleNotFoundError:
-    Pledge = None  # or handle the error appropriately
+from pladges.models import Pledge
 from authentication.models import User
 import random
 from datetime import date, timedelta

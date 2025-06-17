@@ -1,6 +1,16 @@
+# File: backend/core/urls.py
 from django.urls import path
-from .views import DashboardStatsView
+from . import views
+
+app_name = 'core'
 
 urlpatterns = [
-    path('dashboard/stats/', DashboardStatsView.as_view(), name='dashboard_stats'),
+    # Health check endpoint
+    path('health/', views.health_check, name='health_check'),
+    
+    # System status
+    path('status/', views.system_status, name='system_status'),
+    
+    # API version info
+    path('version/', views.api_version, name='api_version'),
 ]
