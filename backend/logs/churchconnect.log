@@ -30,3 +30,4 @@ INFO 2025-06-19 18:34:09,065 autoreload 764 8488 Watching for file changes with 
 INFO 2025-06-19 18:44:54,487 autoreload 764 8488 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\core\permissions.py changed, reloading.
 INFO 2025-06-19 18:44:56,087 autoreload 15396 13544 Watching for file changes with StatReloader
 INFO 2025-06-19 18:45:39,927 autoreload 17976 15640 Watching for file changes with StatReloader
+INFO 2025-06-19 18:49:52,645 autoreload 8300 4288 Watching for file changes with StatReloader
