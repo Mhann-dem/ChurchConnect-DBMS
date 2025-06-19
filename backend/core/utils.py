@@ -213,7 +213,7 @@ def generate_member_report_data():
     """
     from members.models import Member
     from groups.models import Group
-    from pladges.models import Pledge
+    from pledges.models import Pledge
     from django.db.models import Count, Sum, Q
     
     # Get basic counts

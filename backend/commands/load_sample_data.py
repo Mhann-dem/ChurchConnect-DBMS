@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from members.models import Member
 from families.models import Family
 from groups.models import Group
-from pladges.models import Pledge
+from pledges.models import Pledge
 from authentication.models import User
 import random
 from datetime import date, timedelta

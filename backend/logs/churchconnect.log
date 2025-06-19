@@ -3,3 +3,30 @@ INFO 2025-06-17 10:51:35,430 autoreload 6184 12272 Watching for file changes wit
 INFO 2025-06-17 10:59:04,370 autoreload 10952 8888 Watching for file changes with StatReloader
 INFO 2025-06-17 11:04:09,917 autoreload 19540 21348 Watching for file changes with StatReloader
 INFO 2025-06-17 11:25:01,366 autoreload 15080 19780 Watching for file changes with StatReloader
+INFO 2025-06-19 12:18:23,397 autoreload 20340 3704 Watching for file changes with StatReloader
+INFO 2025-06-19 13:29:28,031 autoreload 17864 6196 Watching for file changes with StatReloader
+INFO 2025-06-19 13:56:55,876 autoreload 17748 10952 Watching for file changes with StatReloader
+INFO 2025-06-19 14:33:24,786 autoreload 9280 11224 Watching for file changes with StatReloader
+INFO 2025-06-19 14:34:11,604 autoreload 17176 13776 Watching for file changes with StatReloader
+INFO 2025-06-19 14:34:55,108 autoreload 16024 14152 Watching for file changes with StatReloader
+INFO 2025-06-19 14:37:05,615 autoreload 16024 14152 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\services.py changed, reloading.
+INFO 2025-06-19 14:37:08,503 autoreload 9652 14004 Watching for file changes with StatReloader
+INFO 2025-06-19 14:37:12,789 autoreload 9652 14004 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\services.py changed, reloading.
+INFO 2025-06-19 14:37:15,215 autoreload 19244 200 Watching for file changes with StatReloader
+INFO 2025-06-19 14:37:22,509 autoreload 19244 200 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\services.py changed, reloading.
+INFO 2025-06-19 14:37:25,228 autoreload 19872 13708 Watching for file changes with StatReloader
+INFO 2025-06-19 14:37:27,685 autoreload 19872 13708 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\services.py changed, reloading.
+INFO 2025-06-19 14:37:30,164 autoreload 3676 14728 Watching for file changes with StatReloader
+INFO 2025-06-19 14:38:21,382 autoreload 9588 9184 Watching for file changes with StatReloader
+INFO 2025-06-19 14:40:35,438 autoreload 19496 12984 Watching for file changes with StatReloader
+INFO 2025-06-19 14:41:52,031 autoreload 19496 12984 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\admin.py changed, reloading.
+INFO 2025-06-19 14:41:53,847 autoreload 9672 12848 Watching for file changes with StatReloader
+INFO 2025-06-19 14:43:51,141 autoreload 9672 12848 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\admin.py changed, reloading.
+INFO 2025-06-19 14:43:52,838 autoreload 19572 18604 Watching for file changes with StatReloader
+INFO 2025-06-19 14:44:12,371 autoreload 17148 3760 Watching for file changes with StatReloader
+INFO 2025-06-19 18:12:08,044 autoreload 7528 17868 Watching for file changes with StatReloader
+INFO 2025-06-19 18:13:47,636 autoreload 15556 13904 Watching for file changes with StatReloader
+INFO 2025-06-19 18:34:09,065 autoreload 764 8488 Watching for file changes with StatReloader
+INFO 2025-06-19 18:44:54,487 autoreload 764 8488 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\core\permissions.py changed, reloading.
+INFO 2025-06-19 18:44:56,087 autoreload 15396 13544 Watching for file changes with StatReloader
+INFO 2025-06-19 18:45:39,927 autoreload 17976 15640 Watching for file changes with StatReloader

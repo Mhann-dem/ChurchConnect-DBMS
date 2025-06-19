@@ -17,10 +17,10 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 
-from ..members.models import Member
-from ..pladges.models import Pledge
-from ..groups.models import Group
-from ..families.models import Family
+from members.models import Member
+from pledges.models import Pledge
+from groups.models import Group
+from families.models import Family
 from .models import Report, ReportRun
 
 

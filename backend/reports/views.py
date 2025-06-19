@@ -22,11 +22,11 @@ from .serializers import (
     ReportSerializer, ReportRunSerializer, ReportTemplateSerializer,
     ReportGenerationSerializer, ReportStatsSerializer, BulkReportActionSerializer
 )
-from .services import ReportGeneratorService, ReportSchedulerService
-from ..members.models import Member
-from ..pladges.models import Pledge
-from ..groups.models import Group
-from ..families.models import Family
+from services import ReportGeneratorService, ReportSchedulerService
+from members.models import Member
+from pledges.models import Pledge
+from groups.models import Group
+from families.models import Family
 
 
 class ReportViewSet(viewsets.ModelViewSet):

@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.contrib import messages
 from .models import Report, ReportRun, ReportTemplate
-from .services import ReportService
+from reports.models import Report, ReportRun
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):

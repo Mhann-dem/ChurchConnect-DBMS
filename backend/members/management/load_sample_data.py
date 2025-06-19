@@ -4,7 +4,7 @@ from families.models import Family
 from groups.models import Group
 # Ensure 'pledges' app is in INSTALLED_APPS and 'models.py' exists in 'pledges'
 try:
-    from pladges.models import Pledge
+    from pledges.models import Pledge
 except ModuleNotFoundError:
     Pledge = None  # or handle the error appropriately
 from authentication.models import User

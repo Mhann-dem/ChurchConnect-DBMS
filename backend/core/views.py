@@ -58,7 +58,7 @@ def system_status(request):
         # Get app versions and counts
         from members.models import Member
         from groups.models import Group
-        from pladges.models import Pledge
+        from pledges.models import Pledge
         
         return JsonResponse({
             'status': 'ok',
