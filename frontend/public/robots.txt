@@ -1,1 +1,12 @@
- 
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /private/
+Allow: /
+Allow: /form
+Allow: /help
+
+# Sitemap location
+Sitemap: https://yourchurch.com/sitemap.xml
