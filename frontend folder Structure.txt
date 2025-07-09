@@ -1,0 +1,258 @@
+# ChurchConnect DBMS - Frontend Folder Structure
+
+## Complete Project Structure
+
+```
+ChurchConnect-DBMS/
+├── README.md
+├── .gitignore
+├── docker-compose.yml
+├── .env.example
+├── package.json
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── admin/
+│   │   │   │   ├── Dashboard/
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── Dashboard.jsx
+│   │   │   │   │   ├── StatsCard.jsx
+│   │   │   │   │   ├── RecentMembers.jsx
+│   │   │   │   │   └── Dashboard.module.css
+│   │   │   │   ├── Members/
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── MembersList.jsx
+│   │   │   │   │   ├── MemberCard.jsx
+│   │   │   │   │   ├── MemberForm.jsx
+│   │   │   │   │   ├── MemberDetail.jsx
+│   │   │   │   │   ├── MemberFilters.jsx
+│   │   │   │   │   ├── BulkActions.jsx
+│   │   │   │   │   └── Members.module.css
+│   │   │   │   ├── Groups/
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── GroupsList.jsx
+│   │   │   │   │   ├── GroupCard.jsx
+│   │   │   │   │   ├── GroupForm.jsx
+│   │   │   │   │   ├── GroupMembers.jsx
+│   │   │   │   │   └── Groups.module.css
+│   │   │   │   ├── Pledges/
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── PledgesList.jsx
+│   │   │   │   │   ├── PledgeCard.jsx
+│   │   │   │   │   ├── PledgeForm.jsx
+│   │   │   │   │   ├── PledgeStats.jsx
+│   │   │   │   │   └── Pledges.module.css
+│   │   │   │   ├── Reports/
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── ReportsList.jsx
+│   │   │   │   │   ├── ReportBuilder.jsx
+│   │   │   │   │   ├── ExportOptions.jsx
+│   │   │   │   │   ├── Charts/
+│   │   │   │   │   │   ├── MemberGrowthChart.jsx
+│   │   │   │   │   │   ├── PledgeChart.jsx
+│   │   │   │   │   │   ├── AgeDistributionChart.jsx
+│   │   │   │   │   │   └── MinistryChart.jsx
+│   │   │   │   │   └── Reports.module.css
+│   │   │   │   └── Settings/
+│   │   │   │       ├── index.js
+│   │   │   │       ├── GeneralSettings.jsx
+│   │   │   │       ├── UserManagement.jsx
+│   │   │   │       ├── SystemSettings.jsx
+│   │   │   │       └── Settings.module.css
+│   │   │   ├── form/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── MemberRegistrationForm.jsx
+│   │   │   │   ├── StepIndicator.jsx
+│   │   │   │   ├── Steps/
+│   │   │   │   │   ├── PersonalInfo.jsx
+│   │   │   │   │   ├── ContactInfo.jsx
+│   │   │   │   │   ├── MinistryInterests.jsx
+│   │   │   │   │   ├── PledgeInfo.jsx
+│   │   │   │   │   ├── FamilyInfo.jsx
+│   │   │   │   │   └── Confirmation.jsx
+│   │   │   │   ├── FormControls/
+│   │   │   │   │   ├── Input.jsx
+│   │   │   │   │   ├── Select.jsx
+│   │   │   │   │   ├── Checkbox.jsx
+│   │   │   │   │   ├── RadioGroup.jsx
+│   │   │   │   │   ├── TextArea.jsx
+│   │   │   │   │   ├── DatePicker.jsx
+│   │   │   │   │   └── PhoneInput.jsx
+│   │   │   │   └── Form.module.css
+│   │   │   ├── layout/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── Header.jsx
+│   │   │   │   ├── Footer.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── Navigation.jsx
+│   │   │   │   ├── Breadcrumbs.jsx
+│   │   │   │   ├── AdminLayout.jsx
+│   │   │   │   ├── PublicLayout.jsx
+│   │   │   │   └── Layout.module.css
+│   │   │   ├── shared/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LoadingSpinner.jsx
+│   │   │   │   ├── ErrorBoundary.jsx
+│   │   │   │   ├── Modal.jsx
+│   │   │   │   ├── Toast.jsx
+│   │   │   │   ├── Pagination.jsx
+│   │   │   │   ├── SearchBar.jsx
+│   │   │   │   ├── DataTable.jsx
+│   │   │   │   ├── ConfirmDialog.jsx
+│   │   │   │   ├── EmptyState.jsx
+│   │   │   │   └── Shared.module.css
+│   │   │   └── ui/
+│   │   │       ├── index.js
+│   │   │       ├── Button.jsx
+│   │   │       ├── Card.jsx
+│   │   │       ├── Badge.jsx
+│   │   │       ├── Avatar.jsx
+│   │   │       ├── Tooltip.jsx
+│   │   │       ├── Dropdown.jsx
+│   │   │       ├── Tabs.jsx
+│   │   │       ├── Accordion.jsx
+│   │   │       ├── ProgressBar.jsx
+│   │   │       └── UI.module.css
+│   │   ├── pages/
+│   │   │   ├── admin/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── DashboardPage.jsx
+│   │   │   │   ├── MembersPage.jsx
+│   │   │   │   ├── MemberDetailPage.jsx
+│   │   │   │   ├── GroupsPage.jsx
+│   │   │   │   ├── GroupDetailPage.jsx
+│   │   │   │   ├── PledgesPage.jsx
+│   │   │   │   ├── ReportsPage.jsx
+│   │   │   │   ├── SettingsPage.jsx
+│   │   │   │   └── AdminPages.module.css
+│   │   │   ├── auth/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LoginPage.jsx
+│   │   │   │   ├── ForgotPasswordPage.jsx
+│   │   │   │   ├── ResetPasswordPage.jsx
+│   │   │   │   └── AuthPages.module.css
+│   │   │   ├── public/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── HomePage.jsx
+│   │   │   │   ├── RegistrationPage.jsx
+│   │   │   │   ├── ThankYouPage.jsx
+│   │   │   │   ├── NotFoundPage.jsx
+│   │   │   │   └── PublicPages.module.css
+│   │   │   └── help/
+│   │   │       ├── index.js
+│   │   │       ├── HelpCenter.jsx
+│   │   │       ├── FAQ.jsx
+│   │   │       ├── Tutorials.jsx
+│   │   │       └── Help.module.css
+│   │   ├── services/
+│   │   │   ├── index.js
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   ├── members.js
+│   │   │   ├── groups.js
+│   │   │   ├── pledges.js
+│   │   │   ├── reports.js
+│   │   │   ├── export.js
+│   │   │   └── notifications.js
+│   │   ├── hooks/
+│   │   │   ├── index.js
+│   │   │   ├── useAuth.js
+│   │   │   ├── useForm.js
+│   │   │   ├── useLocalStorage.js
+│   │   │   ├── useDebounce.js
+│   │   │   ├── usePagination.js
+│   │   │   ├── useSearch.js
+│   │   │   ├── useToast.js
+│   │   │   ├── useMembers.js
+│   │   │   ├── useGroups.js
+│   │   │   ├── usePledges.js
+│   │   │   └── useReports.js
+│   │   ├── utils/
+│   │   │   ├── index.js
+│   │   │   ├── validation.js
+│   │   │   ├── formatters.js
+│   │   │   ├── helpers.js
+│   │   │   ├── constants.js
+│   │   │   ├── dateUtils.js
+│   │   │   ├── exportUtils.js
+│   │   │   └── accessibility.js
+│   │   ├── context/
+│   │   │   ├── index.js
+│   │   │   ├── AuthContext.jsx
+│   │   │   ├── ThemeContext.jsx
+│   │   │   ├── ToastContext.jsx
+│   │   │   └── SettingsContext.jsx
+│   │   ├── styles/
+│   │   │   ├── globals.css
+│   │   │   ├── variables.css
+│   │   │   ├── components.css
+│   │   │   ├── utilities.css
+│   │   │   └── responsive.css
+│   │   ├── assets/
+│   │   │   ├── images/
+│   │   │   │   ├── logo.png
+│   │   │   │   ├── logo-dark.png
+│   │   │   │   ├── hero-bg.jpg
+│   │   │   │   ├── placeholder-avatar.png
+│   │   │   │   └── icons/
+│   │   │   │       ├── church.svg
+│   │   │   │       ├── users.svg
+│   │   │   │       ├── groups.svg
+│   │   │   │       ├── pledges.svg
+│   │   │   │       └── reports.svg
+│   │   │   ├── fonts/
+│   │   │   │   ├── inter-regular.woff2
+│   │   │   │   ├── inter-medium.woff2
+│   │   │   │   ├── inter-semibold.woff2
+│   │   │   │   └── inter-bold.woff2
+│   │   │   └── data/
+│   │   │       ├── countries.json
+│   │   │       ├── languages.json
+│   │   │       └── ministries.json
+│   │   ├── __tests__/
+│   │   │   ├── components/
+│   │   │   │   ├── admin/
+│   │   │   │   ├── form/
+│   │   │   │   ├── layout/
+│   │   │   │   ├── shared/
+│   │   │   │   └── ui/
+│   │   │   ├── pages/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   ├── utils/
+│   │   │   └── __mocks__/
+│   │   ├── App.jsx
+│   │   ├── index.jsx
+│   │   ├── reportWebVitals.js
+│   │   └── setupTests.js
+│   ├── .env.example
+│   ├── .env.local
+│   ├── .gitignore
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── jsconfig.json
+│   └── Dockerfile
+├── backend/
+│   └── [Django backend structure as documented]
+├── docs/
+│   ├── api/
+│   ├── user-guides/
+│   ├── development/
+│   └── deployment/
+├── nginx/
+│   ├── nginx.conf
+│   └── conf.d/
+│       └── default.conf
+└── scripts/
+    ├── build.sh
+    ├── deploy.sh
+    └── backup.sh
