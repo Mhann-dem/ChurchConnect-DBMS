@@ -1,504 +1,393 @@
 /**
  * Export utilities for ChurchConnect DBMS
- * Provides functions to export data in various formats
+ * Handles data export functionality for CSV, PDF, and Excel formats
  */
 
+import { formatDate, formatPhone, formatCurrency } from './formatters';
+
 /**
- * Convert data to CSV format
+ * Convert array of objects to CSV format
  * @param {Array} data - Array of objects to convert
- * @param {Array} headers - Optional array of headers
+ * @param {Array} headers - Array of column headers
  * @param {Object} options - Export options
  * @returns {string} CSV string
  */
 export const convertToCSV = (data, headers = null, options = {}) => {
-  const {
-    delimiter = ',',
-    quote = '"',
-    escape = '"',
-    includeHeaders = true,
-    dateFormat = 'YYYY-MM-DD',
-    excludeFields = []
-  } = options;
-
   if (!data || data.length === 0) {
     return '';
   }
 
-  // Get headers from first object if not provided
-  if (!headers) {
-    headers = Object.keys(data[0]).filter(key => !excludeFields.includes(key));
-  }
-
-  // Escape and quote CSV values
-  const escapeCSVValue = (value) => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    
-    let stringValue = String(value);
-    
-    // Format dates
-    if (value instanceof Date) {
-      stringValue = formatDate(value, dateFormat);
-    }
-    
-    // Escape quotes
-    if (stringValue.includes(quote)) {
-      stringValue = stringValue.replace(new RegExp(quote, 'g'), escape + quote);
-    }
-    
-    // Quote if contains delimiter, quote, or newline
-    if (stringValue.includes(delimiter) || stringValue.includes(quote) || stringValue.includes('\n')) {
-      stringValue = quote + stringValue + quote;
-    }
-    
-    return stringValue;
-  };
-
-  let csvContent = '';
-  
-  // Add headers
-  if (includeHeaders) {
-    csvContent += headers.map(header => escapeCSVValue(header)).join(delimiter) + '\n';
-  }
-  
-  // Add data rows
-  data.forEach(row => {
-    const values = headers.map(header => escapeCSVValue(row[header]));
-    csvContent += values.join(delimiter) + '\n';
-  });
-  
-  return csvContent;
-};
-
-/**
- * Download data as CSV file
- * @param {Array} data - Data to export
- * @param {string} filename - Filename without extension
- * @param {Object} options - Export options
- */
-export const downloadCSV = (data, filename, options = {}) => {
-  const csvContent = convertToCSV(data, null, options);
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  downloadFile(blob, `${filename}.csv`);
-};
-
-/**
- * Convert data to JSON format
- * @param {Array} data - Data to convert
- * @param {Object} options - Export options
- * @returns {string} JSON string
- */
-export const convertToJSON = (data, options = {}) => {
   const {
-    pretty = true,
-    excludeFields = [],
-    dateFormat = 'ISO'
+    delimiter = ',',
+    includeHeaders = true,
+    customHeaders = {},
+    dateFormat = 'MM/DD/YYYY'
   } = options;
 
-  // Process data to exclude fields and format dates
-  const processedData = data.map(item => {
-    const processed = {};
-    
-    Object.keys(item).forEach(key => {
-      if (!excludeFields.includes(key)) {
-        let value = item[key];
-        
-        // Format dates
-        if (value instanceof Date) {
-          value = dateFormat === 'ISO' ? value.toISOString() : formatDate(value, dateFormat);
+  // Get headers from first object if not provided
+  const columns = headers || Object.keys(data[0]);
+  
+  // Create header row
+  let csv = '';
+  if (includeHeaders) {
+    const headerRow = columns.map(col => {
+      const header = customHeaders[col] || col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return `"${header}"`;
+    }).join(delimiter);
+    csv += headerRow + '\n';
+  }
+
+  // Create data rows
+  data.forEach(row => {
+    const dataRow = columns.map(col => {
+      let value = row[col] || '';
+      
+      // Handle different data types
+      if (value instanceof Date) {
+        value = formatDate(value, dateFormat);
+      } else if (typeof value === 'string') {
+        // Escape quotes and wrap in quotes if contains delimiter
+        value = value.replace(/"/g, '""');
+        if (value.includes(delimiter) || value.includes('\n') || value.includes('"')) {
+          value = `"${value}"`;
         }
-        
-        processed[key] = value;
+      } else if (typeof value === 'number') {
+        value = value.toString();
+      } else if (typeof value === 'boolean') {
+        value = value ? 'Yes' : 'No';
+      } else if (value === null || value === undefined) {
+        value = '';
+      }
+      
+      return value;
+    }).join(delimiter);
+    
+    csv += dataRow + '\n';
+  });
+
+  return csv;
+};
+
+/**
+ * Download CSV file
+ * @param {string} csvContent - CSV content string
+ * @param {string} filename - Filename for download
+ */
+export const downloadCSV = (csvContent, filename = 'export.csv') => {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
+/**
+ * Export members data to CSV
+ * @param {Array} members - Array of member objects
+ * @param {Object} options - Export options
+ */
+export const exportMembersToCSV = (members, options = {}) => {
+  const {
+    includeFields = ['all'],
+    filename = `members_export_${formatDate(new Date(), 'YYYY-MM-DD')}.csv`,
+    ...csvOptions
+  } = options;
+
+  // Define available fields for member export
+  const availableFields = {
+    first_name: 'First Name',
+    last_name: 'Last Name',
+    email: 'Email',
+    phone: 'Phone',
+    date_of_birth: 'Date of Birth',
+    gender: 'Gender',
+    address: 'Address',
+    preferred_contact_method: 'Preferred Contact',
+    registration_date: 'Registration Date',
+    groups: 'Groups/Ministries',
+    pledge_amount: 'Pledge Amount',
+    pledge_frequency: 'Pledge Frequency'
+  };
+
+  // Determine which fields to include
+  const fieldsToInclude = includeFields.includes('all') 
+    ? Object.keys(availableFields)
+    : includeFields.filter(field => availableFields[field]);
+
+  // Transform member data for export
+  const exportData = members.map(member => {
+    const exportMember = {};
+    
+    fieldsToInclude.forEach(field => {
+      switch (field) {
+        case 'phone':
+          exportMember[field] = formatPhone(member[field]);
+          break;
+        case 'date_of_birth':
+        case 'registration_date':
+          exportMember[field] = member[field] ? formatDate(member[field]) : '';
+          break;
+        case 'groups':
+          exportMember[field] = member.groups?.map(g => g.name).join(', ') || '';
+          break;
+        case 'pledge_amount':
+          exportMember[field] = member.pledge_amount ? formatCurrency(member.pledge_amount) : '';
+          break;
+        case 'gender':
+          exportMember[field] = member[field]?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || '';
+          break;
+        default:
+          exportMember[field] = member[field] || '';
       }
     });
     
-    return processed;
+    return exportMember;
   });
 
-  return JSON.stringify(processedData, null, pretty ? 2 : 0);
-};
-
-/**
- * Download data as JSON file
- * @param {Array} data - Data to export
- * @param {string} filename - Filename without extension
- * @param {Object} options - Export options
- */
-export const downloadJSON = (data, filename, options = {}) => {
-  const jsonContent = convertToJSON(data, options);
-  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-  downloadFile(blob, `${filename}.json`);
-};
-
-/**
- * Create Excel-compatible CSV
- * @param {Array} data - Data to export
- * @param {string} filename - Filename without extension
- * @param {Object} options - Export options
- */
-export const downloadExcelCSV = (data, filename, options = {}) => {
-  const csvContent = convertToCSV(data, null, {
-    ...options,
-    delimiter: ',',
-    quote: '"'
+  const csvContent = convertToCSV(exportData, fieldsToInclude, {
+    ...csvOptions,
+    customHeaders: availableFields
   });
-  
-  // Add BOM for Excel UTF-8 support
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-  downloadFile(blob, `${filename}.csv`);
+
+  downloadCSV(csvContent, filename);
 };
 
 /**
- * Create and download PDF report
- * @param {Object} reportData - Report data
- * @param {string} filename - Filename without extension
- * @param {Object} options - PDF options
+ * Export pledges data to CSV
+ * @param {Array} pledges - Array of pledge objects
+ * @param {Object} options - Export options
  */
-export const downloadPDF = async (reportData, filename, options = {}) => {
+export const exportPledgesToCSV = (pledges, options = {}) => {
   const {
-    title = 'ChurchConnect Report',
-    orientation = 'portrait',
-    format = 'a4',
-    margins = { top: 20, right: 20, bottom: 20, left: 20 },
-    includeHeader = true,
-    includeFooter = true,
-    churchInfo = {}
+    filename = `pledges_export_${formatDate(new Date(), 'YYYY-MM-DD')}.csv`,
+    ...csvOptions
   } = options;
 
-  // This would typically use a library like jsPDF
-  // For now, we'll create a simple HTML structure that can be printed
-  const printWindow = window.open('', '_blank');
-  const htmlContent = generatePDFHTML(reportData, { title, churchInfo, includeHeader, includeFooter });
-  
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
-  printWindow.focus();
-  
-  // Trigger print dialog
-  setTimeout(() => {
-    printWindow.print();
-  }, 500);
+  const headers = ['member_name', 'email', 'amount', 'frequency', 'start_date', 'end_date', 'status'];
+  const customHeaders = {
+    member_name: 'Member Name',
+    email: 'Email',
+    amount: 'Amount',
+    frequency: 'Frequency',
+    start_date: 'Start Date',
+    end_date: 'End Date',
+    status: 'Status'
+  };
+
+  const exportData = pledges.map(pledge => ({
+    member_name: pledge.member ? `${pledge.member.first_name} ${pledge.member.last_name}` : '',
+    email: pledge.member?.email || '',
+    amount: formatCurrency(pledge.amount),
+    frequency: pledge.frequency?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || '',
+    start_date: formatDate(pledge.start_date),
+    end_date: pledge.end_date ? formatDate(pledge.end_date) : '',
+    status: pledge.status?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''
+  }));
+
+  const csvContent = convertToCSV(exportData, headers, {
+    ...csvOptions,
+    customHeaders
+  });
+
+  downloadCSV(csvContent, filename);
 };
 
 /**
- * Generate HTML for PDF printing
- * @param {Object} data - Report data
- * @param {Object} options - HTML options
- * @returns {string} HTML string
+ * Export groups data to CSV
+ * @param {Array} groups - Array of group objects
+ * @param {Object} options - Export options
  */
-const generatePDFHTML = (data, options) => {
-  const { title, churchInfo, includeHeader, includeFooter } = options;
-  
-  const currentDate = new Date().toLocaleDateString();
-  
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${title}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-        .church-info { margin-bottom: 20px; }
-        .report-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .report-date { font-size: 14px; color: #666; }
-        .content { margin: 20px 0; }
-        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .table th { background-color: #f2f2f2; font-weight: bold; }
-        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
-        .stats { display: flex; justify-content: space-around; margin: 20px 0; }
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
-        .stat-label { font-size: 14px; color: #666; }
-        @media print { body { margin: 0; } }
-      </style>
-    </head>
-    <body>
-      ${includeHeader ? `
-        <div class="header">
-          <div class="church-info">
-            <h1>${churchInfo.name || 'Church Name'}</h1>
-            <p>${churchInfo.address || ''}</p>
-            <p>${churchInfo.phone || ''} | ${churchInfo.email || ''}</p>
-          </div>
-          <div class="report-title">${title}</div>
-          <div class="report-date">Generated on ${currentDate}</div>
-        </div>
-      ` : ''}
-      
-      <div class="content">
-        ${generateReportContent(data)}
-      </div>
-      
-      ${includeFooter ? `
-        <div class="footer">
-          <p>Generated by ChurchConnect DBMS - ${currentDate}</p>
-        </div>
-      ` : ''}
-    </body>
-    </html>
-  `;
+export const exportGroupsToCSV = (groups, options = {}) => {
+  const {
+    filename = `groups_export_${formatDate(new Date(), 'YYYY-MM-DD')}.csv`,
+    ...csvOptions
+  } = options;
+
+  const headers = ['name', 'description', 'leader_name', 'member_count', 'meeting_schedule', 'active'];
+  const customHeaders = {
+    name: 'Group Name',
+    description: 'Description',
+    leader_name: 'Leader',
+    member_count: 'Member Count',
+    meeting_schedule: 'Meeting Schedule',
+    active: 'Active'
+  };
+
+  const exportData = groups.map(group => ({
+    name: group.name || '',
+    description: group.description || '',
+    leader_name: group.leader_name || '',
+    member_count: group.member_count || 0,
+    meeting_schedule: group.meeting_schedule || '',
+    active: group.active ? 'Yes' : 'No'
+  }));
+
+  const csvContent = convertToCSV(exportData, headers, {
+    ...csvOptions,
+    customHeaders
+  });
+
+  downloadCSV(csvContent, filename);
 };
 
 /**
- * Generate report content based on data type
- * @param {Object} data - Report data
- * @returns {string} HTML content
+ * Generate and download a comprehensive report
+ * @param {Object} data - Object containing all data types
+ * @param {Object} options - Export options
  */
-const generateReportContent = (data) => {
-  if (data.stats) {
-    return generateStatsReport(data);
-  } else if (data.members) {
-    return generateMembersReport(data);
-  } else if (data.pledges) {
-    return generatePledgesReport(data);
-  } else if (data.groups) {
-    return generateGroupsReport(data);
+export const exportComprehensiveReport = (data, options = {}) => {
+  const {
+    filename = `church_report_${formatDate(new Date(), 'YYYY-MM-DD')}.csv`,
+    includeStats = true,
+    ...csvOptions
+  } = options;
+
+  const { members = [], pledges = [], groups = [] } = data;
+
+  let csvContent = '';
+
+  // Add statistics section if requested
+  if (includeStats) {
+    csvContent += 'CHURCH STATISTICS\n';
+    csvContent += `Report Generated: ${formatDate(new Date(), 'MM/DD/YYYY hh:mm A')}\n`;
+    csvContent += `Total Members: ${members.length}\n`;
+    csvContent += `Total Pledges: ${pledges.length}\n`;
+    csvContent += `Total Groups: ${groups.length}\n`;
+    csvContent += `Active Members: ${members.filter(m => m.is_active).length}\n`;
+    csvContent += `Active Pledges: ${pledges.filter(p => p.status === 'active').length}\n`;
+    csvContent += '\n\n';
   }
-  
-  return '<p>No data to display</p>';
+
+  // Add members section
+  if (members.length > 0) {
+    csvContent += 'MEMBERS\n';
+    const membersCSV = convertToCSV(members, null, {
+      ...csvOptions,
+      includeHeaders: true
+    });
+    csvContent += membersCSV + '\n\n';
+  }
+
+  // Add pledges section
+  if (pledges.length > 0) {
+    csvContent += 'PLEDGES\n';
+    const pledgesData = pledges.map(pledge => ({
+      member_name: pledge.member ? `${pledge.member.first_name} ${pledge.member.last_name}` : '',
+      amount: formatCurrency(pledge.amount),
+      frequency: pledge.frequency,
+      status: pledge.status,
+      start_date: formatDate(pledge.start_date)
+    }));
+    const pledgesCSV = convertToCSV(pledgesData, null, {
+      ...csvOptions,
+      includeHeaders: true
+    });
+    csvContent += pledgesCSV + '\n\n';
+  }
+
+  // Add groups section
+  if (groups.length > 0) {
+    csvContent += 'GROUPS\n';
+    const groupsCSV = convertToCSV(groups, null, {
+      ...csvOptions,
+      includeHeaders: true
+    });
+    csvContent += groupsCSV + '\n\n';
+  }
+
+  downloadCSV(csvContent, filename);
 };
 
 /**
- * Generate statistics report HTML
- * @param {Object} data - Statistics data
- * @returns {string} HTML content
- */
-const generateStatsReport = (data) => {
-  const { stats } = data;
-  
-  return `
-    <div class="stats">
-      ${Object.entries(stats).map(([key, value]) => `
-        <div class="stat-item">
-          <div class="stat-value">${value}</div>
-          <div class="stat-label">${formatStatLabel(key)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-};
-
-/**
- * Generate members report HTML
- * @param {Object} data - Members data
- * @returns {string} HTML content
- */
-const generateMembersReport = (data) => {
-  const { members } = data;
-  
-  return `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Registration Date</th>
-          <th>Groups</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${members.map(member => `
-          <tr>
-            <td>${member.first_name} ${member.last_name}</td>
-            <td>${member.email}</td>
-            <td>${member.phone}</td>
-            <td>${formatDate(member.registration_date)}</td>
-            <td>${member.groups ? member.groups.join(', ') : 'None'}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-};
-
-/**
- * Generate pledges report HTML
- * @param {Object} data - Pledges data
- * @returns {string} HTML content
- */
-const generatePledgesReport = (data) => {
-  const { pledges } = data;
-  
-  return `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Amount</th>
-          <th>Frequency</th>
-          <th>Start Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${pledges.map(pledge => `
-          <tr>
-            <td>${pledge.member_name}</td>
-            <td>$${pledge.amount}</td>
-            <td>${pledge.frequency}</td>
-            <td>${formatDate(pledge.start_date)}</td>
-            <td>${pledge.status}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-};
-
-/**
- * Generate groups report HTML
- * @param {Object} data - Groups data
- * @returns {string} HTML content
- */
-const generateGroupsReport = (data) => {
-  const { groups } = data;
-  
-  return `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Group Name</th>
-          <th>Leader</th>
-          <th>Members</th>
-          <th>Meeting Schedule</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${groups.map(group => `
-          <tr>
-            <td>${group.name}</td>
-            <td>${group.leader_name || 'TBD'}</td>
-            <td>${group.member_count || 0}</td>
-            <td>${group.meeting_schedule || 'TBD'}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-};
-
-/**
- * Format statistic label for display
- * @param {string} key - Statistic key
- * @returns {string} Formatted label
- */
-const formatStatLabel = (key) => {
-  const labels = {
-    total_members: 'Total Members',
-    new_members: 'New Members',
-    active_groups: 'Active Groups',
-    total_pledges: 'Total Pledges',
-    active_pledges: 'Active Pledges',
-    pledge_amount: 'Pledge Amount'
-  };
-  
-  return labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-};
-
-/**
- * Format date for display
- * @param {string|Date} date - Date to format
- * @param {string} format - Date format
- * @returns {string} Formatted date
- */
-const formatDate = (date, format = 'MM/DD/YYYY') => {
-  if (!date) return '';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  if (isNaN(dateObj)) return '';
-  
-  const options = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  };
-  
-  return dateObj.toLocaleDateString('en-US', options);
-};
-
-/**
- * Generic file download function
- * @param {Blob} blob - File blob
- * @param {string} filename - Filename
- */
-const downloadFile = (blob, filename) => {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
-
-/**
- * Validate export data
+ * Validate data before export
  * @param {Array} data - Data to validate
+ * @param {string} type - Type of data (members, pledges, groups)
  * @returns {Object} Validation result
  */
-export const validateExportData = (data) => {
+export const validateExportData = (data, type) => {
   const result = {
     valid: true,
     errors: [],
     warnings: []
   };
-  
+
   if (!Array.isArray(data)) {
     result.valid = false;
     result.errors.push('Data must be an array');
     return result;
   }
-  
+
   if (data.length === 0) {
     result.warnings.push('No data to export');
     return result;
   }
-  
-  // Check for consistent structure
-  const firstItemKeys = Object.keys(data[0]);
-  const inconsistentItems = data.filter(item => {
-    const itemKeys = Object.keys(item);
-    return itemKeys.length !== firstItemKeys.length || 
-           !itemKeys.every(key => firstItemKeys.includes(key));
-  });
-  
-  if (inconsistentItems.length > 0) {
-    result.warnings.push(`${inconsistentItems.length} items have inconsistent structure`);
+
+  // Type-specific validation
+  switch (type) {
+    case 'members':
+      data.forEach((member, index) => {
+        if (!member.first_name || !member.last_name) {
+          result.warnings.push(`Member at index ${index} missing required name fields`);
+        }
+        if (!member.email) {
+          result.warnings.push(`Member at index ${index} missing email`);
+        }
+      });
+      break;
+    
+    case 'pledges':
+      data.forEach((pledge, index) => {
+        if (!pledge.amount || pledge.amount <= 0) {
+          result.warnings.push(`Pledge at index ${index} has invalid amount`);
+        }
+        if (!pledge.member) {
+          result.warnings.push(`Pledge at index ${index} missing member information`);
+        }
+      });
+      break;
+    
+    case 'groups':
+      data.forEach((group, index) => {
+        if (!group.name) {
+          result.warnings.push(`Group at index ${index} missing name`);
+        }
+      });
+      break;
   }
-  
+
   return result;
 };
 
 /**
- * Get export format options
- * @returns {Array} Available export formats
+ * Get export template for specific data type
+ * @param {string} type - Data type (members, pledges, groups)
+ * @returns {string} CSV template
  */
-export const getExportFormats = () => [
-  { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
-  { value: 'excel', label: 'Excel CSV', description: 'Excel-compatible CSV' },
-  { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
-  { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
-];
-
-/**
- * Get field options for export customization
- * @param {Array} data - Sample data
- * @returns {Array} Available fields
- */
-export const getFieldOptions = (data) => {
-  if (!data || data.length === 0) return [];
-  
-  const fields = Object.keys(data[0]);
-  
-    return fields.map(field => ({
-      value: field,
-      label: formatStatLabel(field)
-    }));
+export const getExportTemplate = (type) => {
+  const templates = {
+    members: 'first_name,last_name,email,phone,date_of_birth,gender,address\n"John","Doe","john.doe@example.com","(555) 123-4567","01/15/1985","male","123 Main St"',
+    pledges: 'member_email,amount,frequency,start_date\n"john.doe@example.com","100.00","monthly","01/01/2024"',
+    groups: 'name,description,leader_name,meeting_schedule\n"Youth Group","Weekly youth meetings","Jane Smith","Sundays 6:00 PM"'
   };
+
+  return templates[type] || '';
+};
+
+export default {
+  convertToCSV,
+  downloadCSV,
+  exportMembersToCSV,
+  exportPledgesToCSV,
+  exportGroupsToCSV,
+  exportComprehensiveReport,
+  validateExportData,
+  getExportTemplate
+};
