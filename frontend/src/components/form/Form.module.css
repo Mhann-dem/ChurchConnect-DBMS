@@ -1,1 +1,463 @@
- 
+/* Form.module.css - ChurchConnect DBMS Form Styles */
+
+/* Main form container */
+.formContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Form header */
+.formHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.formTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.formSubtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+/* Step indicator */
+.stepIndicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.step.completed {
+  background: #10b981;
+  color: white;
+}
+
+.stepConnector {
+  width: 60px;
+  height: 2px;
+  background: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.stepConnector.completed {
+  background: #10b981;
+}
+
+/* Form sections */
+.formSection {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sectionDescription {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Form grid layout */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.formGrid.twoColumn {
+  grid-template-columns: 1fr 1fr;
+}
+
+.formGrid.threeColumn {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Form group */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formGroup.halfWidth {
+  grid-column: span 1;
+}
+
+/* Form actions */
+.formActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.formActions.center {
+  justify-content: center;
+}
+
+.formActions.end {
+  justify-content: flex-end;
+}
+
+/* Button styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  text-decoration: none;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: #3b82f6;
+  color: white;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.buttonSecondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.buttonOutline {
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.buttonOutline:hover:not(:disabled) {
+  background: #3b82f6;
+  color: white;
+}
+
+.buttonDanger {
+  background: #ef4444;
+  color: white;
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.buttonSuccess {
+  background: #10b981;
+  color: white;
+}
+
+.buttonSuccess:hover:not(:disabled) {
+  background: #059669;
+}
+
+/* Progress bar */
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Expandable section */
+.expandableSection {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.expandableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.expandableHeader:hover {
+  background: #f3f4f6;
+}
+
+.expandableTitle {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.expandableIcon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.expandableIcon.rotated {
+  transform: rotate(180deg);
+}
+
+.expandableContent {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Error states */
+.errorMessage {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.errorIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.formError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formError h3 {
+  color: #dc2626;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.formError ul {
+  color: #dc2626;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+/* Success states */
+.successMessage {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #15803d;
+}
+
+.successMessage h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Loading states */
+.loadingSpinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .formContainer {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  
+  .formGrid.twoColumn,
+  .formGrid.threeColumn {
+    grid-template-columns: 1fr;
+  }
+  
+  .formActions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .button {
+    width: 100%;
+  }
+  
+  .stepIndicator {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .step {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+  
+  .stepConnector {
+    width: 40px;
+  }
+  
+  .formTitle {
+    font-size: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .formContainer {
+    padding: 0.75rem;
+    margin: 0.5rem;
+  }
+  
+  .formTitle {
+    font-size: 1.25rem;
+  }
+  
+  .formSubtitle {
+    font-size: 1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.125rem;
+  }
+  
+  .button {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepConnector,
+  .progressFill,
+  .expandableIcon,
+  .button {
+    transition: none;
+  }
+  
+  .spinner {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .formContainer {
+    border: 2px solid #000;
+  }
+  
+  .button {
+    border: 2px solid;
+  }
+  
+  .step.active,
+  .step.completed {
+    border: 2px solid #000;
+  }
+}
+
+/* Print styles */
+@media print {
+  .formActions {
+    display: none;
+  }
+  
+  .stepIndicator {
+    display: none;
+  }
+  
+  .formContainer {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}
