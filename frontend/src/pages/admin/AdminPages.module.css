@@ -1,1 +1,1097 @@
- 
+/* AdminPages.module.css - Admin Dashboard Pages Styles for ChurchConnect DBMS */
+
+/* Common Admin Page Layout */
+.adminPage {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 1.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: #718096;
+  margin: 0.5rem 0 0 0;
+}
+
+.pageActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.pageContent {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contentGrid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.contentGridTwoColumn {
+  grid-template-columns: 2fr 1fr;
+}
+
+.contentGridThreeColumn {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Dashboard Page Specific Styles */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statsCard {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease-in-out;
+}
+
+.statsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.statsCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.statsCardTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.statsCardIcon {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.statsCardValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.statsCardChange {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.statsCardChangePositive {
+  color: #38a169;
+}
+
+.statsCardChangeNegative {
+  color: #e53e3e;
+}
+
+.statsCardChangeNeutral {
+  color: #718096;
+}
+
+.recentActivity {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.recentActivityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.recentActivityTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.recentActivityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recentActivityItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f7fafc;
+}
+
+.recentActivityItem:last-child {
+  border-bottom: none;
+}
+
+.recentActivityAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.recentActivityContent {
+  flex: 1;
+}
+
+.recentActivityText {
+  font-size: 0.875rem;
+  color: #4a5568;
+  margin: 0;
+}
+
+.recentActivityTime {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Members Page Specific Styles */
+.membersContainer {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.membersHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.membersFilters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.membersSearch {
+  flex: 1;
+  min-width: 200px;
+}
+
+.membersFilterDropdown {
+  min-width: 150px;
+}
+
+.membersList {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f7fafc;
+  transition: background-color 0.2s;
+}
+
+.memberItem:hover {
+  background-color: #f8fafc;
+}
+
+.memberItem:last-child {
+  border-bottom: none;
+}
+
+.memberAvatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+.memberInfo {
+  flex: 1;
+}
+
+.memberName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.25rem 0;
+}
+
+.memberDetails {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0;
+}
+
+.memberMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin: 0.25rem 0 0 0;
+}
+
+.memberActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.memberStatus {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.memberStatusActive {
+  background-color: #f0fff4;
+  color: #22543d;
+}
+
+.memberStatusInactive {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+
+.memberStatusPending {
+  background-color: #fef5e7;
+  color: #744210;
+}
+
+/* Member Detail Page Styles */
+.memberDetailContainer {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+.memberDetailMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.memberDetailSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.memberProfile {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.memberProfileHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.memberProfileAvatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 1.5rem;
+}
+
+.memberProfileInfo {
+  flex: 1;
+}
+
+.memberProfileName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+}
+
+.memberProfileMeta {
+  color: #718096;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.memberProfileDetails {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.memberProfileField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.memberProfileFieldLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.memberProfileFieldValue {
+  font-size: 0.875rem;
+  color: #1a202c;
+}
+
+.memberTabs {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.memberTabsHeader {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.memberTabButton {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: none;
+  color: #718096;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.memberTabButton:hover {
+  color: #4a5568;
+  background-color: #f1f5f9;
+}
+
+.memberTabButtonActive {
+  color: #3182ce;
+  background-color: white;
+  border-bottom-color: #3182ce;
+}
+
+.memberTabContent {
+  padding: 1.5rem;
+}
+
+.memberQuickActions {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.memberQuickActionsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 1rem 0;
+}
+
+.memberQuickActionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.memberQuickActionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #4a5568;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.memberQuickActionButton:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e0;
+}
+
+/* Groups Page Specific Styles */
+.groupsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.groupCard {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease-in-out;
+}
+
+.groupCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.groupCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.groupCardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.groupCardMenu {
+  position: relative;
+}
+
+.groupCardDescription {
+  color: #718096;
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.groupCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.groupCardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+.groupCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #f7fafc;
+}
+
+.groupCardMembers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.groupCardMemberAvatars {
+  display: flex;
+  align-items: center;
+  margin-left: -0.5rem;
+}
+
+.groupCardMemberAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  border: 2px solid white;
+  margin-left: -0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.groupCardMemberCount {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-left: 0.5rem;
+}
+
+/* Pledges Page Specific Styles */
+.pledgesContainer {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+.pledgesMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pledgesSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pledgesStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pledgeStatCard {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.pledgeStatValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+}
+
+.pledgeStatLabel {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0;
+}
+
+.pledgesList {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.pledgesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pledgesTableHeader {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pledgesTableHeaderCell {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.pledgesTableRow {
+  border-bottom: 1px solid #f7fafc;
+  transition: background-color 0.2s;
+}
+
+.pledgesTableRow:hover {
+  background-color: #f8fafc;
+}
+
+.pledgesTableCell {
+  padding: 1rem;
+  vertical-align: top;
+}
+
+.pledgeAmount {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.pledgeFrequency {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.pledgeStatus {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.pledgeStatusActive {
+  background-color: #f0fff4;
+  color: #22543d;
+}
+
+.pledgeStatusCompleted {
+  background-color: #e6fffa;
+  color: #234e52;
+}
+
+.pledgeStatusCancelled {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+
+/* Reports Page Specific Styles */
+.reportsContainer {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+}
+
+.reportsSidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  height: fit-content;
+}
+
+.reportsSidebarTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 1rem 0;
+}
+
+.reportsSidebarList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reportsSidebarItem {
+  margin-bottom: 0.5rem;
+}
+
+.reportsSidebarButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  color: #718096;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.reportsSidebarButton:hover {
+  background-color: #f8fafc;
+  color: #4a5568;
+}
+
+.reportsSidebarButtonActive {
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.reportsMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reportsHeader {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.reportsHeaderTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+}
+
+.reportsHeaderDescription {
+  color: #718096;
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+}
+
+.reportsFilters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.reportsContent {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.reportsChart {
+  height: 400px;
+  margin-bottom: 2rem;
+}
+
+.reportsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reportsTableHeader {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reportsTableHeaderCell {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.reportsTableRow {
+  border-bottom: 1px solid #f7fafc;
+}
+
+.reportsTableCell {
+  padding: 1rem;
+  vertical-align: top;
+}
+
+/* Settings Page Specific Styles */
+.settingsContainer {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+}
+
+.settingsSidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  height: fit-content;
+}
+
+.settingsSidebarTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 1rem 0;
+}
+
+.settingsSidebarList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settingsSidebarItem {
+  margin-bottom: 0.5rem;
+}
+
+.settingsSidebarButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  color: #718096;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.settingsSidebarButton:hover {
+  background-color: #f8fafc;
+  color: #4a5568;
+}
+
+.settingsSidebarButtonActive {
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.settingsMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settingsSection {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.settingsSectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+}
+
+.settingsSectionDescription {
+  color: #718096;
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.settingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settingsFormRow {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.settingsFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.settingsFormLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.settingsFormInput {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.settingsFormInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.settingsFormActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .pageActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .contentGridTwoColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .memberDetailContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .pledgesContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .reportsContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .settingsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .adminPage {
+    padding: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .groupsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pledgesStats {
+    grid-template-columns: 1fr;
+  }
+
+  .membersFilters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .membersSearch {
+    width: 100%;
+  }
+
+  .memberItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .memberActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .settingsFormRow {
+    flex-direction: column;
+  }
+
+  .settingsFormActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsCard {
+    padding: 1rem;
+  }
+
+  .statsCardValue {
+    font-size: 1.5rem;
+  }
+
+  .memberProfileHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .memberProfileDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .memberTabsHeader {
+    flex-direction: column;
+  }
+
+  .memberTabButton {
+    border-bottom: 1px solid #e2e8f0;
+    border-right: none;
+  }
+
+  .memberTabButtonActive {
+    border-bottom-color: #3182ce;
+  }
+  .groupCard {
+    padding: 1rem;
+  }
+
+  .reportsFilters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+

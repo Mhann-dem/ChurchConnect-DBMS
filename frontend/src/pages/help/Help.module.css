@@ -1,1 +1,515 @@
- 
+/* Help Module Styles */
+
+/* Container Styles */
+.helpContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.helpHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.helpHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.helpHeader p {
+  font-size: 1.125rem;
+  color: #4a5568;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Search Styles */
+.searchContainer {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+}
+
+/* Help Content Layout */
+.helpContent {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Navigation Styles */
+.helpNav {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.helpNav h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.helpNav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.helpNav li {
+  margin-bottom: 0.5rem;
+}
+
+.helpNavLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #4a5568;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.helpNavLink:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.helpNavLink.active {
+  background: #3182ce;
+  color: white;
+}
+
+/* Main Content Styles */
+.helpMain {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* FAQ Styles */
+.faqContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.faqHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.faqHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.faqHeader p {
+  font-size: 1.125rem;
+  color: #4a5568;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.faqCategories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.faqCategory {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.faqCategory:hover {
+  background: #edf2f7;
+  transform: translateY(-2px);
+}
+
+.faqCategory.active {
+  background: #3182ce;
+  color: white;
+  border-color: #2c5282;
+}
+
+.faqCategory h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.faqCategory p {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.faqList {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faqItem {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.faqItem:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.faqQuestion {
+  width: 100%;
+  padding: 1.5rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+  transition: all 0.2s ease;
+}
+
+.faqQuestion:hover {
+  background: #f7fafc;
+}
+
+.faqQuestion.expanded {
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.faqAnswer {
+  padding: 0 1.5rem 1.5rem;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.faqAnswer h4 {
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.faqAnswer ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.faqAnswer li {
+  margin-bottom: 0.5rem;
+}
+
+.faqAnswer code {
+  background: #f7fafc;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+}
+
+/* Tutorials Styles */
+.tutorialsContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.tutorialsHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.tutorialsHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.tutorialsHeader p {
+  font-size: 1.125rem;
+  color: #4a5568;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tutorialsContent {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.categoryNav {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.categoryNav h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.categoryNav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.categoryNav li {
+  margin-bottom: 0.5rem;
+}
+
+.categoryButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.categoryButton:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.categoryButton.active {
+  background: #3182ce;
+  color: white;
+}
+
+.tutorialCount {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.categoryButton.active .tutorialCount {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tutorialsList {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.categoryHeader {
+  margin-bottom: 2rem;
+}
+
+.categoryHeader h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.categoryHeader p {
+  color: #4a5568;
+}
+
+.tutorials {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tutorialCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.tutorialCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tutorialHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  cursor: pointer;
+}
+
+.tutorialInfo {
+  flex: 1;
+}
+
+.tutorialInfo h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.tutorialMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.duration {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.level {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.level.beginner {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.level.intermediate {
+  background: #fef5e7;
+  color: #c05621;
+}
+
+.level.advanced {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.description {
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.expandButton:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.tutorialSteps {
+  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  background: #f7fafc;
+}
+
+.stepsHeader {
+  margin-bottom: 1.5rem;
+}
+
+.stepsHeader h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.stepsHeader p {
+  color: #4a5568;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  width: 2rem;
+  height: 2rem;
+  background: #3182ce;  
+  color: white;               
+  border-radius: 50%;
+}
