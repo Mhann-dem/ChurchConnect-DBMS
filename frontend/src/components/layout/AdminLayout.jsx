@@ -1,42 +1,55 @@
-// src/components/layout/AdminLayout.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Breadcrumbs } from './Breadcrumbs';
-import { LoadingSpinner } from '../shared/LoadingSpinner';
-import styles from './Layout.module.css';
+import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
-const AdminLayout = () => {
-  const { user, loading } = useAuth();
+export const AdminLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
+  const { settings } = useSettings();
 
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/admin/login" replace />;
-  }
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
-    <div className={styles.adminLayout}>
-      <Header isAdmin={true} />
-      <div className={styles.adminContent}>
-        <Sidebar />
-        <main className={styles.mainContent}>
-          <div className={styles.contentHeader}>
-            <Breadcrumbs />
-          </div>
-          <div className={styles.contentBody}>
+    <div className={`min-h-screen bg-gray-50 ${settings.theme === 'dark' ? 'dark' : ''}`}>
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
+
+      {/* Main Content */}
+      <div className={`${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'} transition-all duration-300`}>
+        {/* Header */}
+        <Header 
+          onMenuClick={toggleSidebar}
+          user={user}
+        />
+
+        {/* Main Content Area */}
+        <main className="py-6 px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <Breadcrumbs />
+
+          {/* Page Content */}
+          <div className="mt-6">
             <Outlet />
           </div>
         </main>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 };

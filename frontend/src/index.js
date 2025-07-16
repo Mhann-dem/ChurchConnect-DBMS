@@ -1,30 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './styles/globals.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-// Create root element
+// Import global styles
+import './styles/globals.css';
+import './styles/variables.css';
+import './styles/components.css';
+import './styles/utilities.css';
+import './styles/responsive.css';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-// Render app with error boundary
 root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
 
-// Performance monitoring
-reportWebVitals(console.log);
-
-// Hot module replacement for development
-if (module.hot) {
-  module.hot.accept('./App', () => {
-    const NextApp = require('./App').default;
-    root.render(
-      <React.StrictMode>
-        <NextApp />
-      </React.StrictMode>
-    );
-  });
-}
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

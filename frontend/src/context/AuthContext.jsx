@@ -1,4 +1,3 @@
-// context/AuthContext.jsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authService } from '../services/auth';
 
@@ -9,8 +8,7 @@ const initialState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
-  permissions: [],
-  lastActivity: null
+  permissions: []
 };
 
 const authReducer = (state, action) => {
@@ -21,7 +19,6 @@ const authReducer = (state, action) => {
         isLoading: true,
         error: null
       };
-    
     case 'LOGIN_SUCCESS':
       return {
         ...state,
@@ -29,10 +26,8 @@ const authReducer = (state, action) => {
         isAuthenticated: true,
         isLoading: false,
         error: null,
-        permissions: action.payload.permissions || [],
-        lastActivity: new Date().toISOString()
+        permissions: action.payload.permissions || []
       };
-    
     case 'LOGIN_FAILURE':
       return {
         ...state,
@@ -42,37 +37,30 @@ const authReducer = (state, action) => {
         error: action.payload,
         permissions: []
       };
-    
     case 'LOGOUT':
       return {
-        ...initialState,
-        isLoading: false
-      };
-    
-    case 'UPDATE_USER':
-      return {
         ...state,
-        user: { ...state.user, ...action.payload }
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        permissions: []
       };
-    
-    case 'UPDATE_ACTIVITY':
-      return {
-        ...state,
-        lastActivity: new Date().toISOString()
-      };
-    
     case 'SET_LOADING':
       return {
         ...state,
         isLoading: action.payload
       };
-    
     case 'CLEAR_ERROR':
       return {
         ...state,
         error: null
       };
-    
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        user: { ...state.user, ...action.payload }
+      };
     default:
       return state;
   }
@@ -81,98 +69,52 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Initialize auth state on app load
+  // Check if user is authenticated on app load
   useEffect(() => {
-    const initializeAuth = async () => {
+    const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('churchconnect_token');
+        dispatch({ type: 'SET_LOADING', payload: true });
+        const token = localStorage.getItem('token');
+        
         if (token) {
           const user = await authService.getCurrentUser();
-          dispatch({
-            type: 'LOGIN_SUCCESS',
-            payload: {
-              user,
-              permissions: user.permissions || []
-            }
+          dispatch({ 
+            type: 'LOGIN_SUCCESS', 
+            payload: { 
+              user, 
+              permissions: user.permissions || [] 
+            } 
           });
         } else {
           dispatch({ type: 'SET_LOADING', payload: false });
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        localStorage.removeItem('churchconnect_token');
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('token');
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
-    initializeAuth();
+    checkAuth();
   }, []);
 
-  // Auto-logout on token expiration
-  useEffect(() => {
-    const checkTokenExpiration = () => {
-      const token = localStorage.getItem('churchconnect_token');
-      if (token && state.isAuthenticated) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const currentTime = Date.now() / 1000;
-          
-          if (payload.exp < currentTime) {
-            logout();
-          }
-        } catch (error) {
-          console.error('Token validation error:', error);
-          logout();
-        }
-      }
-    };
-
-    const interval = setInterval(checkTokenExpiration, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [state.isAuthenticated]);
-
-  // Activity tracking for auto-logout
-  useEffect(() => {
-    if (state.isAuthenticated) {
-      const handleActivity = () => {
-        dispatch({ type: 'UPDATE_ACTIVITY' });
-      };
-
-      const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-      events.forEach(event => {
-        document.addEventListener(event, handleActivity);
-      });
-
-      return () => {
-        events.forEach(event => {
-          document.removeEventListener(event, handleActivity);
-        });
-      };
-    }
-  }, [state.isAuthenticated]);
-
-  const login = async (email, password) => {
-    dispatch({ type: 'LOGIN_START' });
-    
+  const login = async (credentials) => {
     try {
-      const response = await authService.login(email, password);
+      dispatch({ type: 'LOGIN_START' });
+      const response = await authService.login(credentials);
       
-      localStorage.setItem('churchconnect_token', response.token);
-      
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: {
-          user: response.user,
-          permissions: response.permissions || []
-        }
+      localStorage.setItem('token', response.token);
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { 
+          user: response.user, 
+          permissions: response.user.permissions || [] 
+        } 
       });
       
       return response;
     } catch (error) {
-      dispatch({
-        type: 'LOGIN_FAILURE',
-        payload: error.message || 'Login failed'
-      });
+      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
       throw error;
     }
   };
@@ -183,13 +125,35 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('churchconnect_token');
+      localStorage.removeItem('token');
       dispatch({ type: 'LOGOUT' });
     }
   };
 
-  const updateUser = (userData) => {
-    dispatch({ type: 'UPDATE_USER', payload: userData });
+  const resetPassword = async (email) => {
+    try {
+      await authService.resetPassword(email);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const confirmPasswordReset = async (token, newPassword) => {
+    try {
+      await authService.confirmPasswordReset(token, newPassword);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const updateProfile = async (userData) => {
+    try {
+      const updatedUser = await authService.updateProfile(userData);
+      dispatch({ type: 'UPDATE_USER', payload: updatedUser });
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const clearError = () => {
@@ -200,18 +164,15 @@ export const AuthProvider = ({ children }) => {
     return state.permissions.includes(permission) || state.user?.role === 'super_admin';
   };
 
-  const hasRole = (role) => {
-    return state.user?.role === role;
-  };
-
   const value = {
     ...state,
     login,
     logout,
-    updateUser,
+    resetPassword,
+    confirmPasswordReset,
+    updateProfile,
     clearError,
-    hasPermission,
-    hasRole
+    hasPermission
   };
 
   return (
@@ -228,3 +189,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;
