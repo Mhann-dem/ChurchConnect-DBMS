@@ -474,7 +474,7 @@
 .rounded-r { border-top-right-radius: 0.25rem !important; border-bottom-right-radius: 0.25rem !important; }
 .rounded-r-md { border-top-right-radius: 0.375rem !important; border-bottom-right-radius: 0.375rem !important; }
 .rounded-r-lg { border-top-right-radius: 0.5rem !important; border-bottom-right-radius: 0.5rem !important; }
-.rounded-r-xl { border-top-right-radius: 0.75rem !important; border             -bottom-right-radius: 0.75rem !important; }
+.rounded-r-xl { border-top-right-radius: 0.75rem !important; border-bottom-right-radius: 0.75rem !important; }
 .rounded-r-2xl { border-top-right-radius: 1rem !important; border-bottom-right-radius: 1rem !important; }
 .rounded-r-3xl { border-top-right-radius: 1.5rem !important; border-bottom-right-radius: 1.5rem !important; }
 .rounded-r-full { border-top-right-radius: 9999px !important; border-bottom-right-radius: 9999px !important; } 

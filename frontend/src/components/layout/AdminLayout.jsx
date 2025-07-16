@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Breadcrumbs } from './Breadcrumbs';
-import { useAuth } from '../../context/AuthContext';
+import useAuth from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 
 export const AdminLayout = () => {

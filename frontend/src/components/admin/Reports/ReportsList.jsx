@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Avatar, Tooltip, Dropdown } from '../ui';
 import { SearchBar, LoadingSpinner, EmptyState, Pagination } from '../shared';
 import { useReports } from '../../hooks/useReports';
-import { useAuth } from '../../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 import { formatDate } from '../../utils/formatters';
 import styles from './Reports.module.css';
 

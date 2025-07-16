@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout';
 import { Dashboard } from '../../components/admin/Dashboard';
 import { LoadingSpinner, ErrorBoundary } from '../../components/shared';
-import { useAuth } from '../../hooks';
+import  useAuth from '../../hooks';
 import { dashboardService } from '../../services';
 import styles from './AdminPages.module.css';
 

@@ -1,7 +1,7 @@
 // frontend/src/pages/auth/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';

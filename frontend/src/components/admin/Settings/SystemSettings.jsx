@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useToast } from '../../../hooks/useToast';
-import { Button } from '../../ui/Button';
-import { Card } from '../../ui/Card';
-import { LoadingSpinner } from '../../shared/LoadingSpinner';
-import { Modal } from '../../shared/Modal';
-import { ConfirmDialog } from '../../shared/ConfirmDialog';
+import  useToast  from '../../../hooks/useToast';
+import  Button  from '../../ui/Button';
+import  Card  from '../../ui/Card';
+import  LoadingSpinner  from '../../shared/LoadingSpinner';
+import  Modal from '../../shared/Modal';
+import ConfirmDialog  from '../../shared/ConfirmDialog';
 import styles from './Settings.module.css';
 
 const SystemSettings = () => {

@@ -1,13 +1,12 @@
-// src/pages/help/HelpCenter.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
-import { SearchBar } from '../../components/shared/SearchBar';
-import { PublicLayout } from '../../components/layout/PublicLayout';
-import { AdminLayout } from '../../components/layout/AdminLayout';
+import useAuth from '../../hooks/useAuth';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import SearchBar from '../../components/shared/SearchBar';
+import PublicLayout from '../../components/layout/PublicLayout';
+import AdminLayout from '../../components/layout/AdminLayout';
 import { 
   BookOpen, 
   Users, 

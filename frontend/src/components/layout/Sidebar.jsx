@@ -10,7 +10,7 @@ import {
   QuestionMarkCircleIcon,
   LogoutIcon
 } from '@heroicons/react/24/outline';
-import { useAuth } from '../../context/AuthContext';
+import useAuth from '../../context/AuthContext';
 
 const navigationItems = [
   {

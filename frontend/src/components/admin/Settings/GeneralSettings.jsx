@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../ui/Button';
-import { Card } from '../../ui/Card';
-import { Toast } from '../../shared/Toast';
-import { Input } from '../../form/FormControls/Input';
-import { Select } from '../../form/FormControls/Select';
-import { Checkbox } from '../../form/FormControls/Checkbox';
-import { TextArea } from '../../form/FormControls/TextArea';
-import { LoadingSpinner } from '../../shared/LoadingSpinner';
+import Button from '../../ui/Button';
+import Card from '../../ui/Card';
+import Toast from '../../shared/Toast';
+import Input from '../../form/FormControls/Input';
+import Select from '../../form/FormControls/Select';
+import Checkbox from '../../form/FormControls/Checkbox';
+import TextArea from '../../form/FormControls/TextArea';
+import LoadingSpinner from '../../shared/LoadingSpinner';
 import { useToast } from '../../../hooks/useToast';
-import { settingsService } from '../../../services/settings';
+import settingsService from '../../../services/settings';
 import styles from './Settings.module.css';
 
 const GeneralSettings = () => {

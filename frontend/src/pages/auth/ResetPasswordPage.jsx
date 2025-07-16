@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../hooks/useToast';
-import { Button } from '../../components/ui/Button';
-import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
+import useAuth from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
+import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { validatePassword } from '../../utils/validation';
 import styles from './AuthPages.module.css';
 

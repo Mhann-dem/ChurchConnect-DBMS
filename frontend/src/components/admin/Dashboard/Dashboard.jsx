@@ -1,6 +1,6 @@
 // Dashboard/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
+import  useAuth from '../../../hooks/useAuth';
 import { useDashboard } from '../../../hooks/useDashboard';
 import { useToast } from '../../../hooks/useToast';
 import StatsCard from './StatsCard';

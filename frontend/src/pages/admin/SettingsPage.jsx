@@ -1,15 +1,14 @@
-// SettingsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../hooks/useToast';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/form/FormControls/Input';
-import { Select } from '../../components/form/FormControls/Select';
-import { Checkbox } from '../../components/form/FormControls/Checkbox';
-import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
-import { Tabs } from '../../components/ui/Tabs';
-import { settingsService } from '../../services/api';
+import useAuth from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import Input from '../../components/form/FormControls/Input';
+import Select from '../../components/form/FormControls/Select';
+import Checkbox from '../../components/form/FormControls/Checkbox';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import Tabs from '../../components/ui/Tabs';
+import settingsService from '../../services/api';
 
 const SettingsPage = () => {
   const { user } = useAuth();

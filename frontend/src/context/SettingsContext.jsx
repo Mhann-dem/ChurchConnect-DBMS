@@ -1,6 +1,6 @@
 // context/SettingsContext.jsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import useAuth from './AuthContext';
 
 const SettingsContext = createContext();
 

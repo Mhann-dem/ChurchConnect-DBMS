@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
-import { useToast } from '../../../hooks/useToast';
-import { Button } from '../../ui/Button';
-import { Card } from '../../ui/Card';
-import { Badge } from '../../ui/Badge';
-import { Modal } from '../../shared/Modal';
-import { ConfirmDialog } from '../../shared/ConfirmDialog';
-import { DataTable } from '../../shared/DataTable';
-import { SearchBar } from '../../shared/SearchBar';
-import { LoadingSpinner } from '../../shared/LoadingSpinner';
-import { EmptyState } from '../../shared/EmptyState';
-import * as authService from '../../../services/auth';
+import useAuth from '../../../hooks/useAuth';  // Changed from named to default import
+import { useToast } from '../../../hooks/useToast';  // Changed from named to default import
+import Button from '../../ui/Button';  // Changed from named to default import
+import Card from '../../ui/Card';  // Changed from named to default import
+import Badge from '../../ui/Badge';  // Changed from named to default import
+import Modal from '../../shared/Modal';  // Changed from named to default import
+import ConfirmDialog from '../../shared/ConfirmDialog';  // Changed from named to default import
+import DataTable from '../../shared/DataTable';  // Changed from named to default import
+import SearchBar from '../../shared/SearchBar';  // Changed from named to default import
+import LoadingSpinner from '../../shared/LoadingSpinner';  // Changed from named to default import
+import EmptyState from '../../shared/EmptyState';  // Changed from named to default import
+import authService from '../../../services/auth';  // Changed from namespace to default import
 import styles from './Settings.module.css';
 
 const UserManagement = () => {

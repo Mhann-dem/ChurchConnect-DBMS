@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { membersService } from '../services/members';
+import membersService from '../services/members';
 import { useToast } from './useToast';
 
 /**

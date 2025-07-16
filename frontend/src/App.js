@@ -32,8 +32,7 @@ import { HelpCenter, FAQ, Tutorials } from './pages/help';
 
 // Components
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
-import { ErrorBoundary } from './components/shared/ErrorBoundary';
-import { LoadingSpinner } from './components/shared/LoadingSpinner';
+import ErrorBoundary  from './components/shared/ErrorBoundary';
 
 // Styles
 import './styles/globals.css';

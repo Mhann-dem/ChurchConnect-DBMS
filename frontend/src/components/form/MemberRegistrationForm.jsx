@@ -12,7 +12,7 @@ import MinistryInterests from './Steps/MinistryInterests';
 import PledgeInfo from './Steps/PledgeInfo';
 import FamilyInfo from './Steps/FamilyInfo';
 import Confirmation from './Steps/Confirmation';
-import { LoadingSpinner } from '../shared';
+import LoadingSpinner from '../shared';
 import { Button } from '../ui';
 import styles from './Form.module.css';
 
