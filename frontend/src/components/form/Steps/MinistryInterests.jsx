@@ -1,6 +1,7 @@
 // frontend/src/components/form/Steps/MinistryInterests.jsx
 import React from 'react';
-import { Checkbox, TextArea } from '../FormControls';
+import Checkbox from '../FormControls/Checkbox';
+import TextArea from '../FormControls/TextArea';
 import styles from '../Form.module.css';
 
 const MinistryInterests = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {

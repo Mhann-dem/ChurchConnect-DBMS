@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../../hooks/useAuth';
-import useToast from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/form/FormControls/Input';

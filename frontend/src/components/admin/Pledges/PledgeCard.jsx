@@ -1,8 +1,9 @@
 // frontend/src/components/admin/Pledges/PledgeCard.jsx
 
 import React, { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
-import { formatCurrency, formatDate, formatDateRelative } from '../../../utils/formatters';
+import { formatCurrency, formatDate } from '../../../utils/formatters';
 import styles from './Pledges.module.css';
 
 const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
@@ -216,7 +217,7 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
       <div className={styles.pledgeFooter}>
         <div className={styles.timestampInfo}>
           <span className={styles.timestamp}>
-            Created {formatDateRelative(pledge.created_at)}
+            Created {formatDistanceToNow(new Date(pledge.created_at), { addSuffix: true })}
           </span>
         </div>
         

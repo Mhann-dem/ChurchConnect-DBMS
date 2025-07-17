@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Users, Calendar, MapPin, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import GroupCard from './GroupCard';
 import GroupForm from './GroupForm';
-import { useGroups } from '../../hooks/useGroups';
-import { useToast } from '../../hooks/useToast';
-import LoadingSpinner from '../shared/LoadingSpinner';
-import Modal from '../shared/Modal';
-import SearchBar from '../shared/SearchBar';
-import ConfirmDialog from '../shared/ConfirmDialog';
+import { useGroups } from '../../../hooks/useGroups';
+import { useToast } from '../../../hooks/useToast';
 import styles from './Groups.module.css';
+import LoadingSpinner from '../../ui/LoadingSpinner';
+import Modal from '../../ui/Modal';
+import SearchBar from '../../ui/SearchBar';
+import ConfirmDialog from '../../ui/ConfirmDialog';
 
 const GroupsList = () => {
   const navigate = useNavigate();

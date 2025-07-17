@@ -5,10 +5,10 @@ import {
   UsersIcon, 
   UserGroupIcon, 
   CurrencyDollarIcon, 
-  DocumentReportIcon, 
+  DocumentChartBarIcon, // Replaced DocumentReportIcon
   CogIcon,
   QuestionMarkCircleIcon,
-  LogoutIcon
+  ArrowLeftOnRectangleIcon // Replaced LogoutIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../context/AuthContext';
 
@@ -40,7 +40,7 @@ const navigationItems = [
   {
     name: 'Reports',
     href: '/admin/reports',
-    icon: DocumentReportIcon,
+    icon: DocumentChartBarIcon, // Updated icon
     permission: 'view_reports'
   },
   {
@@ -147,7 +147,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
                   onClick={handleLogout}
                   className="w-full flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900 rounded-lg"
                 >
-                  <LogoutIcon className="h-5 w-5 mr-3" />
+                  <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-3" />
                   Logout
                 </button>
               </div>

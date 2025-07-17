@@ -1,6 +1,8 @@
 // frontend/src/components/form/Steps/PersonalInfo.jsx
 import React from 'react';
-import { Input, Select, DatePicker } from '../FormControls';
+import Input from '../FormControls/Input';
+import Select from '../FormControls/Select';
+import DatePicker from '../FormControls/DatePicker';
 import styles from '../Form.module.css';
 
 const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {

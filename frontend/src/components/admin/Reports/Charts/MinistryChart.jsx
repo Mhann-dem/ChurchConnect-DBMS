@@ -13,14 +13,12 @@ import {
   Cell,
   LineChart,
   Line,
-  ComposedChart,
-  Area,
-  AreaChart
+  ComposedChart
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../ui/Card';
-import { Badge } from '../../../ui/Badge';
-import { Button } from '../../../ui/Button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../ui/Tabs';
+import Card from '../../../ui/Card';
+import Badge from '../../../ui/Badge';
+import Button from '../../../ui/Button';
+import Tabs from '../../../ui/Tabs';
 import { 
   Users, 
   TrendingUp, 
@@ -28,10 +26,7 @@ import {
   Activity,
   Calendar,
   Target,
-  Award,
-  AlertCircle,
   Download,
-  Filter,
   RefreshCw
 } from 'lucide-react';
 

@@ -318,3 +318,17 @@ export const formatEmptyValue = (value, placeholder = 'N/A') => {
   
   return value;
 };
+
+export const formatDate = (dateString, options = {}) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  const defaultOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  };
+  
+  return date.toLocaleDateString('en-US', { ...defaultOptions, ...options });
+};

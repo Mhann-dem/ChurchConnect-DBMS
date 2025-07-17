@@ -1,10 +1,10 @@
 // frontend/src/components/form/MemberRegistrationForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from '../../hooks/useForm';
+import useForm from '../../hooks/useForm'; // Fixed: default import
 import { useToast } from '../../hooks/useToast';
-import { validateStep, validateForm } from '../../utils/validation';
-import { submitMemberRegistration } from '../../services/members';
+import { validateMemberForm } from '../../utils/validation'; // Fixed: use available function
+import submitMemberRegistration from '../../services/members'; // Fixed: default import
 import StepIndicator from './StepIndicator';
 import PersonalInfo from './Steps/PersonalInfo';
 import ContactInfo from './Steps/ContactInfo';
@@ -12,7 +12,7 @@ import MinistryInterests from './Steps/MinistryInterests';
 import PledgeInfo from './Steps/PledgeInfo';
 import FamilyInfo from './Steps/FamilyInfo';
 import Confirmation from './Steps/Confirmation';
-import LoadingSpinner from '../shared';
+import { LoadingSpinner } from '../shared'; // Fixed: named import
 import { Button } from '../ui';
 import styles from './Form.module.css';
 
@@ -58,6 +58,57 @@ const INITIAL_FORM_DATA = {
   // Agreement
   privacyPolicyAgreed: false,
   communicationOptIn: true
+};
+
+// Helper function to validate individual steps
+const validateStep = (stepId, formData) => {
+  const stepValidations = {
+    personal: () => {
+      const errors = {};
+      if (!formData.firstName?.trim()) errors.firstName = 'First name is required';
+      if (!formData.lastName?.trim()) errors.lastName = 'Last name is required';
+      if (!formData.email?.trim()) errors.email = 'Email is required';
+      if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
+      if (!formData.gender) errors.gender = 'Gender is required';
+      return errors;
+    },
+    contact: () => {
+      const errors = {};
+      if (!formData.phone?.trim()) errors.phone = 'Phone number is required';
+      if (!formData.address?.trim()) errors.address = 'Address is required';
+      return errors;
+    },
+    ministry: () => {
+      // Ministry interests are optional, return empty errors
+      return {};
+    },
+    pledge: () => {
+      const errors = {};
+      if (formData.pledgeAmount && !formData.pledgeFrequency) {
+        errors.pledgeFrequency = 'Pledge frequency is required when amount is specified';
+      }
+      return errors;
+    },
+    family: () => {
+      const errors = {};
+      if (!formData.emergencyContactName?.trim()) {
+        errors.emergencyContactName = 'Emergency contact name is required';
+      }
+      if (!formData.emergencyContactPhone?.trim()) {
+        errors.emergencyContactPhone = 'Emergency contact phone is required';
+      }
+      return errors;
+    },
+    confirmation: () => {
+      const errors = {};
+      if (!formData.privacyPolicyAgreed) {
+        errors.privacyPolicyAgreed = 'You must agree to the privacy policy';
+      }
+      return errors;
+    }
+  };
+
+  return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
 const MemberRegistrationForm = () => {
@@ -144,7 +195,8 @@ const MemberRegistrationForm = () => {
   };
 
   const handleSubmit = async () => {
-    const formErrors = validateForm(formData);
+    // Use validateMemberForm instead of validateForm
+    const formErrors = validateMemberForm(formData);
     
     if (Object.keys(formErrors).length === 0) {
       setIsSubmitting(true);

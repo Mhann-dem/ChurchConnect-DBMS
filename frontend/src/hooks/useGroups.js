@@ -1,245 +1,311 @@
-import { useState, useEffect, useCallback } from 'react';
-import { groupsService } from '../services/groups';
-import { useToast } from './useToast';
+import { useState, useEffect } from 'react';
 
-/**
- * Custom hook for managing groups/ministries
- * Provides CRUD operations, search, and state management for groups
- */
-export const useGroups = (initialParams = {}) => {
+export const useGroups = (options = {}) => {
   const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 25
+    limit: 25,
+    total: 0,
+    totalPages: 0
   });
   const [filters, setFilters] = useState({
+    active: null,
     search: '',
-    active: true,
-    ...initialParams
+    hasLeader: null,
+    memberCount: null
   });
-  
-  const { showToast } = useToast();
 
-  // Fetch groups with filters and pagination
-  const fetchGroups = useCallback(async (params = {}) => {
-    setLoading(true);
-    setError(null);
-    
+  // Fetch groups with pagination and filtering
+  const fetchGroups = async (page = 1, currentFilters = filters) => {
     try {
-      const queryParams = {
-        ...filters,
-        ...params,
-        page: params.page || pagination.page,
-        limit: params.limit || pagination.itemsPerPage
-      };
+      setLoading(true);
+      setError(null);
       
-      const response = await groupsService.getGroups(queryParams);
-      
-      setGroups(response.data.results);
-      setPagination({
-        page: response.data.page,
-        totalPages: response.data.totalPages,
-        totalItems: response.data.totalItems,
-        itemsPerPage: response.data.itemsPerPage
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pagination.limit.toString(),
+        ...currentFilters
       });
-    } catch (err) {
-      setError(err.message || 'Failed to fetch groups');
-      showToast('Failed to load groups', 'error');
+      
+      const response = await fetch(`/api/groups/?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      setGroups(data.results || []);
+      setPagination({
+        page: data.page || 1,
+        limit: data.limit || 25,
+        total: data.count || 0,
+        totalPages: Math.ceil((data.count || 0) / (data.limit || 25))
+      });
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      setError('Failed to load groups');
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination.itemsPerPage, showToast]);
+  };
 
-  // Create new group
-  const createGroup = useCallback(async (groupData) => {
-    setLoading(true);
-    setError(null);
-    
+  // Create new group/ministry
+  const createGroup = async (groupData) => {
     try {
-      const response = await groupsService.createGroup(groupData);
+      const response = await fetch('/api/groups/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: groupData.name,
+          description: groupData.description,
+          leader_name: groupData.leader_name,
+          meeting_schedule: groupData.meeting_schedule,
+          active: groupData.active !== undefined ? groupData.active : true
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newGroup = await response.json();
       
-      // Add new group to the beginning of the list
-      setGroups(prev => [response.data, ...prev]);
+      // Add to current groups if on first page
+      if (pagination.page === 1) {
+        setGroups(prev => [newGroup, ...prev]);
+      }
       
-      showToast('Group created successfully', 'success');
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to create group';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      // Update pagination
+      setPagination(prev => ({
+        ...prev,
+        total: prev.total + 1,
+        totalPages: Math.ceil((prev.total + 1) / prev.limit)
+      }));
+      
+      return newGroup;
+    } catch (error) {
+      console.error('Error creating group:', error);
+      throw error;
     }
-  }, [showToast]);
+  };
 
-  // Update existing group
-  const updateGroup = useCallback(async (groupId, updateData) => {
-    setLoading(true);
-    setError(null);
-    
+  // Update group/ministry
+  const updateGroup = async (groupId, updateData) => {
     try {
-      const response = await groupsService.updateGroup(groupId, updateData);
+      const response = await fetch(`/api/groups/${groupId}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedGroup = await response.json();
       
-      // Update group in the list
       setGroups(prev => prev.map(group => 
-        group.id === groupId ? response.data : group
+        group.id === groupId ? updatedGroup : group
       ));
       
-      showToast('Group updated successfully', 'success');
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to update group';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      return updatedGroup;
+    } catch (error) {
+      console.error('Error updating group:', error);
+      throw error;
     }
-  }, [showToast]);
+  };
 
-  // Delete group
-  const deleteGroup = useCallback(async (groupId) => {
-    setLoading(true);
-    setError(null);
-    
+  // Delete group/ministry
+  const deleteGroup = async (groupId) => {
     try {
-      await groupsService.deleteGroup(groupId);
-      
-      // Remove group from the list
+      const response = await fetch(`/api/groups/${groupId}/`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       setGroups(prev => prev.filter(group => group.id !== groupId));
-      
-      showToast('Group deleted successfully', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to delete group';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      setPagination(prev => ({
+        ...prev,
+        total: Math.max(0, prev.total - 1),
+        totalPages: Math.ceil(Math.max(0, prev.total - 1) / prev.limit)
+      }));
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      throw error;
     }
-  }, [showToast]);
-
-  // Get single group details
-  const getGroup = useCallback(async (groupId) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await groupsService.getGroup(groupId);
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch group details';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
+  };
 
   // Get group members
-  const getGroupMembers = useCallback(async (groupId, params = {}) => {
-    setLoading(true);
-    setError(null);
-    
+  const getGroupMembers = async (groupId) => {
     try {
-      const response = await groupsService.getGroupMembers(groupId, params);
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch group members';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      const response = await fetch(`/api/groups/${groupId}/members/`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.members || [];
+    } catch (error) {
+      console.error('Error fetching group members:', error);
+      throw error;
     }
-  }, [showToast]);
+  };
 
   // Add member to group
-  const addMemberToGroup = useCallback(async (groupId, memberId) => {
-    setLoading(true);
-    setError(null);
-    
+  const addMemberToGroup = async (groupId, memberId, role = null) => {
     try {
-      const response = await groupsService.addMemberToGroup(groupId, memberId);
-      showToast('Member added to group successfully', 'success');
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to add member to group';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      const response = await fetch(`/api/groups/${groupId}/members/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_id: memberId,
+          role: role
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      // Update group member count in local state
+      setGroups(prev => prev.map(group => 
+        group.id === groupId 
+          ? { ...group, member_count: (group.member_count || 0) + 1 }
+          : group
+      ));
+      
+      return result;
+    } catch (error) {
+      console.error('Error adding member to group:', error);
+      throw error;
     }
-  }, [showToast]);
+  };
 
   // Remove member from group
-  const removeMemberFromGroup = useCallback(async (groupId, memberId) => {
-    setLoading(true);
-    setError(null);
-    
+  const removeMemberFromGroup = async (groupId, memberId) => {
     try {
-      await groupsService.removeMemberFromGroup(groupId, memberId);
-      showToast('Member removed from group successfully', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to remove member from group';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      const response = await fetch(`/api/groups/${groupId}/members/${memberId}/`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Update group member count in local state
+      setGroups(prev => prev.map(group => 
+        group.id === groupId 
+          ? { ...group, member_count: Math.max(0, (group.member_count || 1) - 1) }
+          : group
+      ));
+    } catch (error) {
+      console.error('Error removing member from group:', error);
+      throw error;
     }
-  }, [showToast]);
+  };
 
-  // Update filters
-  const updateFilters = useCallback((newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-  }, []);
+  // Search and filter functions
+  const searchGroups = async (searchTerm) => {
+    const newFilters = { ...filters, search: searchTerm };
+    setFilters(newFilters);
+    await fetchGroups(1, newFilters);
+  };
 
-  // Clear filters
-  const clearFilters = useCallback(() => {
-    setFilters({
+  const filterGroups = async (filterUpdates) => {
+    const newFilters = { ...filters, ...filterUpdates };
+    setFilters(newFilters);
+    await fetchGroups(1, newFilters);
+  };
+
+  const clearFilters = async () => {
+    const clearedFilters = {
+      active: null,
       search: '',
-      active: true
-    });
-    setPagination(prev => ({ ...prev, page: 1 }));
-  }, []);
+      hasLeader: null,
+      memberCount: null
+    };
+    setFilters(clearedFilters);
+    await fetchGroups(1, clearedFilters);
+  };
 
-  // Change page
-  const changePage = useCallback((page) => {
-    setPagination(prev => ({ ...prev, page }));
-  }, []);
+  // Pagination functions
+  const goToPage = (page) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      fetchGroups(page);
+    }
+  };
 
-  // Refresh groups
-  const refreshGroups = useCallback(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const nextPage = () => {
+    if (pagination.page < pagination.totalPages) {
+      fetchGroups(pagination.page + 1);
+    }
+  };
 
-  // Load initial data
+  const prevPage = () => {
+    if (pagination.page > 1) {
+      fetchGroups(pagination.page - 1);
+    }
+  };
+
+  // Utility functions
+  const getGroupById = (groupId) => {
+    return groups.find(group => group.id === groupId);
+  };
+
+  const getGroupByName = (groupName) => {
+    return groups.find(group => 
+      group.name.toLowerCase().includes(groupName.toLowerCase())
+    );
+  };
+
+  const getActiveGroups = () => {
+    return groups.filter(group => group.active);
+  };
+
+  const getGroupsWithLeader = () => {
+    return groups.filter(group => group.leader_name);
+  };
+
+  const getGroupStats = () => {
+    return {
+      total: groups.length,
+      active: groups.filter(g => g.active).length,
+      withLeader: groups.filter(g => g.leader_name).length,
+      totalMembers: groups.reduce((sum, g) => sum + (g.member_count || 0), 0),
+      averageMembers: groups.length > 0 
+        ? (groups.reduce((sum, g) => sum + (g.member_count || 0), 0) / groups.length).toFixed(1)
+        : 0
+    };
+  };
+
   useEffect(() => {
     fetchGroups();
-  }, [fetchGroups]);
-
-  // Get active groups count
-  const activeGroupsCount = groups.filter(group => group.active).length;
-
-  // Get group statistics
-  const getGroupStats = useCallback(async () => {
-    try {
-      const response = await groupsService.getGroupStats();
-      return response.data;
-    } catch (err) {
-      setError(err.message || 'Failed to fetch group statistics');
-      return null;
-    }
   }, []);
+
+  // Initialize with options if provided
+  useEffect(() => {
+    if (options.initialFilters) {
+      setFilters(prev => ({ ...prev, ...options.initialFilters }));
+    }
+    if (options.initialPage) {
+      setPagination(prev => ({ ...prev, page: options.initialPage }));
+    }
+  }, [options]);
 
   return {
     // Data
@@ -249,25 +315,34 @@ export const useGroups = (initialParams = {}) => {
     pagination,
     filters,
     
-    // Computed values
-    activeGroupsCount,
-    
-    // Actions
-    fetchGroups,
+    // CRUD operations
     createGroup,
     updateGroup,
     deleteGroup,
-    getGroup,
+    
+    // Member management
     getGroupMembers,
     addMemberToGroup,
     removeMemberFromGroup,
-    updateFilters,
+    
+    // Search and filter
+    searchGroups,
+    filterGroups,
     clearFilters,
-    changePage,
-    refreshGroups,
+    
+    // Pagination
+    goToPage,
+    nextPage,
+    prevPage,
+    
+    // Utility functions
+    getGroupById,
+    getGroupByName,
+    getActiveGroups,
+    getGroupsWithLeader,
     getGroupStats,
     
-    // Utilities
-    clearError: () => setError(null)
+    // Refresh data
+    refreshGroups: fetchGroups
   };
 };

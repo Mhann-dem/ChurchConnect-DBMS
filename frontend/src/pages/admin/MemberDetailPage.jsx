@@ -10,10 +10,12 @@ import ConfirmDialog from '../../components/shared/ConfirmDialog';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import Toast from '../../components/shared/Toast';
 import MemberForm from '../../components/admin/Members/MemberForm';
-import useMembers from '../../hooks/useMembers';
-import useToast from '../../hooks/useToast';
-import { formatDate, formatPhone } from '../../utils/formatters';
+import { useToast } from '../../hooks/useToast';
+import { useMembers } from '../../hooks/useMembers';
+import { formatPhoneNumber as formatPhone } from '../../utils/formatters';
 import styles from './AdminPages.module.css';
+
+
 
 const MemberDetailPage = () => {
   const { id } = useParams();

@@ -7,16 +7,13 @@ import {
   MapPin, 
   Calendar, 
   Users, 
-  Heart, 
   Edit3, 
   Trash2, 
   ArrowLeft,
-  Camera,
   MessageSquare,
   DollarSign,
   Tag,
   AlertCircle,
-  CheckCircle,
   Clock,
   ExternalLink
 } from 'lucide-react';
@@ -26,14 +23,14 @@ import Badge from '../../ui/Badge';
 import Avatar from '../../ui/Avatar';
 import Modal from '../../shared/Modal';
 import ConfirmDialog from '../../shared/ConfirmDialog';
-import Toast from '../../shared/Toast';
 import LoadingSpinner from '../../shared/LoadingSpinner';
 import MemberForm from './MemberForm';
-import useMembers from '../../../hooks/useMembers';
 import useAuth from '../../../hooks/useAuth';
 import { useToast } from '../../../hooks/useToast';
-import { formatDate, formatPhone, formatCurrency } from '../../../utils/formatters';
 import styles from './Members.module.css';
+import { useMembers } from '../../../hooks/useMembers';
+import { formatPhoneNumber as formatPhone } from '../../../utils/formatters';
+
 
 const MemberDetail = () => {
   const { id } = useParams();

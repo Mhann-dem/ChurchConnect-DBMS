@@ -1,7 +1,7 @@
 // hooks/useAuth.js - Authentication hook for managing user authentication state
 
 import { useState, useEffect, useContext, createContext } from 'react';
-import { authService } from '../services/auth';
+import authService  from '../services/auth';
 
 const AuthContext = createContext();
 

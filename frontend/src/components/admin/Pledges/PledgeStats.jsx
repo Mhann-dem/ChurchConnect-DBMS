@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, ProgressBar, Badge } from '../../ui';
-import LoadingSpinner from '../../shared';
+import styles from './Pledges.module.css'; 
+import { LoadingSpinner } from '../../shared';
 import { usePledges } from '../../../hooks/usePledges';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
-import styles from '../Pledges.module.css';
 
 const PledgeStats = ({ filters = {} }) => {
   const { pledgeStats, loading, error, fetchPledgeStats } = usePledges();

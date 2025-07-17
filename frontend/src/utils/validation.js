@@ -329,3 +329,24 @@ export const validateFile = (file, options = {}) => {
   result.isValid = true;
   return result;
 };
+
+
+/**
+ * Generic number validation
+ * @param {string|number} value - Value to validate
+ * @param {object} [options] - Validation options
+ * @param {number} [options.min] - Minimum value
+ * @param {number} [options.max] - Maximum value
+ * @returns {boolean} - True if valid number
+ */
+export const validateNumber = (value, { min, max } = {}) => {
+  if (value === null || value === undefined || value === '') return false;
+  const num = Number(value);
+  if (isNaN(num)) return false;
+  
+  if (min !== undefined && num < min) return false;
+  if (max !== undefined && num > max) return false;
+  
+  return true;
+};
+

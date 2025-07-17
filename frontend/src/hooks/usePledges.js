@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pledgesService } from '../services/pledges';
+import pledgesService from '../services/pledges';
 import { useToast } from './useToast';
-import { usePagination } from './usePagination';
+import usePagination from './usePagination';
 import { useDebounce } from './useDebounce';
 
 /**

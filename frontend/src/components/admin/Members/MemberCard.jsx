@@ -1,13 +1,25 @@
 // ===============================
-// src/components/admin/Members/MemberCard.jsx
+// FIXED src/components/admin/Members/MemberCard.jsx
 // ===============================
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Badge, Avatar } from '../../ui';
 import { Mail, Phone, Calendar, Users, Edit, Trash2, MoreHorizontal } from 'lucide-react';
-import { formatDate, formatPhone } from '../../../utils/formatters';
+import { formatPhoneNumber } from '../../../utils/formatters';
 import styles from './Members.module.css';
+
+// Add this function at the top of the file or import it from formatters
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
 
 const MemberCard = ({ 
   member, 
@@ -100,7 +112,7 @@ const MemberCard = ({
           </div>
           <div className={styles.contactItem}>
             <Phone size={14} />
-            <span>{formatPhone(member.phone)}</span>
+            <span>{formatPhoneNumber(member.phone)}</span>
           </div>
           <div className={styles.contactItem}>
             <Calendar size={14} />

@@ -1,16 +1,19 @@
 // ===============================
-// src/components/admin/Members/MemberForm.jsx
+// FIXED src/components/admin/Members/MemberForm.jsx
 // ===============================
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMembers } from '../../../hooks/useMembers';
 import { useGroups } from '../../../hooks/useGroups';
-import { useForm } from '../../../hooks/useForm';
+import useForm from '../../../hooks/useForm';
 import { useToast } from '../../../hooks/useToast';
 import { Button, Card } from '../../ui';
-import { Input, Select, TextArea, Checkbox } from '../../form/FormControls';
-import { validateMember } from '../../../utils/validation';
+import Input from '../../form/FormControls/Input';
+import Select from '../../form/FormControls/Select';
+import TextArea from '../../form/FormControls/TextArea';
+import Checkbox from '../../form/FormControls/Checkbox';
+import { validateMemberForm } from '../../../utils/validation';
 import { Save, ArrowLeft } from 'lucide-react';
 import styles from './Members.module.css';
 
@@ -58,7 +61,7 @@ const MemberForm = () => {
     isSubmitting
   } = useForm({
     initialValues,
-    validate: validateMember,
+    validate: validateMemberForm,
     onSubmit: async (formValues) => {
       try {
         if (isEditing) {

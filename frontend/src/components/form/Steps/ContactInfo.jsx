@@ -1,6 +1,8 @@
 // frontend/src/components/form/Steps/ContactInfo.jsx
 import React from 'react';
-import { Input, Select, TextArea, PhoneInput } from '../FormControls';
+import TextArea from '../FormControls/TextArea';
+import PhoneInput from '../FormControls/PhoneInput';
+import Select from '../FormControls/Select';
 import styles from '../Form.module.css';
 
 const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {

@@ -1,7 +1,22 @@
 // hooks/useForm.js - Form management hook with validation and state management
 
 import { useState, useCallback, useEffect } from 'react';
-import { validateField, validateForm } from '../utils/validation';
+import { 
+  validateEmail, 
+  validatePassword, 
+  validateName, 
+  validatePhone, 
+  validateRequired,
+  validateAge,
+  validateDate,
+  validateNumber,
+  validateFile,
+  validateUrl,
+  validatePledgeAmount,
+  validateMemberForm,
+  validateAdminLogin,
+  validateSearchQuery
+} from '../utils/validation';
 
 const useForm = (initialValues = {}, validationSchema = {}, options = {}) => {
   const {
@@ -52,12 +67,86 @@ const useForm = (initialValues = {}, validationSchema = {}, options = {}) => {
     }
   }, [values, options.onAutoSave]);
 
+  // Create validateField function using available validators
+  const validateField = useCallback((name, value, rules, allValues = {}) => {
+    if (!rules) return null;
+
+    // Handle different validation rule formats
+    if (typeof rules === 'string') {
+      // Simple string rule like 'required', 'email', etc.
+      return getValidationError(rules, value, allValues);
+    } else if (Array.isArray(rules)) {
+      // Array of validation rules
+      for (const rule of rules) {
+        const error = getValidationError(rule, value, allValues);
+        if (error) return error;
+      }
+      return null;
+    } else if (typeof rules === 'object') {
+      // Object with validation rules and options
+      for (const [ruleType, ruleConfig] of Object.entries(rules)) {
+        const error = getValidationError(ruleType, value, allValues, ruleConfig);
+        if (error) return error;
+      }
+      return null;
+    } else if (typeof rules === 'function') {
+      // Custom validation function
+      return rules(value, allValues);
+    }
+
+    return null;
+  }, []);
+
+  // Helper function to get validation error based on rule type
+  const getValidationError = (ruleType, value, allValues, config = {}) => {
+    switch (ruleType) {
+      case 'required':
+        return validateRequired(value);
+      case 'email':
+        return validateEmail(value);
+      case 'password':
+        return validatePassword(value);
+      case 'name':
+        return validateName(value);
+      case 'phone':
+        return validatePhone(value);
+      case 'age':
+        return validateAge(value);
+      case 'date':
+        return validateDate(value);
+      case 'number':
+        return validateNumber(value);
+      case 'file':
+        return validateFile(value);
+      case 'url':
+        return validateUrl(value);
+      case 'pledgeAmount':
+        return validatePledgeAmount(value);
+      default:
+        return null;
+    }
+  };
+
+  // Create validateForm function
+  const validateForm = useCallback((formValues, schema) => {
+    const errors = {};
+    
+    for (const [fieldName, rules] of Object.entries(schema)) {
+      const error = validateField(fieldName, formValues[fieldName], rules, formValues);
+      if (error) {
+        errors[fieldName] = error;
+      }
+    }
+    
+    return errors;
+  }, [validateField]);
+
   const validateSingleField = useCallback((name, value) => {
     if (!validationSchema[name]) return null;
 
     const error = validateField(name, value, validationSchema[name], values);
     return error;
-  }, [validationSchema, values]);
+  }, [validationSchema, values, validateField]);
 
   const setValue = useCallback((name, value) => {
     setValues(prev => ({
@@ -115,7 +204,7 @@ const useForm = (initialValues = {}, validationSchema = {}, options = {}) => {
     const formErrors = validateForm(values, validationSchema);
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
-  }, [values, validationSchema]);
+  }, [values, validationSchema, validateForm]);
 
   const handleSubmit = useCallback(async (e) => {
     if (e) {

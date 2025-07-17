@@ -1,6 +1,7 @@
 // frontend/src/components/form/Steps/PledgeInfo.jsx
 import React from 'react';
-import { Input, Select } from '../FormControls';
+import Input from '../FormControls/Input';
+import Select from '../FormControls/Select';
 import styles from '../Form.module.css';
 
 const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {
