@@ -2,54 +2,137 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Layout.module.css';
+import logoLight from '../../assets/images/logo-dark.png';
+import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 const Footer = ({ isAdmin = false }) => {
   const currentYear = new Date().getFullYear();
 
+  const footerLinks = {
+    quickLinks: [
+      { name: 'Home', path: '/' },
+      { name: 'Member Registration', path: '/form' },
+      { name: 'Events', path: '/events' },
+      { name: 'Ministries', path: '/ministries' }
+    ],
+    support: [
+      { name: 'Help Center', path: '/help' },
+      { name: 'FAQ', path: '/help/faq' },
+      { name: 'Contact Support', path: 'mailto:support@churchconnect.org' },
+      { name: 'Feedback', path: '/feedback' }
+    ],
+    legal: [
+      { name: 'Privacy Policy', path: '/privacy' },
+      { name: 'Terms of Service', path: '/terms' },
+      { name: 'Cookie Policy', path: '/cookies' }
+    ],
+    social: [
+      { name: 'Facebook', path: 'https://facebook.com/churchconnect', icon: <FaFacebook /> },
+      { name: 'Instagram', path: 'https://instagram.com/churchconnect', icon: <FaInstagram /> },
+      { name: 'YouTube', path: 'https://youtube.com/churchconnect', icon: <FaYoutube /> }
+    ]
+  };
+
   return (
     <footer className={styles.footer}>
       <div className={styles.footerContainer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerSection}>
-            <h4>ChurchConnect</h4>
-            <p>Connecting our church family through technology</p>
+        <div className={styles.footerGrid}>
+          <div className={styles.footerBrand}>
+            <div className={styles.logoContainer}>
+              <Link to="/" className={styles.footerLogo}>
+                <img 
+                  src={logoLight} 
+                  alt="ChurchConnect" 
+                  className={styles.footerLogoImg}
+                  width="140"
+                  height="35"
+                />
+              </Link>
+            </div>
+            <p className={styles.footerDescription}>
+              Connecting our church family through technology and faith
+            </p>
+            <div className={styles.socialLinks}>
+              {footerLinks.social.map((link) => (
+                <a 
+                  key={link.name}
+                  href={link.path} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={styles.socialLink}
+                  aria-label={link.name}
+                >
+                  {link.icon}
+                </a>
+              ))}
+            </div>
           </div>
 
           {!isAdmin && (
-            <div className={styles.footerSection}>
-              <h4>Quick Links</h4>
-              <ul>
-                <li><Link to="/">Home</Link></li>
-                <li><Link to="/form">Member Registration</Link></li>
-                <li><Link to="/help">Help Center</Link></li>
+            <div className={styles.footerColumn}>
+              <h3 className={styles.footerHeading}>Quick Links</h3>
+              <ul className={styles.footerList}>
+                {footerLinks.quickLinks.map((link) => (
+                  <li key={link.name} className={styles.footerItem}>
+                    <Link to={link.path} className={styles.footerLink}>
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           )}
 
-          <div className={styles.footerSection}>
-            <h4>Support</h4>
-            <ul>
-              <li><Link to="/help">Help Center</Link></li>
-              <li><Link to="/help/faq">FAQ</Link></li>
-              <li><a href="mailto:support@churchconnect.org">Contact Support</a></li>
+          <div className={styles.footerColumn}>
+            <h3 className={styles.footerHeading}>Support</h3>
+            <ul className={styles.footerList}>
+              {footerLinks.support.map((link) => (
+                <li key={link.name} className={styles.footerItem}>
+                  {link.path.startsWith('mailto:') ? (
+                    <a href={link.path} className={styles.footerLink}>
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link to={link.path} className={styles.footerLink}>
+                      {link.name}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 
-          <div className={styles.footerSection}>
-            <h4>Legal</h4>
-            <ul>
-              <li><Link to="/privacy">Privacy Policy</Link></li>
-              <li><Link to="/terms">Terms of Service</Link></li>
+          <div className={styles.footerColumn}>
+            <h3 className={styles.footerHeading}>Legal</h3>
+            <ul className={styles.footerList}>
+              {footerLinks.legal.map((link) => (
+                <li key={link.name} className={styles.footerItem}>
+                  <Link to={link.path} className={styles.footerLink}>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         <div className={styles.footerBottom}>
-          <p>&copy; {currentYear} ChurchConnect DBMS. All rights reserved.</p>
+          <div className={styles.footerCopyright}>
+            &copy; {currentYear} ChurchConnect DBMS. All rights reserved.
+          </div>
+          <div className={styles.footerMeta}>
+            <Link to="/sitemap" className={styles.footerMetaLink}>
+              Sitemap
+            </Link>
+            <span className={styles.footerMetaSeparator}>•</span>
+            <Link to="/accessibility" className={styles.footerMetaLink}>
+              Accessibility
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
 
-export default Footer; 
+export default Footer;

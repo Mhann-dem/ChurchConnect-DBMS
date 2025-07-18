@@ -3,7 +3,6 @@ import useAuth from '../../hooks/useAuth';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SearchBar from '../../components/shared/SearchBar';
-import Accordion from '../../components/ui/Accordion';
 import './Help.module.css';
 
 
