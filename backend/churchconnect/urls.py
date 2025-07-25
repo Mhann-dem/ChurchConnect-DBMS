@@ -28,8 +28,8 @@ urlpatterns = [
     # API documentation
     path('api/docs/', include_docs_urls(title='ChurchConnect API')),
     
-    # Health check endpoint
-    path('health/', include('core.urls')),
+    # # Health check endpoint
+    # path('health/', include('core.urls')),
     
     # Redirect root to API docs
     path('', RedirectView.as_view(url='/api/docs/', permanent=False)),

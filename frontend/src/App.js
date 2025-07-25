@@ -18,6 +18,17 @@ const RegistrationPage = lazy(() => import('./pages/public/RegistrationPage'));
 const ThankYouPage = lazy(() => import('./pages/public/ThankYouPage'));
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'));
 const HelpCenter = lazy(() => import('./pages/help/HelpCenter'));
+const FAQ = lazy(() => import('./pages/help/FAQ'));
+
+// Additional public pages that might be missing
+const EventsPage = lazy(() => import('./pages/public/EventsPage'));
+const MinistriesPage = lazy(() => import('./pages/public/MinistriesPage'));
+const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
+const TermsPage = lazy(() => import('./pages/public/TermsPage'));
+const CookiesPage = lazy(() => import('./pages/public/CookiesPage'));
+const FeedbackPage = lazy(() => import('./pages/public/FeedbackPage'));
+const SitemapPage = lazy(() => import('./pages/public/SitemapPage'));
+const AccessibilityPage = lazy(() => import('./pages/public/AccessibilityPage'));
 
 // Admin components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -31,6 +42,9 @@ const GroupDetailPage = lazy(() => import('./pages/admin/GroupDetailPage'));
 const PledgesPage = lazy(() => import('./pages/admin/PledgesPage'));
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+
+// Member login page (separate from admin)
+const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -88,10 +102,44 @@ function App() {
           {/* Public Routes - Primary focus for church members */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<HomePage />} />
+            
+            {/* Registration Routes - Multiple paths for flexibility */}
             <Route path="register" element={<RegistrationPage />} />
-            <Route path="thank-you" element={<ThankYouPage />} />
+            <Route path="form" element={<RegistrationPage />} />
+            <Route path="member-registration" element={<RegistrationPage />} />
+            
+            {/* Help & Support Routes */}
             <Route path="help" element={<HelpCenter />} />
+            <Route path="help/faq" element={<FAQ />} />
+            <Route path="faq" element={<FAQ />} />
+            
+            {/* Church Information Pages */}
+            <Route path="events" element={<EventsPage />} />
+            <Route path="ministries" element={<MinistriesPage />} />
+            
+            {/* Feedback & Support */}
+            <Route path="feedback" element={<FeedbackPage />} />
+            
+            {/* Legal Pages */}
+            <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            <Route path="cookies" element={<CookiesPage />} />
+            
+            {/* Utility Pages */}
+            <Route path="sitemap" element={<SitemapPage />} />
+            <Route path="accessibility" element={<AccessibilityPage />} />
+            
+            {/* Success Page */}
+            <Route path="thank-you" element={<ThankYouPage />} />
+            <Route path="registration-success" element={<ThankYouPage />} />
           </Route>
+
+          {/* Member Login - Separate from admin */}
+          <Route path="/login" element={
+            <PublicRoute>
+              <MemberLoginPage />
+            </PublicRoute>
+          } />
 
           {/* Authentication Routes - Clean, separate from main navigation */}
           <Route path="/admin/login" element={
@@ -136,6 +184,13 @@ function App() {
             {/* Settings */}
             <Route path="settings" element={<SettingsPage />} />
           </Route>
+
+          {/* Redirects for common misspellings/variations */}
+          <Route path="/registration" element={<Navigate to="/register" replace />} />
+          <Route path="/join" element={<Navigate to="/register" replace />} />
+          <Route path="/signup" element={<Navigate to="/register" replace />} />
+          <Route path="/contact" element={<Navigate to="/help" replace />} />
+          <Route path="/support" element={<Navigate to="/help" replace />} />
 
           {/* 404 Route */}
           <Route path="*" element={<NotFoundPage />} />

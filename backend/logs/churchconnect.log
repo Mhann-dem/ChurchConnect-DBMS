@@ -31,3 +31,339 @@ INFO 2025-06-19 18:44:54,487 autoreload 764 8488 C:\Users\robbd\Documents\Git\Ch
 INFO 2025-06-19 18:44:56,087 autoreload 15396 13544 Watching for file changes with StatReloader
 INFO 2025-06-19 18:45:39,927 autoreload 17976 15640 Watching for file changes with StatReloader
 INFO 2025-06-19 18:49:52,645 autoreload 8300 4288 Watching for file changes with StatReloader
+INFO 2025-07-22 19:01:42,532 autoreload 7120 12472 Watching for file changes with StatReloader
+INFO 2025-07-22 19:03:12,019 autoreload 14120 5752 Watching for file changes with StatReloader
+INFO 2025-07-23 08:50:31,076 autoreload 16100 13596 Watching for file changes with StatReloader
+INFO 2025-07-23 09:01:46,821 autoreload 16100 13596 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\serializers.py changed, reloading.
+INFO 2025-07-23 09:01:48,822 autoreload 14004 12308 Watching for file changes with StatReloader
+INFO 2025-07-23 09:02:36,362 autoreload 14004 12308 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\serializers.py changed, reloading.
+INFO 2025-07-23 09:02:37,805 autoreload 17372 6932 Watching for file changes with StatReloader
+INFO 2025-07-23 09:07:09,434 autoreload 16296 1604 Watching for file changes with StatReloader
+INFO 2025-07-23 09:08:28,377 autoreload 16296 1604 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\views.py changed, reloading.
+INFO 2025-07-23 09:08:29,651 autoreload 8620 7860 Watching for file changes with StatReloader
+INFO 2025-07-23 09:08:47,655 autoreload 17552 6788 Watching for file changes with StatReloader
+INFO 2025-07-23 09:10:54,543 autoreload 17552 6788 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\serializers.py changed, reloading.
+INFO 2025-07-23 09:10:56,045 autoreload 8132 13816 Watching for file changes with StatReloader
+INFO 2025-07-23 09:11:33,964 autoreload 12512 7688 Watching for file changes with StatReloader
+INFO 2025-07-23 09:17:50,728 autoreload 12512 7688 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\views.py changed, reloading.
+INFO 2025-07-23 09:17:52,234 autoreload 7760 17020 Watching for file changes with StatReloader
+INFO 2025-07-23 09:18:25,465 autoreload 16712 17752 Watching for file changes with StatReloader
+INFO 2025-07-23 09:29:06,184 autoreload 17964 1532 Watching for file changes with StatReloader
+INFO 2025-07-23 14:54:58,043 autoreload 17964 1532 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\groups\admin.py changed, reloading.
+INFO 2025-07-23 14:55:01,528 autoreload 19396 14688 Watching for file changes with StatReloader
+INFO 2025-07-23 14:56:38,097 autoreload 19396 14688 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\models.py changed, reloading.
+INFO 2025-07-23 14:56:39,644 autoreload 9824 15188 Watching for file changes with StatReloader
+INFO 2025-07-23 14:57:18,358 autoreload 8476 18448 Watching for file changes with StatReloader
+INFO 2025-07-23 15:00:26,017 autoreload 4308 19708 Watching for file changes with StatReloader
+INFO 2025-07-23 15:02:42,312 autoreload 4308 19708 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-23 15:02:44,042 autoreload 19544 17596 Watching for file changes with StatReloader
+INFO 2025-07-23 15:02:47,645 autoreload 19544 17596 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-23 15:02:48,904 autoreload 19256 4640 Watching for file changes with StatReloader
+INFO 2025-07-23 15:17:53,402 autoreload 10768 19824 Watching for file changes with StatReloader
+INFO 2025-07-23 15:20:56,727 autoreload 10768 19824 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-23 15:20:58,638 autoreload 5360 19888 Watching for file changes with StatReloader
+INFO 2025-07-23 16:11:53,697 autoreload 19492 18036 Watching for file changes with StatReloader
+INFO 2025-07-24 13:54:43,978 autoreload 16488 18312 Watching for file changes with StatReloader
+INFO 2025-07-24 13:57:20,151 basehttp 16488 11920 "GET /admin/ HTTP/1.1" 301 0
+INFO 2025-07-24 13:57:20,172 basehttp 16488 16420 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ÊÊ\x00\x00\x003\x04ï\x04í::\x00\x01\x00\x11ì\x04À\x13\x93/\x83P\x13\x8f¥/Ê\x9cwi$;gºÅéó¹Ë\x01\x8aÜÔ\x13È×wWÈ\x16õLUåÚ')
+ERROR 2025-07-24 13:57:20,174 basehttp 16488 16420 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:20,177 basehttp 16488 8780 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03á·\x9f\x89åZnË*µÏí')
+ERROR 2025-07-24 13:57:20,178 basehttp 16488 8780 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:22,446 basehttp 16488 5596 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x032A\x17>\x92\x8fZLF\x8aÁbì*\x90^½4\x7f\x7fATý1è$ä\x83\x0f\x10+`')
+ERROR 2025-07-24 13:57:22,447 basehttp 16488 5596 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:22,447 basehttp 16488 11912 code 400, message Bad request version ('\x92±ÿZ\x10¶Lã°»@Á]\x00×®\x88w,"k`\x00')
+ERROR 2025-07-24 13:57:22,448 basehttp 16488 11912 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:22,450 basehttp 16488 11648 code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x003\x04ï\x04í')
+INFO 2025-07-24 13:57:22,451 basehttp 16488 7648 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+ERROR 2025-07-24 13:57:22,451 basehttp 16488 11648 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:22,451 basehttp 16488 7648 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,350 basehttp 16488 18176 code 400, message Bad request version ('ßrM\x9bei÷R')
+ERROR 2025-07-24 13:57:23,351 basehttp 16488 18176 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,351 basehttp 16488 7440 code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93**\x00\x00\x00\x12\x00\x00\x00+\x00\x07\x06')
+ERROR 2025-07-24 13:57:23,352 basehttp 16488 7440 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,354 basehttp 16488 15080 code 400, message Bad request version ('\x00\x02\x01\x00\x00#\x00\x00\x00')
+ERROR 2025-07-24 13:57:23,354 basehttp 16488 15080 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,355 basehttp 16488 900 code 400, message Bad request version (';9bRþ½cR+YØ\x9b&ûq\x83\x00-\x00\x02\x01\x01\x00\x12\x00\x00ÿ\x01\x00\x01\x00\x00')
+ERROR 2025-07-24 13:57:23,356 basehttp 16488 900 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,629 basehttp 16488 8692 code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93')
+INFO 2025-07-24 13:57:23,630 basehttp 16488 16956 code 400, message Bad request version ('F\x05È&q\x86GP\x8c\x12\x87U')
+ERROR 2025-07-24 13:57:23,630 basehttp 16488 8692 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:23,630 basehttp 16488 16956 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,635 basehttp 16488 8688 code 400, message Bad request version ('ÊÊ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sêê\x00\x00\x003\x04ï\x04í\x9a\x9a\x00\x01\x00\x11ì\x04À²lÊ\x10K\x17\x92\x1b.s«\x8eyL\x9d°û\x96U[ÎçãÁ^<U\x7f)')
+INFO 2025-07-24 13:57:23,636 basehttp 16488 9820 code 400, message Bad request version ('\x02h2\x08http/1.1\x00+\x00\x07\x06ÊÊ\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 13:57:23,636 basehttp 16488 8688 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:23,637 basehttp 16488 9820 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,849 basehttp 16488 17196 code 400, message Bad request version ('Þ\x1bÃJ\x87\x14!\x8büÖá\x95\x00')
+ERROR 2025-07-24 13:57:23,849 basehttp 16488 17196 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,851 basehttp 16488 17268 code 400, message Bad request version ('\x04')
+ERROR 2025-07-24 13:57:23,852 basehttp 16488 17268 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,853 basehttp 16488 6928 code 400, message Bad request version ('\x8eÁ\x97É\x01')
+ERROR 2025-07-24 13:57:23,854 basehttp 16488 6928 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:23,855 basehttp 16488 14744 code 400, message Bad request version ("ø»\x94q\x9c\x92¥0\x80Vä»a`«Ïi,è\x9b'SÇ")
+ERROR 2025-07-24 13:57:23,856 basehttp 16488 14744 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,036 basehttp 16488 5364 code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03')
+ERROR 2025-07-24 13:57:24,036 basehttp 16488 5364 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,039 basehttp 16488 9772 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+ERROR 2025-07-24 13:57:24,040 basehttp 16488 9772 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,041 basehttp 16488 15172 code 400, message Bad request version ('+´<e<K\x8d3*i\x86(\x95ÍF[æ\x15-\x19>\x81$\x15ö\x89=¤[¬ßÁ[ëDmI\x00')
+ERROR 2025-07-24 13:57:24,042 basehttp 16488 15172 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,044 basehttp 16488 18204 code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06s')
+ERROR 2025-07-24 13:57:24,045 basehttp 16488 18204 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,313 basehttp 16488 12372 code 400, message Bad request version ('[î\x93\x08')
+INFO 2025-07-24 13:57:24,314 basehttp 16488 14600 code 400, message Bad request version ('\xadL\x8a\x00+\x00\x07\x06\x8a\x8a\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 13:57:24,314 basehttp 16488 12372 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:24,315 basehttp 16488 14600 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,319 basehttp 16488 14108 code 400, message Bad request version ("ö\x80\x01\x88hFæ\x02GZû\x116ç\x865s\x03\x93:Ïµg»}¦-ëJ?\x80SS¶\x96\x1a\x07R6\x02Ú\x81þ\x86d\x07i±,\x99Aº6\x12LJ'\x88Ó0aj,³g")
+ERROR 2025-07-24 13:57:24,320 basehttp 16488 14108 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,320 basehttp 16488 13480 code 400, message Bad HTTP/0.9 request type ("\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03¶N\x8aêve\x1b\x9ddt\x89gÐÈ\x15q\x12\x988Ë'\x16")
+ERROR 2025-07-24 13:57:24,321 basehttp 16488 13480 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,554 basehttp 16488 2508 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+INFO 2025-07-24 13:57:24,555 basehttp 16488 17140 code 400, message Bad request version ('A1ñ\x89SÃ\x11\x9as\x04`°ø\x96y\x05´FG\x11\x11ç`Ì¼G\x1a:G"\x82{G²pý¤\x11K2µì')
+ERROR 2025-07-24 13:57:24,555 basehttp 16488 2508 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:24,556 basehttp 16488 17140 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,560 basehttp 16488 13788 code 400, message Bad request version ('\x00\x02\x01\x00\x00\x12\x00\x00\x00+\x00\x07\x06')
+ERROR 2025-07-24 13:57:24,561 basehttp 16488 13788 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,561 basehttp 16488 13048 code 400, message Bad request version ('\x00\x02\x01\x00\x00+\x00\x07\x06úú\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 13:57:24,562 basehttp 16488 13048 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,768 basehttp 16488 7076 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03¸Ø\x9bÛeu_º_ëÌq\x19±¢\x89\x07mA^u¶y\x0fùÇ¢ûÓ\x8c@T')
+ERROR 2025-07-24 13:57:24,768 basehttp 16488 7076 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,773 basehttp 16488 13776 code 400, message Bad request version ('#\x00°sw-A3Í')
+ERROR 2025-07-24 13:57:24,774 basehttp 16488 13776 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,785 basehttp 16488 17636 code 400, message Bad request version ('\x00\x02\x01\x00\x00-\x00\x02\x01\x01\x00\x1b\x00\x03\x02\x00\x02\x00\x17\x00\x00DÍ\x00\x05\x00\x03\x02h2\x00')
+INFO 2025-07-24 13:57:24,786 basehttp 16488 4996 code 400, message Bad request version ('\x00\x02\x01\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00-\x00\x02\x01\x01\x00')
+ERROR 2025-07-24 13:57:24,786 basehttp 16488 17636 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:24,787 basehttp 16488 4996 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,790 basehttp 16488 5576 code 400, message Bad request version ('zz\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06SZZ\x00\x00\x00')
+ERROR 2025-07-24 13:57:24,791 basehttp 16488 5576 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,791 basehttp 16488 16664 code 400, message Bad request version ('¼?\x9däÙl¬Ã\x15¾©ªË¨æ·6úßÕ\x17¼!3Â/ü\x00')
+ERROR 2025-07-24 13:57:24,808 basehttp 16488 16664 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,985 basehttp 16488 16676 code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00-\x00\x02\x01\x01\x00#\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00')
+INFO 2025-07-24 13:57:24,986 basehttp 16488 13364 code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063**\x00\x00\x00\x17\x00\x00\x00\x12\x00\x00DÍ\x00\x05\x00\x03\x02h2\x00')
+ERROR 2025-07-24 13:57:24,986 basehttp 16488 16676 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 13:57:24,987 basehttp 16488 13364 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,991 basehttp 16488 2992 code 400, message Bad request version ('\x02h2\x08http/1.1DÍ\x00\x05\x00\x03\x02h2\x00')
+ERROR 2025-07-24 13:57:24,991 basehttp 16488 2992 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:24,991 basehttp 16488 10952 code 400, message Bad request version ('\x89vdü§F\x12\x88\x95²0ÔK')
+ERROR 2025-07-24 13:57:24,992 basehttp 16488 10952 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:25,175 basehttp 16488 11332 code 400, message Bad request version ('\x00\x02\x01\x00\x00')
+ERROR 2025-07-24 13:57:25,176 basehttp 16488 11332 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:25,176 basehttp 16488 3440 code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00\x17\x00\x00\x00#\x00\x00\x00')
+ERROR 2025-07-24 13:57:25,177 basehttp 16488 3440 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:25,180 basehttp 16488 16760 code 400, message Bad request version ('JJ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+ERROR 2025-07-24 13:57:25,181 basehttp 16488 16760 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:25,181 basehttp 16488 5292 code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00')
+ERROR 2025-07-24 13:57:25,182 basehttp 16488 5292 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:30,775 basehttp 16488 11956 code 400, message Bad request syntax ("\x16\x03\x01\x01´\x01\x00\x01°\x03\x03ÚÂC'»î\x93")
+ERROR 2025-07-24 13:57:30,775 basehttp 16488 11956 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 13:57:30,779 basehttp 16488 2572 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x03\x00©\x01\x00\x00¥\x03\x03h\x82;Ê\x94\x7fÜ\x166àÒtì³°dL@¦á')
+ERROR 2025-07-24 13:57:30,779 basehttp 16488 2572 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,383 basehttp 16488 5596 code 400, message Bad request version ('>')
+ERROR 2025-07-24 14:02:01,384 basehttp 16488 5596 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,387 basehttp 16488 2856 code 400, message Bad request version ('\x88\x8fÕwñu\x92ÆüX')
+ERROR 2025-07-24 14:02:01,388 basehttp 16488 2856 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,395 basehttp 16488 14220 code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+ERROR 2025-07-24 14:02:01,396 basehttp 16488 14220 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,396 basehttp 16488 11908 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+ERROR 2025-07-24 14:02:01,399 basehttp 16488 11908 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,400 basehttp 16488 16688 code 400, message Bad request syntax ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03\x02Ýs')
+ERROR 2025-07-24 14:02:01,406 basehttp 16488 16688 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:01,425 basehttp 16488 8864 code 400, message Bad request version ('³\x84;\x9bò~\x05[òQ+\x12Ä\x08Q\x940\x1aR:3')
+ERROR 2025-07-24 14:02:01,438 basehttp 16488 8864 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,507 basehttp 16488 17820 code 400, message Bad request version ('ºº\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063\x8a\x8a\x00\x00\x00\x12\x00\x00\x00')
+INFO 2025-07-24 14:02:02,508 basehttp 16488 6500 code 400, message Bad request version ('Í¤a\x93H<^\x00&\x01\x1b{}ywyú(¿À¶h£ËvÍ5\x01<e-ý\x93|^\x86Ñ')
+ERROR 2025-07-24 14:02:02,508 basehttp 16488 17820 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:02:02,509 basehttp 16488 6500 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,511 basehttp 16488 17308 code 400, message Bad request version ('»?\x00')
+ERROR 2025-07-24 14:02:02,512 basehttp 16488 17308 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,512 basehttp 16488 16388 code 400, message Bad request version ('§¸Ã»eîÑ¢ö\x05i')
+ERROR 2025-07-24 14:02:02,513 basehttp 16488 16388 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,721 basehttp 16488 18356 code 400, message Bad request version ('\x02h2\x08http/1.1ÿ\x01\x00\x01\x00\x00')
+ERROR 2025-07-24 14:02:02,722 basehttp 16488 18356 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,726 basehttp 16488 17400 code 400, message Bad request version ('\x00\x02\x01\x00\x00#\x00\x00\x00')
+ERROR 2025-07-24 14:02:02,726 basehttp 16488 17400 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,734 basehttp 16488 17020 code 400, message Bad request version ('::\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ÊÊ\x00\x00\x00\x12\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00')
+INFO 2025-07-24 14:02:02,734 basehttp 16488 2064 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03FÐ\x01]SvÛ\x829O#ðÍ&(\x99\x93nT<\x17\x13-4¬5k')
+ERROR 2025-07-24 14:02:02,734 basehttp 16488 17020 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:02:02,734 basehttp 16488 2064 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,746 basehttp 16488 10816 code 400, message Bad request version ('.\x91ùª\x01\x04Û¬ffþ¦bM\x01\x00Ðtåò\x15é')
+ERROR 2025-07-24 14:02:02,746 basehttp 16488 10816 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,746 basehttp 16488 3968 code 400, message Bad request version ('\x00\x02\x01\x00\x00#\x00\x00\x00')
+ERROR 2025-07-24 14:02:02,748 basehttp 16488 3968 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,939 basehttp 16488 17776 code 400, message Bad request version ('ºº\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06s')
+ERROR 2025-07-24 14:02:02,940 basehttp 16488 17776 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,943 basehttp 16488 17580 code 400, message Bad request version ('Ú»ñÀn\x10Øáá½¦\x15¸uø\x9eZ±e\x19äT\x88l\x9c\x94Íáj}')
+ERROR 2025-07-24 14:02:02,944 basehttp 16488 17580 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,954 basehttp 16488 5380 code 400, message Bad request version (')FN\x87\x19\x03ØR\x96z\x96,')
+INFO 2025-07-24 14:02:02,957 basehttp 16488 18348 code 400, message Bad request version ('³øÔÖ½&ö\x12¨eºÆÊ2\x00\x01\x04IÔÃ`DÛì«ó®j]Û\x9d0\x00ð¼')
+ERROR 2025-07-24 14:02:02,957 basehttp 16488 5380 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:02:02,957 basehttp 16488 18348 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,960 basehttp 16488 1960 code 400, message Bad request syntax ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03§wË\'"¯\x8b¥´´È£c+')
+ERROR 2025-07-24 14:02:02,962 basehttp 16488 1960 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:02,963 basehttp 16488 9476 code 400, message Bad request version ('êê\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93\x8a\x8a\x00\x00\x00\x1b\x00\x03\x02\x00\x02DÍ\x00\x05\x00\x03\x02h2\x00+\x00\x07\x06**\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 14:02:02,964 basehttp 16488 9476 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:03,113 basehttp 16488 9104 code 400, message Bad request version ("¿¢Ê)V«p(\x05¿Dç\x8eM\x86J\x8b¤IÃF\x82P¼4\x95W²ÊV\x8f?HÉð¢D#ÆÍI5\x80÷\\m'æ\x02äæ8ëk\x13\x97)KÂ\x96\x06í&ÁM\x04\x96\x82")
+INFO 2025-07-24 14:02:03,113 basehttp 16488 11844 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06SZZ\x00\x00\x00')
+ERROR 2025-07-24 14:02:03,117 basehttp 16488 9104 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:02:03,117 basehttp 16488 11844 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:02:03,121 basehttp 16488 2916 code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063zz\x00\x00\x00')
+INFO 2025-07-24 14:02:03,121 basehttp 16488 9464 code 400, message Bad request version ('Y\x06bE6¡:')
+ERROR 2025-07-24 14:02:03,122 basehttp 16488 2916 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:02:03,122 basehttp 16488 9464 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:03:53,280 autoreload 12068 17888 Watching for file changes with StatReloader
+INFO 2025-07-24 14:04:01,078 basehttp 12068 5944 "GET / HTTP/1.1" 301 0
+INFO 2025-07-24 14:04:01,110 basehttp 12068 7736 code 400, message Bad request version ('\x02h2\x08http/1.1DÍ\x00\x05\x00\x03\x02h2\x00#\x00\x00ÿ\x01\x00\x01\x00\x00+\x00\x07\x06\x1a\x1a\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 14:04:01,112 basehttp 12068 7736 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:01,114 basehttp 12068 1240 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06s\x9a\x9a\x00\x00\x00')
+ERROR 2025-07-24 14:04:01,114 basehttp 12068 1240 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:04,372 basehttp 12068 2884 code 400, message Bad request version ('PéÌj\x0e\x83?\x9aÆ?\x06j»B\x823>k\x1b\x9aF!\x13\x03¾¢\x16<]W>lÂ¦U\x9c\x10Z{\x88Ï\x89SÇ')
+ERROR 2025-07-24 14:04:04,373 basehttp 12068 2884 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:04,373 basehttp 12068 2172 code 400, message Bad request version ('#\x18¤oüÅVB\x978Êa\x06\x02')
+ERROR 2025-07-24 14:04:04,373 basehttp 12068 2172 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:04,375 basehttp 12068 7272 code 400, message Bad request version ('+©\x14l"\x89MÈÒ\x92ýÑ')
+ERROR 2025-07-24 14:04:04,375 basehttp 12068 7272 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:04,375 basehttp 12068 17608 code 400, message Bad request version ('ÊÊ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93êê\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
+ERROR 2025-07-24 14:04:04,379 basehttp 12068 17608 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:05,539 basehttp 12068 5848 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03?³J\x1aA\x10T·\x03å½i6')
+INFO 2025-07-24 14:04:05,540 basehttp 12068 11312 code 400, message Bad request version ('\x8a\x8a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93ºº\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00#\x00\x00\x00+\x00\x07\x06úú\x03\x04\x03\x03\x00')
+ERROR 2025-07-24 14:04:05,540 basehttp 12068 5848 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:04:05,541 basehttp 12068 11312 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:05,544 basehttp 12068 14064 code 400, message Bad request version ('\x9alC\x83\\\x9fxYó¾\x14Ñÿ1Át\x86LR©,¥Êÿøÿ\x003\x04ï\x04í')
+ERROR 2025-07-24 14:04:05,544 basehttp 12068 14064 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:05,544 basehttp 12068 2520 code 400, message Bad request version ('Zìs\x17¶È')
+ERROR 2025-07-24 14:04:05,545 basehttp 12068 2520 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,170 basehttp 12068 12064 code 400, message Bad request version ('\x8c\x99}$\x9f®Ë\x04vd\x12Rª@\x99ì¨òÃ±ZZ]1`Í¸ý\x0e')
+ERROR 2025-07-24 14:04:06,171 basehttp 12068 12064 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,171 basehttp 12068 14320 code 400, message Bad request version ('\x00\x02\x01\x00ÿ\x01\x00\x01\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00-\x00\x02\x01\x01\x00')
+ERROR 2025-07-24 14:04:06,172 basehttp 12068 14320 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,174 basehttp 12068 15192 code 400, message Bad request version ('×\x7f\x1avà\x05t')
+ERROR 2025-07-24 14:04:06,175 basehttp 12068 15192 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,176 basehttp 12068 11516 code 400, message Bad request version ("Å\x15É\x1aÍkDOèt*¬\x99b¦l'#rËyJÇ8tÃs'áS")
+ERROR 2025-07-24 14:04:06,177 basehttp 12068 11516 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,423 basehttp 12068 18312 code 400, message Bad request version ('Áµ×þÕ')
+INFO 2025-07-24 14:04:06,423 basehttp 12068 17092 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03]=J5³Z.\x7fq\x84NGáýØ/f£æ\xadOéw1*\x11KÍ¥[)Ò')
+ERROR 2025-07-24 14:04:06,424 basehttp 12068 18312 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:04:06,424 basehttp 12068 17092 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,427 basehttp 12068 17220 code 400, message Bad request version ('\x00\x02\x01\x00ÿ\x01\x00\x01\x00DÍ\x00\x05\x00\x03\x02h2\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
+INFO 2025-07-24 14:04:06,428 basehttp 12068 14860 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+ERROR 2025-07-24 14:04:06,428 basehttp 12068 17220 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:04:06,430 basehttp 12068 14860 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,630 basehttp 12068 12240 code 400, message Bad request version ('\x00\x02\x01\x00\x00+\x00\x07\x06')
+ERROR 2025-07-24 14:04:06,631 basehttp 12068 12240 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,632 basehttp 12068 5156 code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03\x9c}µ\x9f')
+ERROR 2025-07-24 14:04:06,633 basehttp 12068 5156 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,636 basehttp 12068 4068 code 400, message Bad request version ('zz\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sºº\x00\x00\x00')
+INFO 2025-07-24 14:04:06,636 basehttp 12068 13052 code 400, message Bad request version ('::\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063')
+ERROR 2025-07-24 14:04:06,636 basehttp 12068 4068 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:04:06,637 basehttp 12068 13052 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,846 basehttp 12068 1420 code 400, message Bad request version ('\x94EIw@P\x90]ô\x86RØ')
+ERROR 2025-07-24 14:04:06,847 basehttp 12068 1420 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,847 basehttp 12068 2684 code 400, message Bad request version ('\x00\x02\x01\x00\x00')
+ERROR 2025-07-24 14:04:06,848 basehttp 12068 2684 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,850 basehttp 12068 18160 code 400, message Bad request version ("É¢ìÃ`\x8c¶'\x07S\x98å\x9b¶¥1ñFV'Ú¢Ãè9")
+ERROR 2025-07-24 14:04:06,850 basehttp 12068 18160 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:06,851 basehttp 12068 5448 code 400, message Bad request version ('\x18b\x815u\x8fn½\x14\x00')
+ERROR 2025-07-24 14:04:06,852 basehttp 12068 5448 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:07,076 basehttp 12068 18072 code 400, message Bad request version ('êê\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+ERROR 2025-07-24 14:04:07,076 basehttp 12068 18072 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:07,077 basehttp 12068 15228 code 400, message Bad request version ("\\\x03'")
+ERROR 2025-07-24 14:04:07,078 basehttp 12068 15228 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:07,082 basehttp 12068 12232 code 400, message Bad request version ('\\|&²Õª¹²¡cãþ!\x83j\x08¢\x8b43ì,¶>êT´3jÉF8é')
+ERROR 2025-07-24 14:04:07,083 basehttp 12068 12232 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:04:07,084 basehttp 12068 1936 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06SZZ\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00+\x00\x07\x06')
+ERROR 2025-07-24 14:04:07,087 basehttp 12068 1936 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:06:11,493 autoreload 5392 2044 Watching for file changes with StatReloader
+INFO 2025-07-24 14:08:34,608 basehttp 5392 12380 code 400, message Bad request version ('\x04\x17\x150\x00Ëâ×°\x9b3´[\x94*_\x9b\x88£c¢TÇ\x91¼\x00X_V\x92;1qäÃUÑ')
+ERROR 2025-07-24 14:08:34,609 basehttp 5392 12380 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:34,613 basehttp 5392 6444 code 400, message Bad HTTP/0.9 request type ("\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03B\x18Dj\x95Y\x87Vh·\x9d'}#ù¹\x8a+4ÿ")
+ERROR 2025-07-24 14:08:34,613 basehttp 5392 6444 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:46,180 basehttp 5392 15012 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+INFO 2025-07-24 14:08:46,181 basehttp 5392 8576 code 400, message Bad request version ('\x04¶Ì[{ãWÞf')
+ERROR 2025-07-24 14:08:46,181 basehttp 5392 15012 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:08:46,181 basehttp 5392 8576 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:46,184 basehttp 5392 18024 code 400, message Bad request version ("\x05Úfø¼{â\x14Èßu÷Ù5uåk<\x82³\x93Á\x88¯\x7f\x9aø¨ÇÚÜL\x93\x06=þvvA'Æ\x00-\x00\x02\x01\x01\x00+\x00\x07\x06")
+ERROR 2025-07-24 14:08:46,184 basehttp 5392 18024 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:46,185 basehttp 5392 17980 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03M-\x1aëùmg:Ù[s\x13\x95\x9f¨MvT¢\x1b«\x16\x1buÆ¨ªi\x05Ü5N')
+ERROR 2025-07-24 14:08:46,186 basehttp 5392 17980 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:48,645 basehttp 5392 5180 code 400, message Bad request version ('\x19ÚÓ\x91\x8f')
+ERROR 2025-07-24 14:08:48,650 basehttp 5392 5180 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:48,652 basehttp 5392 18340 code 400, message Bad request version ('M¦\x01¯\x1b\x13A\x93kU\x11hÎ\x9a\x8c/LÅ¸rè')
+ERROR 2025-07-24 14:08:48,653 basehttp 5392 18340 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:48,654 basehttp 5392 6192 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03²]ÇÐîÉò@g¥')
+ERROR 2025-07-24 14:08:48,655 basehttp 5392 6192 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:08:48,657 basehttp 5392 14912 code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93ZZ\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
+ERROR 2025-07-24 14:08:48,658 basehttp 5392 14912 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:16,159 basehttp 5392 9868 code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00\x17\x00\x00\x003\x04ï\x04í')
+ERROR 2025-07-24 14:10:16,160 basehttp 5392 9868 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:16,163 basehttp 5392 6180 code 400, message Bad request version ('îTc¹b\x9d:ß¼´\x02\x98rÑ\x16')
+ERROR 2025-07-24 14:10:16,164 basehttp 5392 6180 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:16,174 basehttp 5392 9232 code 400, message Bad request version ('q\x8eË@Æ\x9d\x8b')
+INFO 2025-07-24 14:10:16,175 basehttp 5392 1732 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03\xad.ñ\x9a,te\x86qgÛããAÙå\x1aë\x9aÅ\x9e)»\x95¶\x01O²\x08!¸é')
+ERROR 2025-07-24 14:10:16,175 basehttp 5392 9232 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:10:16,176 basehttp 5392 1732 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:16,180 basehttp 5392 17308 code 400, message Bad request version ('ák')
+INFO 2025-07-24 14:10:16,183 basehttp 5392 7376 code 400, message Bad request version ('\x1bæ>nE\x13åF®b\x89¡r\'³\x9d\x9bC\x8a\x8f¿\x8a"S\x14a/ß')
+ERROR 2025-07-24 14:10:16,188 basehttp 5392 17308 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:10:16,189 basehttp 5392 7376 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:19,685 basehttp 5392 16664 code 400, message Bad request version ('\x87üõ\x862Å\x06;ø\x0e:¢]3H\x93¸ú\x94\x86õ\x96Ã÷\\\x9eö\x80å¨\x0fÅ\x9b\x0f7ù©P:¢\x83qzt±\x82Ð\x84U\x06¸\x9a`8¶')
+ERROR 2025-07-24 14:10:19,686 basehttp 5392 16664 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:19,687 basehttp 5392 12356 code 400, message Bad request version ("Âû\x91jè=_v\\`$.¾M@\x9b\x19\x8c\x11û\x00C7öTU\x9có½õ'")
+ERROR 2025-07-24 14:10:19,688 basehttp 5392 12356 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:19,690 basehttp 5392 5668 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sêê\x00\x00\x00-\x00\x02\x01\x01\x00+\x00\x07\x06')
+ERROR 2025-07-24 14:10:19,691 basehttp 5392 5668 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:19,692 basehttp 5392 1240 code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93\x9a\x9a\x00\x00\x00')
+ERROR 2025-07-24 14:10:19,699 basehttp 5392 1240 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:46,019 basehttp 5392 1716 "GET /admin/login HTTP/1.1" 301 0
+INFO 2025-07-24 14:10:46,332 basehttp 5392 11844 code 400, message Bad request version ('\x96x')
+ERROR 2025-07-24 14:10:46,332 basehttp 5392 11844 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:46,599 basehttp 5392 13408 code 400, message Bad request version ('}4þ\x93ÃI9¢\x83©wq')
+ERROR 2025-07-24 14:10:46,600 basehttp 5392 13408 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:46,647 basehttp 5392 6448 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06ò\x01\x00\x06î\x03\x03\x8f')
+ERROR 2025-07-24 14:10:46,647 basehttp 5392 6448 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:46,913 basehttp 5392 18156 code 400, message Bad request version ('Î\x9bVµ\x14\x17\x81³m¿trc"{^[\x9al\x14$\\¼i¥\x05|y*sÛ»97\x8cµ\x14Ì¹')
+ERROR 2025-07-24 14:10:46,913 basehttp 5392 18156 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:50,380 basehttp 5392 8408 code 400, message Bad request version ('xIÍÉ')
+INFO 2025-07-24 14:10:50,380 basehttp 5392 14916 code 400, message Bad request syntax ('\x16\x03\x01\x06ò\x01\x00\x06î\x03\x03\x0eéß:t\x01f\x08û')
+ERROR 2025-07-24 14:10:50,383 basehttp 5392 8408 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:10:50,383 basehttp 5392 14916 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:50,627 basehttp 5392 3012 code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
+ERROR 2025-07-24 14:10:50,628 basehttp 5392 3012 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:50,701 basehttp 5392 18196 code 400, message Bad request version ('¤\x00')
+ERROR 2025-07-24 14:10:50,702 basehttp 5392 18196 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:50,702 basehttp 5392 11316 code 400, message Bad request version ('localhost\x00\x12\x00\x00\x00')
+ERROR 2025-07-24 14:10:50,704 basehttp 5392 11316 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:50,937 basehttp 5392 16084 code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06¥')
+ERROR 2025-07-24 14:10:50,938 basehttp 5392 16084 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:58,051 basehttp 5392 16176 code 400, message Bad request version ("³\x8b\x8eü\x93-¹\x95\x18Ó\x9aàª\x00(\x13\x02\x13\x01À,À+À0À/À$À#À(À'À")
+ERROR 2025-07-24 14:10:58,051 basehttp 5392 16176 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:10:58,055 basehttp 5392 14320 code 400, message Bad request version ("ïó\x1a(\x08\x9b\x10\x88Å\x00\x00$À,À+À0À/À$À#À(À'À")
+ERROR 2025-07-24 14:10:58,056 basehttp 5392 14320 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:10,945 basehttp 5392 2748 "GET /admin/ HTTP/1.1" 301 0
+INFO 2025-07-24 14:12:10,952 basehttp 5392 15228 code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
+ERROR 2025-07-24 14:12:10,954 basehttp 5392 15228 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:10,961 basehttp 5392 3780 code 400, message Bad request version ('uÀ<ìq`Ø¤/b*\x8f¦\x8a7Ô\x074xÂÅ«³48I$$§:bJ²ôD0')
+ERROR 2025-07-24 14:12:10,961 basehttp 5392 3780 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:13,344 basehttp 5392 3212 code 400, message Bad request version ('\x97\x82^£')
+ERROR 2025-07-24 14:12:13,344 basehttp 5392 3212 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:13,347 basehttp 5392 13492 code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06Sêê\x00\x00\x00-\x00\x02\x01\x01\x00')
+ERROR 2025-07-24 14:12:13,347 basehttp 5392 13492 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:13,349 basehttp 5392 3980 code 400, message Bad request version ('\x83\x98(.û×b<õlVKÛsaßø')
+ERROR 2025-07-24 14:12:13,349 basehttp 5392 3980 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:13,352 basehttp 5392 16968 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03\x13\x817)ªsÎ©å')
+ERROR 2025-07-24 14:12:13,353 basehttp 5392 16968 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:14,339 basehttp 5392 16980 code 400, message Bad request syntax ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03OÄ\x0fDó\x15\x9e\x03£\x8e')
+INFO 2025-07-24 14:12:14,340 basehttp 5392 16456 code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sJJ\x00\x00\x00+\x00\x07\x06')
+ERROR 2025-07-24 14:12:14,340 basehttp 5392 16980 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-07-24 14:12:14,341 basehttp 5392 16456 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:14,344 basehttp 5392 9376 code 400, message Bad request version ('¢')
+ERROR 2025-07-24 14:12:14,345 basehttp 5392 9376 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:14,345 basehttp 5392 17344 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+ERROR 2025-07-24 14:12:14,346 basehttp 5392 17344 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:19,178 basehttp 5392 18188 code 400, message Bad request version ("ïz8v$+\x9fé'eèÎ<\x9ar")
+ERROR 2025-07-24 14:12:19,180 basehttp 5392 18188 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:19,182 basehttp 5392 17964 code 400, message Bad request version ('*ù\x80Ä\x08pñ\x01')
+ERROR 2025-07-24 14:12:19,182 basehttp 5392 17964 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:19,184 basehttp 5392 13176 code 400, message Bad request version ('\x88·\x16\x9a')
+ERROR 2025-07-24 14:12:19,185 basehttp 5392 13176 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:12:19,185 basehttp 5392 17428 code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
+ERROR 2025-07-24 14:12:19,185 basehttp 5392 17428 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-24 14:22:09,202 autoreload 2784 6832 Watching for file changes with StatReloader

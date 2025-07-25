@@ -133,7 +133,7 @@ class ReportTemplateSerializer(serializers.ModelSerializer):
 class ReportGenerationSerializer(serializers.Serializer):
     """Serializer for report generation requests"""
     
-    report_type = serializers.ChoiceField(choices=Report.REPORT_TYPES)
+    report_type = serializers.ChoiceField(choices=Report.REPORT_TYPE_CHOICES)
     format = serializers.ChoiceField(choices=Report.FORMAT_CHOICES, default='csv')
     filters = serializers.JSONField(default=dict, required=False)
     columns = serializers.JSONField(default=list, required=False)

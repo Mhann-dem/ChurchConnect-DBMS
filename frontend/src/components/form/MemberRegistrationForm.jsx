@@ -139,7 +139,11 @@ const MemberRegistrationForm = () => {
         currentStep,
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem('churchconnect_form_data', JSON.stringify(savedData));
+      try {
+        localStorage.setItem('churchconnect_form_data', JSON.stringify(savedData));
+      } catch (error) {
+        console.error('Error saving form data:', error);
+      }
     };
 
     const timeoutId = setTimeout(saveData, 1000);
@@ -148,27 +152,34 @@ const MemberRegistrationForm = () => {
 
   // Load saved data on mount
   useEffect(() => {
-    const savedData = localStorage.getItem('churchconnect_form_data');
-    if (savedData) {
-      try {
+    try {
+      const savedData = localStorage.getItem('churchconnect_form_data');
+      if (savedData) {
         const parsed = JSON.parse(savedData);
         const timeDiff = new Date() - new Date(parsed.timestamp);
         const hoursDiff = timeDiff / (1000 * 60 * 60);
         
         if (hoursDiff < 24) { // Only restore if less than 24 hours old
           Object.keys(parsed).forEach(key => {
-            if (key !== 'timestamp' && key !== 'currentStep') {
+            if (key !== 'timestamp' && key !== 'currentStep' && INITIAL_FORM_DATA.hasOwnProperty(key)) {
               setFieldValue(key, parsed[key]);
             }
           });
           setCurrentStep(parsed.currentStep || 0);
           showToast('Your previous progress has been restored.', 'info');
         }
-      } catch (error) {
-        console.error('Error loading saved form data:', error);
       }
+    } catch (error) {
+      console.error('Error loading saved form data:', error);
     }
-  }, []);
+  }, [setFieldValue, showToast]);
+
+  // Universal form data update function
+  const updateFormData = (updates) => {
+    Object.keys(updates).forEach(key => {
+      setFieldValue(key, updates[key]);
+    });
+  };
 
   const handleNext = async () => {
     const stepId = STEPS[currentStep].id;
@@ -205,7 +216,11 @@ const MemberRegistrationForm = () => {
         const result = await submitMemberRegistration(formData);
         
         if (result.success) {
-          localStorage.removeItem('churchconnect_form_data');
+          try {
+            localStorage.removeItem('churchconnect_form_data');
+          } catch (error) {
+            console.error('Error clearing saved data:', error);
+          }
           showToast('Registration submitted successfully!', 'success');
           navigate('/thank-you', { 
             state: { 
@@ -235,6 +250,22 @@ const MemberRegistrationForm = () => {
   const CurrentStepComponent = STEPS[currentStep].component;
   const isLastStep = currentStep === STEPS.length - 1;
 
+  // Prepare props for step components
+  const stepProps = {
+    formData,
+    errors,
+    touched,
+    onChange: handleChange,
+    onBlur: handleBlur,
+    setFieldValue,
+    validateField,
+    updateFormData,
+    onValidate: validateField,
+    onBack: handlePrevious,
+    onSubmit: handleSubmit,
+    isSubmitting
+  };
+
   return (
     <div className={styles.formContainer}>
       <div className={styles.formHeader}>
@@ -254,15 +285,7 @@ const MemberRegistrationForm = () => {
       />
 
       <div className={styles.formContent}>
-        <CurrentStepComponent
-          formData={formData}
-          errors={errors}
-          touched={touched}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          setFieldValue={setFieldValue}
-          validateField={validateField}
-        />
+        <CurrentStepComponent {...stepProps} />
       </div>
 
       <div className={styles.formActions}>

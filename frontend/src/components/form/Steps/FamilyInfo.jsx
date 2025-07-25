@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Users, User, Calendar, AlertCircle } from 'lucide-react';
 import styles from '../Form.module.css';
 
-const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) => {
+const FamilyInfo = ({ 
+  formData = {}, 
+  errors = {}, 
+  touched = {}, 
+  onChange, 
+  onBlur, 
+  setFieldValue 
+}) => {
   const [expandedMember, setExpandedMember] = useState(null);
 
   const relationshipOptions = [
@@ -24,6 +31,17 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
     { value: 'prefer_not_to_say', label: 'Prefer not to say' }
   ];
 
+  // Safe handlers with fallbacks
+  const handleChange = onChange || (() => console.warn('onChange not provided'));
+  const handleBlur = onBlur || (() => console.warn('onBlur not provided'));
+  const handleSetFieldValue = setFieldValue || ((field, value) => {
+    console.warn('setFieldValue not provided, falling back to onChange');
+    if (onChange) {
+      const mockEvent = { target: { name: field, value } };
+      onChange(mockEvent);
+    }
+  });
+
   const addFamilyMember = () => {
     const newMember = {
       id: Date.now(),
@@ -39,13 +57,13 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
     };
 
     const updatedMembers = [...(formData.familyMembers || []), newMember];
-    updateFormData({ familyMembers: updatedMembers });
+    handleSetFieldValue('familyMembers', updatedMembers);
     setExpandedMember(newMember.id);
   };
 
   const removeFamilyMember = (memberId) => {
-    const updatedMembers = formData.familyMembers.filter(member => member.id !== memberId);
-    updateFormData({ familyMembers: updatedMembers });
+    const updatedMembers = (formData.familyMembers || []).filter(member => member.id !== memberId);
+    handleSetFieldValue('familyMembers', updatedMembers);
     
     if (expandedMember === memberId) {
       setExpandedMember(null);
@@ -53,7 +71,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
   };
 
   const updateFamilyMember = (memberId, field, value) => {
-    const updatedMembers = formData.familyMembers.map(member => {
+    const updatedMembers = (formData.familyMembers || []).map(member => {
       if (member.id === memberId) {
         const updatedMember = { ...member, [field]: value };
         
@@ -70,7 +88,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
       return member;
     });
     
-    updateFormData({ familyMembers: updatedMembers });
+    handleSetFieldValue('familyMembers', updatedMembers);
   };
 
   const calculateAge = (dateOfBirth) => {
@@ -94,11 +112,11 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
   const validateMember = (member) => {
     const memberErrors = {};
     
-    if (!member.firstName.trim()) {
+    if (!member.firstName?.trim()) {
       memberErrors.firstName = 'First name is required';
     }
     
-    if (!member.lastName.trim()) {
+    if (!member.lastName?.trim()) {
       memberErrors.lastName = 'Last name is required';
     }
     
@@ -123,19 +141,67 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
   };
 
   const hasErrors = (memberId) => {
-    const member = formData.familyMembers?.find(m => m.id === memberId);
+    const member = (formData.familyMembers || []).find(m => m.id === memberId);
     if (!member) return false;
     
     const memberErrors = validateMember(member);
     return Object.keys(memberErrors).length > 0;
   };
 
+  // Handle emergency contact changes
+  const handleEmergencyContactChange = (e) => {
+    const { name, value } = e.target;
+    handleSetFieldValue(name, value);
+  };
+
   return (
-    <div className={styles.stepContainer}>
+    <div className={styles.stepContent}>
       <div className={styles.stepHeader}>
         <Users className={styles.stepIcon} size={24} />
-        <h2>Family Information</h2>
-        <p>Add family members who will be part of your church family (optional)</p>
+        <h2 className={styles.stepTitle}>Family Information</h2>
+        <p className={styles.stepDescription}>Add family members who will be part of your church family (optional)</p>
+      </div>
+
+      {/* Emergency Contact Section - Required */}
+      <div className={styles.emergencyContactSection}>
+        <h3>Emergency Contact Information *</h3>
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
+            <label htmlFor="emergencyContactName">Emergency Contact Name *</label>
+            <input
+              id="emergencyContactName"
+              name="emergencyContactName"
+              type="text"
+              value={formData.emergencyContactName || ''}
+              onChange={handleEmergencyContactChange}
+              onBlur={handleBlur}
+              className={styles.input}
+              placeholder="Enter emergency contact name"
+              required
+            />
+            {errors.emergencyContactName && touched.emergencyContactName && (
+              <span className={styles.errorMessage}>{errors.emergencyContactName}</span>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="emergencyContactPhone">Emergency Contact Phone *</label>
+            <input
+              id="emergencyContactPhone"
+              name="emergencyContactPhone"
+              type="tel"
+              value={formData.emergencyContactPhone || ''}
+              onChange={handleEmergencyContactChange}
+              onBlur={handleBlur}
+              className={styles.input}
+              placeholder="Enter emergency contact phone"
+              required
+            />
+            {errors.emergencyContactPhone && touched.emergencyContactPhone && (
+              <span className={styles.errorMessage}>{errors.emergencyContactPhone}</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className={styles.familySection}>
@@ -208,7 +274,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <input
                           id={`firstName-${member.id}`}
                           type="text"
-                          value={member.firstName}
+                          value={member.firstName || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'firstName', e.target.value)}
                           className={styles.input}
                           placeholder="Enter first name"
@@ -220,7 +286,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <input
                           id={`lastName-${member.id}`}
                           type="text"
-                          value={member.lastName}
+                          value={member.lastName || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'lastName', e.target.value)}
                           className={styles.input}
                           placeholder="Enter last name"
@@ -231,7 +297,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <label htmlFor={`relationship-${member.id}`}>Relationship *</label>
                         <select
                           id={`relationship-${member.id}`}
-                          value={member.relationship}
+                          value={member.relationship || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'relationship', e.target.value)}
                           className={styles.select}
                         >
@@ -249,7 +315,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <input
                           id={`dateOfBirth-${member.id}`}
                           type="date"
-                          value={member.dateOfBirth}
+                          value={member.dateOfBirth || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'dateOfBirth', e.target.value)}
                           className={styles.input}
                           max={new Date().toISOString().split('T')[0]}
@@ -260,7 +326,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <label htmlFor={`gender-${member.id}`}>Gender</label>
                         <select
                           id={`gender-${member.id}`}
-                          value={member.gender}
+                          value={member.gender || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'gender', e.target.value)}
                           className={styles.select}
                         >
@@ -278,7 +344,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <input
                           id={`email-${member.id}`}
                           type="email"
-                          value={member.email}
+                          value={member.email || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'email', e.target.value)}
                           className={styles.input}
                           placeholder="Enter email address"
@@ -290,7 +356,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <input
                           id={`phone-${member.id}`}
                           type="tel"
-                          value={member.phone}
+                          value={member.phone || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'phone', e.target.value)}
                           className={styles.input}
                           placeholder="Enter phone number"
@@ -301,7 +367,7 @@ const FamilyInfo = ({ formData, updateFormData, errors, touched, onValidate }) =
                         <label htmlFor={`notes-${member.id}`}>Notes</label>
                         <textarea
                           id={`notes-${member.id}`}
-                          value={member.notes}
+                          value={member.notes || ''}
                           onChange={(e) => updateFamilyMember(member.id, 'notes', e.target.value)}
                           className={styles.textarea}
                           placeholder="Any additional notes about this family member"

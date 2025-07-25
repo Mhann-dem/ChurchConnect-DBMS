@@ -3,8 +3,7 @@ import useAuth from '../../hooks/useAuth';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SearchBar from '../../components/shared/SearchBar';
-import './Help.module.css';
-
+import styles from './Help.module.css';
 
 const FAQ = () => {
   const { user, isAuthenticated } = useAuth();
@@ -16,6 +15,8 @@ const FAQ = () => {
     {
       category: 'general',
       title: 'General Questions',
+      icon: '🏛️',
+      color: 'blue',
       questions: [
         {
           id: 'general-1',
@@ -42,6 +43,8 @@ const FAQ = () => {
     {
       category: 'registration',
       title: 'Registration & Forms',
+      icon: '📝',
+      color: 'red',
       questions: [
         {
           id: 'reg-1',
@@ -73,6 +76,8 @@ const FAQ = () => {
     {
       category: 'technical',
       title: 'Technical Support',
+      icon: '⚙️',
+      color: 'blue',
       questions: [
         {
           id: 'tech-1',
@@ -104,6 +109,8 @@ const FAQ = () => {
       {
         category: 'admin',
         title: 'Admin & Management',
+        icon: '👨‍💼',
+        color: 'red',
         questions: [
           {
             id: 'admin-1',
@@ -156,109 +163,141 @@ const FAQ = () => {
   };
 
   return (
-    <div className="faq-page">
-      <div className="faq-header">
-        <h1>Frequently Asked Questions</h1>
-        <p>Find quick answers to common questions about ChurchConnect</p>
+    <div className={styles.helpPage}>
+      {/* Hero Section (keep this the same) */}
+      <div className={`${styles.helpHero} ${styles.faqHero}`}>
+        <div className={styles.helpHeroContent}>
+          <div className={styles.faqHeroIcon}>❓</div>
+          <h1 className={styles.helpHeroTitle}>Frequently Asked Questions</h1>
+          <p className={styles.helpHeroSubtitle}>Find quick answers to common questions about ChurchConnect</p>
+        </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="faq-search-section">
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search FAQ..."
-        />
-        
-        <div className="category-filter">
-          <Button
-            variant={selectedCategory === 'all' ? 'primary' : 'outline'}
-            onClick={() => setSelectedCategory('all')}
-          >
-            All Categories
-          </Button>
-          {faqData.map(category => (
-            <Button
-              key={category.category}
-              variant={selectedCategory === category.category ? 'primary' : 'outline'}
-              onClick={() => setSelectedCategory(category.category)}
+      <div className={styles.helpContainer}>
+        {/* Search and Filter Section (keep this the same) */}
+        <div className={styles.faqControls}>          
+          <div className={styles.categoryFilters}>
+            <button
+              className={`${styles['filter-btn']} ${selectedCategory === 'all' ? styles.active : ''}`}
+              onClick={() => setSelectedCategory('all')}
             >
-              {category.title}
-            </Button>
+              <span className={styles.filterIcon}>📋</span>
+              All Categories
+            </button>
+            {faqData.map(category => (
+              <button
+                key={category.category}
+                className={`${styles['filter-btn']} ${selectedCategory === category.category ? styles.active : ''} ${category.color}`}
+                onClick={() => setSelectedCategory(category.category)}
+              >
+                <span className={styles.filterIcon}>{category.icon}</span>
+                {category.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Stats (keep this the same) */}
+        <div className={styles.faqStats}>
+          <div className={`${styles['stat-card']} ${styles.blue}`}>
+            <div className={styles.statIcon}>📊</div>
+            <div className={styles.statContent}>
+              <span className={styles.statNumber}>{faqData.reduce((total, cat) => total + cat.questions.length, 0)}</span>
+              <span className={styles.statLabel}>Total Questions</span>
+            </div>
+          </div>
+          <div className={`${styles['stat-card']} ${styles.red}`}>
+            <div className={styles.statIcon}>📂</div>
+            <div className={styles.statContent}>
+              <span className={styles.statNumber}>{faqData.length}</span>
+              <span className={styles.statLabel}>Categories</span>
+            </div>
+          </div>
+          <div className={`${styles['stat-card']} ${styles.blue}`}>
+            <div className={styles.statIcon}>✅</div>
+            <div className={styles.statContent}>
+              <span className={styles.statNumber}>95%</span>
+              <span className={styles.statLabel}>Questions Resolved</span>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ Categories - UPDATED SECTION */}
+        <div className={styles.faqCategories}>
+          {filteredFAQ.map(category => (
+            <div key={category.category} className={`${styles['faq-category-card']} ${styles[category.color]}`}>
+              <div className={styles.categoryHeader}>
+                <div className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  <h2>{category.title}</h2>
+                </div>
+                <div className={styles.categoryBadge}>
+                  {category.questions.filter(q => {
+                    if (!searchQuery) return true;
+                    const query = searchQuery.toLowerCase();
+                    return q.question.toLowerCase().includes(query) ||
+                           q.answer.toLowerCase().includes(query);
+                  }).length} questions
+                </div>
+              </div>
+              
+              <div className={styles.faqQuestions}>
+                {category.questions
+                  .filter(q => {
+                    if (!searchQuery) return true;
+                    const query = searchQuery.toLowerCase();
+                    return q.question.toLowerCase().includes(query) ||
+                           q.answer.toLowerCase().includes(query);
+                  })
+                  .map(question => (
+                    <div key={question.id} className={styles.faqItem}>
+                      <button 
+                        className={styles.faqQuestion}
+                        onClick={() => toggleExpanded(question.id)}
+                        aria-expanded={expandedItems.includes(question.id)}
+                      >
+                        <div className={styles.questionContent}>
+                          <h3>{question.question}</h3>
+                        </div>
+                      </button>
+                      <div className={`${styles.faqAnswer} ${expandedItems.includes(question.id) ? styles.show : ''}`}>
+                        <div className={styles.answerContent}>
+                          <p>{question.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* Quick Stats */}
-      <div className="faq-stats">
-        <div className="stat-item">
-          <span className="stat-number">{faqData.reduce((total, cat) => total + cat.questions.length, 0)}</span>
-          <span className="stat-label">Total Questions</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-number">{faqData.length}</span>
-          <span className="stat-label">Categories</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-number">95%</span>
-          <span className="stat-label">Questions Resolved</span>
-        </div>
-      </div>
-
-      {/* FAQ Categories */}
-      <div className="faq-categories">
-        {filteredFAQ.map(category => (
-          <Card key={category.category} className="faq-category">
-            <div className="category-header">
-              <h2>{category.title}</h2>
-              <p>{category.questions.length} questions</p>
+        {/* Help Contact (keep this the same) */}
+        <div className={styles.faqContact}>
+          <div className={styles.contactCard}>
+            <div className={styles.contactIcon}>💬</div>
+            <h3>Still need help?</h3>
+            <p>If you couldn't find the answer you're looking for, don't hesitate to contact our support team.</p>
+            <div className={styles.contactActions}>
+              <Button 
+                variant="primary" 
+                onClick={() => window.location.href = '/help'}
+                className={`${styles.contactBtn} ${styles.primary}`}
+              >
+                <span className={styles.btnIcon}>📞</span>
+                Contact Support
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/help/tutorials'}
+                className={`${styles.contactBtn} ${styles.secondary}`}
+              >
+                <span className={styles.btnIcon}>🎥</span>
+                Watch Tutorials
+              </Button>
             </div>
-            
-            <div className="faq-questions">
-              {category.questions
-                .filter(q => {
-                  if (!searchQuery) return true;
-                  const query = searchQuery.toLowerCase();
-                  return q.question.toLowerCase().includes(query) ||
-                         q.answer.toLowerCase().includes(query);
-                })
-                .map(question => (
-                  <div key={question.id} className="faq-item">
-                    <div 
-                      className="faq-question"
-                      onClick={() => toggleExpanded(question.id)}
-                    >
-                      <h3>{question.question}</h3>
-                      <span className={`expand-icon ${expandedItems.includes(question.id) ? 'expanded' : ''}`}>
-                        ▼
-                      </span>
-                    </div>
-                    {expandedItems.includes(question.id) && (
-                      <div className="faq-answer">
-                        <p>{question.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Help Contact */}
-      <div className="faq-contact">
-        <Card className="contact-card">
-          <h3>Still need help?</h3>
-          <p>If you couldn't find the answer you're looking for, don't hesitate to contact our support team.</p>
-          <div className="contact-options">
-            <Button variant="primary" onClick={() => window.location.href = '/help'}>
-              Contact Support
-            </Button>
-            <Button variant="outline" onClick={() => window.location.href = '/help/tutorials'}>
-              Watch Tutorials
-            </Button>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

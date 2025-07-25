@@ -4,7 +4,7 @@ import Checkbox from '../FormControls/Checkbox';
 import TextArea from '../FormControls/TextArea';
 import styles from '../Form.module.css';
 
-const MinistryInterests = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {
+const MinistryInterests = ({ formData = {}, errors = {}, touched = {}, onChange, onBlur, setFieldValue }) => {
   const ministryOptions = [
     { value: 'worship', label: 'Worship Team (Music/Vocals)' },
     { value: 'youth', label: 'Youth Ministry' },
@@ -23,13 +23,34 @@ const MinistryInterests = ({ formData, errors, touched, onChange, onBlur, setFie
     { value: 'other', label: 'Other (please specify in notes)' }
   ];
 
+  // Ensure handlers exist and provide fallbacks
+  const handleChange = onChange || ((e) => {
+    console.warn('onChange not provided', e.target.name, e.target.value);
+  });
+  
+  const handleBlur = onBlur || ((e) => {
+    console.warn('onBlur not provided', e.target.name);
+  });
+  
+  const handleSetFieldValue = setFieldValue || ((field, value) => {
+    console.warn('setFieldValue not provided', field, value);
+  });
+
   const handleMinistryChange = (value, checked) => {
     const currentInterests = formData.ministryInterests || [];
+    let updatedInterests;
+    
     if (checked) {
-      setFieldValue('ministryInterests', [...currentInterests, value]);
+      // Add to array if checked and not already present
+      updatedInterests = currentInterests.includes(value) 
+        ? currentInterests 
+        : [...currentInterests, value];
     } else {
-      setFieldValue('ministryInterests', currentInterests.filter(interest => interest !== value));
+      // Remove from array if unchecked
+      updatedInterests = currentInterests.filter(interest => interest !== value);
     }
+    
+    handleSetFieldValue('ministryInterests', updatedInterests);
   };
 
   return (
@@ -51,7 +72,7 @@ const MinistryInterests = ({ formData, errors, touched, onChange, onBlur, setFie
                 key={option.value}
                 name={`ministry-${option.value}`}
                 label={option.label}
-                checked={formData.ministryInterests?.includes(option.value) || false}
+                checked={(formData.ministryInterests || []).includes(option.value)}
                 onChange={(checked) => handleMinistryChange(option.value, checked)}
                 className={styles.ministryCheckbox}
               />
@@ -63,9 +84,9 @@ const MinistryInterests = ({ formData, errors, touched, onChange, onBlur, setFie
           <TextArea
             name="prayerRequest"
             label="Prayer Request (Optional)"
-            value={formData.prayerRequest}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.prayerRequest || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.prayerRequest}
             touched={touched.prayerRequest}
             placeholder="Share any prayer requests or ways our church family can support you"

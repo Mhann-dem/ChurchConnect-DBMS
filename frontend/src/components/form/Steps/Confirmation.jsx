@@ -1,9 +1,19 @@
+// frontend/src/components/form/Steps/Confirmation.jsx
 import React from 'react';
 import { CheckCircle, User, Mail, Phone, MapPin, Heart, DollarSign, Users } from 'lucide-react';
 import styles from '../Form.module.css';
 
-const Confirmation = ({ formData, onBack, onSubmit, isSubmitting }) => {
+const Confirmation = ({ 
+  formData, 
+  errors, 
+  touched, 
+  onChange, 
+  onBlur, 
+  setFieldValue,
+  validateField 
+}) => {
   const formatCurrency = (amount) => {
+    if (!amount) return 'Not specified';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
@@ -41,12 +51,22 @@ const Confirmation = ({ formData, onBack, onSubmit, isSubmitting }) => {
     return methods[method] || method;
   };
 
+  const handlePrivacyPolicyChange = (e) => {
+    setFieldValue('privacyPolicyAgreed', e.target.checked);
+  };
+
+  const handleCommunicationOptInChange = (e) => {
+    setFieldValue('communicationOptIn', e.target.checked);
+  };
+
   return (
-    <div className={styles.confirmationContainer}>
+    <div className={styles.stepContent}>
       <div className={styles.confirmationHeader}>
         <CheckCircle className={styles.successIcon} size={48} />
-        <h2>Please Review Your Information</h2>
-        <p>Please review all the information you've provided before submitting your registration.</p>
+        <h2 className={styles.stepTitle}>Please Review Your Information</h2>
+        <p className={styles.stepDescription}>
+          Please review all the information you've provided before submitting your registration.
+        </p>
       </div>
 
       <div className={styles.confirmationSections}>
@@ -91,7 +111,7 @@ const Confirmation = ({ formData, onBack, onSubmit, isSubmitting }) => {
             </div>
             <div className={styles.confirmationItem}>
               <label>Phone:</label>
-              <span>{formData.phone}</span>
+              <span>{formData.phone || 'Not provided'}</span>
             </div>
             {formData.alternatePhone && (
               <div className={styles.confirmationItem}>
@@ -246,43 +266,41 @@ const Confirmation = ({ formData, onBack, onSubmit, isSubmitting }) => {
         )}
       </div>
 
-      {/* Privacy Policy Confirmation */}
-      <div className={styles.privacyConfirmation}>
-        <div className={styles.privacyNotice}>
-          <CheckCircle className={styles.checkIcon} size={16} />
-          <span>I agree to the Privacy Policy and Terms of Service</span>
-        </div>
-        <div className={styles.communicationOptIn}>
-          <CheckCircle className={styles.checkIcon} size={16} />
-          <span>I consent to receive communications from the church</span>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className={styles.formActions}>
-        <button
-          type="button"
-          onClick={onBack}
-          className={styles.backButton}
-          disabled={isSubmitting}
-        >
-          Back to Edit
-        </button>
-        <button
-          type="submit"
-          onClick={onSubmit}
-          className={styles.submitButton}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <div className={styles.spinner}></div>
-              Submitting...
-            </>
-          ) : (
-            'Submit Registration'
+      {/* Privacy Policy and Agreements */}
+      <div className={styles.agreementSection}>
+        <div className={styles.formGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="privacyPolicyAgreed"
+              checked={formData.privacyPolicyAgreed || false}
+              onChange={handlePrivacyPolicyChange}
+              className={styles.checkbox}
+              required
+            />
+            <span className={styles.checkboxText}>
+              I agree to the Privacy Policy and Terms of Service *
+            </span>
+          </label>
+          {errors.privacyPolicyAgreed && touched.privacyPolicyAgreed && (
+            <span className={styles.errorText}>{errors.privacyPolicyAgreed}</span>
           )}
-        </button>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="communicationOptIn"
+              checked={formData.communicationOptIn || false}
+              onChange={handleCommunicationOptInChange}
+              className={styles.checkbox}
+            />
+            <span className={styles.checkboxText}>
+              I consent to receive communications from the church
+            </span>
+          </label>
+        </div>
       </div>
 
       {/* Submission Notice */}

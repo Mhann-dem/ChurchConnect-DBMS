@@ -22,7 +22,7 @@ from .serializers import (
     ReportSerializer, ReportRunSerializer, ReportTemplateSerializer,
     ReportGenerationSerializer, ReportStatsSerializer, BulkReportActionSerializer
 )
-from services import ReportGeneratorService, ReportSchedulerService
+from .services import ReportGeneratorService, ReportSchedulerService
 from members.models import Member
 from pledges.models import Pledge
 from groups.models import Group

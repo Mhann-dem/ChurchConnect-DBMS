@@ -4,7 +4,7 @@
 from rest_framework import serializers
 from django.db.models import Sum, Count
 from .models import Pledge, PledgePayment
-from members.serializers import MemberBasicSerializer
+from members.serializers import MemberSummarySerializer
 
 
 class PledgePaymentSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class PledgePaymentSerializer(serializers.ModelSerializer):
 
 class PledgeSerializer(serializers.ModelSerializer):
     """Serializer for pledge records"""
-    member_details = MemberBasicSerializer(source='member', read_only=True)
+    member_details = MemberSummarySerializer(source='member', read_only=True)
     payments = PledgePaymentSerializer(many=True, read_only=True)
     completion_percentage = serializers.ReadOnlyField()
     annual_amount = serializers.SerializerMethodField()

@@ -1,7 +1,6 @@
-
 # backend/churchconnect/reports/models.py
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings  # Add this import
 from django.utils import timezone
 import uuid
 import json
@@ -27,7 +26,7 @@ class ReportTemplate(models.Model):
     default_sort = models.CharField(max_length=100, blank=True)
     is_system_template = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)  # Fixed
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     usage_count = models.PositiveIntegerField(default=0)
@@ -89,7 +88,7 @@ class Report(models.Model):
     run_count = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Fixed
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -156,7 +155,7 @@ class ReportRun(models.Model):
     file_size = models.PositiveIntegerField(blank=True, null=True)  # Size in bytes
     records_count = models.PositiveIntegerField(blank=True, null=True)
     error_message = models.TextField(blank=True)
-    triggered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    triggered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)  # Fixed
     
     class Meta:
         ordering = ['-started_at']

@@ -1,5 +1,6 @@
 // src/components/shared/SearchBar.jsx
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useDebounce } from '../../hooks/useDebounce';
 import styles from './Shared.module.css';
 
@@ -111,6 +112,36 @@ const SearchBar = ({
       )}
     </div>
   );
+};
+
+// Add PropTypes validation (right before the export)
+SearchBar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  debounceMs: PropTypes.number,
+  showFilters: PropTypes.bool,
+  filters: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      type: PropTypes.oneOf(['select', 'checkbox']).isRequired,
+      value: PropTypes.any,
+      options: PropTypes.arrayOf(
+        PropTypes.shape({
+          value: PropTypes.any.isRequired,
+          label: PropTypes.string.isRequired
+        })
+      ).isRequired
+    })
+  ),
+  onFilterChange: PropTypes.func,
+  value: PropTypes.string
+};
+
+// Add defaultProps (optional but recommended)
+SearchBar.defaultProps = {
+  filters: [],
+  onFilterChange: () => {} // Default empty function
 };
 
 export default SearchBar;

@@ -14,7 +14,6 @@ from .serializers import (
     PledgeSerializer, PledgePaymentSerializer, PledgeStatsSerializer
 )
 from core.permissions import IsAdminUser
-from core.utils import generate_csv_response
 
 
 class PledgeViewSet(viewsets.ModelViewSet):
@@ -209,4 +208,3 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
             total=Sum('amount')
         )['total'] or 0
         pledge.save()
-

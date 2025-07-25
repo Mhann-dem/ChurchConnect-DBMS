@@ -27,7 +27,7 @@ import {
   Search,
   ExternalLink
 } from 'lucide-react';
-import './Help.module.css';
+import styles from './Help.module.css';
 
 const HelpCenter = () => {
   const { user, isAuthenticated } = useAuth();
@@ -276,46 +276,44 @@ const HelpCenter = () => {
 
   return (
     <Layout>
-      <div className="help-center">
+      <div className={styles.helpPage}>
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h1 className="text-4xl font-bold mb-4">
-              How can we help you today?
-            </h1>
-            <p className="text-xl mb-8 opacity-90">
-              Find answers, watch tutorials, and get support for ChurchConnect
-            </p>
-            <div className="max-w-md mx-auto">
+        <div className={styles.helpHero}>
+          <div className={styles.helpHeroContent}>
+            <h1 className={styles.helpHeroTitle}>How can we help you today?</h1>
+            <p className={styles.helpHeroSubtitle}>Find answers, watch tutorials, and get support for ChurchConnect</p>
+            <div className={styles.helpSearch}>
               <SearchBar 
                 placeholder="Search help articles..."
                 onSearch={handleSearch}
                 value={searchQuery}
-                className="bg-white"
+                className={styles.searchInput}
               />
             </div>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className={styles.helpContainer}>
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          <div className={styles.quickActions}>
             {quickActions.map((action, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card key={index} className={styles.quickActionCard}>
                 <Link to={action.link} className="block p-6 text-center">
-                  <div className={`${action.color} w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center text-white`}>
+                  <div className={styles.quickActionIcon}>
                     <action.icon size={24} />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{action.title}</h3>
-                  <p className="text-gray-600 text-sm">{action.description}</p>
+                  <h3>{action.title}</h3>
+                  <p>{action.description}</p>
                 </Link>
               </Card>
             ))}
           </div>
 
           {/* Category Filters */}
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-2">
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Help Categories</h2>
+            <p className={styles.sectionSubtitle}>Browse articles by category</p>
+            <div className={styles.categoryFilters}>
               <Button 
                 variant={selectedCategory === 'all' ? 'primary' : 'secondary'}
                 onClick={() => handleCategoryFilter('all')}
@@ -337,12 +335,12 @@ const HelpCenter = () => {
           </div>
 
           {/* Help Categories */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <div className={styles.helpCategories}>
             {filteredCategories.map((category) => (
-              <Card key={category.id} className="h-full">
+              <Card key={category.id} className={styles.helpCategory}>
                 <div className="p-6">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className={`${category.color} p-3 rounded-lg`}>
+                    <div className={styles.categoryIcon}>
                       <category.icon size={24} />
                     </div>
                     <div>
@@ -353,7 +351,7 @@ const HelpCenter = () => {
                   
                   <div className="space-y-3">
                     {category.articles.map((article, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                      <div key={index} className={styles.articleItem}>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium">{article.title}</h4>
@@ -363,12 +361,12 @@ const HelpCenter = () => {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
+                          <div className={styles.articleMeta}>
+                            <span>
                               <FileText size={14} />
                               {article.type}
                             </span>
-                            <span className="flex items-center gap-1">
+                            <span>
                               <Clock size={14} />
                               {article.duration}
                             </span>
@@ -384,68 +382,66 @@ const HelpCenter = () => {
           </div>
 
           {/* Recent Updates */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h2 className="text-2xl font-bold mb-6">Recent Updates</h2>
-              <div className="space-y-4">
-                {recentUpdates.map((update, index) => (
-                  <Card key={index} className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="bg-blue-100 p-2 rounded-lg">
-                        <Star size={20} className="text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold">{update.title}</h3>
-                          <Badge variant="secondary" size="sm">
-                            {update.type}
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 mb-2">{update.description}</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(update.date).toLocaleDateString()}
-                        </p>
-                      </div>
+          <div className={styles.recentUpdates}>
+            <h2 className={styles.sectionTitle}>Recent Updates</h2>
+            <div className="space-y-4">
+              {recentUpdates.map((update, index) => (
+                <Card key={index} className={styles.updateCard}>
+                  <div className="flex items-start gap-4">
+                    <div className={styles.updateIcon}>
+                      <Star size={20} />
                     </div>
-                  </Card>
-                ))}
-              </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold">{update.title}</h3>
+                        <Badge variant="secondary" size="sm">
+                          {update.type}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-600 mb-2">{update.description}</p>
+                      <p className={styles.updateDate}>
+                        {new Date(update.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
+          </div>
 
-            {/* Contact Support */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Need More Help?</h2>
-              <Card className="p-6">
-                <h3 className="font-semibold mb-4">Contact Support</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Mail size={20} className="text-gray-600" />
-                    <div>
-                      <p className="font-medium">Email Support</p>
-                      <p className="text-sm text-gray-600">support@churchconnect.com</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone size={20} className="text-gray-600" />
-                    <div>
-                      <p className="font-medium">Phone Support</p>
-                      <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MessageCircle size={20} className="text-gray-600" />
-                    <div>
-                      <p className="font-medium">Live Chat</p>
-                      <p className="text-sm text-gray-600">Available 9 AM - 5 PM</p>
-                    </div>
+          {/* Contact Support */}
+          <div>
+            <h2 className={styles.sectionTitle}>Need More Help?</h2>
+            <Card className={styles.contactSupport}>
+              <h3>Contact Support</h3>
+              <div className="space-y-4">
+                <div className={styles.contactMethod}>
+                  <Mail size={20} className={styles.contactMethodIcon} />
+                  <div>
+                    <p className="font-medium">Email Support</p>
+                    <p className="text-sm text-gray-600">support@churchconnect.com</p>
                   </div>
                 </div>
-                <Button className="w-full mt-6">
-                  <ExternalLink size={16} className="mr-2" />
-                  Contact Support
-                </Button>
-              </Card>
-            </div>
+                <div className={styles.contactMethod}>
+                  <Phone size={20} className={styles.contactMethodIcon} />
+                  <div>
+                    <p className="font-medium">Phone Support</p>
+                    <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
+                  </div>
+                </div>
+                <div className={styles.contactMethod}>
+                  <MessageCircle size={20} className={styles.contactMethodIcon} />
+                  <div>
+                    <p className="font-medium">Live Chat</p>
+                    <p className="text-sm text-gray-600">Available 9 AM - 5 PM</p>
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full mt-6">
+                <ExternalLink size={16} className="mr-2" />
+                Contact Support
+              </Button>
+            </Card>
           </div>
         </div>
       </div>

@@ -1,10 +1,15 @@
 // frontend/src/components/form/Steps/PledgeInfo.jsx
 import React from 'react';
-import Input from '../FormControls/Input';
-import Select from '../FormControls/Select';
 import styles from '../Form.module.css';
 
-const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {
+const PledgeInfo = ({ 
+  formData = {}, 
+  errors = {}, 
+  touched = {}, 
+  onChange, 
+  onBlur, 
+  setFieldValue 
+}) => {
   const frequencyOptions = [
     { value: '', label: 'Select Frequency' },
     { value: 'one-time', label: 'One-time' },
@@ -14,12 +19,28 @@ const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue
     { value: 'annually', label: 'Annually' }
   ];
 
+  // Safe handlers with fallbacks
+  const handleChange = onChange || (() => console.warn('onChange not provided'));
+  const handleBlur = onBlur || (() => console.warn('onBlur not provided'));
+  const handleSetFieldValue = setFieldValue || ((field, value) => {
+    console.warn('setFieldValue not provided, falling back to onChange');
+    if (onChange) {
+      const mockEvent = { target: { name: field, value } };
+      onChange(mockEvent);
+    }
+  });
+
   const handleAmountChange = (e) => {
     const value = e.target.value;
     // Only allow numbers and decimal point
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      onChange(e);
+      handleChange(e);
     }
+  };
+
+  const handleSkip = () => {
+    handleSetFieldValue('pledgeAmount', '');
+    handleSetFieldValue('pledgeFrequency', '');
   };
 
   return (
@@ -45,34 +66,47 @@ const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue
 
       <div className={styles.formGrid}>
         <div className={styles.formGroup}>
-          <Input
-            name="pledgeAmount"
-            type="text"
-            label="Pledge Amount (Optional)"
-            value={formData.pledgeAmount}
-            onChange={handleAmountChange}
-            onBlur={onBlur}
-            error={errors.pledgeAmount}
-            touched={touched.pledgeAmount}
-            placeholder="0.00"
-            prefix="$"
-            helpText="Enter amount without currency symbol"
-          />
+          <label htmlFor="pledgeAmount">Pledge Amount (Optional)</label>
+          <div className={styles.inputWithPrefix}>
+            <span className={styles.inputPrefix}>$</span>
+            <input
+              id="pledgeAmount"
+              name="pledgeAmount"
+              type="text"
+              value={formData.pledgeAmount || ''}
+              onChange={handleAmountChange}
+              onBlur={handleBlur}
+              className={styles.input}
+              placeholder="0.00"
+            />
+          </div>
+          {errors.pledgeAmount && touched.pledgeAmount && (
+            <span className={styles.errorMessage}>{errors.pledgeAmount}</span>
+          )}
+          <div className={styles.helpText}>Enter amount without currency symbol</div>
         </div>
 
         <div className={styles.formGroup}>
-          <Select
+          <label htmlFor="pledgeFrequency">Pledge Frequency</label>
+          <select
+            id="pledgeFrequency"
             name="pledgeFrequency"
-            label="Pledge Frequency"
-            value={formData.pledgeFrequency}
-            onChange={onChange}
-            onBlur={onBlur}
-            error={errors.pledgeFrequency}
-            touched={touched.pledgeFrequency}
-            options={frequencyOptions}
+            value={formData.pledgeFrequency || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className={styles.select}
             disabled={!formData.pledgeAmount}
-            helpText="Select how often you'd like to contribute"
-          />
+          >
+            {frequencyOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors.pledgeFrequency && touched.pledgeFrequency && (
+            <span className={styles.errorMessage}>{errors.pledgeFrequency}</span>
+          )}
+          <div className={styles.helpText}>Select how often you'd like to contribute</div>
         </div>
       </div>
 
@@ -82,7 +116,7 @@ const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue
           <p>
             Amount: <strong>${formData.pledgeAmount}</strong>
             {formData.pledgeFrequency && (
-              <span> ({formData.pledgeFrequency})</span>
+              <span> ({frequencyOptions.find(f => f.value === formData.pledgeFrequency)?.label})</span>
             )}
           </p>
           <p className={styles.pledgeNote}>
@@ -96,10 +130,7 @@ const PledgeInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue
         <button 
           type="button" 
           className={styles.skipButton}
-          onClick={() => {
-            setFieldValue('pledgeAmount', '');
-            setFieldValue('pledgeFrequency', '');
-          }}
+          onClick={handleSkip}
         >
           Skip this step
         </button>

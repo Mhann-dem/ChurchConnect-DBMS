@@ -3,7 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Layout.module.css';
 import logoLight from '../../assets/images/logo-dark.png';
-import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import { FaX } from 'react-icons/fa6';
 
 const Footer = ({ isAdmin = false }) => {
   const currentYear = new Date().getFullYear();
@@ -27,9 +28,10 @@ const Footer = ({ isAdmin = false }) => {
       { name: 'Cookie Policy', path: '/cookies' }
     ],
     social: [
-      { name: 'Facebook', path: 'https://facebook.com/churchconnect', icon: <FaFacebook /> },
+      { name: 'Facebook', path: 'https://web.facebook.com/dlcfknust', icon: <FaFacebook /> },
       { name: 'Instagram', path: 'https://instagram.com/churchconnect', icon: <FaInstagram /> },
-      { name: 'YouTube', path: 'https://youtube.com/churchconnect', icon: <FaYoutube /> }
+      { name: 'YouTube', path: 'https://www.youtube.com/@dlcfknust', icon: <FaYoutube /> },
+      { name: 'Twitter', path: 'https://x.com/DlcfKnust', icon: <FaX /> }
     ]
   };
 

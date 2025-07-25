@@ -5,7 +5,14 @@ import Select from '../FormControls/Select';
 import DatePicker from '../FormControls/DatePicker';
 import styles from '../Form.module.css';
 
-const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {
+const PersonalInfo = ({ 
+  formData = {}, 
+  errors = {}, 
+  touched = {}, 
+  onChange, 
+  onBlur, 
+  setFieldValue 
+}) => {
   const genderOptions = [
     { value: '', label: 'Select Gender' },
     { value: 'male', label: 'Male' },
@@ -13,6 +20,29 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
     { value: 'other', label: 'Other' },
     { value: 'prefer_not_to_say', label: 'Prefer not to say' }
   ];
+
+  // Ensure handlers exist and provide fallbacks
+  const handleChange = onChange || ((e) => {
+    console.warn('onChange not provided', e.target.name, e.target.value);
+  });
+  
+  const handleBlur = onBlur || ((e) => {
+    console.warn('onBlur not provided', e.target.name);
+  });
+  
+  const handleSetFieldValue = setFieldValue || ((field, value) => {
+    console.warn('setFieldValue not provided', field, value);
+  });
+
+  // Handle date changes specifically
+  const handleDateChange = (date) => {
+    handleSetFieldValue('dateOfBirth', date);
+  };
+
+  // Handle select changes
+  const handleSelectChange = (e) => {
+    handleChange(e);
+  };
 
   return (
     <div className={styles.stepContent}>
@@ -26,9 +56,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
           <Input
             name="firstName"
             label="First Name *"
-            value={formData.firstName}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.firstName || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.firstName}
             touched={touched.firstName}
             required
@@ -40,9 +70,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
           <Input
             name="lastName"
             label="Last Name *"
-            value={formData.lastName}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.lastName || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.lastName}
             touched={touched.lastName}
             required
@@ -54,9 +84,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
           <Input
             name="preferredName"
             label="Preferred Name"
-            value={formData.preferredName}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.preferredName || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.preferredName}
             touched={touched.preferredName}
             placeholder="What would you like to be called?"
@@ -69,9 +99,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
             name="email"
             type="email"
             label="Email Address *"
-            value={formData.email}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.email || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.email}
             touched={touched.email}
             required
@@ -83,9 +113,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
           <DatePicker
             name="dateOfBirth"
             label="Date of Birth *"
-            value={formData.dateOfBirth}
-            onChange={(date) => setFieldValue('dateOfBirth', date)}
-            onBlur={onBlur}
+            value={formData.dateOfBirth || ''}
+            onChange={handleDateChange}
+            onBlur={handleBlur}
             error={errors.dateOfBirth}
             touched={touched.dateOfBirth}
             required
@@ -97,9 +127,9 @@ const PersonalInfo = ({ formData, errors, touched, onChange, onBlur, setFieldVal
           <Select
             name="gender"
             label="Gender *"
-            value={formData.gender}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.gender || ''}
+            onChange={handleSelectChange}
+            onBlur={handleBlur}
             error={errors.gender}
             touched={touched.gender}
             required

@@ -5,7 +5,7 @@ import PhoneInput from '../FormControls/PhoneInput';
 import Select from '../FormControls/Select';
 import styles from '../Form.module.css';
 
-const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValue }) => {
+const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlur, setFieldValue }) => {
   const contactMethodOptions = [
     { value: 'email', label: 'Email' },
     { value: 'phone', label: 'Phone Call' },
@@ -21,6 +21,24 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
     { value: 'Other', label: 'Other' }
   ];
 
+  // Ensure handlers exist and provide fallbacks
+  const handleChange = onChange || ((e) => {
+    console.warn('onChange not provided', e.target.name, e.target.value);
+  });
+  
+  const handleBlur = onBlur || ((e) => {
+    console.warn('onBlur not provided', e.target.name);
+  });
+  
+  const handleSetFieldValue = setFieldValue || ((field, value) => {
+    console.warn('setFieldValue not provided', field, value);
+  });
+
+  // Handle phone input changes
+  const handlePhoneChange = (field, value) => {
+    handleSetFieldValue(field, value);
+  };
+
   return (
     <div className={styles.stepContent}>
       <h2 className={styles.stepTitle}>Contact Information</h2>
@@ -33,9 +51,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <PhoneInput
             name="phone"
             label="Phone Number *"
-            value={formData.phone}
-            onChange={(value) => setFieldValue('phone', value)}
-            onBlur={onBlur}
+            value={formData.phone || ''}
+            onChange={(value) => handlePhoneChange('phone', value)}
+            onBlur={handleBlur}
             error={errors.phone}
             touched={touched.phone}
             required
@@ -47,9 +65,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <PhoneInput
             name="alternatePhone"
             label="Alternate Phone"
-            value={formData.alternatePhone}
-            onChange={(value) => setFieldValue('alternatePhone', value)}
-            onBlur={onBlur}
+            value={formData.alternatePhone || ''}
+            onChange={(value) => handlePhoneChange('alternatePhone', value)}
+            onBlur={handleBlur}
             error={errors.alternatePhone}
             touched={touched.alternatePhone}
             placeholder="(555) 987-6543"
@@ -60,9 +78,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <TextArea
             name="address"
             label="Address"
-            value={formData.address}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.address || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.address}
             touched={touched.address}
             placeholder="Street address, city, state, zip code"
@@ -75,9 +93,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <Select
             name="preferredContactMethod"
             label="Preferred Contact Method"
-            value={formData.preferredContactMethod}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.preferredContactMethod || 'email'}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.preferredContactMethod}
             touched={touched.preferredContactMethod}
             options={contactMethodOptions}
@@ -88,9 +106,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <Select
             name="preferredLanguage"
             label="Preferred Language"
-            value={formData.preferredLanguage}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.preferredLanguage || 'English'}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.preferredLanguage}
             touched={touched.preferredLanguage}
             options={languageOptions}
@@ -101,9 +119,9 @@ const ContactInfo = ({ formData, errors, touched, onChange, onBlur, setFieldValu
           <TextArea
             name="accessibilityNeeds"
             label="Accessibility Needs"
-            value={formData.accessibilityNeeds}
-            onChange={onChange}
-            onBlur={onBlur}
+            value={formData.accessibilityNeeds || ''}
+            onChange={handleChange}
+            onBlur={handleBlur}
             error={errors.accessibilityNeeds}
             touched={touched.accessibilityNeeds}
             placeholder="Please let us know if you have any accessibility requirements"
