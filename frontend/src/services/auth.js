@@ -11,41 +11,22 @@ const AUTH_ENDPOINTS = {
   CHANGE_PASSWORD: '/auth/change-password/',
 };
 
-// Storage helper with error handling
+// Storage helper with error handling (no localStorage for Claude artifacts)
 const storage = {
+  data: {},
+  
   getItem(key) {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return localStorage.getItem(key);
-      }
-    } catch (error) {
-      console.warn(`Failed to get ${key} from localStorage:`, error);
-    }
-    return null;
+    return this.data[key] || null;
   },
   
   setItem(key, value) {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(key, value);
-        return true;
-      }
-    } catch (error) {
-      console.warn(`Failed to set ${key} in localStorage:`, error);
-    }
-    return false;
+    this.data[key] = value;
+    return true;
   },
   
   removeItem(key) {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem(key);
-        return true;
-      }
-    } catch (error) {
-      console.warn(`Failed to remove ${key} from localStorage:`, error);
-    }
-    return false;
+    delete this.data[key];
+    return true;
   }
 };
 
@@ -96,6 +77,8 @@ class AuthService {
         return { success: false, error: validation.error };
       }
 
+      console.log('Making login request to:', api.defaults.baseURL + AUTH_ENDPOINTS.LOGIN);
+      
       const response = await api.post(AUTH_ENDPOINTS.LOGIN, credentials);
       const { token, refresh_token, user } = response.data;
       
@@ -121,8 +104,15 @@ class AuthService {
       
       return { success: true, user, token };
     } catch (error) {
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response,
+        config: error.config
+      });
+      
       const message = error.response?.data?.message || 
                     error.response?.data?.error || 
+                    error.message ||
                     'Login failed';
       return { success: false, error: message };
     }

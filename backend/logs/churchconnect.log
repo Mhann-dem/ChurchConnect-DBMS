@@ -367,3 +367,304 @@ ERROR 2025-07-24 14:12:19,185 basehttp 5392 13176 You're accessing the developme
 INFO 2025-07-24 14:12:19,185 basehttp 5392 17428 code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
 ERROR 2025-07-24 14:12:19,185 basehttp 5392 17428 You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2025-07-24 14:22:09,202 autoreload 2784 6832 Watching for file changes with StatReloader
+INFO 2025-07-28 12:28:57,739 autoreload 17512 5404 Watching for file changes with StatReloader
+INFO 2025-07-28 13:17:35,596 basehttp 17512 7100 "OPTIONS /api/health/ HTTP/1.1" 200 0
+INFO 2025-07-28 13:17:35,621 basehttp 17512 7100 "GET /api/health/ HTTP/1.1" 301 0
+INFO 2025-07-28 13:17:35,941 basehttp 17512 12948 code 400, message Bad request version ('localhost\x00\x17\x00\x00\x00-\x00\x02\x01\x01\x00\x12\x00\x00\x00')
+ERROR 2025-07-28 13:17:35,941 basehttp 17512 12948 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:17:36,198 basehttp 17512 9456 code 400, message Bad request version ('Ü\x1a(VÀI\x811#|Â')
+ERROR 2025-07-28 13:17:36,198 basehttp 17512 9456 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:17:36,261 basehttp 17512 6440 code 400, message Bad request version ('::\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06e')
+ERROR 2025-07-28 13:17:36,261 basehttp 17512 6440 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:17:36,506 basehttp 17512 10888 code 400, message Bad request version (']*\x9b²')
+ERROR 2025-07-28 13:17:36,506 basehttp 17512 10888 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:54,192 basehttp 17512 9068 code 400, message Bad request version ('PÓÜ_*Ê\x88\x14Õ\x05¿[ª')
+ERROR 2025-07-28 13:37:54,192 basehttp 17512 9068 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:54,446 basehttp 17512 18020 code 400, message Bad request version ('-\x9dþè÷\x9fÈ\x8fÅc=\x19±dYáûeVX\x98ÐÉX]\x04¦\x1a£ßÀ\x82OAþ`Ü=A\x0eï·Ó/¸"\x19Ü\x8bî¬¤R\x11')
+ERROR 2025-07-28 13:37:54,452 basehttp 17512 18020 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:54,511 basehttp 17512 13328 code 400, message Bad request version ('\x92}\x01ÿ\x01\x00\x01\x00\x00')
+ERROR 2025-07-28 13:37:54,511 basehttp 17512 13328 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:54,755 basehttp 17512 17816 code 400, message Bad request version ('\x00\x02\x01\x00\x00#\x00\x00\x00\x12\x00\x00DÍ\x00\x05\x00\x03\x02h2\x00\x17\x00\x00\x00-\x00\x02\x01\x01\x00')
+ERROR 2025-07-28 13:37:54,755 basehttp 17512 17816 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:57,580 basehttp 17512 5504 code 400, message Bad request version ('\x10ý<¿')
+ERROR 2025-07-28 13:37:57,580 basehttp 17512 5504 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:57,832 basehttp 17512 10936 code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00+\x00\x07\x06jj\x03\x04\x03\x03\x00\x1b\x00\x03\x02\x00\x02DÍ\x00\x05\x00\x03\x02h2\x00')
+ERROR 2025-07-28 13:37:57,832 basehttp 17512 10936 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:57,896 basehttp 17512 19344 code 400, message Bad request version ("ÈO¯%'ÊÓ\x92|X;*A\x96`")
+ERROR 2025-07-28 13:37:57,896 basehttp 17512 19344 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 13:37:58,148 basehttp 17512 11884 code 400, message Bad request version ('Ò\x97«Õ\x8aû\x97ÏÁô')
+ERROR 2025-07-28 13:37:58,150 basehttp 17512 11884 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 18:18:18,019 autoreload 24144 15584 Watching for file changes with StatReloader
+INFO 2025-07-28 18:24:40,041 basehttp 24144 22744 "OPTIONS /api/health/ HTTP/1.1" 200 0
+INFO 2025-07-28 18:24:40,358 basehttp 24144 22172 code 400, message Bad request syntax ('\x16\x03\x01\x07\x12\x01\x00\x07\x0e\x03\x03õlkÌ\xadØÀk%;)\x1b')
+ERROR 2025-07-28 18:24:40,359 basehttp 24144 22172 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 18:24:40,620 basehttp 24144 12016 code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06²\x01\x00\x06®\x03\x03&2\x97u_ñ#\x83jå\x96u\x9cñÂ')
+ERROR 2025-07-28 18:24:40,620 basehttp 24144 12016 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 18:24:40,670 basehttp 24144 23956 code 400, message Bad request version ('\x00\x02\x01\x00\x00-\x00\x02\x01\x01\x00')
+ERROR 2025-07-28 18:24:40,670 basehttp 24144 23956 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-28 18:24:40,930 basehttp 24144 11016 code 400, message Bad request version ("v2©Åz»9õ\x92U\x9cï×F3¬\x9a½àÑÓÚÇ+Ò4y{¿(\x97\x88\x86ü¨¿C\x0eî\x15\x98K·¢ð\x9c'\x95\x00")
+ERROR 2025-07-28 18:24:40,931 basehttp 24144 11016 You're accessing the development server over HTTPS, but it only supports HTTP.
+INFO 2025-07-31 18:46:01,136 autoreload 22044 1600 Watching for file changes with StatReloader
+INFO 2025-07-31 18:52:30,756 autoreload 18360 20776 Watching for file changes with StatReloader
+INFO 2025-07-31 18:57:32,219 autoreload 18360 20776 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-31 18:57:34,466 autoreload 20796 23432 Watching for file changes with StatReloader
+INFO 2025-07-31 18:58:26,816 autoreload 15620 22432 Watching for file changes with StatReloader
+INFO 2025-07-31 18:58:51,157 autoreload 15620 22432 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-31 18:58:52,537 autoreload 11072 18144 Watching for file changes with StatReloader
+INFO 2025-07-31 20:27:17,179 autoreload 8352 3988 Watching for file changes with StatReloader
+INFO 2025-07-31 20:29:18,359 autoreload 8352 3988 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-07-31 20:29:19,919 autoreload 12860 9060 Watching for file changes with StatReloader
+INFO 2025-07-31 20:30:43,423 autoreload 12728 9688 Watching for file changes with StatReloader
+INFO 2025-07-31 20:45:58,516 autoreload 7680 21124 Watching for file changes with StatReloader
+INFO 2025-07-31 20:46:05,418 middleware 7680 19732 Request: GET / from 127.0.0.1
+INFO 2025-07-31 20:46:05,419 middleware 7680 19732 Response: 302 for GET / (0.002s)
+INFO 2025-07-31 20:46:05,420 basehttp 7680 19732 "GET / HTTP/1.1" 302 0
+INFO 2025-07-31 20:46:05,431 middleware 7680 19732 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 20:46:06,073 middleware 7680 19732 Response: 401 for GET /api/docs/ (0.642s)
+WARNING 2025-07-31 20:46:06,074 log 7680 19732 Unauthorized: /api/docs/
+WARNING 2025-07-31 20:46:06,075 basehttp 7680 19732 "GET /api/docs/ HTTP/1.1" 401 5022
+INFO 2025-07-31 20:46:06,206 basehttp 7680 19432 "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+INFO 2025-07-31 20:46:06,213 basehttp 7680 6880 "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+INFO 2025-07-31 20:46:06,221 basehttp 7680 10904 "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+INFO 2025-07-31 20:46:06,226 basehttp 7680 19732 "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+INFO 2025-07-31 20:46:06,310 basehttp 7680 19432 "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO 2025-07-31 20:46:06,310 basehttp 7680 19732 "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO 2025-07-31 20:46:06,322 basehttp 7680 19432 "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+INFO 2025-07-31 20:46:06,328 basehttp 7680 19792 "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO 2025-07-31 20:46:06,354 basehttp 7680 19732 "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO 2025-07-31 20:46:06,359 basehttp 7680 10904 "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO 2025-07-31 20:46:06,362 basehttp 7680 6880 "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO 2025-07-31 20:46:06,395 basehttp 7680 6860 "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO 2025-07-31 20:46:06,509 middleware 7680 6860 Request: GET /favicon.ico from 127.0.0.1
+INFO 2025-07-31 20:46:06,564 middleware 7680 6860 Response: 404 for GET /favicon.ico (0.054s)
+WARNING 2025-07-31 20:46:06,565 log 7680 6860 Not Found: /favicon.ico
+WARNING 2025-07-31 20:46:06,566 basehttp 7680 6860 "GET /favicon.ico HTTP/1.1" 404 2999
+INFO 2025-07-31 20:46:15,399 middleware 7680 19392 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 20:46:15,400 middleware 7680 19392 Response: 404 for GET /api/docs/ (0.002s)
+WARNING 2025-07-31 20:46:15,401 log 7680 19392 Not Found: /api/docs/
+WARNING 2025-07-31 20:46:15,403 basehttp 7680 19392 "GET /api/docs/?format=json HTTP/1.1" 404 23
+INFO 2025-07-31 20:46:18,085 middleware 7680 22148 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 20:46:18,094 middleware 7680 22148 Response: 401 for GET /api/docs/ (0.010s)
+WARNING 2025-07-31 20:46:18,096 log 7680 22148 Unauthorized: /api/docs/
+WARNING 2025-07-31 20:46:18,098 basehttp 7680 22148 "GET /api/docs/ HTTP/1.1" 401 5022
+INFO 2025-07-31 20:46:19,724 middleware 7680 22148 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 20:46:19,728 middleware 7680 22148 Response: 401 for GET /api/docs/ (0.004s)
+WARNING 2025-07-31 20:46:19,728 log 7680 22148 Unauthorized: /api/docs/
+WARNING 2025-07-31 20:46:19,729 basehttp 7680 22148 "GET /api/docs/ HTTP/1.1" 401 5022
+INFO 2025-07-31 20:46:23,127 middleware 7680 22148 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 20:46:23,133 middleware 7680 22148 Response: 404 for GET /api/docs/ (0.006s)
+WARNING 2025-07-31 20:46:23,133 log 7680 22148 Not Found: /api/docs/
+WARNING 2025-07-31 20:46:23,135 basehttp 7680 22148 "GET /api/docs/?format=api HTTP/1.1" 404 4945
+INFO 2025-07-31 20:46:34,088 middleware 7680 13972 Request: GET /admin/ from 127.0.0.1
+INFO 2025-07-31 20:46:34,171 middleware 7680 13972 Response: 302 for GET /admin/ (0.082s)
+INFO 2025-07-31 20:46:34,172 basehttp 7680 13972 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-31 20:46:34,181 middleware 7680 13972 Request: GET /admin/login/ from 127.0.0.1
+INFO 2025-07-31 20:46:34,434 middleware 7680 13972 Response: 200 for GET /admin/login/ (0.253s)
+INFO 2025-07-31 20:46:34,436 basehttp 7680 13972 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4179
+INFO 2025-07-31 20:46:34,520 basehttp 7680 19488 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
+INFO 2025-07-31 20:46:34,523 basehttp 7680 13972 "GET /static/admin/css/base.css HTTP/1.1" 200 22120
+INFO 2025-07-31 20:46:34,524 basehttp 7680 22992 "GET /static/admin/css/login.css HTTP/1.1" 200 951
+INFO 2025-07-31 20:46:34,543 basehttp 7680 11152 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2025-07-31 20:46:34,545 basehttp 7680 17304 "GET /static/admin/css/responsive.css HTTP/1.1" 200 16565
+INFO 2025-07-31 20:46:34,559 basehttp 7680 20708 "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2025-07-31 20:46:34,594 basehttp 7680 17304 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2025-07-31 20:46:59,416 middleware 7680 10928 Request: POST /admin/login/ from 127.0.0.1
+INFO 2025-07-31 20:47:00,450 middleware 7680 10928 Response: 302 for POST /admin/login/ (1.034s)
+INFO 2025-07-31 20:47:00,454 basehttp 7680 10928 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-07-31 20:47:00,463 middleware 7680 10928 Request: GET /admin/ from 127.0.0.1
+ERROR 2025-07-31 20:47:01,155 log 7680 10928 Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "django_admin_log" does not exist
+LINE 1: ..."."app_label", "django_content_type"."model" FROM "django_ad...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\defaulttags.py", line 199, in render
+    len_values = len(values)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "django_admin_log" does not exist
+LINE 1: ..."."app_label", "django_content_type"."model" FROM "django_ad...
+                                                             ^
+
+INFO 2025-07-31 20:47:01,165 middleware 7680 10928 Response: 500 for GET /admin/ (0.703s)
+ERROR 2025-07-31 20:47:01,166 basehttp 7680 10928 "GET /admin/ HTTP/1.1" 500 288835
+INFO 2025-07-31 20:47:10,556 middleware 7680 19776 Request: GET /admin/login/ from 127.0.0.1
+INFO 2025-07-31 20:47:10,641 middleware 7680 19776 Response: 302 for GET /admin/login/ (0.086s)
+INFO 2025-07-31 20:47:10,642 basehttp 7680 19776 "GET /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-07-31 20:47:10,647 middleware 7680 19776 Request: GET /admin/ from 127.0.0.1
+ERROR 2025-07-31 20:47:11,019 log 7680 19776 Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "django_admin_log" does not exist
+LINE 1: ..."."app_label", "django_content_type"."model" FROM "django_ad...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\template\defaulttags.py", line 199, in render
+    len_values = len(values)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "django_admin_log" does not exist
+LINE 1: ..."."app_label", "django_content_type"."model" FROM "django_ad...
+                                                             ^
+
+INFO 2025-07-31 20:47:11,021 middleware 7680 19776 Response: 500 for GET /admin/ (0.375s)
+ERROR 2025-07-31 20:47:11,022 basehttp 7680 19776 "GET /admin/ HTTP/1.1" 500 288397

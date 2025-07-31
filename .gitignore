@@ -97,3 +97,9 @@ frontend/node_modules/scheduler/cjs/scheduler.development.js
 frontend/node_modules/scheduler/cjs/scheduler.native.development.js
 frontend/node_modules/scheduler/cjs/scheduler.native.production.js
 frontend/node_modules/scheduler/cjs/scheduler.production.js
+backend/.env
+backend/.env.example
+backend/ssl
+frontend/node_modules
+frontend/.env
+frontend/.env.example
