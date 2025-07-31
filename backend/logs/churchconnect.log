@@ -668,3 +668,28 @@ LINE 1: ..."."app_label", "django_content_type"."model" FROM "django_ad...
 
 INFO 2025-07-31 20:47:11,021 middleware 7680 19776 Response: 500 for GET /admin/ (0.375s)
 ERROR 2025-07-31 20:47:11,022 basehttp 7680 19776 "GET /admin/ HTTP/1.1" 500 288397
+INFO 2025-07-31 21:00:05,542 middleware 24296 3252 Request: GET / from 127.0.0.1
+INFO 2025-07-31 21:00:05,550 middleware 24296 3252 Response: 302 for GET / (0.008s)
+INFO 2025-07-31 21:00:05,567 middleware 24296 16840 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 21:00:05,701 middleware 24296 16840 Response: 401 for GET /api/docs/ (0.134s)
+WARNING 2025-07-31 21:00:05,702 log 24296 16840 Unauthorized: /api/docs/
+INFO 2025-07-31 21:00:06,060 middleware 24296 16892 Request: GET /favicon.ico from 127.0.0.1
+INFO 2025-07-31 21:00:06,073 middleware 24296 16892 Response: 404 for GET /favicon.ico (0.013s)
+WARNING 2025-07-31 21:00:06,074 log 24296 16892 Not Found: /favicon.ico
+INFO 2025-07-31 21:00:13,414 middleware 24296 20696 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 21:00:13,420 middleware 24296 20696 Response: 401 for GET /api/docs/ (0.007s)
+WARNING 2025-07-31 21:00:13,420 log 24296 20696 Unauthorized: /api/docs/
+INFO 2025-07-31 21:00:24,151 middleware 24296 23280 Request: GET / from 127.0.0.1
+INFO 2025-07-31 21:00:24,153 middleware 24296 23280 Response: 302 for GET / (0.002s)
+INFO 2025-07-31 21:00:24,164 middleware 24296 9624 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-07-31 21:00:24,170 middleware 24296 9624 Response: 401 for GET /api/docs/ (0.006s)
+WARNING 2025-07-31 21:00:24,171 log 24296 9624 Unauthorized: /api/docs/
+INFO 2025-07-31 21:00:41,460 middleware 24296 21404 Request: GET /admin from 127.0.0.1
+INFO 2025-07-31 21:00:41,468 middleware 24296 21404 Response: 404 for GET /admin (0.008s)
+INFO 2025-07-31 21:00:41,482 middleware 24296 2804 Request: GET /admin/ from 127.0.0.1
+INFO 2025-07-31 21:00:41,513 middleware 24296 2804 Response: 302 for GET /admin/ (0.032s)
+INFO 2025-07-31 21:00:41,529 middleware 24296 23932 Request: GET /admin/login/ from 127.0.0.1
+INFO 2025-07-31 21:00:41,601 middleware 24296 23932 Response: 200 for GET /admin/login/ (0.072s)
+INFO 2025-07-31 21:01:03,324 middleware 24296 16696 Request: POST /admin/login/ from 127.0.0.1
+INFO 2025-07-31 21:01:04,281 middleware 24296 16696 Response: 302 for POST /admin/login/ (0.957s)
+INFO 2025-07-31 21:01:04,300 middleware 24296 15720 Request: GET /admin/ from 127.0.0.1
