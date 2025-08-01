@@ -1,31 +1,6 @@
+// context/AuthContext.jsx
 import React, { createContext, useReducer, useCallback, useEffect } from 'react';
-
-// Note: Make sure this import exists and is properly configured
-// import authService from '../services/auth';
-
-// Mock authService for now - replace with your actual service
-const authService = {
-  login: async (credentials) => {
-    // Your login implementation
-    throw new Error('authService.login not implemented');
-  },
-  logout: async () => {
-    // Your logout implementation
-    console.log('Logging out...');
-  },
-  verifyToken: async (token) => {
-    // Your token verification implementation
-    throw new Error('authService.verifyToken not implemented');
-  },
-  setAuthToken: (token) => {
-    // Set token in service
-    console.log('Setting auth token:', token);
-  },
-  clearAuthToken: () => {
-    // Clear token from service
-    console.log('Clearing auth token');
-  }
-};
+import authService from '../services/auth';
 
 export const AuthContext = createContext();
 
@@ -36,12 +11,15 @@ const AUTH_ACTIONS = {
   LOGOUT: 'LOGOUT',
   UPDATE_USER: 'UPDATE_USER',
   SET_TOKEN: 'SET_TOKEN',
-  CLEAR_ERROR: 'CLEAR_ERROR'
+  CLEAR_ERROR: 'CLEAR_ERROR',
+  CHECK_AUTH_START: 'CHECK_AUTH_START',
+  CHECK_AUTH_SUCCESS: 'CHECK_AUTH_SUCCESS',
+  CHECK_AUTH_FAILURE: 'CHECK_AUTH_FAILURE'
 };
 
 const initialState = {
   user: null,
-  token: null, // Don't initialize from localStorage here
+  token: null,
   isAuthenticated: false,
   isLoading: true,
   error: null
@@ -50,8 +28,11 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case AUTH_ACTIONS.SET_LOADING:
-      return { ...state, isLoading: action.payload };
+    case AUTH_ACTIONS.CHECK_AUTH_START:
+      return { ...state, isLoading: action.payload ?? true };
+      
     case AUTH_ACTIONS.LOGIN_SUCCESS:
+    case AUTH_ACTIONS.CHECK_AUTH_SUCCESS:
       return {
         ...state,
         user: action.payload.user,
@@ -60,7 +41,9 @@ const authReducer = (state, action) => {
         isLoading: false,
         error: null
       };
+      
     case AUTH_ACTIONS.LOGIN_FAILURE:
+    case AUTH_ACTIONS.CHECK_AUTH_FAILURE:
       return {
         ...state,
         user: null,
@@ -69,21 +52,25 @@ const authReducer = (state, action) => {
         isLoading: false,
         error: action.payload
       };
+      
     case AUTH_ACTIONS.LOGOUT:
       return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null
+        ...initialState,
+        isLoading: false
       };
+      
     case AUTH_ACTIONS.UPDATE_USER:
-      return { ...state, user: { ...state.user, ...action.payload } };
+      return { 
+        ...state, 
+        user: { ...state.user, ...action.payload } 
+      };
+      
     case AUTH_ACTIONS.SET_TOKEN:
       return { ...state, token: action.payload };
+      
     case AUTH_ACTIONS.CLEAR_ERROR:
       return { ...state, error: null };
+      
     default:
       return state;
   }
@@ -103,36 +90,41 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       setLoading(true);
-      if (state.token) {
-        await authService.logout();
-      }
+      await authService.logout();
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      localStorage.removeItem('auth_token');
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
-      setLoading(false);
     }
-  }, [state.token, setLoading]);
+  }, [setLoading]);
 
   const login = useCallback(async (credentials) => {
     try {
       setLoading(true);
       clearError();
-      const response = await authService.login(credentials);
       
-      if (response.token && response.user) {
-        localStorage.setItem('auth_token', response.token);
+      // Call authService.login which returns { success, user, token, error }
+      const result = await authService.login(credentials);
+      
+      if (result.success) {
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { user: response.user, token: response.token }
+          payload: { user: result.user, token: result.token }
         });
-        return response;
+        return result;
+      } else {
+        dispatch({ 
+          type: AUTH_ACTIONS.LOGIN_FAILURE, 
+          payload: result.error 
+        });
+        throw new Error(result.error);
       }
-      throw new Error('Invalid response from server');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE, payload: errorMessage });
+      const errorMessage = error.message || 'Login failed';
+      dispatch({ 
+        type: AUTH_ACTIONS.LOGIN_FAILURE, 
+        payload: errorMessage 
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -144,102 +136,55 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuthStatus = useCallback(async () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
+    dispatch({ type: AUTH_ACTIONS.CHECK_AUTH_START });
+    
     try {
-      setLoading(true);
-      const response = await authService.verifyToken(token);
+      // Check if authService has stored auth data
+      const isAuth = authService.isAuthenticated();
+      const user = authService.getUser();
+      const token = authService.getToken();
       
-      if (response?.user) {
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { user: response.user, token }
-        });
+      if (isAuth && user && token) {
+        // Verify the token is still valid
+        const isValid = await authService.verifyToken();
+        
+        if (isValid) {
+          dispatch({
+            type: AUTH_ACTIONS.CHECK_AUTH_SUCCESS,
+            payload: { user, token }
+          });
+        } else {
+          // Token is invalid, clear auth data
+          await authService.logout();
+          dispatch({
+            type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
+            payload: 'Session expired'
+          });
+        }
       } else {
-        localStorage.removeItem('auth_token');
-        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+        // No stored auth data
+        dispatch({
+          type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
+          payload: 'Not authenticated'
+        });
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('auth_token');
-      dispatch({ type: AUTH_ACTIONS.LOGOUT });
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
+        payload: error.message || 'Authentication check failed'
+      });
     }
-  }, [setLoading]);
+  }, []);
 
   const setToken = useCallback((token) => {
-    if (token) {
-      localStorage.setItem('auth_token', token);
-    } else {
-      localStorage.removeItem('auth_token');
-    }
     dispatch({ type: AUTH_ACTIONS.SET_TOKEN, payload: token });
   }, []);
 
   // Initialize auth state on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      dispatch({ type: AUTH_ACTIONS.SET_TOKEN, payload: token });
-    } else {
-      setLoading(false);
-    }
-  }, [setLoading]);
-
-  // Set auth token in service when token changes
-  useEffect(() => {
-    if (state.token) {
-      authService.setAuthToken(state.token);
-    } else {
-      authService.clearAuthToken();
-    }
-  }, [state.token]);
-
-  // Handle token expiry - FIXED version
-  useEffect(() => {
-    if (!state.token) return;
-    
-    let timeoutId;
-    
-    const handleTokenExpiry = async () => {
-      try {
-        const tokenParts = state.token.split('.');
-        if (tokenParts.length !== 3) {
-          throw new Error('Invalid token format');
-        }
-        
-        const tokenData = JSON.parse(atob(tokenParts[1]));
-        const expiryTime = tokenData.exp * 1000;
-        const timeToExpiry = expiryTime - Date.now();
-
-        if (timeToExpiry <= 0) {
-          // Token is already expired
-          await logout();
-        } else {
-          // Set timeout for future expiry
-          timeoutId = setTimeout(async () => {
-            await logout();
-          }, timeToExpiry);
-        }
-      } catch (error) {
-        console.error('Token validation failed:', error);
-        await logout();
-      }
-    };
-
-    handleTokenExpiry();
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [state.token]); // Removed logout from dependencies to prevent infinite loop
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const contextValue = {
     user: state.user,

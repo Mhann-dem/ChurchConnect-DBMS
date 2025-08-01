@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters',
     'channels',
+    'drf_spectacular',  # Added for modern API documentation
 ]
 
 LOCAL_APPS = [
@@ -244,6 +245,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+    # Use spectacular for schema generation
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # JWT Configuration
@@ -253,6 +256,32 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+}
+
+# drf-spectacular settings for API documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ChurchConnect API',
+    'DESCRIPTION': 'A comprehensive Church Management System API for managing members, groups, families, pledges, and reports.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/v1/',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SORT_OPERATIONS': False,
+    'ENUM_NAME_OVERRIDES': {
+        'ValidationErrorEnum': 'drf_spectacular.utils.validation_error_name_override',
+    },
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums'
+    ],
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'User authentication and authorization'},
+        {'name': 'Members', 'description': 'Church member management'},
+        {'name': 'Families', 'description': 'Family management'},
+        {'name': 'Groups', 'description': 'Group and ministry management'},
+        {'name': 'Pledges', 'description': 'Pledge and donation tracking'},
+        {'name': 'Reports', 'description': 'Reporting and analytics'},
+        {'name': 'Core', 'description': 'Core system functionality'},
+    ],
 }
 
 # Email configuration

@@ -79,6 +79,15 @@ export const ToastProvider = ({ children }) => {
     dispatch({ type: 'UPDATE_TOAST', payload: { id, updates } });
   }, []);
 
+  // Generic showToast method
+  const showToast = useCallback((message, type = 'info', options = {}) => {
+    return addToast({
+      type,
+      message,
+      ...options
+    });
+  }, [addToast]);
+
   // Convenience methods for different toast types
   const showSuccess = useCallback((message, options = {}) => {
     return addToast({
@@ -130,6 +139,7 @@ export const ToastProvider = ({ children }) => {
     removeToast,
     clearToasts,
     updateToast,
+    showToast, // Add the generic method
     showSuccess,
     showError,
     showWarning,

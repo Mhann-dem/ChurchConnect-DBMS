@@ -1,3 +1,4 @@
+# File: backend/authentication/urls.py
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
@@ -6,8 +7,9 @@ app_name = 'authentication'
 
 urlpatterns = [
     # Authentication endpoints
-    path('login/', views.CustomTokenObtainPairView.as_view(), name='login'),
-    path('logout/', views.logout_view, name='logout'),
+    path('login/', views.login_view, name='admin_login'),
+    path('logout/', views.logout_view, name='admin_logout'),
+    path('verify/', views.verify_token, name='verify_token'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Password management
@@ -15,7 +17,7 @@ urlpatterns = [
     path('password/reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
     path('password/reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
-    # User profile
+    # User profile and permissions
     path('profile/', views.UserProfileView.as_view(), name='user_profile'),
     path('permissions/', views.user_permissions, name='user_permissions'),
     

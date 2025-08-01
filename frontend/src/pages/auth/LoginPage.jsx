@@ -1,8 +1,8 @@
-// frontend/src/pages/auth/LoginPage.jsx
+// pages/auth/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { useToast } from '../../hooks/useToast';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import styles from './AuthPages.module.css';
@@ -77,32 +77,68 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      await login(formData.email, formData.password, formData.rememberMe);
-      showToast('Login successful! Welcome back.', 'success');
-      navigate(from, { replace: true });
+      // Pass credentials object to login function
+      const credentials = {
+        email: formData.email,
+        password: formData.password
+      };
+      
+      console.log('Attempting login with:', credentials);
+      const result = await login(credentials);
+      console.log('Login result:', result);
+      console.log('Login result type:', typeof result);
+      console.log('Login result keys:', result ? Object.keys(result) : 'null');
+      
+      // Check if login was successful
+      console.log('Checking result success...');
+      
+      // Handle different possible response formats
+      if (result === null || result === undefined) {
+        throw new Error('No response from server');
+      }
+      
+      // If result is a string, it might be an error message
+      if (typeof result === 'string') {
+        throw new Error(result);
+      }
+      
+      // Check for success in various formats
+      const isSuccessful = 
+        result.success === true || 
+        result.status === 'success' ||
+        (result.user && result.token) ||
+        (result.access_token || result.access);
+      
+      if (isSuccessful) {
+        showToast('Login successful! Welcome back.', 'success');
+        console.log('Navigating to:', from);
+        navigate(from, { replace: true });
+      } else {
+        // Handle unsuccessful login
+        const errorMessage = 
+          result.error || 
+          result.message || 
+          result.detail ||
+          'Login failed. Please try again.';
+        setErrors({ general: errorMessage });
+        showToast(errorMessage, 'error');
+      }
     } catch (error) {
       console.error('Login error:', error);
       
       // Handle different error types
-      if (error.response?.status === 401) {
-        setErrors({
-          general: 'Invalid email or password. Please try again.'
-        });
-      } else if (error.response?.status === 403) {
-        setErrors({
-          general: 'Your account has been deactivated. Please contact support.'
-        });
-      } else if (error.response?.status === 429) {
-        setErrors({
-          general: 'Too many login attempts. Please wait before trying again.'
-        });
-      } else {
-        setErrors({
-          general: 'Login failed. Please check your connection and try again.'
-        });
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.message) {
+        errorMessage = error.message;
       }
       
-      showToast('Login failed. Please try again.', 'error');
+      // Set form-level error
+      setErrors({
+        general: errorMessage
+      });
+      
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -219,7 +255,7 @@ const LoginPage = () => {
             </label>
             
             <Link 
-              to="/auth/forgot-password" 
+              to="/admin/forgot-password" 
               className={styles.forgotLink}
               tabIndex={isLoading ? -1 : 0}
             >

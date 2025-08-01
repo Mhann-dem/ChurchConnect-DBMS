@@ -693,3 +693,233 @@ INFO 2025-07-31 21:00:41,601 middleware 24296 23932 Response: 200 for GET /admin
 INFO 2025-07-31 21:01:03,324 middleware 24296 16696 Request: POST /admin/login/ from 127.0.0.1
 INFO 2025-07-31 21:01:04,281 middleware 24296 16696 Response: 302 for POST /admin/login/ (0.957s)
 INFO 2025-07-31 21:01:04,300 middleware 24296 15720 Request: GET /admin/ from 127.0.0.1
+INFO 2025-08-01 19:05:11,194 autoreload 16100 18624 Watching for file changes with StatReloader
+INFO 2025-08-01 19:05:24,963 basehttp 16100 3704 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-01 19:05:24,980 middleware 16100 3704 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:05:26,158 middleware 16100 3704 Response: 200 for POST /api/auth/login/ (1.178s)
+INFO 2025-08-01 19:05:26,161 basehttp 16100 3704 "POST /api/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-01 19:06:24,517 middleware 16100 3704 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:06:25,333 middleware 16100 3704 Response: 200 for POST /api/auth/login/ (0.816s)
+INFO 2025-08-01 19:06:25,333 basehttp 16100 3704 "POST /api/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-01 19:33:06,115 middleware 16100 13916 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:33:07,407 middleware 16100 13916 Response: 200 for POST /api/auth/login/ (1.292s)
+INFO 2025-08-01 19:33:07,415 basehttp 16100 13916 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:33:23,438 middleware 16100 13916 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:33:24,268 middleware 16100 13916 Response: 200 for POST /api/auth/login/ (0.830s)
+INFO 2025-08-01 19:33:24,268 basehttp 16100 13916 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:34:15,215 middleware 16100 13916 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:34:16,025 middleware 16100 13916 Response: 200 for POST /api/auth/login/ (0.810s)
+INFO 2025-08-01 19:34:16,025 basehttp 16100 13916 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:41:23,855 middleware 16100 19632 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:41:24,739 middleware 16100 19632 Response: 200 for POST /api/auth/login/ (0.884s)
+INFO 2025-08-01 19:41:24,739 basehttp 16100 19632 "POST /api/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-01 19:42:11,900 middleware 16100 17492 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:42:12,782 middleware 16100 17492 Response: 200 for POST /api/auth/login/ (0.882s)
+INFO 2025-08-01 19:42:12,782 basehttp 16100 17492 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:47:19,842 middleware 16100 14740 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:47:20,885 middleware 16100 14740 Response: 200 for POST /api/auth/login/ (1.043s)
+INFO 2025-08-01 19:47:20,886 basehttp 16100 14740 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:48:06,491 middleware 16100 1520 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:48:07,469 middleware 16100 1520 Response: 200 for POST /api/auth/login/ (0.978s)
+INFO 2025-08-01 19:48:07,470 basehttp 16100 1520 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:50:43,459 middleware 16100 8908 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 19:50:44,445 middleware 16100 8908 Response: 200 for POST /api/auth/login/ (0.986s)
+INFO 2025-08-01 19:50:44,447 basehttp 16100 8908 "POST /api/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-01 19:51:38,454 middleware 16100 13284 Request: GET / from 127.0.0.1
+INFO 2025-08-01 19:51:38,842 middleware 16100 13284 Response: 404 for GET / (0.388s)
+WARNING 2025-08-01 19:51:38,845 log 16100 13284 Not Found: /
+WARNING 2025-08-01 19:51:38,846 basehttp 16100 13284 "GET / HTTP/1.1" 404 3274
+INFO 2025-08-01 19:51:39,064 middleware 16100 13284 Request: GET /favicon.ico from 127.0.0.1
+INFO 2025-08-01 19:51:39,073 middleware 16100 13284 Response: 404 for GET /favicon.ico (0.009s)
+WARNING 2025-08-01 19:51:39,074 log 16100 13284 Not Found: /favicon.ico
+WARNING 2025-08-01 19:51:39,075 basehttp 16100 13284 "GET /favicon.ico HTTP/1.1" 404 3325
+INFO 2025-08-01 19:53:05,108 autoreload 16100 18624 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-01 19:53:08,074 autoreload 14176 9728 Watching for file changes with StatReloader
+INFO 2025-08-01 19:53:18,992 middleware 14176 20384 Request: GET / from 127.0.0.1
+INFO 2025-08-01 19:53:19,001 middleware 14176 20384 Response: 302 for GET / (0.009s)
+INFO 2025-08-01 19:53:19,002 basehttp 14176 20384 "GET / HTTP/1.1" 302 0
+INFO 2025-08-01 19:53:19,012 middleware 14176 20384 Request: GET /api/docs/ from 127.0.0.1
+ERROR 2025-08-01 19:53:19,920 log 14176 20384 Internal Server Error: /api/docs/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\views.py", line 48, in handle_exception
+    return super().handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\views.py", line 37, in get
+    schema = self.schema_generator.get_schema(request, self.public)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\coreapi.py", line 158, in get_schema
+    links = self.get_links(None if public else request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\coreapi.py", line 145, in get_links
+    link = view.schema.get_link(path, method, base_url=self.url)
+AttributeError: 'AutoSchema' object has no attribute 'get_link'
+INFO 2025-08-01 19:53:19,927 middleware 14176 20384 Response: 500 for GET /api/docs/ (0.915s)
+ERROR 2025-08-01 19:53:19,929 basehttp 14176 20384 "GET /api/docs/ HTTP/1.1" 500 127751
+INFO 2025-08-01 19:54:24,267 autoreload 14176 9728 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-01 19:54:26,169 autoreload 6052 15948 Watching for file changes with StatReloader
+INFO 2025-08-01 19:54:32,469 middleware 6052 20728 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-01 19:54:32,484 middleware 6052 20728 Response: 404 for GET /api/docs/ (0.014s)
+WARNING 2025-08-01 19:54:32,485 log 6052 20728 Not Found: /api/docs/
+WARNING 2025-08-01 19:54:32,485 basehttp 6052 20728 "GET /api/docs/ HTTP/1.1" 404 3319
+INFO 2025-08-01 19:55:38,922 autoreload 6052 15948 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-01 19:55:40,620 autoreload 21228 21216 Watching for file changes with StatReloader
+INFO 2025-08-01 19:55:43,309 middleware 21228 21404 Request: GET /api/docs/ from 127.0.0.1
+ERROR 2025-08-01 19:55:43,472 log 21228 21404 Internal Server Error: /api/docs/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\views.py", line 48, in handle_exception
+    return super().handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\views.py", line 37, in get
+    schema = self.schema_generator.get_schema(request, self.public)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\coreapi.py", line 158, in get_schema
+    links = self.get_links(None if public else request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\schemas\coreapi.py", line 145, in get_links
+    link = view.schema.get_link(path, method, base_url=self.url)
+AttributeError: 'AutoSchema' object has no attribute 'get_link'
+INFO 2025-08-01 19:55:43,484 middleware 21228 21404 Response: 500 for GET /api/docs/ (0.173s)
+ERROR 2025-08-01 19:55:43,485 basehttp 21228 21404 "GET /api/docs/ HTTP/1.1" 500 127751
+INFO 2025-08-01 20:02:38,062 autoreload 12740 16532 Watching for file changes with StatReloader
+INFO 2025-08-01 20:03:14,692 middleware 12740 20320 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-01 20:03:15,067 middleware 12740 20320 Response: 200 for GET /api/docs/ (0.375s)
+INFO 2025-08-01 20:03:15,069 basehttp 12740 20320 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-01 20:03:16,137 middleware 12740 20320 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-01 20:03:17,042 log 12740 20320 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 100, in get_operation
+    request_body = self._get_request_body()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1321, in _get_request_body
+    schema, partial_request_body_required = self._get_request_for_media_type(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1353, in _get_request_for_media_type
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1081, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+AssertionError: The field 'created_by' was included on serializer MemberCreateSerializer in the 'exclude' option, but does not match any model field.
+INFO 2025-08-01 20:03:17,064 middleware 12740 20320 Response: 500 for GET /api/schema/ (0.927s)
+ERROR 2025-08-01 20:03:17,072 basehttp 12740 20320 "GET /api/schema/ HTTP/1.1" 500 185000
+INFO 2025-08-01 20:03:17,122 middleware 12740 20320 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-01 20:03:17,274 log 12740 20320 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 100, in get_operation
+    request_body = self._get_request_body()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1321, in _get_request_body
+    schema, partial_request_body_required = self._get_request_for_media_type(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1353, in _get_request_for_media_type
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1081, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+AssertionError: The field 'created_by' was included on serializer MemberCreateSerializer in the 'exclude' option, but does not match any model field.
+INFO 2025-08-01 20:03:17,276 middleware 12740 20320 Response: 500 for GET /api/schema/ (0.154s)
+ERROR 2025-08-01 20:03:17,278 basehttp 12740 20320 "GET /api/schema/ HTTP/1.1" 500 185000
+INFO 2025-08-01 20:11:31,875 autoreload 4076 13804 Watching for file changes with StatReloader
+INFO 2025-08-01 20:12:04,683 middleware 4076 20744 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 20:12:04,700 middleware 4076 20744 Response: 404 for POST /api/auth/login/ (0.017s)
+WARNING 2025-08-01 20:12:04,700 log 4076 20744 Not Found: /api/auth/login/
+WARNING 2025-08-01 20:12:04,702 basehttp 4076 20744 "POST /api/auth/login/ HTTP/1.1" 404 3367
+INFO 2025-08-01 20:17:29,852 autoreload 4076 13804 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-01 20:17:31,412 autoreload 14920 21032 Watching for file changes with StatReloader
+INFO 2025-08-01 20:18:22,877 autoreload 14920 21032 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-08-01 20:18:24,332 autoreload 18688 21484 Watching for file changes with StatReloader
+INFO 2025-08-01 20:18:53,406 middleware 18688 19032 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-01 20:18:53,418 middleware 18688 19032 Response: 404 for POST /api/auth/login/ (0.012s)
+WARNING 2025-08-01 20:18:53,419 log 18688 19032 Not Found: /api/auth/login/
+WARNING 2025-08-01 20:18:53,420 basehttp 18688 19032 "POST /api/auth/login/ HTTP/1.1" 404 3367

@@ -25,6 +25,77 @@ from .serializers import (
 from .permissions import IsSuperAdmin, IsAdminOrReadOnly
 
 
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from .serializers import AdminUserSerializer
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    """Admin login endpoint"""
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
+        return Response({
+            'error': 'Email and password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Authenticate user
+        user = authenticate(request, username=email, password=password)
+        
+        if user is not None:
+            if user.is_active:
+                # Generate JWT tokens
+                refresh = RefreshToken.for_user(user)
+                access_token = refresh.access_token
+                
+                return Response({
+                    'access': str(access_token),
+                    'refresh': str(refresh),
+                    'user': AdminUserSerializer(user).data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': 'Account is deactivated'
+                }, status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({
+                'error': 'Invalid credentials'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+    except Exception as e:
+        return Response({
+            'error': 'Login failed'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def logout_view(request):
+    """Admin logout endpoint"""
+    try:
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        return Response({'message': 'Logged out successfully'})
+    except Exception:
+        return Response({'error': 'Logout failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def verify_token(request):
+    """Verify if user is authenticated"""
+    return Response({
+        'user': AdminUserSerializer(request.user).data
+    })
+
+
 def get_client_ip(request):
     """Get the client IP address from request"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

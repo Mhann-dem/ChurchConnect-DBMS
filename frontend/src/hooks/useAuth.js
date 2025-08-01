@@ -29,16 +29,14 @@ const useAuth = () => {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
-  // Enhanced login with error handling
+  // Fixed login - should throw on failure to match LoginPage expectations
   const handleLogin = async (credentials) => {
     try {
       const result = await login(credentials);
-      return { success: true, data: result };
+      return result; // Return the result directly
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Login failed' 
-      };
+      // Re-throw the error so LoginPage can catch it
+      throw error;
     }
   };
 
@@ -186,7 +184,7 @@ const useAuth = () => {
     isAuthenticated,
     isLoading,
     
-    // Methods
+    // Methods - use the fixed handleLogin
     login: handleLogin,
     logout: handleLogout,
     requestPasswordReset,

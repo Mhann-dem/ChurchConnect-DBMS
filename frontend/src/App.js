@@ -4,6 +4,11 @@ import useAuth from './hooks/useAuth';
 import { useTheme } from './context/ThemeContext';
 import { useToast } from './context/ToastContext';
 
+// Context Providers
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
+
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
 import AdminLayout from './components/layout/AdminLayout';
@@ -20,7 +25,7 @@ const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'));
 const HelpCenter = lazy(() => import('./pages/help/HelpCenter'));
 const FAQ = lazy(() => import('./pages/help/FAQ'));
 
-// Additional public pages that might be missing
+// Additional public pages
 const EventsPage = lazy(() => import('./pages/public/EventsPage'));
 const MinistriesPage = lazy(() => import('./pages/public/MinistriesPage'));
 const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
@@ -46,37 +51,8 @@ const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 // Member login page (separate from admin)
 const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
 
-// Protected route wrapper
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
-};
-
-// Public route wrapper (redirects authenticated users to admin)
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  
-  return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
-};
-
-// Admin route wrapper
-const AdminRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
-};
-
-// Main App component
-function App() {
+// Inner App component that uses the contexts
+function AppContent() {
   const { theme } = useTheme();
   const { toasts } = useToast();
   const location = useLocation();
@@ -88,12 +64,38 @@ function App() {
 
   // Track page views for analytics (optional)
   useEffect(() => {
-    // Add your analytics tracking here
     console.log('Page view:', location.pathname);
   }, [location]);
 
   // Determine if current path is admin-related
   const isAdminPath = location.pathname.startsWith('/admin');
+
+  // MOVE ROUTE COMPONENTS INSIDE AppContent so they have access to contexts
+  const ProtectedRoute = ({ children }) => {
+    const { isAuthenticated, isLoading } = useAuth();
+    
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+    
+    return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
+  };
+
+  const PublicRoute = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    
+    return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
+  };
+
+  const AdminRoute = ({ children }) => {
+    const { isAuthenticated, isLoading } = useAuth();
+    
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+    
+    return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
+  };
 
   return (
     <div className="app">
@@ -216,6 +218,19 @@ function App() {
         )}
       </div>
     </div>
+  );
+}
+
+// Main App component with all providers
+function App() {
+  return (
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 

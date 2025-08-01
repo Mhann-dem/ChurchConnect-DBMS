@@ -1,8 +1,8 @@
 // services/api.js
 import axios from 'axios';
 
-// Use Django development server URL by default
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// Use HTTPS Django development server URL now that your backend supports it
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://localhost:8000/api';
 
 console.log('API Base URL configured as:', API_BASE_URL);
 
@@ -13,6 +13,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Important: Allow self-signed certificates in development
+  httpsAgent: process.env.NODE_ENV === 'development' ? {
+    rejectUnauthorized: false
+  } : undefined,
 });
 
 // Request interceptor to add auth token and debug logging
