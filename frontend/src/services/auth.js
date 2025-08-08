@@ -1,318 +1,378 @@
-// services/auth.js
+// ============================================================================
+// services/auth.js - Updated version with better error handling
+// ============================================================================
 import { api } from './api';
 
 const AUTH_ENDPOINTS = {
-  LOGIN: '/auth/login/',
-  LOGOUT: '/auth/logout/',
-  PASSWORD_RESET: '/auth/password-reset/',
-  PASSWORD_RESET_CONFIRM: '/auth/password-reset/confirm/',
-  REFRESH_TOKEN: '/auth/refresh/',
-  VERIFY_TOKEN: '/auth/verify/',
-  CHANGE_PASSWORD: '/auth/change-password/',
-};
-
-// Storage helper with error handling (no localStorage for Claude artifacts)
-const storage = {
-  data: {},
-  
-  getItem(key) {
-    return this.data[key] || null;
-  },
-  
-  setItem(key, value) {
-    this.data[key] = value;
-    return true;
-  },
-  
-  removeItem(key) {
-    delete this.data[key];
-    return true;
-  }
+  LOGIN: 'auth/login/',
+  LOGOUT: 'auth/logout/',
+  VERIFY: 'auth/verify/',
+  PASSWORD_RESET: 'auth/password/reset/',
+  PASSWORD_RESET_CONFIRM: 'auth/password/reset/confirm/',
+  REFRESH_TOKEN: 'auth/token/refresh/',
+  CHANGE_PASSWORD: 'auth/password/change/',
+  PROFILE: 'auth/profile/',
 };
 
 class AuthService {
   constructor() {
-    this.token = storage.getItem('authToken');
-    this.refreshToken = storage.getItem('refreshToken');
-    this.user = this.parseUser(storage.getItem('user'));
     this.refreshTimer = null;
   }
 
-  parseUser(userString) {
-    if (!userString) return null;
-    try {
-      return JSON.parse(userString);
-    } catch (error) {
-      console.warn('Failed to parse user data:', error);
-      return null;
-    }
-  }
-
+  // Validate credentials format
   validateCredentials(credentials) {
     if (!credentials || typeof credentials !== 'object') {
       return { valid: false, error: 'Invalid credentials format' };
     }
     
-    const { email, username, password } = credentials;
+    const { email, password } = credentials;
     
-    if (!password || password.length < 6) {
-      return { valid: false, error: 'Password must be at least 6 characters long' };
+    if (!email) {
+      return { valid: false, error: 'Email is required' };
     }
     
-    if (!email && !username) {
-      return { valid: false, error: 'Email or username is required' };
-    }
-    
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return { valid: false, error: 'Invalid email format' };
+    }
+    
+    if (!password) {
+      return { valid: false, error: 'Password is required' };
+    }
+    
+    if (password.length < 6) {
+      return { valid: false, error: 'Password must be at least 6 characters long' };
     }
     
     return { valid: true };
   }
 
+  // Login method - Fixed to return consistent format
   async login(credentials) {
     try {
+      console.log('[AuthService] Starting login process...');
+      
+      // Validate credentials
       const validation = this.validateCredentials(credentials);
       if (!validation.valid) {
+        console.error('[AuthService] Validation failed:', validation.error);
         return { success: false, error: validation.error };
       }
 
-      console.log('Making login request to:', api.defaults.baseURL + AUTH_ENDPOINTS.LOGIN);
+      console.log(`[AuthService] Making login request to: ${api.defaults.baseURL}${AUTH_ENDPOINTS.LOGIN}`);
+      console.log('[AuthService] Credentials:', { email: credentials.email, password: '***' });
       
-      const response = await api.post(AUTH_ENDPOINTS.LOGIN, credentials);
-      const { token, refresh_token, user } = response.data;
+      // Make the login request
+      const response = await api.post(AUTH_ENDPOINTS.LOGIN, {
+        email: credentials.email,
+        password: credentials.password
+      });
       
-      if (!token || !user) {
-        return { success: false, error: 'Invalid response from server' };
+      console.log('[AuthService] Login response received:', response.data);
+      
+      // Extract tokens and user data from response
+      const responseData = response.data;
+      const { 
+        access, 
+        access_token, 
+        refresh, 
+        refresh_token, 
+        token,
+        user 
+      } = responseData;
+      
+      // Handle different possible token field names
+      const accessToken = access || access_token || token;
+      const refreshTokenValue = refresh || refresh_token;
+      
+      if (!accessToken) {
+        console.error('[AuthService] No access token in response:', responseData);
+        return { success: false, error: 'Invalid response: no access token received' };
       }
       
-      // Store auth data
-      storage.setItem('authToken', token);
-      if (refresh_token) {
-        storage.setItem('refreshToken', refresh_token);
+      if (!user) {
+        console.error('[AuthService] No user data in response:', responseData);
+        return { success: false, error: 'Invalid response: no user data received' };
       }
-      storage.setItem('user', JSON.stringify(user));
       
-      this.token = token;
-      this.refreshToken = refresh_token;
-      this.user = user;
+      // Store tokens and user data
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('authToken', accessToken); // Backward compatibility
+      
+      if (refreshTokenValue) {
+        localStorage.setItem('refresh_token', refreshTokenValue);
+      }
+      
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log('[AuthService] Login successful, tokens stored');
       
       // Set up token refresh if refresh token is available
-      if (refresh_token) {
+      if (refreshTokenValue) {
         this.scheduleTokenRefresh();
       }
       
-      return { success: true, user, token };
-    } catch (error) {
-      console.error('Login error details:', {
-        message: error.message,
-        response: error.response,
-        config: error.config
-      });
+      return {
+        success: true,
+        user,
+        access_token: accessToken,
+        token: accessToken, // Provide both for compatibility
+        refresh_token: refreshTokenValue
+      };
       
-      const message = error.response?.data?.message || 
-                    error.response?.data?.error || 
-                    error.message ||
-                    'Login failed';
-      return { success: false, error: message };
+    } catch (error) {
+      console.error('[AuthService] Login error:', error);
+      
+      // Handle different error types
+      if (error.response) {
+        // Server responded with error
+        const errorData = error.response.data;
+        const message = errorData.detail || 
+                       errorData.message || 
+                       errorData.error ||
+                       errorData.non_field_errors?.[0] ||
+                       (typeof errorData === 'string' ? errorData : null) ||
+                       Object.values(errorData)[0] ||
+                       'Login failed. Please check your credentials.';
+        
+        return { success: false, error: message };
+      } else if (error.request) {
+        // Network error
+        return { success: false, error: 'Unable to connect to server. Please check your connection.' };
+      } else {
+        // Other error
+        return { success: false, error: error.message || 'An unexpected error occurred.' };
+      }
     }
   }
 
+  // Logout method
   async logout() {
     try {
+      console.log('[AuthService] Starting logout process...');
+      
       // Clear refresh timer
       if (this.refreshTimer) {
         clearTimeout(this.refreshTimer);
         this.refreshTimer = null;
       }
       
-      // Attempt to logout on server
-      if (this.token) {
-        await api.post(AUTH_ENDPOINTS.LOGOUT);
+      // Try to logout on server (optional)
+      const token = this.getAccessToken();
+      if (token) {
+        try {
+          await api.post(AUTH_ENDPOINTS.LOGOUT);
+          console.log('[AuthService] Server logout successful');
+        } catch (error) {
+          console.warn('[AuthService] Server logout failed (continuing anyway):', error.message);
+        }
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('[AuthService] Logout error:', error);
     } finally {
-      // Clear local storage regardless of API response
+      // Always clear local storage
       this.clearAuthData();
+      console.log('[AuthService] Auth data cleared');
     }
   }
 
+  // Clear authentication data
   clearAuthData() {
-    storage.removeItem('authToken');
-    storage.removeItem('refreshToken');
-    storage.removeItem('user');
-    this.token = null;
-    this.refreshToken = null;
-    this.user = null;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
   }
 
+  // Verify token
+  async verifyToken() {
+    try {
+      const response = await api.get(AUTH_ENDPOINTS.VERIFY);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[AuthService] Token verification failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Password reset request
   async requestPasswordReset(email) {
     try {
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return { success: false, error: 'Valid email address is required' };
+        throw new Error('Valid email address is required');
       }
 
       const response = await api.post(AUTH_ENDPOINTS.PASSWORD_RESET, { email });
-      return { success: true, message: response.data.message };
+      return { success: true, message: response.data.message || 'Password reset email sent' };
     } catch (error) {
-      const message = error.response?.data?.message || 
+      const message = error.response?.data?.detail || 
+                    error.response?.data?.message || 
                     error.response?.data?.error || 
+                    error.message ||
                     'Password reset request failed';
-      return { success: false, error: message };
+      throw new Error(message);
     }
   }
 
-  async confirmPasswordReset(token, newPassword) {
+  // Password reset confirmation
+  async resetPassword(token, newPassword) {
     try {
       if (!token || !newPassword) {
-        return { success: false, error: 'Token and new password are required' };
+        throw new Error('Token and new password are required');
       }
       
       if (newPassword.length < 6) {
-        return { success: false, error: 'Password must be at least 6 characters long' };
+        throw new Error('Password must be at least 6 characters long');
       }
 
       const response = await api.post(AUTH_ENDPOINTS.PASSWORD_RESET_CONFIRM, {
         token,
         new_password: newPassword,
       });
-      return { success: true, message: response.data.message };
+      
+      return { success: true, message: response.data.message || 'Password reset successful' };
     } catch (error) {
-      const message = error.response?.data?.message || 
+      const message = error.response?.data?.detail || 
+                    error.response?.data?.message || 
                     error.response?.data?.error || 
-                    'Password reset confirmation failed';
-      return { success: false, error: message };
+                    error.message ||
+                    'Password reset failed';
+      throw new Error(message);
     }
   }
 
+  // Change password
   async changePassword(currentPassword, newPassword) {
     try {
       if (!currentPassword || !newPassword) {
-        return { success: false, error: 'Current password and new password are required' };
+        throw new Error('Current password and new password are required');
       }
       
       if (newPassword.length < 6) {
-        return { success: false, error: 'New password must be at least 6 characters long' };
+        throw new Error('New password must be at least 6 characters long');
       }
       
       if (currentPassword === newPassword) {
-        return { success: false, error: 'New password must be different from current password' };
+        throw new Error('New password must be different from current password');
       }
 
       const response = await api.post(AUTH_ENDPOINTS.CHANGE_PASSWORD, {
         current_password: currentPassword,
         new_password: newPassword,
       });
-      return { success: true, message: response.data.message };
+      
+      return { success: true, message: response.data.message || 'Password changed successfully' };
     } catch (error) {
-      const message = error.response?.data?.message || 
+      const message = error.response?.data?.detail || 
+                    error.response?.data?.message || 
                     error.response?.data?.error || 
+                    error.message ||
                     'Password change failed';
-      return { success: false, error: message };
+      throw new Error(message);
     }
   }
 
-  async refreshTokens() {
-    if (!this.refreshToken) {
-      return false;
+  // Update user profile
+  async updateProfile(userData) {
+    try {
+      const response = await api.patch(AUTH_ENDPOINTS.PROFILE, userData);
+      const updatedUser = response.data.user || response.data;
+      
+      // Update stored user data
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return updatedUser;
+    } catch (error) {
+      const message = error.response?.data?.detail || 
+                    error.response?.data?.message || 
+                    error.response?.data?.error || 
+                    error.message ||
+                    'Profile update failed';
+      throw new Error(message);
+    }
+  }
+
+  // Refresh tokens
+  async refreshToken() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
     }
 
     try {
       const response = await api.post(AUTH_ENDPOINTS.REFRESH_TOKEN, {
-        refresh_token: this.refreshToken,
+        refresh: refreshToken,
       });
       
-      const { token, refresh_token } = response.data;
+      const { access } = response.data;
       
-      if (token) {
-        this.token = token;
-        storage.setItem('authToken', token);
-        
-        if (refresh_token) {
-          this.refreshToken = refresh_token;
-          storage.setItem('refreshToken', refresh_token);
-        }
-        
+      if (access) {
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('authToken', access); // Backward compatibility
         this.scheduleTokenRefresh();
-        return true;
+        return access;
+      } else {
+        throw new Error('No access token in refresh response');
       }
     } catch (error) {
-      console.error('Token refresh failed:', error);
-      this.logout();
+      console.error('[AuthService] Token refresh failed:', error);
+      this.clearAuthData();
+      throw new Error('Session expired. Please login again.');
     }
-    
-    return false;
   }
 
+  // Schedule token refresh
   scheduleTokenRefresh() {
-    // Clear existing timer
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
     }
     
     // Schedule refresh for 50 minutes (assuming 1 hour token expiry)
     this.refreshTimer = setTimeout(() => {
-      this.refreshTokens();
+      this.refreshToken().catch(error => {
+        console.error('[AuthService] Automatic token refresh failed:', error);
+      });
     }, 50 * 60 * 1000);
   }
 
-  async verifyToken() {
-    if (!this.token) {
-      return false;
-    }
-    
-    try {
-      await api.post(AUTH_ENDPOINTS.VERIFY_TOKEN, { token: this.token });
-      return true;
-    } catch (error) {
-      // Try to refresh token first
-      if (this.refreshToken) {
-        const refreshed = await this.refreshTokens();
-        if (refreshed) {
-          return true;
-        }
-      }
-      
-      this.logout();
-      return false;
-    }
-  }
-
+  // Check if user is authenticated
   isAuthenticated() {
-    return !!(this.token && this.user);
+    const token = this.getAccessToken();
+    const user = this.getCurrentUser();
+    return !!(token && user);
   }
 
+  // Get current user
+  getCurrentUser() {
+    try {
+      const userString = localStorage.getItem('user');
+      return userString ? JSON.parse(userString) : null;
+    } catch (error) {
+      console.error('[AuthService] Error parsing user data:', error);
+      return null;
+    }
+  }
+
+  // Get access token
+  getAccessToken() {
+    return localStorage.getItem('access_token') || localStorage.getItem('authToken');
+  }
+
+  // Get refresh token
+  getRefreshToken() {
+    return localStorage.getItem('refresh_token');
+  }
+
+  // Get user (alias for getCurrentUser)
   getUser() {
-    return this.user;
+    return this.getCurrentUser();
   }
 
+  // Get token (alias for getAccessToken)
   getToken() {
-    return this.token;
+    return this.getAccessToken();
   }
 
-  hasRole(role) {
-    if (!role || !this.user?.role) {
-      return false;
-    }
-    return this.user.role === role;
-  }
-
-  hasPermission(permission) {
-    if (!permission || !this.user?.role) {
-      return false;
-    }
-    
-    const rolePermissions = {
-      super_admin: ['read', 'write', 'delete', 'admin'],
-      admin: ['read', 'write', 'delete'],
-      readonly: ['read'],
-    };
-    
-    return rolePermissions[this.user.role]?.includes(permission) || false;
-  }
-
-  // Cleanup method for when the service is no longer needed
+  // Cleanup
   destroy() {
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);

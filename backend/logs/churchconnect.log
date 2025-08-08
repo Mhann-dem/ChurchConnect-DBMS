@@ -923,3 +923,55 @@ INFO 2025-08-01 20:18:53,406 middleware 18688 19032 Request: POST /api/auth/logi
 INFO 2025-08-01 20:18:53,418 middleware 18688 19032 Response: 404 for POST /api/auth/login/ (0.012s)
 WARNING 2025-08-01 20:18:53,419 log 18688 19032 Not Found: /api/auth/login/
 WARNING 2025-08-01 20:18:53,420 basehttp 18688 19032 "POST /api/auth/login/ HTTP/1.1" 404 3367
+INFO 2025-08-08 16:22:15,274 autoreload 9292 15940 Watching for file changes with StatReloader
+INFO 2025-08-08 16:26:12,393 basehttp 9292 16608 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:26:12,410 middleware 9292 16608 Request: POST /api/auth/login/ from 127.0.0.1
+INFO 2025-08-08 16:26:12,493 middleware 9292 16608 Response: 404 for POST /api/auth/login/ (0.083s)
+WARNING 2025-08-08 16:26:12,493 log 9292 16608 Not Found: /api/auth/login/
+WARNING 2025-08-08 16:26:12,494 basehttp 9292 16608 "POST /api/auth/login/ HTTP/1.1" 404 3367
+INFO 2025-08-08 16:36:58,720 autoreload 9292 15940 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-08-08 16:37:00,719 autoreload 11908 11052 Watching for file changes with StatReloader
+INFO 2025-08-08 16:37:21,296 autoreload 11908 11052 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-08-08 16:37:22,569 autoreload 16732 9516 Watching for file changes with StatReloader
+INFO 2025-08-08 16:38:14,718 autoreload 16732 9516 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-08-08 16:38:16,246 autoreload 2084 10512 Watching for file changes with StatReloader
+INFO 2025-08-08 16:46:46,293 autoreload 16864 15192 Watching for file changes with StatReloader
+INFO 2025-08-08 17:03:13,993 autoreload 16864 15192 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-08 17:03:16,109 autoreload 8500 9220 Watching for file changes with StatReloader
+INFO 2025-08-08 17:04:01,070 autoreload 8500 9220 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\urls.py changed, reloading.
+INFO 2025-08-08 17:04:02,440 autoreload 10392 8316 Watching for file changes with StatReloader
+INFO 2025-08-08 17:04:59,324 autoreload 10392 8316 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:05:00,605 autoreload 14072 3708 Watching for file changes with StatReloader
+INFO 2025-08-08 17:05:18,111 autoreload 14072 3708 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:05:19,534 autoreload 10292 13744 Watching for file changes with StatReloader
+INFO 2025-08-08 17:05:26,011 autoreload 10292 13744 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:05:27,379 autoreload 2940 16964 Watching for file changes with StatReloader
+INFO 2025-08-08 17:05:32,744 autoreload 2940 16964 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:05:34,150 autoreload 3156 12652 Watching for file changes with StatReloader
+INFO 2025-08-08 17:05:37,156 autoreload 3156 12652 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:05:38,708 autoreload 14272 10896 Watching for file changes with StatReloader
+INFO 2025-08-08 17:07:50,399 autoreload 7568 16908 Watching for file changes with StatReloader
+INFO 2025-08-08 17:27:39,373 autoreload 7568 16908 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-08 17:27:41,156 autoreload 3060 16724 Watching for file changes with StatReloader
+INFO 2025-08-08 17:28:05,686 autoreload 3060 16724 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\urls.py changed, reloading.
+INFO 2025-08-08 17:28:07,132 autoreload 8720 3000 Watching for file changes with StatReloader
+INFO 2025-08-08 17:28:35,824 autoreload 8720 3000 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:28:37,344 autoreload 13132 16156 Watching for file changes with StatReloader
+INFO 2025-08-08 17:28:58,081 autoreload 13132 16156 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-08-08 17:28:59,528 autoreload 11288 17000 Watching for file changes with StatReloader
+INFO 2025-08-08 18:14:56,450 autoreload 16592 18032 Watching for file changes with StatReloader
+INFO 2025-08-08 18:30:35,225 autoreload 2752 17564 Watching for file changes with StatReloader
+INFO 2025-08-08 18:31:08,496 autoreload 2752 17564 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-08 18:31:09,827 autoreload 18116 16196 Watching for file changes with StatReloader
+INFO 2025-08-08 18:55:35,999 autoreload 1132 18588 Watching for file changes with StatReloader
+INFO 2025-08-08 18:56:31,165 basehttp 1132 9740 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:56:31,178 middleware 1132 9740 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-08 18:56:33,311 middleware 1132 9740 Response: 200 for POST /api/v1/auth/login/ (2.132s)
+INFO 2025-08-08 18:56:33,311 basehttp 1132 9740 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-08 18:57:35,654 middleware 1132 17176 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-08 18:57:36,490 middleware 1132 17176 Response: 200 for POST /api/v1/auth/login/ (0.836s)
+INFO 2025-08-08 18:57:36,492 basehttp 1132 17176 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-08 20:05:47,693 basehttp 1132 9280 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-08 20:05:47,719 middleware 1132 9280 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-08 20:05:48,767 middleware 1132 9280 Response: 200 for POST /api/v1/auth/login/ (1.048s)
+INFO 2025-08-08 20:05:48,768 basehttp 1132 9280 "POST /api/v1/auth/login/ HTTP/1.1" 200 920

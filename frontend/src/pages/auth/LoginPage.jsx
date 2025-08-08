@@ -68,81 +68,56 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
+  
+  try {
+    const credentials = {
+      email: formData.email,
+      password: formData.password
+    };
     
-    try {
-      // Pass credentials object to login function
-      const credentials = {
-        email: formData.email,
-        password: formData.password
-      };
+    console.log('=== LOGIN DEBUG START ===');
+    console.log('1. Attempting login with:', { email: credentials.email, password: '***' });
+    
+    const result = await login(credentials);
+    
+    console.log('2. Login result:', result);
+    console.log('3. Result success:', result?.success);
+    console.log('4. IsAuthenticated state:', isAuthenticated);
+    
+    // The login function now returns { success: true, user, token } on success
+    // or throws an error on failure
+    if (result?.success) {
+      console.log('5. Login successful, showing toast');
+      showToast('Login successful! Welcome back.', 'success');
       
-      console.log('Attempting login with:', credentials);
-      const result = await login(credentials);
-      console.log('Login result:', result);
-      console.log('Login result type:', typeof result);
-      console.log('Login result keys:', result ? Object.keys(result) : 'null');
-      
-      // Check if login was successful
-      console.log('Checking result success...');
-      
-      // Handle different possible response formats
-      if (result === null || result === undefined) {
-        throw new Error('No response from server');
-      }
-      
-      // If result is a string, it might be an error message
-      if (typeof result === 'string') {
-        throw new Error(result);
-      }
-      
-      // Check for success in various formats
-      const isSuccessful = 
-        result.success === true || 
-        result.status === 'success' ||
-        (result.user && result.token) ||
-        (result.access_token || result.access);
-      
-      if (isSuccessful) {
-        showToast('Login successful! Welcome back.', 'success');
-        console.log('Navigating to:', from);
-        navigate(from, { replace: true });
-      } else {
-        // Handle unsuccessful login
-        const errorMessage = 
-          result.error || 
-          result.message || 
-          result.detail ||
-          'Login failed. Please try again.';
-        setErrors({ general: errorMessage });
-        showToast(errorMessage, 'error');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      
-      // Handle different error types
-      let errorMessage = 'Login failed. Please try again.';
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      // Set form-level error
-      setErrors({
-        general: errorMessage
-      });
-      
+      console.log('6. Navigating to:', from);
+      navigate(from, { replace: true });
+    } else {
+      // This shouldn't happen with the new implementation
+      console.log('5. Unexpected login result:', result);
+      const errorMessage = 'Login failed. Please try again.';
+      setErrors({ general: errorMessage });
       showToast(errorMessage, 'error');
-    } finally {
-      setIsLoading(false);
     }
-  };
+    
+    console.log('=== LOGIN DEBUG END ===');
+    
+  } catch (error) {
+    console.error('6. Login error caught:', error);
+    const errorMessage = error.message || 'Login failed. Please try again.';
+    setErrors({ general: errorMessage });
+    showToast(errorMessage, 'error');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {

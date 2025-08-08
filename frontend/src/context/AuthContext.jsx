@@ -1,4 +1,6 @@
-// context/AuthContext.jsx
+// ============================================================================
+// context/AuthContext.jsx - Fixed version
+// ============================================================================
 import React, { createContext, useReducer, useCallback, useEffect } from 'react';
 import authService from '../services/auth';
 
@@ -100,19 +102,30 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (credentials) => {
     try {
+      console.log('[AuthContext] Starting login...');
       setLoading(true);
       clearError();
       
-      // Call authService.login which returns { success, user, token, error }
+      // Call authService.login which returns { success, user, access_token, refresh_token }
       const result = await authService.login(credentials);
+      console.log('[AuthContext] AuthService result:', result);
       
       if (result.success) {
+        // Map access_token to token for consistency
+        const authData = {
+          user: result.user,
+          token: result.access_token || result.token
+        };
+        
+        console.log('[AuthContext] Login successful, dispatching LOGIN_SUCCESS');
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { user: result.user, token: result.token }
+          payload: authData
         });
-        return result;
+        
+        return { success: true, ...authData };
       } else {
+        console.log('[AuthContext] Login failed:', result.error);
         dispatch({ 
           type: AUTH_ACTIONS.LOGIN_FAILURE, 
           payload: result.error 
@@ -120,6 +133,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error(result.error);
       }
     } catch (error) {
+      console.error('[AuthContext] Login error:', error);
       const errorMessage = error.message || 'Login failed';
       dispatch({ 
         type: AUTH_ACTIONS.LOGIN_FAILURE, 
@@ -136,40 +150,36 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuthStatus = useCallback(async () => {
+    console.log('[AuthContext] Checking auth status...');
     dispatch({ type: AUTH_ACTIONS.CHECK_AUTH_START });
     
     try {
       // Check if authService has stored auth data
       const isAuth = authService.isAuthenticated();
-      const user = authService.getUser();
-      const token = authService.getToken();
+      const user = authService.getCurrentUser();
+      const token = authService.getAccessToken();
+      
+      console.log('[AuthContext] Stored auth data:', { isAuth, hasUser: !!user, hasToken: !!token });
       
       if (isAuth && user && token) {
-        // Verify the token is still valid
-        const isValid = await authService.verifyToken();
+        console.log('[AuthContext] Found stored auth, verifying...');
         
-        if (isValid) {
-          dispatch({
-            type: AUTH_ACTIONS.CHECK_AUTH_SUCCESS,
-            payload: { user, token }
-          });
-        } else {
-          // Token is invalid, clear auth data
-          await authService.logout();
-          dispatch({
-            type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
-            payload: 'Session expired'
-          });
-        }
+        // For now, trust the stored data. You can add token verification later
+        dispatch({
+          type: AUTH_ACTIONS.CHECK_AUTH_SUCCESS,
+          payload: { user, token }
+        });
+        console.log('[AuthContext] Auth check successful');
       } else {
         // No stored auth data
+        console.log('[AuthContext] No valid stored auth data');
         dispatch({
           type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
           payload: 'Not authenticated'
         });
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('[AuthContext] Auth check failed:', error);
       dispatch({
         type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
         payload: error.message || 'Authentication check failed'

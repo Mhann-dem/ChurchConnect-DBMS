@@ -55,9 +55,9 @@ class MembersService {
   async createMember(memberData) {
     try {
       // Use rate limiter for public submissions
-      const response = await publicApiLimiter.makeRequest(() =>
-        api.post(MEMBERS_ENDPOINTS.CREATE, memberData)
-      );
+      // const response = await publicApiLimiter.makeRequest(() =>
+      //   api.post(MEMBERS_ENDPOINTS.CREATE, memberData)
+      // );
       
       // For registration page compatibility, return direct response
       return response.data;

@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 import { useTheme } from './context/ThemeContext';
 import { useToast } from './context/ToastContext';
+import { SettingsProvider } from './context/SettingsContext';
+
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -226,12 +228,15 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <SettingsProvider>  {/* Add this */}
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </SettingsProvider>  {/* Add this */}
       </ToastProvider>
     </ThemeProvider>
   );
 }
+
 
 export default App;
