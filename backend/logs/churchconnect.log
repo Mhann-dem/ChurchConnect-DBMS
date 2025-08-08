@@ -975,3 +975,17 @@ INFO 2025-08-08 20:05:47,693 basehttp 1132 9280 "OPTIONS /api/v1/auth/login/ HTT
 INFO 2025-08-08 20:05:47,719 middleware 1132 9280 Request: POST /api/v1/auth/login/ from 127.0.0.1
 INFO 2025-08-08 20:05:48,767 middleware 1132 9280 Response: 200 for POST /api/v1/auth/login/ (1.048s)
 INFO 2025-08-08 20:05:48,768 basehttp 1132 9280 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-08 20:21:27,531 basehttp 1132 4016 "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-08 20:21:27,548 middleware 1132 4016 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-08 20:21:27,641 middleware 1132 4016 Response: 401 for POST /api/v1/auth/logout/ (0.093s)
+WARNING 2025-08-08 20:21:27,650 log 1132 4016 Unauthorized: /api/v1/auth/logout/
+WARNING 2025-08-08 20:21:27,652 basehttp 1132 4016 "POST /api/v1/auth/logout/ HTTP/1.1" 401 172
+INFO 2025-08-08 20:21:46,274 middleware 1132 4016 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-08 20:21:47,248 middleware 1132 4016 Response: 200 for POST /api/v1/auth/login/ (0.974s)
+INFO 2025-08-08 20:21:47,248 basehttp 1132 4016 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-08 20:27:27,394 middleware 1132 17220 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-08 20:27:27,619 middleware 1132 17220 Response: 200 for POST /api/v1/auth/logout/ (0.226s)
+INFO 2025-08-08 20:27:27,622 basehttp 1132 17220 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-08 20:27:50,127 middleware 1132 17028 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-08 20:27:51,045 middleware 1132 17028 Response: 200 for POST /api/v1/auth/login/ (0.918s)
+INFO 2025-08-08 20:27:51,047 basehttp 1132 17028 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
