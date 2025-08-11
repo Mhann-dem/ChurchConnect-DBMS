@@ -990,3 +990,341 @@ INFO 2025-08-08 20:27:50,127 middleware 1132 17028 Request: POST /api/v1/auth/lo
 INFO 2025-08-08 20:27:51,045 middleware 1132 17028 Response: 200 for POST /api/v1/auth/login/ (0.918s)
 INFO 2025-08-08 20:27:51,047 basehttp 1132 17028 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
 INFO 2025-08-11 03:04:03,620 autoreload 2200 9224 Watching for file changes with StatReloader
+INFO 2025-08-11 03:04:22,608 middleware 2200 8532 Request: GET / from 127.0.0.1
+INFO 2025-08-11 03:04:22,612 middleware 2200 8532 Response: 302 for GET / (0.004s)
+INFO 2025-08-11 03:04:22,614 basehttp 2200 8532 "GET / HTTP/1.1" 302 0
+INFO 2025-08-11 03:04:22,635 middleware 2200 8532 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-11 03:04:22,955 middleware 2200 8532 Response: 200 for GET /api/docs/ (0.320s)
+INFO 2025-08-11 03:04:22,958 basehttp 2200 8532 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-11 03:04:24,459 middleware 2200 8532 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-11 03:04:25,733 log 2200 8532 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1105, in get_fields
+    field_class, field_kwargs = self.build_field(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1251, in build_field
+    return self.build_unknown_field(field_name, model_class)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1369, in build_unknown_field
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Field name `columns` is not valid for model `Report` in `reports.serializers.ReportSerializer`.
+INFO 2025-08-11 03:04:25,738 middleware 2200 8532 Response: 500 for GET /api/schema/ (1.279s)
+ERROR 2025-08-11 03:04:25,738 basehttp 2200 8532 "GET /api/schema/ HTTP/1.1" 500 199429
+INFO 2025-08-11 03:04:25,774 middleware 2200 8532 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-11 03:04:26,321 log 2200 8532 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1105, in get_fields
+    field_class, field_kwargs = self.build_field(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1251, in build_field
+    return self.build_unknown_field(field_name, model_class)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1369, in build_unknown_field
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Field name `columns` is not valid for model `Report` in `reports.serializers.ReportSerializer`.
+INFO 2025-08-11 03:04:26,321 middleware 2200 8532 Response: 500 for GET /api/schema/ (0.547s)
+ERROR 2025-08-11 03:04:26,321 basehttp 2200 8532 "GET /api/schema/ HTTP/1.1" 500 199429
+INFO 2025-08-11 03:04:41,005 middleware 2200 8532 Request: GET /api from 127.0.0.1
+INFO 2025-08-11 03:04:41,038 middleware 2200 8532 Response: 404 for GET /api (0.032s)
+WARNING 2025-08-11 03:04:41,038 log 2200 8532 Not Found: /api
+WARNING 2025-08-11 03:04:41,039 basehttp 2200 8532 "GET /api HTTP/1.1" 404 3330
+INFO 2025-08-11 03:04:41,136 middleware 2200 8532 Request: GET /favicon.ico from 127.0.0.1
+INFO 2025-08-11 03:04:41,145 middleware 2200 8532 Response: 404 for GET /favicon.ico (0.009s)
+WARNING 2025-08-11 03:04:41,146 log 2200 8532 Not Found: /favicon.ico
+WARNING 2025-08-11 03:04:41,149 basehttp 2200 8532 "GET /favicon.ico HTTP/1.1" 404 3354
+INFO 2025-08-11 03:04:54,979 middleware 2200 8532 Request: GET / from 127.0.0.1
+INFO 2025-08-11 03:04:54,979 middleware 2200 8532 Response: 302 for GET / (0.001s)
+INFO 2025-08-11 03:04:54,981 basehttp 2200 8532 "GET / HTTP/1.1" 302 0
+INFO 2025-08-11 03:04:54,988 middleware 2200 8532 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-11 03:04:55,175 middleware 2200 8532 Response: 200 for GET /api/docs/ (0.187s)
+INFO 2025-08-11 03:04:55,176 basehttp 2200 8532 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-11 03:04:55,291 middleware 2200 8532 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-11 03:04:55,673 log 2200 8532 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1105, in get_fields
+    field_class, field_kwargs = self.build_field(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1251, in build_field
+    return self.build_unknown_field(field_name, model_class)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1369, in build_unknown_field
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Field name `columns` is not valid for model `Report` in `reports.serializers.ReportSerializer`.
+INFO 2025-08-11 03:04:55,678 middleware 2200 8532 Response: 500 for GET /api/schema/ (0.387s)
+ERROR 2025-08-11 03:04:55,678 basehttp 2200 8532 "GET /api/schema/ HTTP/1.1" 500 199429
+INFO 2025-08-11 03:04:55,696 middleware 2200 8532 Request: GET /api/schema/ from 127.0.0.1
+ERROR 2025-08-11 03:04:56,198 log 2200 8532 Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1105, in get_fields
+    field_class, field_kwargs = self.build_field(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1251, in build_field
+    return self.build_unknown_field(field_name, model_class)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 1369, in build_unknown_field
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Field name `columns` is not valid for model `Report` in `reports.serializers.ReportSerializer`.
+INFO 2025-08-11 03:04:56,198 middleware 2200 8532 Response: 500 for GET /api/schema/ (0.502s)
+ERROR 2025-08-11 03:04:56,198 basehttp 2200 8532 "GET /api/schema/ HTTP/1.1" 500 199429
+INFO 2025-08-11 03:04:57,778 basehttp 2200 11508 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-11 03:04:57,778 basehttp 2200 4980 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-11 03:04:57,779 basehttp 2200 17788 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-11 03:04:57,786 middleware 2200 17788 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-11 03:04:57,789 middleware 2200 4980 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-11 03:04:57,790 middleware 2200 11508 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+ERROR 2025-08-11 03:04:58,627 log 2200 11508 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-11 03:04:58,647 log 2200 4980 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-11 03:04:58,673 log 2200 17788 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+INFO 2025-08-11 03:04:58,675 middleware 2200 11508 Response: 500 for POST /api/v1/auth/token/refresh/ (0.886s)
+INFO 2025-08-11 03:04:58,676 middleware 2200 4980 Response: 500 for POST /api/v1/auth/token/refresh/ (0.888s)
+INFO 2025-08-11 03:04:58,679 middleware 2200 17788 Response: 500 for POST /api/v1/auth/token/refresh/ (0.893s)
+ERROR 2025-08-11 03:04:58,681 basehttp 2200 11508 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-11 03:04:58,681 basehttp 2200 4980 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-11 03:04:58,683 basehttp 2200 17788 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+INFO 2025-08-11 03:05:24,323 basehttp 2200 11372 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-11 03:05:24,327 middleware 2200 11372 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-11 03:05:25,102 middleware 2200 11372 Response: 200 for POST /api/v1/auth/login/ (0.775s)
+INFO 2025-08-11 03:05:25,103 basehttp 2200 11372 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-11 03:19:19,899 basehttp 2200 9136 "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-11 03:19:19,906 middleware 2200 9136 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-11 03:19:20,107 middleware 2200 9136 Response: 200 for POST /api/v1/auth/logout/ (0.201s)
+INFO 2025-08-11 03:19:20,108 basehttp 2200 9136 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-11 03:20:50,670 middleware 2200 9136 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-11 03:20:51,585 middleware 2200 9136 Response: 200 for POST /api/v1/auth/login/ (0.916s)
+INFO 2025-08-11 03:20:51,586 basehttp 2200 9136 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
