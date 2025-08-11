@@ -989,3 +989,4 @@ INFO 2025-08-08 20:27:27,622 basehttp 1132 17220 "POST /api/v1/auth/logout/ HTTP
 INFO 2025-08-08 20:27:50,127 middleware 1132 17028 Request: POST /api/v1/auth/login/ from 127.0.0.1
 INFO 2025-08-08 20:27:51,045 middleware 1132 17028 Response: 200 for POST /api/v1/auth/login/ (0.918s)
 INFO 2025-08-08 20:27:51,047 basehttp 1132 17028 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-11 03:04:03,620 autoreload 2200 9224 Watching for file changes with StatReloader

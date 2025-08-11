@@ -13,7 +13,7 @@ import {
   ChevronRightIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import useAuth from '../../hooks/useAuth'; // Fixed: Import from hooks, not context
+import useAuth from '../../hooks/useAuth';
 
 const navigationItems = [
   {
@@ -60,7 +60,7 @@ const navigationItems = [
   }
 ];
 
-export const Sidebar = ({ isOpen, onClose }) => {
+export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
   const { logout, hasPermission, user } = useAuth();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -85,191 +85,174 @@ export const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapseChange) {
+      onCollapseChange(newCollapsed);
+    }
   };
 
   const filteredNavigationItems = navigationItems.filter(item => 
     !item.permission || hasPermission(item.permission)
   );
 
-  const sidebarWidth = isCollapsed ? 'w-16' : 'w-64';
-  const showLabels = !isCollapsed && isOpen;
+  // Calculate sidebar classes
+  const sidebarClasses = `
+    fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out
+    bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700
+    ${isCollapsed && !isMobile ? 'w-16' : 'w-64'}
+    ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
+  `;
+
+  const showLabels = !isCollapsed || isMobile;
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isMobile && isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 z-50 ${sidebarWidth} bg-white dark:bg-gray-900 
-        shadow-xl transform transition-all duration-300 ease-in-out
-        ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-        border-r border-gray-200 dark:border-gray-700
-      `}>
+    <div className={sidebarClasses}>
+      {/* Header */}
+      <div className="flex items-center justify-between h-16 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div className="flex items-center min-w-0">
+          <img 
+            src="/assets/images/logo.png" 
+            alt="ChurchConnect" 
+            className="h-8 w-8 flex-shrink-0"
+            onError={(e) => {
+              e.target.src = '/assets/images/icons/church.svg';
+            }}
+          />
+          {showLabels && (
+            <span className="ml-3 text-lg font-bold truncate">
+              ChurchConnect
+            </span>
+          )}
+        </div>
         
-        {/* Header */}
-        <div className={`
-          flex items-center justify-between h-16 px-4 
-          bg-gradient-to-r from-blue-600 to-blue-700 text-white
-          ${isCollapsed ? 'px-2' : 'px-4'}
-        `}>
-          <div className="flex items-center">
-            <img 
-              src="/assets/images/logo.png" 
-              alt="ChurchConnect" 
-              className="h-8 w-8 flex-shrink-0"
-              onError={(e) => {
-                e.target.src = '/assets/images/icons/church.svg';
-              }}
-            />
-            {showLabels && (
-              <span className="ml-3 text-lg font-bold whitespace-nowrap">
-                ChurchConnect
-              </span>
-            )}
-          </div>
-          
-          {/* Controls */}
-          <div className="flex items-center space-x-1">
-            {!isMobile && (
-              <button
-                onClick={toggleCollapse}
-                className="p-1 hover:bg-blue-500 rounded-md transition-colors"
-                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {isCollapsed ? (
-                  <ChevronRightIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronLeftIcon className="h-4 w-4" />
-                )}
-              </button>
-            )}
-            
-            {isMobile && (
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-blue-500 rounded-md transition-colors"
-                title="Close sidebar"
-              >
-                <XMarkIcon className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
-          {filteredNavigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href || 
-                           (item.href !== '/admin/dashboard' && location.pathname.startsWith(item.href));
-            
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive: linkActive }) => `
-                  group flex items-center px-3 py-3 text-sm font-medium rounded-lg 
-                  transition-all duration-200 relative
-                  ${isActive || linkActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 shadow-sm' 
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
-                  }
-                  ${isCollapsed ? 'justify-center' : ''}
-                `}
-                onClick={() => {
-                  if (isMobile) {
-                    onClose();
-                  }
-                }}
-                title={isCollapsed ? item.name : ''}
-              >
-                <Icon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
-                
-                {showLabels && (
-                  <div className="flex-1 min-w-0">
-                    <span className="block truncate">{item.name}</span>
-                    {item.description && (
-                      <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {item.description}
-                      </span>
-                    )}
-                  </div>
-                )}
-                
-                {/* Active indicator */}
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" />
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Help Section */}
-        <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
-          <NavLink
-            to="/help"
-            className={`
-              group flex items-center px-3 py-3 text-sm font-medium rounded-lg
-              text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800
-              transition-all duration-200
-              ${isCollapsed ? 'justify-center' : ''}
-            `}
-            title={isCollapsed ? 'Help' : ''}
-          >
-            <QuestionMarkCircleIcon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
-            {showLabels && <span>Help & Support</span>}
-          </NavLink>
-        </div>
-
-        {/* User Section */}
-        <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
-          {showLabels && user && (
-            <div className="flex items-center px-3 py-3 mb-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3 flex-shrink-0">
-                {user?.first_name?.[0]}{user?.last_name?.[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 dark:text-white truncate">
-                  {user?.first_name} {user?.last_name}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {user?.role}
-                </div>
-              </div>
-            </div>
+        {/* Controls */}
+        <div className="flex items-center space-x-1">
+          {!isMobile && (
+            <button
+              onClick={toggleCollapse}
+              className="p-1 hover:bg-blue-500 rounded-md transition-colors"
+              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? (
+                <ChevronRightIcon className="h-4 w-4" />
+              ) : (
+                <ChevronLeftIcon className="h-4 w-4" />
+              )}
+            </button>
           )}
           
-          <button
-            onClick={handleLogout}
-            className={`
-              group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg
-              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
-              transition-all duration-200
-              ${isCollapsed ? 'justify-center' : ''}
-            `}
-            title={isCollapsed ? 'Logout' : ''}
-          >
-            <ArrowLeftOnRectangleIcon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
-            {showLabels && <span>Logout</span>}
-          </button>
+          {isMobile && (
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-blue-500 rounded-md transition-colors"
+              title="Close sidebar"
+            >
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Spacer for main content */}
-      <div className={`
-        ${isMobile ? 'lg:block' : 'block'} 
-        ${isCollapsed ? 'lg:w-16' : 'lg:w-64'} 
-        flex-shrink-0 transition-all duration-300
-      `} />
-    </>
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
+        {filteredNavigationItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.href || 
+                         (item.href !== '/admin/dashboard' && location.pathname.startsWith(item.href));
+          
+          return (
+            <NavLink
+              key={item.name}
+              to={item.href}
+              className={({ isActive: linkActive }) => `
+                group flex items-center px-3 py-3 text-sm font-medium rounded-lg 
+                transition-all duration-200 relative
+                ${isActive || linkActive
+                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 shadow-sm' 
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
+                }
+                ${isCollapsed && !isMobile ? 'justify-center' : ''}
+              `}
+              onClick={() => {
+                if (isMobile) {
+                  onClose();
+                }
+              }}
+              title={isCollapsed && !isMobile ? item.name : ''}
+            >
+              <Icon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
+              
+              {showLabels && (
+                <div className="flex-1 min-w-0">
+                  <span className="block truncate">{item.name}</span>
+                  {item.description && !isCollapsed && (
+                    <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {item.description}
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* Active indicator */}
+              {isActive && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" />
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Help Section */}
+      <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
+        <NavLink
+          to="/help"
+          className={`
+            group flex items-center px-3 py-3 text-sm font-medium rounded-lg
+            text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800
+            transition-all duration-200
+            ${isCollapsed && !isMobile ? 'justify-center' : ''}
+          `}
+          title={isCollapsed && !isMobile ? 'Help' : ''}
+        >
+          <QuestionMarkCircleIcon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
+          {showLabels && <span>Help & Support</span>}
+        </NavLink>
+      </div>
+
+      {/* User Section */}
+      <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
+        {showLabels && user && (
+          <div className="flex items-center px-3 py-3 mb-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3 flex-shrink-0">
+              {user?.first_name?.[0]}{user?.last_name?.[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-gray-900 dark:text-white truncate">
+                {user?.first_name} {user?.last_name}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {user?.role}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <button
+          onClick={handleLogout}
+          className={`
+            group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg
+            text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
+            transition-all duration-200
+            ${isCollapsed && !isMobile ? 'justify-center' : ''}
+          `}
+          title={isCollapsed && !isMobile ? 'Logout' : ''}
+        >
+          <ArrowLeftOnRectangleIcon className={`h-5 w-5 flex-shrink-0 ${showLabels ? 'mr-3' : ''}`} />
+          {showLabels && <span>Logout</span>}
+        </button>
+      </div>
+    </div>
   );
 };
 
