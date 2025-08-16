@@ -9,8 +9,11 @@ const PublicLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Public Header */}
-      <Header isPublic={true} user={user} />
+      {/* Public Header with improved mobile menu */}
+      <Header 
+        isPublic={true} 
+        user={user} 
+      />
 
       {/* Main Content */}
       <main className="flex-grow">

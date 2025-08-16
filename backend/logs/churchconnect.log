@@ -1328,3 +1328,252 @@ INFO 2025-08-11 03:19:20,108 basehttp 2200 9136 "POST /api/v1/auth/logout/ HTTP/
 INFO 2025-08-11 03:20:50,670 middleware 2200 9136 Request: POST /api/v1/auth/login/ from 127.0.0.1
 INFO 2025-08-11 03:20:51,585 middleware 2200 9136 Response: 200 for POST /api/v1/auth/login/ (0.916s)
 INFO 2025-08-11 03:20:51,586 basehttp 2200 9136 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-16 01:26:36,233 autoreload 9636 7820 Watching for file changes with StatReloader
+INFO 2025-08-16 01:28:02,018 basehttp 9636 20400 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:28:02,018 basehttp 9636 3808 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:28:02,019 basehttp 9636 17196 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:28:02,021 basehttp 9636 21596 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:28:02,045 middleware 9636 17196 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-16 01:28:02,046 middleware 9636 3808 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-16 01:28:02,046 middleware 9636 21596 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-16 01:28:02,046 middleware 9636 20400 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+ERROR 2025-08-16 01:28:04,068 log 9636 3808 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-16 01:28:04,071 log 9636 20400 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-16 01:28:04,101 log 9636 21596 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-16 01:28:04,111 log 9636 17196 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+INFO 2025-08-16 01:28:04,117 middleware 9636 3808 Response: 500 for POST /api/v1/auth/token/refresh/ (2.071s)
+INFO 2025-08-16 01:28:04,118 middleware 9636 20400 Response: 500 for POST /api/v1/auth/token/refresh/ (2.072s)
+INFO 2025-08-16 01:28:04,119 middleware 9636 21596 Response: 500 for POST /api/v1/auth/token/refresh/ (2.073s)
+INFO 2025-08-16 01:28:04,120 middleware 9636 17196 Response: 500 for POST /api/v1/auth/token/refresh/ (2.075s)
+ERROR 2025-08-16 01:28:04,121 basehttp 9636 3808 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-16 01:28:04,123 basehttp 9636 20400 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-16 01:28:04,124 basehttp 9636 21596 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-16 01:28:04,125 basehttp 9636 17196 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+INFO 2025-08-16 01:34:16,327 basehttp 9636 20940 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:34:16,330 middleware 9636 20940 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-16 01:34:17,221 middleware 9636 20940 Response: 200 for POST /api/v1/auth/login/ (0.891s)
+INFO 2025-08-16 01:34:17,224 basehttp 9636 20940 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-16 01:41:03,790 basehttp 9636 5020 "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-16 01:41:03,794 middleware 9636 5020 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-16 01:41:03,940 middleware 9636 5020 Response: 200 for POST /api/v1/auth/logout/ (0.145s)
+INFO 2025-08-16 01:41:03,942 basehttp 9636 5020 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-16 01:41:24,304 middleware 9636 5020 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-16 01:41:25,202 middleware 9636 5020 Response: 200 for POST /api/v1/auth/login/ (0.898s)
+INFO 2025-08-16 01:41:25,203 basehttp 9636 5020 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-16 02:00:05,662 basehttp 9636 13896 "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-16 02:00:05,679 middleware 9636 13896 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-16 02:00:05,722 middleware 9636 13896 Response: 401 for POST /api/v1/auth/logout/ (0.042s)
+WARNING 2025-08-16 02:00:05,728 log 9636 13896 Unauthorized: /api/v1/auth/logout/
+WARNING 2025-08-16 02:00:05,731 basehttp 9636 13896 "POST /api/v1/auth/logout/ HTTP/1.1" 401 172
+INFO 2025-08-16 02:02:59,663 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,667 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,676 basehttp 9636 16400 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,677 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,690 basehttp 9636 17324 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,690 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,694 basehttp 9636 16400 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,698 basehttp 9636 6868 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,700 basehttp 9636 17324 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,707 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,708 basehttp 9636 16400 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,709 basehttp 9636 1876 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,715 basehttp 9636 17904 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,718 basehttp 9636 6868 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,721 basehttp 9636 17324 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,727 basehttp 9636 1876 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,732 middleware 9636 17904 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:02:59,733 basehttp 9636 19996 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 200 0
+INFO 2025-08-16 02:02:59,736 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:02:59,737 basehttp 9636 16400 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-16 02:03:00,077 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.340s)
+INFO 2025-08-16 02:03:00,080 middleware 9636 17904 Response: 404 for GET /api/v1/pledges/ (0.348s)
+WARNING 2025-08-16 02:03:00,081 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,081 log 9636 17904 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,083 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+WARNING 2025-08-16 02:03:00,083 basehttp 9636 17904 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,085 middleware 9636 16400 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,087 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,106 middleware 9636 16400 Response: 404 for GET /api/v1/pledges/ (0.021s)
+INFO 2025-08-16 02:03:00,128 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.041s)
+WARNING 2025-08-16 02:03:00,130 log 9636 16400 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,132 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,134 basehttp 9636 16400 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+WARNING 2025-08-16 02:03:00,135 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+INFO 2025-08-16 02:03:00,137 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,157 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.020s)
+WARNING 2025-08-16 02:03:00,158 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,164 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,165 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,185 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.020s)
+WARNING 2025-08-16 02:03:00,186 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,187 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,189 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,208 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.019s)
+WARNING 2025-08-16 02:03:00,211 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,212 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,215 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,232 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.017s)
+WARNING 2025-08-16 02:03:00,235 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,236 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,239 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,263 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.024s)
+WARNING 2025-08-16 02:03:00,264 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,266 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,268 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,286 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.018s)
+WARNING 2025-08-16 02:03:00,288 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,290 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,293 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,313 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.020s)
+WARNING 2025-08-16 02:03:00,316 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,318 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,321 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,340 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.018s)
+WARNING 2025-08-16 02:03:00,341 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,345 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,347 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,366 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.019s)
+WARNING 2025-08-16 02:03:00,367 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,369 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,371 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,389 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.018s)
+WARNING 2025-08-16 02:03:00,391 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,394 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,396 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,412 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.017s)
+WARNING 2025-08-16 02:03:00,413 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,417 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,420 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,435 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.015s)
+WARNING 2025-08-16 02:03:00,436 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,437 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,441 middleware 9636 6868 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,461 middleware 9636 6868 Response: 404 for GET /api/v1/pledges/ (0.020s)
+WARNING 2025-08-16 02:03:00,462 log 9636 6868 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,467 basehttp 9636 6868 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:03:00,469 middleware 9636 19996 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-16 02:03:00,487 middleware 9636 19996 Response: 404 for GET /api/v1/pledges/ (0.018s)
+WARNING 2025-08-16 02:03:00,487 log 9636 19996 Not Found: /api/v1/pledges/
+WARNING 2025-08-16 02:03:00,487 basehttp 9636 19996 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-16 02:47:58,127 basehttp 9636 17520 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-16 02:47:58,142 middleware 9636 17520 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-16 02:47:59,126 middleware 9636 17520 Response: 200 for POST /api/v1/auth/login/ (0.984s)
+INFO 2025-08-16 02:47:59,126 basehttp 9636 17520 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-16 03:04:08,026 middleware 9636 16956 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-16 03:04:08,220 middleware 9636 16956 Response: 200 for POST /api/v1/auth/logout/ (0.204s)
+INFO 2025-08-16 03:04:08,220 basehttp 9636 16956 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-16 03:20:09,197 middleware 9636 14216 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-16 03:20:10,259 middleware 9636 14216 Response: 200 for POST /api/v1/auth/login/ (1.062s)
+INFO 2025-08-16 03:20:10,260 basehttp 9636 14216 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
