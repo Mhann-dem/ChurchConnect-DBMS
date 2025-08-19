@@ -8,19 +8,22 @@ const PublicLayout = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Public Header with improved mobile menu */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 flex flex-col">
+      {/* Enhanced Public Header */}
       <Header 
         isPublic={true} 
         user={user} 
+        isAdmin={false}
       />
 
-      {/* Main Content */}
+      {/* Main Content with better spacing and design */}
       <main className="flex-grow">
-        <Outlet />
+        <div className="min-h-screen">
+          <Outlet />
+        </div>
       </main>
 
-      {/* Footer */}
+      {/* Enhanced Footer */}
       <Footer />
     </div>
   );

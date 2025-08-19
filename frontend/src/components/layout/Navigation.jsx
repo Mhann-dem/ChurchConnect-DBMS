@@ -16,38 +16,44 @@ const navigationItems = [
     href: '/',
     icon: HomeIcon,
     description: 'Return to homepage',
-    exact: true
+    exact: true,
+    emoji: '🏠'
   },
   { 
     name: 'Join Us', 
     href: '/register',
     icon: UserPlusIcon,
     description: 'Become a church member',
-    aliases: ['/form', '/member-registration']
+    aliases: ['/form', '/member-registration'],
+    emoji: '👥'
   },
   { 
     name: 'Events', 
     href: '/events',
     icon: CalendarDaysIcon,
-    description: 'Upcoming church events'
+    description: 'Upcoming church events',
+    emoji: '📅'
   },
   { 
     name: 'Ministries', 
     href: '/ministries',
     icon: UserGroupIcon,
-    description: 'Explore our ministries'
+    description: 'Explore our ministries',
+    emoji: '⛪'
   },
   { 
     name: 'Help', 
     href: '/help',
     icon: QuestionMarkCircleIcon,
-    description: 'Get assistance and support'
+    description: 'Get assistance and support',
+    emoji: '❓'
   },
   { 
     name: 'FAQ', 
     href: '/faq',
     icon: ChatBubbleLeftRightIcon,
-    description: 'Frequently asked questions'
+    description: 'Frequently asked questions',
+    emoji: '💬'
   }
 ];
 
@@ -94,7 +100,7 @@ export const Navigation = ({ isMobile = false }) => {
 
   if (isMobile) {
     return (
-      <div className="space-y-1" role="navigation" aria-label="Main navigation">
+      <div className="space-y-2" role="navigation" aria-label="Main navigation">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActiveItem(item);
@@ -104,19 +110,19 @@ export const Navigation = ({ isMobile = false }) => {
               key={item.name}
               to={item.href}
               className={({ isActive: linkActive }) =>
-                `flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                `flex items-center px-4 py-4 rounded-xl text-base font-bold transition-all duration-300 border-2 ${
                   isActive || linkActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
+                    ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-300 border-blue-400/50 shadow-xl'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10 hover:shadow-xl border-transparent hover:border-white/20'
                 }`
               }
               onClick={closeDropdowns}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5 mr-3" aria-hidden="true" />
+              <div className="text-xl mr-4">{item.emoji}</div>
               <div>
-                <div>{item.name}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="font-bold">{item.name}</div>
+                <div className="text-xs text-gray-400 mt-1">
                   {item.description}
                 </div>
               </div>
@@ -138,33 +144,39 @@ export const Navigation = ({ isMobile = false }) => {
             <NavLink
               to={item.href}
               className={({ isActive: linkActive }) =>
-                `group flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                `group flex flex-col items-center px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2 relative overflow-hidden ${
                   isActive || linkActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
+                    ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-300 border-blue-400/50 shadow-xl backdrop-blur-sm'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10 hover:shadow-xl border-transparent hover:border-white/20 backdrop-blur-sm hover:scale-105'
                 }`
               }
               onMouseEnter={() => setActiveDropdown(item.name)}
               onMouseLeave={() => setActiveDropdown(null)}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-4 w-4 mr-2" aria-hidden="true" />
-              <span>{item.name}</span>
+              <div className="text-lg mb-1 transform group-hover:scale-110 transition-transform duration-300">{item.emoji}</div>
+              <span className="text-xs uppercase tracking-wider">{item.name}</span>
+              
+              {/* Active indicator */}
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full"></div>
+              )}
               
               {/* Tooltip/Dropdown indicator */}
               <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />
+                <ChevronDownIcon className="h-3 w-3 absolute -bottom-1 left-1/2 transform -translate-x-1/2" aria-hidden="true" />
               </div>
             </NavLink>
 
             {/* Tooltip/Description */}
             {activeDropdown === item.name && (
               <div 
-                className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md shadow-lg whitespace-nowrap z-50"
+                className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl shadow-2xl whitespace-nowrap z-50 border border-white/20 backdrop-blur-sm"
                 role="tooltip"
               >
-                {item.description}
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                <div className="font-bold text-blue-300">{item.name}</div>
+                <div className="text-gray-400 mt-1">{item.description}</div>
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45 border-l border-t border-white/20"></div>
               </div>
             )}
           </div>

@@ -1577,3 +1577,163 @@ INFO 2025-08-16 03:04:08,220 basehttp 9636 16956 "POST /api/v1/auth/logout/ HTTP
 INFO 2025-08-16 03:20:09,197 middleware 9636 14216 Request: POST /api/v1/auth/login/ from 127.0.0.1
 INFO 2025-08-16 03:20:10,259 middleware 9636 14216 Response: 200 for POST /api/v1/auth/login/ (1.062s)
 INFO 2025-08-16 03:20:10,260 basehttp 9636 14216 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-19 17:51:18,295 autoreload 10572 20596 Watching for file changes with StatReloader
+INFO 2025-08-19 17:52:11,147 basehttp 10572 4192 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-19 17:52:11,149 basehttp 10572 21940 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-19 17:52:11,167 middleware 10572 4192 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-19 17:52:11,167 middleware 10572 21940 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-19 17:52:12,266 middleware 10572 8540 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-19 17:52:12,269 middleware 10572 14652 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+ERROR 2025-08-19 17:52:13,251 log 10572 21940 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-19 17:52:13,255 log 10572 14652 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-19 17:52:13,263 log 10572 8540 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-19 17:52:13,282 log 10572 4192 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+INFO 2025-08-19 17:52:13,286 middleware 10572 21940 Response: 500 for POST /api/v1/auth/token/refresh/ (2.119s)
+INFO 2025-08-19 17:52:13,287 middleware 10572 14652 Response: 500 for POST /api/v1/auth/token/refresh/ (1.018s)
+INFO 2025-08-19 17:52:13,288 middleware 10572 8540 Response: 500 for POST /api/v1/auth/token/refresh/ (1.022s)
+INFO 2025-08-19 17:52:13,289 middleware 10572 4192 Response: 500 for POST /api/v1/auth/token/refresh/ (2.122s)
+ERROR 2025-08-19 17:52:13,290 basehttp 10572 21940 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126185
+ERROR 2025-08-19 17:52:13,293 basehttp 10572 14652 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126185
+ERROR 2025-08-19 17:52:13,295 basehttp 10572 8540 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126185
+ERROR 2025-08-19 17:52:13,298 basehttp 10572 4192 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126185
+INFO 2025-08-19 17:52:28,503 basehttp 10572 8540 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-19 17:52:28,507 middleware 10572 8540 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-19 17:52:29,492 middleware 10572 8540 Response: 200 for POST /api/v1/auth/login/ (0.984s)
+INFO 2025-08-19 17:52:29,493 basehttp 10572 8540 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-19 18:18:21,008 basehttp 10572 15788 "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-19 18:18:21,030 middleware 10572 15788 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-19 18:18:21,284 middleware 10572 15788 Response: 200 for POST /api/v1/auth/logout/ (0.254s)
+INFO 2025-08-19 18:18:21,286 basehttp 10572 15788 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-19 18:18:38,534 middleware 10572 15788 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-19 18:18:39,457 middleware 10572 15788 Response: 401 for POST /api/v1/auth/login/ (0.923s)
+WARNING 2025-08-19 18:18:39,460 log 10572 15788 Unauthorized: /api/v1/auth/login/
+WARNING 2025-08-19 18:18:39,461 basehttp 10572 15788 "POST /api/v1/auth/login/ HTTP/1.1" 401 31
+INFO 2025-08-19 18:19:01,917 middleware 10572 15788 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-19 18:19:02,825 middleware 10572 15788 Response: 200 for POST /api/v1/auth/login/ (0.907s)
+INFO 2025-08-19 18:19:02,826 basehttp 10572 15788 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-19 18:20:20,000 middleware 10572 15788 Request: POST /api/v1/auth/logout/ from 127.0.0.1
+INFO 2025-08-19 18:20:20,068 middleware 10572 15788 Response: 200 for POST /api/v1/auth/logout/ (0.068s)
+INFO 2025-08-19 18:20:20,069 basehttp 10572 15788 "POST /api/v1/auth/logout/ HTTP/1.1" 200 37
+INFO 2025-08-19 18:40:05,619 middleware 10572 17224 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-19 18:40:06,735 middleware 10572 17224 Response: 200 for POST /api/v1/auth/login/ (1.116s)
+INFO 2025-08-19 18:40:06,737 basehttp 10572 17224 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-19 18:40:16,466 basehttp 10572 17224 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-19 18:40:16,466 basehttp 10572 19320 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-19 18:40:16,473 middleware 10572 19320 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-19 18:40:16,689 middleware 10572 19320 Response: 200 for GET /api/v1/members/ (0.217s)
+INFO 2025-08-19 18:40:16,690 basehttp 10572 19320 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-19 18:40:16,692 middleware 10572 17224 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-19 18:40:16,761 middleware 10572 17224 Response: 200 for GET /api/v1/members/ (0.069s)
+INFO 2025-08-19 18:40:16,762 basehttp 10572 17224 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
