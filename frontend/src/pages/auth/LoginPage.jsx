@@ -16,6 +16,7 @@ const LoginPage = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState('');
   
   const { login, isAuthenticated } = useAuth();
   const { showToast } = useToast();
@@ -48,6 +49,14 @@ const LoginPage = () => {
     }
   };
 
+  const handleFocus = (fieldName) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleBlur = () => {
+    setFocusedField('');
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -68,56 +77,53 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!validateForm()) {
-    return;
-  }
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
 
-  setIsLoading(true);
-  
-  try {
-    const credentials = {
-      email: formData.email,
-      password: formData.password
-    };
+    setIsLoading(true);
     
-    console.log('=== LOGIN DEBUG START ===');
-    console.log('1. Attempting login with:', { email: credentials.email, password: '***' });
-    
-    const result = await login(credentials);
-    
-    console.log('2. Login result:', result);
-    console.log('3. Result success:', result?.success);
-    console.log('4. IsAuthenticated state:', isAuthenticated);
-    
-    // The login function now returns { success: true, user, token } on success
-    // or throws an error on failure
-    if (result?.success) {
-      console.log('5. Login successful, showing toast');
-      showToast('Login successful! Welcome back.', 'success');
+    try {
+      const credentials = {
+        email: formData.email,
+        password: formData.password
+      };
       
-      console.log('6. Navigating to:', from);
-      navigate(from, { replace: true });
-    } else {
-      // This shouldn't happen with the new implementation
-      console.log('5. Unexpected login result:', result);
-      const errorMessage = 'Login failed. Please try again.';
+      console.log('=== LOGIN DEBUG START ===');
+      console.log('1. Attempting login with:', { email: credentials.email, password: '***' });
+      
+      const result = await login(credentials);
+      
+      console.log('2. Login result:', result);
+      console.log('3. Result success:', result?.success);
+      console.log('4. IsAuthenticated state:', isAuthenticated);
+      
+      if (result?.success) {
+        console.log('5. Login successful, showing toast');
+        showToast('Login successful! Welcome back.', 'success');
+        
+        console.log('6. Navigating to:', from);
+        navigate(from, { replace: true });
+      } else {
+        console.log('5. Unexpected login result:', result);
+        const errorMessage = 'Login failed. Please try again.';
+        setErrors({ general: errorMessage });
+        showToast(errorMessage, 'error');
+      }
+      
+      console.log('=== LOGIN DEBUG END ===');
+      
+    } catch (error) {
+      console.error('6. Login error caught:', error);
+      const errorMessage = error.message || 'Login failed. Please try again.';
       setErrors({ general: errorMessage });
       showToast(errorMessage, 'error');
+    } finally {
+      setIsLoading(false);
     }
-    
-    console.log('=== LOGIN DEBUG END ===');
-    
-  } catch (error) {
-    console.error('6. Login error caught:', error);
-    const errorMessage = error.message || 'Login failed. Please try again.';
-    setErrors({ general: errorMessage });
-    showToast(errorMessage, 'error');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -130,10 +136,13 @@ const LoginPage = () => {
       <div className={styles.authCard}>
         <div className={styles.authHeader}>
           <div className={styles.logo}>
-            <img src="/logo.png" alt="ChurchConnect" />
+            <svg className={styles.logoIcon} viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+              <path d="M12 7L8 12l2 2 2-2 4-4-2-2-2 2z" fill="white"/>
+            </svg>
           </div>
-          <h1>Admin Login</h1>
-          <p>Sign in to manage your church data</p>
+          <h1 className={styles.title}>Admin Login</h1>
+          <p className={styles.subtitle}>Sign in to manage your church data</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.authForm} noValidate>
@@ -147,32 +156,51 @@ const LoginPage = () => {
           )}
 
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>
+            <label 
+              htmlFor="email" 
+              className={`${styles.label} ${focusedField === 'email' ? styles.labelFocused : ''}`}
+            >
+              <svg className={styles.inputIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+              </svg>
               Email Address
             </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-              placeholder="Enter your email"
-              required
-              autoComplete="email"
-              aria-describedby={errors.email ? 'email-error' : undefined}
-              disabled={isLoading}
-            />
+            <div className={styles.inputWrapper}>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onFocus={() => handleFocus('email')}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className={`${styles.input} ${errors.email ? styles.inputError : ''} ${focusedField === 'email' ? styles.inputFocused : ''}`}
+                placeholder="Enter your email address"
+                required
+                autoComplete="email"
+                aria-describedby={errors.email ? 'email-error' : undefined}
+                disabled={isLoading}
+              />
+            </div>
             {errors.email && (
               <div id="email-error" className={styles.errorMessage} role="alert">
+                <svg className={styles.errorMessageIcon} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
                 {errors.email}
               </div>
             )}
           </div>
 
           <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.label}>
+            <label 
+              htmlFor="password" 
+              className={`${styles.label} ${focusedField === 'password' ? styles.labelFocused : ''}`}
+            >
+              <svg className={styles.inputIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
               Password
             </label>
             <div className={styles.passwordInputWrapper}>
@@ -182,8 +210,10 @@ const LoginPage = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleInputChange}
+                onFocus={() => handleFocus('password')}
+                onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+                className={`${styles.input} ${errors.password ? styles.inputError : ''} ${focusedField === 'password' ? styles.inputFocused : ''}`}
                 placeholder="Enter your password"
                 required
                 autoComplete="current-password"
@@ -211,31 +241,31 @@ const LoginPage = () => {
             </div>
             {errors.password && (
               <div id="password-error" className={styles.errorMessage} role="alert">
+                <svg className={styles.errorMessageIcon} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
                 {errors.password}
               </div>
             )}
           </div>
 
           <div className={styles.formOptions}>
-            <label className={styles.checkboxLabel}>
+            <label className={styles.checkboxWrapper}>
               <input
                 type="checkbox"
                 name="rememberMe"
                 checked={formData.rememberMe}
                 onChange={handleInputChange}
-                className={styles.checkbox}
+                className={styles.checkboxInput}
                 disabled={isLoading}
               />
-              <span className={styles.checkboxText}>Remember me</span>
+              <span className={styles.checkboxCustom}>
+                <svg className={styles.checkboxIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <span className={styles.checkboxLabel}>Remember me</span>
             </label>
-            
-            <Link 
-              to="/admin/forgot-password" 
-              className={styles.forgotLink}
-              tabIndex={isLoading ? -1 : 0}
-            >
-              Forgot password?
-            </Link>
           </div>
 
           <Button
@@ -243,7 +273,7 @@ const LoginPage = () => {
             variant="primary"
             size="large"
             disabled={isLoading}
-            className={styles.submitButton}
+            className={`${styles.submitButton} ${isLoading ? styles.submitButtonLoading : ''}`}
             aria-label={isLoading ? 'Signing in...' : 'Sign in'}
           >
             {isLoading ? (
@@ -252,20 +282,45 @@ const LoginPage = () => {
                 <span>Signing in...</span>
               </>
             ) : (
-              'Sign In'
+              <>
+                <span>Sign In</span>
+                <svg className={styles.submitButtonIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+              </>
             )}
           </Button>
+
+          <div className={styles.forgotPasswordWrapper}>
+            <Link 
+              to="/admin/forgot-password" 
+              className={styles.forgotPasswordLink}
+              tabIndex={isLoading ? -1 : 0}
+            >
+              <svg className={styles.forgotPasswordIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Forgot your password?
+            </Link>
+          </div>
         </form>
 
         <div className={styles.authFooter}>
-          <p>
-            Need help? <Link to="/help" className={styles.helpLink}>Contact Support</Link>
-          </p>
+          <div className={styles.divider}>
+            <span>Need help?</span>
+          </div>
+          <Link to="/help" className={styles.helpLink}>
+            <svg className={styles.helpIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.18l.09-.09a2.121 2.121 0 013 0l.09.09a2.121 2.121 0 010 3L12 8.36l-3.18-3.18a2.121 2.121 0 010-3z" />
+            </svg>
+            Contact Support
+          </Link>
         </div>
       </div>
 
       <div className={styles.authBackground}>
         <div className={styles.backgroundPattern}></div>
+        <div className={styles.backgroundGlow}></div>
       </div>
     </div>
   );

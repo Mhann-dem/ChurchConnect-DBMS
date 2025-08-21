@@ -46,6 +46,14 @@ const navigationItems = [
     description: 'Ministry & Small Groups'
   },
   {
+    name: 'Events',
+    href: '/admin/events',
+    icon: BellIcon,
+    permission: 'view_events',
+    badge: '8',
+    description: 'Church Events & Activities'
+  },
+  {
     name: 'Pledges',
     href: '/admin/pledges',
     icon: CurrencyDollarIcon,
@@ -120,351 +128,644 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     !item.permission || hasPermission(item.permission)
   );
 
-  const sidebarClasses = `
-    flex flex-col h-full shadow-2xl border-r transition-all duration-300
-    ${isDark 
-      ? 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-slate-700' 
-      : 'bg-gradient-to-b from-white via-gray-50 to-white border-gray-200'
-    }
-  `;
+  const sidebarStyle = {
+    position: 'fixed',
+    top: 0,
+    left: isMobile && !isOpen ? '-280px' : 0,
+    height: '100vh',
+    width: isCollapsed ? '64px' : '280px',
+    background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+    borderRight: '1px solid rgba(148, 163, 184, 0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: 50,
+    boxShadow: '4px 0 24px rgba(0, 0, 0, 0.12)'
+  };
 
-  const headerClasses = `
-    flex items-center justify-between h-20 px-6 border-b flex-shrink-0 transition-all duration-300
-    ${isDark 
-      ? 'border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900' 
-      : 'border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50'
-    }
-  `;
+  const headerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: isCollapsed ? '16px 12px' : '20px 24px',
+    borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+    minHeight: '72px'
+  };
+
+  const brandStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    color: 'white',
+    textDecoration: 'none',
+    transition: 'opacity 0.2s ease'
+  };
+
+  const logoStyle = {
+    width: '32px',
+    height: '32px',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: 'white',
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+  };
+
+  const textStyle = {
+    display: isCollapsed ? 'none' : 'flex',
+    flexDirection: 'column',
+    gap: '2px'
+  };
+
+  const titleStyle = {
+    fontSize: '16px',
+    fontWeight: '700',
+    color: 'white',
+    lineHeight: '1.2'
+  };
+
+  const subtitleStyle = {
+    fontSize: '11px',
+    color: '#94a3b8',
+    fontWeight: '500'
+  };
+
+  const controlsStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  };
+
+  const controlButtonStyle = {
+    width: '28px',
+    height: '28px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: 'none',
+    borderRadius: '6px',
+    color: '#94a3b8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    backdropFilter: 'blur(8px)'
+  };
+
+  const navStyle = {
+    flex: 1,
+    padding: isCollapsed ? '16px 8px' : '24px 16px',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(148, 163, 184, 0.3) transparent'
+  };
+
+  const sectionStyle = {
+    marginBottom: '24px'
+  };
+
+  const sectionTitleStyle = {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '8px',
+    paddingLeft: isCollapsed ? '0' : '12px',
+    display: isCollapsed ? 'none' : 'block'
+  };
+
+  const quickActionStyle = {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: isCollapsed ? '10px 8px' : '12px 16px',
+    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+    color: 'white',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    fontSize: '13px',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)',
+    justifyContent: isCollapsed ? 'center' : 'flex-start'
+  };
+
+  const navListStyle = {
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px'
+  };
+
+  const getNavItemStyle = (isActive) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: isCollapsed ? '12px 8px' : '12px 16px',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: isActive ? '#ffffff' : '#cbd5e1',
+    background: isActive 
+      ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%)'
+      : 'transparent',
+    transition: 'all 0.2s ease',
+    position: 'relative',
+    overflow: 'hidden',
+    border: `1px solid ${isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'}`,
+    boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.2)' : 'none',
+    justifyContent: isCollapsed ? 'center' : 'flex-start'
+  });
+
+  const iconStyle = {
+    width: '18px',
+    height: '18px',
+    flexShrink: 0
+  };
+
+  const navContentStyle = {
+    display: isCollapsed ? 'none' : 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    gap: '2px'
+  };
+
+  const labelContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  };
+
+  const badgeStyle = (badge) => ({
+    fontSize: '10px',
+    fontWeight: '600',
+    padding: '2px 6px',
+    borderRadius: '10px',
+    background: badge === 'New' 
+      ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+      : 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.1)'
+  });
+
+  const descriptionStyle = {
+    fontSize: '11px',
+    color: '#94a3b8',
+    fontWeight: '400'
+  };
+
+  const tooltipStyle = {
+    position: 'absolute',
+    left: '72px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: '#1f2937',
+    color: 'white',
+    padding: '8px 12px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    whiteSpace: 'nowrap',
+    zIndex: 1000,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    border: '1px solid rgba(75, 85, 99, 0.3)',
+    pointerEvents: 'none'
+  };
+
+  const footerStyle = {
+    padding: isCollapsed ? '16px 8px' : '20px 16px',
+    borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  };
+
+  const footerLinkStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: isCollapsed ? '10px 8px' : '10px 16px',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#94a3b8',
+    transition: 'all 0.2s ease',
+    justifyContent: isCollapsed ? 'center' : 'flex-start'
+  };
+
+  const userSectionStyle = {
+    display: isCollapsed ? 'none' : 'block',
+    padding: '12px 16px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '8px',
+    marginBottom: '8px'
+  };
+
+  const userInfoStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px'
+  };
+
+  const userAvatarStyle = {
+    width: '32px',
+    height: '32px',
+    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: 'white'
+  };
+
+  const userDetailsStyle = {
+    flex: 1,
+    minWidth: 0
+  };
+
+  const userNameStyle = {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: 'white',
+    marginBottom: '2px'
+  };
+
+  const userRoleStyle = {
+    fontSize: '11px',
+    color: '#94a3b8',
+    marginBottom: '4px'
+  };
+
+  const userStatusStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '10px',
+    color: '#22c55e'
+  };
+
+  const statusIndicatorStyle = {
+    width: '6px',
+    height: '6px',
+    background: '#22c55e',
+    borderRadius: '50%',
+    animation: 'pulse 2s infinite'
+  };
+
+  const logoutButtonStyle = {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: isCollapsed ? '12px 8px' : '12px 16px',
+    background: 'transparent',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#ef4444',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    justifyContent: isCollapsed ? 'center' : 'flex-start'
+  };
 
   return (
-    <div className={sidebarClasses}>
+    <div style={sidebarStyle}>
       {/* Header */}
-      <div className={headerClasses}>
+      <div style={headerStyle}>
         {(!isCollapsed || isMobile) && (
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <span className="text-white font-bold text-xl">CC</span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-baseline space-x-1">
-                  <span className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    Church
-                  </span>
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                    Connect
-                  </span>
-                </div>
-                <div className={`text-xs font-medium tracking-wider uppercase ${
-                  isDark ? 'text-slate-400' : 'text-gray-500'
-                }`}>
-                  Admin Panel
-                </div>
-              </div>
-            </Link>
-          </div>
+          <Link to="/" style={brandStyle}>
+            <div style={logoStyle}>
+              <img 
+                src="/logo.png" 
+                alt="ChurchConnect" 
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  objectFit: 'contain'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+              <span 
+                style={{
+                  display: 'none',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: 'white'
+                }}
+              >
+                CC
+              </span>
+            </div>
+            <div style={textStyle}>
+              <div style={titleStyle}>ChurchConnect</div>
+              <div style={subtitleStyle}>Admin Panel</div>
+            </div>
+          </Link>
         )}
         
         {isCollapsed && !isMobile && (
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto shadow-lg">
-            <span className="text-white font-bold text-xl">CC</span>
+          <div style={logoStyle}>
+            <img 
+              src="/logo.png" 
+              alt="ChurchConnect" 
+              style={{
+                width: '20px',
+                height: '20px',
+                objectFit: 'contain'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <span 
+              style={{
+                display: 'none',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: 'white'
+              }}
+            >
+              CC
+            </span>
           </div>
         )}
         
-        <div className="flex items-center space-x-2">
+        <div style={controlsStyle}>
           {!isMobile && (
             <button
               onClick={toggleCollapse}
-              className={`
-                p-2.5 rounded-lg transition-all duration-200 border
-                ${isDark 
-                  ? 'text-slate-400 hover:text-white hover:bg-slate-700 border-slate-600 hover:border-slate-500' 
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100 border-gray-300 hover:border-gray-400'
-                }
-              `}
+              style={controlButtonStyle}
               title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.color = '#94a3b8';
+              }}
             >
               {isCollapsed ? (
-                <ChevronRightIcon className="w-5 h-5" />
+                <ChevronRightIcon style={{ width: '14px', height: '14px' }} />
               ) : (
-                <ChevronLeftIcon className="w-5 h-5" />
+                <ChevronLeftIcon style={{ width: '14px', height: '14px' }} />
               )}
             </button>
           )}
           
           {isMobile && (
-            <button
-              onClick={onClose}
-              className={`
-                p-2.5 rounded-lg transition-all duration-200
-                ${isDark 
-                  ? 'text-slate-400 hover:text-red-400 hover:bg-red-900/30' 
-                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                }
-              `}
+            <button 
+              onClick={onClose} 
+              style={controlButtonStyle}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(239, 68, 68, 0.2)';
+                e.target.style.color = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.color = '#94a3b8';
+              }}
             >
-              <XMarkIcon className="w-5 h-5" />
+              <XMarkIcon style={{ width: '14px', height: '14px' }} />
             </button>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className={`
-        flex-1 px-4 py-6 overflow-y-auto scrollbar-thin
-        ${isDark 
-          ? 'scrollbar-track-slate-800 scrollbar-thumb-slate-600' 
-          : 'scrollbar-track-gray-100 scrollbar-thumb-gray-300'
-        }
-      `}>
-        <div className="space-y-6">
-          {/* Quick Actions Section */}
-          {(!isCollapsed || isMobile) && (
-            <div>
-              <h3 className={`
-                text-xs font-semibold uppercase tracking-wider mb-3 px-3
-                ${isDark ? 'text-slate-500' : 'text-gray-500'}
-              `}>
-                Quick Actions
-              </h3>
-              <Link
-                to="/admin/members/new"
-                className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 group"
+      <nav style={navStyle}>
+        {/* Quick Actions Section */}
+        {(!isCollapsed || isMobile) && (
+          <div style={sectionStyle}>
+            <h3 style={sectionTitleStyle}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link 
+                to="/admin/members/new" 
+                style={{...quickActionStyle, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'}}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(5, 150, 105, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.3)';
+                }}
               >
-                <PlusIcon className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-200" />
-                Add New Member
+                <PlusIcon style={iconStyle} />
+                {!isCollapsed && 'Add New Member'}
+              </Link>
+              
+              <Link 
+                to="/admin/groups/new" 
+                style={{...quickActionStyle, background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'}}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(124, 58, 237, 0.3)';
+                }}
+              >
+                <UserGroupIcon style={iconStyle} />
+                {!isCollapsed && 'Create Group'}
+              </Link>
+
+              <Link 
+                to="/admin/pledges/new" 
+                style={{...quickActionStyle, background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'}}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.3)';
+                }}
+              >
+                <CurrencyDollarIcon style={iconStyle} />
+                {!isCollapsed && 'Record Pledge'}
               </Link>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Main Navigation */}
-          <div className="space-y-2">
-            {(!isCollapsed || isMobile) && (
-              <h3 className={`
-                text-xs font-semibold uppercase tracking-wider mb-4 px-3
-                ${isDark ? 'text-slate-500' : 'text-gray-500'}
-              `}>
-                Navigation
-              </h3>
-            )}
-            
+        {/* Main Navigation */}
+        <div style={sectionStyle}>
+          {(!isCollapsed || isMobile) && (
+            <h3 style={sectionTitleStyle}>Navigation</h3>
+          )}
+          
+          <ul style={navListStyle}>
             {filteredNavigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href || 
                              (item.href !== '/admin/dashboard' && location.pathname.startsWith(item.href));
               
               return (
-                <div key={item.name} className="relative">
+                <li key={item.name} style={{ position: 'relative' }}>
                   <NavLink
                     to={item.href}
-                    className={({ isActive: active }) => {
-                      const baseClasses = `
-                        group flex items-center px-4 py-4 text-sm font-semibold rounded-xl
-                        transition-all duration-200 transform hover:scale-105 relative overflow-hidden border
-                        ${isCollapsed && !isMobile ? 'justify-center' : ''}
-                      `;
-                      
-                      if (active || isActive) {
-                        return baseClasses + (isDark 
-                          ? ' bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg border-blue-500' 
-                          : ' bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg border-blue-400'
-                        );
-                      }
-                      
-                      return baseClasses + (isDark 
-                        ? ' text-slate-300 hover:bg-gradient-to-r hover:from-slate-700 hover:to-slate-600 hover:text-white border-transparent hover:border-slate-600' 
-                        : ' text-gray-600 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200 hover:text-gray-900 border-transparent hover:border-gray-300'
-                      );
-                    }}
+                    style={getNavItemStyle(isActive)}
                     onClick={() => isMobile && onClose()}
                     title={isCollapsed && !isMobile ? item.name : ''}
-                    onMouseEnter={() => setHoveredItem(item.name)}
-                    onMouseLeave={() => setHoveredItem(null)}
+                    onMouseEnter={(e) => {
+                      setHoveredItem(item.name);
+                      if (!isActive) {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                        e.target.style.color = '#ffffff';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      setHoveredItem(null);
+                      if (!isActive) {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = '#cbd5e1';
+                      }
+                    }}
                   >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute left-0 top-0 w-1 h-full bg-white rounded-r-full"></div>
-                    )}
-                    
-                    <div className="flex items-center space-x-4 relative z-10">
-                      <div className="relative">
-                        <Icon className="w-6 h-6 flex-shrink-0" />
-                        {isActive && (
-                          <div className="absolute -inset-1 bg-white/20 rounded-lg animate-pulse"></div>
-                        )}
-                      </div>
-                      
-                      {(!isCollapsed || isMobile) && (
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold truncate">{item.name}</span>
-                            {item.badge && (
-                              <span className={`
-                                text-xs px-2 py-1 rounded-full font-bold ml-2
-                                ${item.badge === 'New' 
-                                  ? 'bg-emerald-500 text-white' 
-                                  : isDark 
-                                    ? 'bg-slate-600 text-slate-200' 
-                                    : 'bg-gray-200 text-gray-700'
-                                }
-                              `}>
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs opacity-75 truncate mt-1">
-                            {item.description}
-                          </div>
+                    <Icon style={iconStyle} />
+                    {(!isCollapsed || isMobile) && (
+                      <div style={navContentStyle}>
+                        <div style={labelContainerStyle}>
+                          <span>{item.name}</span>
+                          {item.badge && (
+                            <span style={badgeStyle(item.badge)}>
+                              {item.badge}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
+                        <div style={descriptionStyle}>{item.description}</div>
+                      </div>
+                    )}
                   </NavLink>
                   
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && !isMobile && hoveredItem === item.name && (
-                    <div className={`
-                      absolute left-full ml-3 px-4 py-3 text-sm rounded-xl shadow-2xl z-50 whitespace-nowrap border
-                      ${isDark 
-                        ? 'bg-slate-900 text-white border-slate-700' 
-                        : 'bg-white text-gray-900 border-gray-200'
-                      }
-                    `}>
-                      <div className="font-semibold">{item.name}</div>
-                      <div className="text-xs opacity-75 mt-1">{item.description}</div>
-                      <div className={`
-                        absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2 w-4 h-4 rotate-45
-                        ${isDark 
-                          ? 'bg-slate-900 border-l border-b border-slate-700' 
-                          : 'bg-white border-l border-b border-gray-200'
-                        }
-                      `}></div>
+                    <div style={tooltipStyle}>
+                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>{item.name}</div>
+                      <div style={{ fontSize: '10px', color: '#d1d5db' }}>{item.description}</div>
                     </div>
                   )}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       </nav>
 
-      {/* Public Site Link */}
-      <div className={`
-        px-4 py-3 border-t flex-shrink-0
-        ${isDark ? 'border-slate-700' : 'border-gray-200'}
-      `}>
-        <Link
-          to="/"
-          className={`
-            group flex items-center px-4 py-3 text-sm font-semibold rounded-xl
-            transition-all duration-200 transform hover:scale-105 border
-            ${isCollapsed && !isMobile ? 'justify-center' : ''}
-            ${isDark 
-              ? 'text-slate-300 hover:bg-gradient-to-r hover:from-emerald-600/20 hover:to-emerald-700/20 hover:text-emerald-400 border-transparent hover:border-emerald-500/30' 
-              : 'text-gray-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:text-emerald-600 border-transparent hover:border-emerald-300'
-            }
-          `}
-          title={isCollapsed && !isMobile ? 'Visit Public Site' : ''}
+      {/* Footer */}
+      <div style={footerStyle}>
+        {/* Public Site Link */}
+        <Link 
+          to="/" 
+          style={footerLinkStyle}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.target.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.color = '#94a3b8';
+          }}
         >
-          <GlobeAltIcon className="w-5 h-5 flex-shrink-0" />
+          <GlobeAltIcon style={iconStyle} />
           {(!isCollapsed || isMobile) && (
-            <div className="ml-3">
-              <div className="font-semibold">Public Site</div>
-              <div className="text-xs opacity-75">Visit Homepage</div>
+            <div style={navContentStyle}>
+              <div>Public Site</div>
+              <div style={descriptionStyle}>Visit Homepage</div>
             </div>
           )}
         </Link>
-      </div>
 
-      {/* Help Link */}
-      <div className={`
-        px-4 py-2 border-t flex-shrink-0
-        ${isDark ? 'border-slate-700' : 'border-gray-200'}
-      `}>
-        <NavLink
-          to="/help"
-          className={`
-            group flex items-center px-4 py-3 text-sm font-semibold rounded-xl
-            transition-all duration-200 transform hover:scale-105 border
-            ${isCollapsed && !isMobile ? 'justify-center' : ''}
-            ${isDark 
-              ? 'text-slate-300 hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-purple-700/20 hover:text-purple-400 border-transparent hover:border-purple-500/30' 
-              : 'text-gray-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:text-purple-600 border-transparent hover:border-purple-300'
-            }
-          `}
-          title={isCollapsed && !isMobile ? 'Get Help' : ''}
+        {/* Help Link */}
+        <NavLink 
+          to="/help" 
+          style={footerLinkStyle}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.target.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.color = '#94a3b8';
+          }}
         >
-          <QuestionMarkCircleIcon className="w-5 h-5 flex-shrink-0" />
+          <QuestionMarkCircleIcon style={iconStyle} />
           {(!isCollapsed || isMobile) && (
-            <div className="ml-3">
-              <div className="font-semibold">Help & Support</div>
-              <div className="text-xs opacity-75">Get assistance</div>
+            <div style={navContentStyle}>
+              <div>Help & Support</div>
+              <div style={descriptionStyle}>Get assistance</div>
             </div>
           )}
         </NavLink>
-      </div>
 
-      {/* User Section - Fixed at bottom */}
-      <div className={`
-        p-4 border-t flex-shrink-0
-        ${isDark 
-          ? 'border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900' 
-          : 'border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100'
-        }
-      `}>
+        {/* User Section */}
         {(!isCollapsed || isMobile) && user && (
-          <div className={`
-            flex items-center px-4 py-4 mb-4 backdrop-blur-sm rounded-xl border shadow-lg
-            ${isDark 
-              ? 'bg-slate-800/50 border-slate-600' 
-              : 'bg-white/80 border-gray-200'
-            }
-          `}>
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg">
-              {user?.first_name?.[0]}{user?.last_name?.[0]}
-            </div>
-            <div className="ml-4 min-w-0 flex-1">
-              <div className={`
-                text-sm font-bold truncate
-                ${isDark ? 'text-white' : 'text-gray-900'}
-              `}>
-                {user?.first_name} {user?.last_name}
+          <div style={userSectionStyle}>
+            <div style={userInfoStyle}>
+              <div style={userAvatarStyle}>
+                {user?.first_name?.[0]}{user?.last_name?.[0]}
               </div>
-              <div className={`
-                text-xs truncate
-                ${isDark ? 'text-slate-400' : 'text-gray-500'}
-              `}>
-                {user?.role || 'Administrator'}
-              </div>
-              <div className="flex items-center mt-1">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-                <div className="text-xs text-emerald-500 font-medium">Online</div>
+              <div style={userDetailsStyle}>
+                <div style={userNameStyle}>{user?.first_name} {user?.last_name}</div>
+                <div style={userRoleStyle}>{user?.role || 'Administrator'}</div>
+                <div style={userStatusStyle}>
+                  <div style={statusIndicatorStyle}></div>
+                  <span>Online</span>
+                </div>
               </div>
             </div>
           </div>
         )}
         
-        <button
-          onClick={handleLogout}
-          className={`
-            w-full flex items-center px-4 py-4 text-sm font-semibold rounded-xl
-            transition-all duration-200 transform hover:scale-105 border
-            ${isCollapsed && !isMobile ? 'justify-center' : ''}
-            ${isDark 
-              ? 'text-red-400 hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-700/20 hover:text-red-300 border-red-500/30 hover:border-red-400' 
-              : 'text-red-500 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 border-red-300 hover:border-red-400'
-            }
-          `}
-          title={isCollapsed && !isMobile ? 'Logout' : ''}
+        {/* Logout Button */}
+        <button 
+          onClick={handleLogout} 
+          style={logoutButtonStyle}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(239, 68, 68, 0.1)';
+            e.target.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+          }}
         >
-          <ArrowLeftOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
+          <ArrowLeftOnRectangleIcon style={iconStyle} />
           {(!isCollapsed || isMobile) && (
-            <div className="ml-3 text-left">
-              <div className="font-semibold">Sign Out</div>
-              <div className="text-xs opacity-75">Logout securely</div>
+            <div style={navContentStyle}>
+              <div>Sign Out</div>
+              <div style={descriptionStyle}>Logout securely</div>
             </div>
           )}
         </button>
       </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 };
