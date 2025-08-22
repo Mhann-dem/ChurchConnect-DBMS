@@ -3489,3 +3489,9 @@ LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
 INFO 2025-08-22 16:24:35,186 middleware 8424 14148 Response: 500 for GET /api/v1/members/ (0.122s)
 ERROR 2025-08-22 16:24:35,187 basehttp 8424 14148 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
 INFO 2025-08-22 17:00:15,573 autoreload 17684 10968 Watching for file changes with StatReloader
+INFO 2025-08-22 17:02:03,464 middleware 17684 16220 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 17:02:04,003 middleware 17684 16220 Response: 200 for GET /api/v1/members/ (0.539s)
+INFO 2025-08-22 17:02:04,003 basehttp 17684 16220 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-22 17:02:04,003 middleware 17684 16476 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 17:02:04,069 middleware 17684 16476 Response: 200 for GET /api/v1/members/ (0.066s)
+INFO 2025-08-22 17:02:04,084 basehttp 17684 16476 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
