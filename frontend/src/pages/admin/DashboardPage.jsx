@@ -21,17 +21,35 @@ import {
   EnvelopeIcon,
   GlobeAltIcon,
   HeartIcon,
-  BuildingLibraryIcon
+  BuildingLibraryIcon,
+  Bars3Icon,
+  XMarkIcon,
+  SparklesIcon,
+  TrophyIcon,
+  FireIcon,
+  StarIcon,
+  Cog6ToothIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
-import useAuth from '../../hooks/useAuth';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import styles from './AdminPages.module.css';
 
 const DashboardPage = () => {
-  const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedTimeframe, setSelectedTimeframe] = useState('month');
+  const [hoveredStat, setHoveredStat] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Mock user data
+  const user = {
+    first_name: 'John',
+    last_name: 'Admin',
+    role: 'Administrator',
+    avatar: 'JA'
+  };
 
   // Update time every minute
   useEffect(() => {
@@ -42,12 +60,11 @@ const DashboardPage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Mock dashboard data - replace with actual API call
+  // Mock dashboard data with enhanced metrics
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Simulate API call
         setTimeout(() => {
           setDashboardData({
             stats: {
@@ -58,7 +75,9 @@ const DashboardPage = () => {
               weeklyAttendance: 892,
               activeEvents: 8,
               totalDonations: 128340,
-              monthlyGrowth: 15
+              monthlyGrowth: 15,
+              memberSatisfaction: 96,
+              volunteersActive: 156
             },
             trends: {
               members: { value: 12, type: 'positive' },
@@ -69,183 +88,258 @@ const DashboardPage = () => {
             recentMembers: [
               { 
                 id: 1, 
-                name: 'John Doe', 
+                name: 'Sarah Johnson', 
                 joinDate: '2024-01-15', 
                 status: 'active', 
-                avatar: 'JD',
-                email: 'john.doe@email.com',
-                phone: '+233 123 456 789'
+                avatar: 'SJ',
+                email: 'sarah.j@email.com',
+                phone: '+233 123 456 789',
+                ministry: 'Worship Team'
               },
               { 
                 id: 2, 
-                name: 'Mary Smith', 
+                name: 'Michael Brown', 
                 joinDate: '2024-01-14', 
                 status: 'pending', 
-                avatar: 'MS',
-                email: 'mary.smith@email.com',
-                phone: '+233 987 654 321'
+                avatar: 'MB',
+                email: 'michael.b@email.com',
+                phone: '+233 987 654 321',
+                ministry: 'Youth Ministry'
               },
               { 
                 id: 3, 
-                name: 'David Johnson', 
+                name: 'Emily Davis', 
                 joinDate: '2024-01-13', 
                 status: 'active', 
-                avatar: 'DJ',
-                email: 'david.johnson@email.com',
-                phone: '+233 555 123 456'
+                avatar: 'ED',
+                email: 'emily.d@email.com',
+                phone: '+233 555 123 456',
+                ministry: 'Children\'s Ministry'
               },
               { 
                 id: 4, 
-                name: 'Sarah Wilson', 
+                name: 'David Wilson', 
                 joinDate: '2024-01-12', 
                 status: 'active', 
-                avatar: 'SW',
-                email: 'sarah.wilson@email.com',
-                phone: '+233 777 888 999'
+                avatar: 'DW',
+                email: 'david.w@email.com',
+                phone: '+233 777 888 999',
+                ministry: 'Prayer Ministry'
               },
               { 
                 id: 5, 
-                name: 'Michael Brown', 
+                name: 'Grace Miller', 
                 joinDate: '2024-01-11', 
                 status: 'pending', 
-                avatar: 'MB',
-                email: 'michael.brown@email.com',
-                phone: '+233 444 555 666'
+                avatar: 'GM',
+                email: 'grace.m@email.com',
+                phone: '+233 444 555 666',
+                ministry: 'Outreach Team'
               },
             ],
             upcomingEvents: [
               { 
                 id: 1, 
-                title: 'Sunday Service', 
+                title: 'Sunday Worship Service', 
                 date: '2024-01-21', 
                 time: '10:00 AM', 
                 attendees: 450,
                 location: 'Main Sanctuary',
-                type: 'worship'
+                type: 'worship',
+                priority: 'high'
               },
               { 
                 id: 2, 
-                title: 'Bible Study', 
+                title: 'Midweek Bible Study', 
                 date: '2024-01-23', 
                 time: '7:00 PM', 
                 attendees: 85,
                 location: 'Fellowship Hall',
-                type: 'study'
+                type: 'study',
+                priority: 'medium'
               },
               { 
                 id: 3, 
-                title: 'Youth Meeting', 
+                title: 'Youth Connect Night', 
                 date: '2024-01-25', 
                 time: '6:00 PM', 
                 attendees: 32,
                 location: 'Youth Center',
-                type: 'ministry'
+                type: 'ministry',
+                priority: 'medium'
               },
               { 
                 id: 4, 
-                title: 'Prayer Meeting', 
+                title: 'Prayer & Fasting', 
                 date: '2024-01-26', 
                 time: '7:30 PM', 
                 attendees: 67,
                 location: 'Prayer Chapel',
-                type: 'prayer'
+                type: 'prayer',
+                priority: 'high'
               },
             ],
             notifications: [
               { 
                 id: 1, 
-                title: 'New member registration', 
-                message: 'Sarah Wilson has registered and is pending approval', 
+                title: 'New Member Alert', 
+                message: 'Sarah Johnson completed registration and needs approval', 
                 time: '2 hours ago', 
                 type: 'member',
-                priority: 'high'
+                priority: 'high',
+                action: 'Approve'
               },
               { 
                 id: 2, 
-                title: 'Pledge received', 
-                message: '$500 monthly pledge commitment from John Doe', 
+                title: 'Pledge Milestone', 
+                message: '$500 monthly commitment received from the Thompson family', 
                 time: '4 hours ago', 
                 type: 'pledge',
-                priority: 'medium'
+                priority: 'medium',
+                action: 'View'
               },
               { 
                 id: 3, 
-                title: 'Event reminder', 
-                message: 'Bible Study tonight at 7:00 PM - 85 expected attendees', 
+                title: 'Event Reminder', 
+                message: 'Bible Study tonight - 85 members confirmed attendance', 
                 time: '6 hours ago', 
                 type: 'event',
-                priority: 'low'
+                priority: 'low',
+                action: 'Details'
               },
               { 
                 id: 4, 
-                title: 'System backup', 
-                message: 'Daily database backup completed successfully', 
+                title: 'System Update', 
+                message: 'Database backup completed successfully - all data secure', 
                 time: '8 hours ago', 
                 type: 'system',
-                priority: 'low'
+                priority: 'low',
+                action: 'View Log'
               },
             ],
-            quickActions: [
-              { 
-                name: 'Add New Member', 
-                href: '/admin/members/new', 
-                icon: UsersIcon, 
-                color: 'blue',
-                bgColor: 'from-blue-500 to-blue-600',
-                description: 'Register a new church member'
+            achievements: [
+              {
+                title: '1000+ Members',
+                description: 'Reached milestone of 1000+ active members',
+                icon: TrophyIcon,
+                color: 'from-yellow-400 to-orange-500',
+                achieved: true
               },
-              { 
-                name: 'Create Group', 
-                href: '/admin/groups/new', 
-                icon: UserGroupIcon, 
-                color: 'green',
-                bgColor: 'from-green-500 to-green-600',
-                description: 'Start a new ministry group'
+              {
+                title: '100% Attendance',
+                description: 'Perfect attendance at last Sunday service',
+                icon: FireIcon,
+                color: 'from-red-400 to-pink-500',
+                achieved: true
               },
-              { 
-                name: 'Record Pledge', 
-                href: '/admin/pledges/new', 
-                icon: CurrencyDollarIcon, 
-                color: 'emerald',
-                bgColor: 'from-emerald-500 to-emerald-600',
-                description: 'Log a new pledge or donation'
-              },
-              { 
-                name: 'Generate Report', 
-                href: '/admin/reports/new', 
-                icon: DocumentChartBarIcon, 
-                color: 'purple',
-                bgColor: 'from-purple-500 to-purple-600',
-                description: 'Create analytics report'
-              },
+              {
+                title: '50 New Groups',
+                description: 'Growing towards 50 active ministry groups',
+                icon: SparklesIcon,
+                color: 'from-purple-400 to-indigo-500',
+                achieved: false,
+                progress: 76
+              }
             ]
           });
           setLoading(false);
-        }, 1000);
+        }, 1500);
       } catch (err) {
         setError('Failed to load dashboard data');
         setLoading(false);
-        console.error('Dashboard error:', err);
       }
     };
 
     fetchDashboardData();
   }, []);
 
+  // Reusable Card Component
+  const Card = ({ children, className = '', hover = true, ...props }) => (
+    <div 
+      className={`${styles.cardBase} ${hover ? styles.cardHover : ''} ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+
+  // Reusable Button Component
+  const Button = ({ 
+    children, 
+    variant = 'primary', 
+    size = 'md', 
+    to, 
+    onClick, 
+    className = '', 
+    icon: Icon,
+    iconPosition = 'left',
+    ...props 
+  }) => {
+    const baseClasses = `${styles.buttonBase} ${styles[`button-${variant}`]} ${styles[`button-${size}`]} ${className}`;
+    
+    const content = (
+      <>
+        {Icon && iconPosition === 'left' && <Icon className={styles.buttonIcon} />}
+        <span>{children}</span>
+        {Icon && iconPosition === 'right' && <Icon className={styles.buttonIcon} />}
+      </>
+    );
+
+    if (to) {
+      return (
+        <Link to={to} className={baseClasses} {...props}>
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button className={baseClasses} onClick={onClick} {...props}>
+        {content}
+      </button>
+    );
+  };
+
+  // Reusable Badge Component
+  const Badge = ({ children, variant = 'default', className = '' }) => (
+    <span className={`${styles.badgeBase} ${styles[`badge-${variant}`]} ${className}`}>
+      {children}
+    </span>
+  );
+
+  // Reusable Avatar Component
+  const Avatar = ({ name, size = 'md', status, className = '' }) => (
+    <div className={`${styles.avatarBase} ${styles[`avatar-${size}`]} ${className}`}>
+      <span className={styles.avatarText}>{name}</span>
+      {status && <div className={`${styles.avatarStatus} ${styles[`status-${status}`]}`}></div>}
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center space-y-6">
-          <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-2xl mx-auto">
-              <span className="text-white font-bold text-2xl">CC</span>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingContent}>
+          <div className={styles.loadingLogo}>
+            <div className={styles.logoSpinner}>
+              <span className={styles.logoText}>CC</span>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl animate-ping opacity-20"></div>
+            <div className={styles.loadingRings}>
+              <div className={`${styles.ring} ${styles.ring1}`}></div>
+              <div className={`${styles.ring} ${styles.ring2}`}></div>
+              <div className={`${styles.ring} ${styles.ring3}`}></div>
+            </div>
           </div>
-          <LoadingSpinner size="lg" />
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Dashboard</h2>
-            <p className="text-gray-600">Gathering your church data...</p>
+          <div className={styles.loadingSpinner}>
+            <div className={styles.spinner}></div>
+          </div>
+          <div className={styles.loadingText}>
+            <h1>Loading Dashboard</h1>
+            <p>Gathering your church community data...</p>
+          </div>
+          <div className={styles.loadingDots}>
+            <div className={`${styles.dot} ${styles.dot1}`}></div>
+            <div className={`${styles.dot} ${styles.dot2}`}></div>
+            <div className={`${styles.dot} ${styles.dot3}`}></div>
           </div>
         </div>
       </div>
@@ -254,22 +348,22 @@ const DashboardPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
-        <div className="text-center space-y-6 max-w-md mx-auto p-8">
-          <div className="w-20 h-20 bg-red-500 rounded-2xl flex items-center justify-center mx-auto shadow-xl">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center">
+        <Card className="text-center space-y-6 max-w-md mx-auto p-8">
+          <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl animate-pulse">
             <ExclamationTriangleIcon className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-red-900 mb-2">Oops! Something went wrong</h2>
-            <p className="text-red-700 mb-6">{error}</p>
-            <button 
+            <h2 className="text-3xl font-bold text-red-900 mb-4">Something went wrong</h2>
+            <p className="text-red-700 mb-6 text-lg">{error}</p>
+            <Button 
+              variant="danger"
               onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Try Again
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -277,13 +371,15 @@ const DashboardPage = () => {
   const stats = [
     {
       name: 'Total Members',
-      value: dashboardData?.stats?.totalMembers || 0,
+      value: dashboardData?.stats?.totalMembers?.toLocaleString() || 0,
       icon: UsersIcon,
       change: dashboardData?.trends?.members?.value || 0,
       changeType: dashboardData?.trends?.members?.type || 'neutral',
-      description: 'from last month',
-      color: 'blue',
-      bgColor: 'from-blue-500 to-blue-600'
+      description: 'Active members',
+      color: 'from-blue-500 to-cyan-500',
+      bgPattern: 'bg-blue-50',
+      iconBg: 'bg-blue-500',
+      route: '/admin/members'
     },
     {
       name: 'Active Groups',
@@ -291,9 +387,11 @@ const DashboardPage = () => {
       icon: UserGroupIcon,
       change: 3,
       changeType: 'positive',
-      description: 'new this month',
-      color: 'green',
-      bgColor: 'from-green-500 to-green-600'
+      description: 'Ministry groups',
+      color: 'from-emerald-500 to-green-500',
+      bgPattern: 'bg-emerald-50',
+      iconBg: 'bg-emerald-500',
+      route: '/admin/groups'
     },
     {
       name: 'Monthly Pledges',
@@ -301,19 +399,23 @@ const DashboardPage = () => {
       icon: CurrencyDollarIcon,
       change: dashboardData?.trends?.pledges?.value || 0,
       changeType: dashboardData?.trends?.pledges?.type || 'neutral',
-      description: 'from last month',
-      color: 'emerald',
-      bgColor: 'from-emerald-500 to-emerald-600'
+      description: 'This month',
+      color: 'from-yellow-500 to-orange-500',
+      bgPattern: 'bg-yellow-50',
+      iconBg: 'bg-yellow-500',
+      route: '/admin/pledges'
     },
     {
       name: 'Weekly Attendance',
-      value: dashboardData?.stats?.weeklyAttendance || 0,
+      value: dashboardData?.stats?.weeklyAttendance?.toLocaleString() || 0,
       icon: ChartBarIcon,
       change: dashboardData?.trends?.attendance?.value || 0,
       changeType: dashboardData?.trends?.attendance?.type || 'neutral',
-      description: 'from last week',
-      color: 'purple',
-      bgColor: 'from-purple-500 to-purple-600'
+      description: 'This week',
+      color: 'from-purple-500 to-indigo-500',
+      bgPattern: 'bg-purple-50',
+      iconBg: 'bg-purple-500',
+      route: '/admin/reports'
     }
   ];
 
@@ -333,14 +435,14 @@ const DashboardPage = () => {
     });
   };
 
-  const getEventTypeColor = (type) => {
-    switch (type) {
-      case 'worship': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'study': return 'bg-green-100 text-green-800 border-green-200';
-      case 'ministry': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'prayer': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getEventTypeStyles = (type, priority) => {
+    const typeStyles = {
+      worship: 'blue',
+      study: 'emerald',
+      ministry: 'purple',
+      prayer: 'orange'
+    };
+    return typeStyles[type] || 'gray';
   };
 
   const getNotificationIcon = (type) => {
@@ -353,575 +455,449 @@ const DashboardPage = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityStyles = (priority) => {
     switch (priority) {
-      case 'high': return 'border-red-400 bg-red-50';
-      case 'medium': return 'border-yellow-400 bg-yellow-50';
-      case 'low': return 'border-green-400 bg-green-50';
-      default: return 'border-gray-400 bg-gray-50';
+      case 'high': return 'border-l-red-500 bg-red-50';
+      case 'medium': return 'border-l-yellow-500 bg-yellow-50';
+      case 'low': return 'border-l-green-500 bg-green-50';
+      default: return 'border-l-gray-500 bg-gray-50';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className={styles.dashboardContainer}>
+      <div className={styles.dashboardContent}>
         
         {/* Enhanced Welcome Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative p-8 text-white">
+        <Card className={styles.welcomeCard} hover={false}>
+          <div className="relative p-8 text-white overflow-hidden">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-xl">👋</span>
-                  </div>
+                  <Avatar name={user.first_name.charAt(0) + user.last_name.charAt(0)} size="lg" status="online" />
                   <div>
-                    <h1 className="text-3xl lg:text-4xl font-bold">
-                      Welcome back, {user?.first_name || 'Admin'}!
+                    <h1 className={styles.welcomeTitle}>
+                      Welcome back, {user?.first_name}!
                     </h1>
-                    <p className="text-blue-100 text-lg">Here's what's happening with your church today.</p>
+                    <p className={styles.welcomeSubtitle}>
+                      Your church community is thriving today ✨
+                    </p>
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-6 text-sm">
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+                <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <Badge variant="light" className="flex items-center space-x-2">
                     <CalendarDaysIcon className="w-4 h-4" />
-                    <span className="font-medium">{formatDate(currentTime)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+                    <span>{formatDate(currentTime)}</span>
+                  </Badge>
+                  <Badge variant="light" className="flex items-center space-x-2">
                     <ClockIcon className="w-4 h-4" />
-                    <span className="font-medium">{formatTime(currentTime)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-emerald-500/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-emerald-300/30">
+                    <span>{formatTime(currentTime)}</span>
+                  </Badge>
+                  <Badge variant="success" className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span className="font-medium">System Online</span>
-                  </div>
+                    <span>All Systems Online</span>
+                  </Badge>
                 </div>
               </div>
               
               <div className="flex flex-wrap gap-3">
-                <Link
+                <Button 
+                  variant="secondary"
                   to="/admin/members/new"
-                  className="flex items-center bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  icon={PlusIcon}
                 >
-                  <PlusIcon className="w-4 h-4 mr-2" />
                   Add Member
-                </Link>
-                <Link
+                </Button>
+                <Button 
+                  variant="primary"
                   to="/admin/reports"
-                  className="flex items-center bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  icon={DocumentChartBarIcon}
                 >
-                  <DocumentChartBarIcon className="w-4 h-4 mr-2" />
-                  Generate Report
-                </Link>
+                  Reports
+                </Button>
               </div>
             </div>
+            
+            {/* Background decoration */}
+            <div className={styles.welcomeDecoration}></div>
           </div>
-        </div>
+        </Card>
 
-        {/* Enhanced Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* Stats Grid */}
+        <div className={styles.statsGrid}>
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div 
+              <Card 
                 key={stat.name} 
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-gray-300 overflow-hidden transform hover:scale-105"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className={`${styles.statCard} group`}
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                }}
+                onMouseEnter={() => setHoveredStat(stat.name)}
+                onMouseLeave={() => setHoveredStat(null)}
               >
-                <div className="p-6">
+                <div className="relative p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2.5 rounded-lg bg-gradient-to-r ${stat.bgColor} shadow-md`}>
-                      <Icon className="w-5 h-5 text-white" />
+                    <div className={`${styles.iconContainer} ${stat.iconBg}`}>
+                      <Icon className="w-6 h-6 text-white" />
                     </div>
-                    <Link
-                      to={`/admin/${stat.name.toLowerCase().split(' ')[0]}`}
-                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      to={stat.route}
+                      icon={EyeIcon}
+                      iconPosition="right"
                       title={`View ${stat.name}`}
-                    >
-                      <EyeIcon className="w-4 h-4" />
-                    </Link>
+                    />
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+                      {stat.name}
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900 group-hover:scale-105 transition-transform duration-300">
+                      {stat.value}
+                    </p>
                     
-                    <div className="flex items-center space-x-2">
-                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        stat.changeType === 'positive' 
-                          ? 'bg-green-100 text-green-800' 
-                          : stat.changeType === 'negative' 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                    <div className="flex items-center justify-between">
+                      <Badge 
+                        variant={stat.changeType === 'positive' ? 'success' : stat.changeType === 'negative' ? 'danger' : 'secondary'}
+                        className="flex items-center space-x-1"
+                      >
                         {stat.changeType === 'positive' ? (
                           <ArrowUpIcon className="w-3 h-3" />
                         ) : stat.changeType === 'negative' ? (
                           <ArrowDownIcon className="w-3 h-3" />
                         ) : null}
                         <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change)}%` : '—'}</span>
-                      </div>
-                      <span className="text-xs text-gray-500">{stat.description}</span>
+                      </Badge>
+                      <span className="text-xs text-gray-500 font-medium">{stat.description}</span>
                     </div>
                   </div>
                 </div>
-              </div>
+                
+                {/* Hover indicator */}
+                {hoveredStat === stat.name && (
+                  <div className={styles.hoverIndicator}></div>
+                )}
+              </Card>
             );
           })}
         </div>
 
-        {/* Enhanced Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        {/* Achievements Section */}
+        <Card className={styles.achievementsCard} hover={false}>
+          <div className={styles.sectionHeader}>
+            <div className="flex items-center space-x-3">
+              <div className={`${styles.iconContainer} bg-gradient-to-r from-amber-500 to-orange-500`}>
+                <TrophyIcon className="w-5 h-5 text-white" />
+              </div>
+              <h3 className={styles.sectionTitle}>Church Achievements</h3>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {dashboardData?.achievements?.map((achievement, index) => {
+                const Icon = achievement.icon;
+                return (
+                  <Card 
+                    key={achievement.title}
+                    className={`${styles.achievementCard} ${achievement.achieved ? styles.achievementCompleted : ''}`}
+                  >
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className={`${styles.iconContainer} bg-gradient-to-r ${achievement.color}`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-900">{achievement.title}</h4>
+                        <p className="text-sm text-gray-600">{achievement.description}</p>
+                      </div>
+                      {achievement.achieved && (
+                        <CheckCircleIcon className="w-6 h-6 text-green-500" />
+                      )}
+                    </div>
+                    
+                    {!achievement.achieved && achievement.progress && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-semibold text-gray-900">{achievement.progress}%</span>
+                        </div>
+                        <div className={styles.progressBar}>
+                          <div 
+                            className={styles.progressFill}
+                            style={{ width: `${achievement.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+
+        {/* Main Content Grid */}
+        <div className={styles.contentGrid}>
           
           {/* Recent Members Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <Card className={styles.membersCard}>
+            <div className={styles.sectionHeader}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-500 rounded-lg shadow-md">
-                    <UsersIcon className="w-4 h-4 text-white" />
+                  <div className={`${styles.iconContainer} bg-gradient-to-r from-blue-500 to-indigo-500`}>
+                    <UsersIcon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Members</h3>
+                  <h3 className={styles.sectionTitle}>Recent Members</h3>
                 </div>
-                <Link 
-                  to="/admin/members" 
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center space-x-1 hover:bg-blue-50 px-3 py-1 rounded-lg transition-all duration-200"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  to="/admin/members"
+                  icon={ArrowTopRightOnSquareIcon}
+                  iconPosition="right"
                 >
-                  <span>View all</span>
-                  <span>→</span>
-                </Link>
+                  View all
+                </Button>
               </div>
             </div>
             
             <div className="p-6">
               <div className="space-y-4">
                 {dashboardData?.recentMembers?.slice(0, 4).map((member, index) => (
-                  <div 
+                  <Card 
                     key={member.id} 
-                    className="flex items-center space-x-4 p-4 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className={`${styles.memberItem} group`}
                   >
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-medium shadow-md group-hover:scale-110 transition-transform duration-200">
-                      {member.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{member.name}</p>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          member.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {member.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <CalendarDaysIcon className="w-3 h-3" />
-                          <span>Joined {new Date(member.joinDate).toLocaleDateString()}</span>
+                    <div className="flex items-center space-x-4 p-4">
+                      <Avatar 
+                        name={member.avatar}
+                        status={member.status === 'active' ? 'active' : 'pending'}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <p className="text-sm font-bold text-gray-900 truncate">{member.name}</p>
+                          <Badge variant={member.status === 'active' ? 'success' : 'warning'}>
+                            {member.status}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <CalendarDaysIcon className="w-3 h-3" />
+                              <span>Joined {new Date(member.joinDate).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-1 text-xs text-gray-600">
+                            <span className="font-medium">{member.ministry}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
-                        <div className="flex items-center space-x-1">
-                          <EnvelopeIcon className="w-3 h-3" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        to={`/admin/members/${member.id}`}
+                        icon={EyeIcon}
+                        className="opacity-0 group-hover:opacity-100"
+                      />
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
               
               {dashboardData?.recentMembers?.length > 4 && (
                 <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                  <Link 
-                    to="/admin/members" 
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  <Button 
+                    variant="ghost"
+                    to="/admin/events/new"
+                    icon={PlusIcon}
                   >
-                    View {dashboardData.recentMembers.length - 4} more members →
-                  </Link>
+                    Create New Event
+                  </Button>
                 </div>
               )}
             </div>
-          </div>
+          </Card>
 
-          {/* Upcoming Events Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+          {/* Notifications Card */}
+          <Card className={styles.notificationsCard}>
+            <div className={styles.sectionHeader}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-500 rounded-lg shadow-md">
-                    <CalendarDaysIcon className="w-4 h-4 text-white" />
+                  <div className={`${styles.iconContainer} bg-gradient-to-r from-purple-500 to-pink-500`}>
+                    <BellIcon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Upcoming Events</h3>
+                  <h3 className={styles.sectionTitle}>Notifications</h3>
                 </div>
-                <Link 
-                  to="/admin/events" 
-                  className="text-sm font-medium text-green-600 hover:text-green-700 flex items-center space-x-1 hover:bg-green-50 px-3 py-1 rounded-lg transition-all duration-200"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  to="/admin/notifications"
+                  icon={ArrowTopRightOnSquareIcon}
+                  iconPosition="right"
                 >
-                  <span>View all</span>
-                  <span>→</span>
-                </Link>
+                  View all
+                </Button>
               </div>
             </div>
             
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.upcomingEvents?.map((event, index) => (
-                  <div 
-                    key={event.id} 
-                    className="p-4 hover:bg-gray-50 rounded-xl transition-all duration-200 group border border-gray-100 hover:border-gray-200"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className="flex items-start space-x-4">
-                      <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-md group-hover:scale-110 transition-transform duration-200">
-                        <CalendarDaysIcon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold text-gray-900">{event.title}</h4>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}>
-                            {event.type}
-                          </span>
-                        </div>
-                        <div className="space-y-1 text-xs text-gray-600">
-                          <div className="flex items-center space-x-2">
-                            <CalendarDaysIcon className="w-3 h-3" />
-                            <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <MapPinIcon className="w-3 h-3" />
-                            <span>{event.location}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <UsersIcon className="w-3 h-3" />
-                            <span>{event.attendees} expected attendees</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity/Notifications Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-yellow-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-500 rounded-lg shadow-md">
-                    <BellIcon className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                </div>
-                <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-1 rounded-full border border-orange-200">
-                  {dashboardData?.notifications?.length || 0}
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                {dashboardData?.notifications?.map((notification, index) => {
+                {dashboardData?.notifications?.slice(0, 5).map((notification) => {
                   const Icon = getNotificationIcon(notification.type);
                   return (
-                    <div 
+                    <Card 
                       key={notification.id} 
-                      className={`p-4 rounded-xl transition-all duration-200 group border-l-4 ${getPriorityColor(notification.priority)}`}
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className={`${styles.notificationItem} border-l-4 ${getPriorityStyles(notification.priority)}`}
                     >
-                      <div className="flex items-start space-x-3">
-                        <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:scale-110 transition-transform duration-200">
-                          <Icon className="w-4 h-4 text-gray-600" />
+                      <div className="flex items-start space-x-3 p-4">
+                        <div className="flex-shrink-0">
+                          <div className={`${styles.iconContainer} bg-white shadow-sm border border-gray-100`}>
+                            <Icon className="w-4 h-4 text-gray-600" />
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
                             <span className="text-xs text-gray-500">{notification.time}</span>
                           </div>
-                          <p className="text-xs text-gray-600">{notification.message}</p>
+                          <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                          >
+                            {notification.action}
+                          </Button>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   );
                 })}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions Panel */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-500 rounded-lg shadow-md">
-                <PlusIcon className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {dashboardData?.quickActions?.map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <Link
-                    key={action.name}
-                    to={action.href}
-                    className="group p-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-gray-50 hover:from-gray-50 hover:to-white transform hover:scale-105"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className="text-center space-y-4">
-                      <div className={`w-10 h-10 bg-gradient-to-r ${action.bgColor} rounded-lg flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform duration-200`}>
-                        <Icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700">
-                          {action.name}
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-1">{action.description}</p>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced System Status & Church Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
-          {/* System Status Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-green-50">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-emerald-500 rounded-lg shadow-md">
-                  <ChartBarIcon className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">System Status</h3>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-800">Database</span>
-                </div>
-                <span className="text-xs text-green-600 font-semibold bg-green-100 px-2 py-1 rounded-full">
-                  Online
-                </span>
-              </div>
               
-              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-blue-800">Backup System</span>
-                </div>
-                <span className="text-xs text-blue-600 font-semibold bg-blue-100 px-2 py-1 rounded-full">
-                  Active
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl border border-purple-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-purple-800">API Services</span>
-                </div>
-                <span className="text-xs text-purple-600 font-semibold bg-purple-100 px-2 py-1 rounded-full">
-                  Running
-                </span>
-              </div>
-
-              <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
-                <div className="text-center space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Last Backup</p>
-                  <p className="text-xs text-gray-600">Today at 3:00 AM</p>
-                  <div className="flex items-center justify-center space-x-2 mt-3">
-                    <CheckCircleIcon className="w-4 h-4 text-green-500" />
-                    <span className="text-xs text-green-600 font-medium">All systems operational</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Church Information Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-500 rounded-lg shadow-md">
-                  <BuildingLibraryIcon className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Church Information</h3>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto shadow-xl">
-                  <span className="text-white font-bold text-xl">CC</span>
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-gray-900">ChurchConnect DBMS</h4>
-                  <p className="text-sm text-gray-600">Connecting Faith & Community</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPinIcon className="w-4 h-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Location</p>
-                    <p className="text-xs text-gray-600">KNUST Campus, Kumasi</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <PhoneIcon className="w-4 h-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Contact</p>
-                    <p className="text-xs text-gray-600">+233 XX XXX XXXX</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <EnvelopeIcon className="w-4 h-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Email</p>
-                    <p className="text-xs text-gray-600">info@churchconnect.org</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <GlobeAltIcon className="w-4 h-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Website</p>
-                    <p className="text-xs text-gray-600">www.churchconnect.org</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-gray-200 text-center">
-                <Link 
-                  to="/"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200"
+              <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                <Button
+                  variant="ghost"
+                  icon={BellIcon}
                 >
-                  <GlobeAltIcon className="w-4 h-4 mr-2" />
-                  Visit Public Site
-                </Link>
+                  Mark all as read
+                </Button>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Recent Activity Timeline */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-indigo-500 rounded-lg shadow-md">
-                  <ClockIcon className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Activity Timeline</h3>
+        {/* Quick Actions */}
+        <Card className={styles.quickActionsCard} hover={false}>
+          <div className={styles.sectionHeader}>
+            <div className="flex items-center space-x-3">
+              <div className={`${styles.iconContainer} bg-gradient-to-r from-amber-500 to-orange-500`}>
+                <SparklesIcon className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm text-indigo-600 font-medium">Today</span>
+              <h3 className={styles.sectionTitle}>Quick Actions</h3>
             </div>
           </div>
           
           <div className="p-6">
-            <div className="flow-root">
-              <ul className="-mb-8">
-                <li className="relative pb-8">
-                  <div className="absolute top-4 left-4 -ml-px h-6 w-0.5 bg-gray-200"></div>
-                  <div className="relative flex space-x-3">
-                    <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                      <UsersIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1.5">
-                      <div>
-                        <p className="text-sm text-gray-900">
-                          <span className="font-medium">5 new members</span> registered today
-                        </p>
-                        <p className="text-xs text-gray-500">2 hours ago</p>
-                      </div>
-                    </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/members/new"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-blue-100 group-hover:bg-blue-200 mb-3`}>
+                    <UsersIcon className="w-6 h-6 text-blue-600" />
                   </div>
-                </li>
-                
-                <li className="relative pb-8">
-                  <div className="absolute top-4 left-4 -ml-px h-6 w-0.5 bg-gray-200"></div>
-                  <div className="relative flex space-x-3">
-                    <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
-                      <CurrencyDollarIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1.5">
-                      <div>
-                        <p className="text-sm text-gray-900">
-                          <span className="font-medium">$2,500 in pledges</span> received
-                        </p>
-                        <p className="text-xs text-gray-500">4 hours ago</p>
-                      </div>
-                    </div>
+                  <span className="text-sm font-semibold text-gray-900">Add Member</span>
+                  <span className="text-xs text-gray-500 mt-1">New registration</span>
+                </Link>
+              </Card>
+              
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/events/new"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-emerald-100 group-hover:bg-emerald-200 mb-3`}>
+                    <CalendarDaysIcon className="w-6 h-6 text-emerald-600" />
                   </div>
-                </li>
-                
-                <li className="relative pb-8">
-                  <div className="absolute top-4 left-4 -ml-px h-6 w-0.5 bg-gray-200"></div>
-                  <div className="relative flex space-x-3">
-                    <div className="h-8 w-8 bg-purple-500 rounded-full flex items-center justify-center shadow-md">
-                      <CalendarDaysIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1.5">
-                      <div>
-                        <p className="text-sm text-gray-900">
-                          <span className="font-medium">Bible Study event</span> scheduled
-                        </p>
-                        <p className="text-xs text-gray-500">6 hours ago</p>
-                      </div>
-                    </div>
+                  <span className="text-sm font-semibold text-gray-900">Create Event</span>
+                  <span className="text-xs text-gray-500 mt-1">Schedule activity</span>
+                </Link>
+              </Card>
+              
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/donations"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-amber-100 group-hover:bg-amber-200 mb-3`}>
+                    <CurrencyDollarIcon className="w-6 h-6 text-amber-600" />
                   </div>
-                </li>
-                
-                <li className="relative">
-                  <div className="relative flex space-x-3">
-                    <div className="h-8 w-8 bg-gray-400 rounded-full flex items-center justify-center shadow-md">
-                      <ChartBarIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1.5">
-                      <div>
-                        <p className="text-sm text-gray-900">
-                          <span className="font-medium">System backup</span> completed
-                        </p>
-                        <p className="text-xs text-gray-500">8 hours ago</p>
-                      </div>
-                    </div>
+                  <span className="text-sm font-semibold text-gray-900">Record Donation</span>
+                  <span className="text-xs text-gray-500 mt-1">Financial contribution</span>
+                </Link>
+              </Card>
+              
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/reports"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-purple-100 group-hover:bg-purple-200 mb-3`}>
+                    <DocumentChartBarIcon className="w-6 h-6 text-purple-600" />
                   </div>
-                </li>
-              </ul>
+                  <span className="text-sm font-semibold text-gray-900">Generate Report</span>
+                  <span className="text-xs text-gray-500 mt-1">Analytics & insights</span>
+                </Link>
+              </Card>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Footer Information */}
-        <div className="text-center py-6 border-t border-gray-200">
-          <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 mb-2">
-            <HeartIcon className="w-4 h-4 text-red-500" />
-            <span>Built with love for our church community</span>
+        {/* Footer */}
+        <div className={styles.footer}>
+          <div className="text-sm text-gray-600 mb-4 md:mb-0">
+            © 2024 Church Community Manager. All rights reserved.
           </div>
-          <p className="text-xs text-gray-500">
-            ChurchConnect DBMS &copy; 2024 - Connecting Faith & Technology
-          </p>
+          <div className="flex items-center space-x-6">
+            <Link to="/privacy" className={styles.footerLink}>
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className={styles.footerLink}>
+              Terms of Service
+            </Link>
+            <Link to="/support" className={styles.footerLink}>
+              Support
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              to="/admin/settings"
+              icon={Cog6ToothIcon}
+            >
+              Settings
+            </Button>
+            <div className="flex items-center space-x-4">
+              <a href="#" className={styles.socialLink}>
+                <GlobeAltIcon className="w-4 h-4" />
+              </a>
+              <a href="#" className={styles.socialLink}>
+                <HeartIcon className="w-4 h-4" />
+              </a>
+              <a href="#" className={styles.socialLink}>
+                <BuildingLibraryIcon className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default DashboardPage;
+export default DashboardPage; 

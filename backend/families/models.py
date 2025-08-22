@@ -10,7 +10,7 @@ class Family(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     family_name = models.CharField(max_length=255)
     primary_contact = models.ForeignKey(
-        Member, 
+        Member,  # <-- use string reference
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
@@ -63,7 +63,7 @@ class FamilyRelationship(models.Model):
         related_name='family_relationships'
     )
     member = models.OneToOneField(
-        Member, 
+        Member,  # <-- use string reference
         on_delete=models.CASCADE, 
         related_name='family_relationship'
     )

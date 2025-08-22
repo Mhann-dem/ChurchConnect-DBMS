@@ -2294,3 +2294,1198 @@ INFO 2025-08-21 23:28:00,741 basehttp 3960 22332 "OPTIONS /api/v1/auth/login/ HT
 INFO 2025-08-21 23:28:00,757 middleware 3960 22332 Request: POST /api/v1/auth/login/ from 127.0.0.1
 INFO 2025-08-21 23:28:01,690 middleware 3960 22332 Response: 200 for POST /api/v1/auth/login/ (0.933s)
 INFO 2025-08-21 23:28:01,690 basehttp 3960 22332 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-22 10:29:08,925 autoreload 4844 16076 Watching for file changes with StatReloader
+INFO 2025-08-22 10:29:49,789 basehttp 4844 12548 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-22 10:29:49,790 basehttp 4844 15420 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-22 10:29:49,809 middleware 4844 15420 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 10:29:49,809 middleware 4844 12548 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 10:29:50,541 middleware 4844 6492 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 10:29:50,542 middleware 4844 5060 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+ERROR 2025-08-22 10:29:51,223 log 4844 6492 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 10:29:51,228 log 4844 12548 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 10:29:51,236 log 4844 5060 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 10:29:51,240 log 4844 15420 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+INFO 2025-08-22 10:29:51,247 middleware 4844 6492 Response: 500 for POST /api/v1/auth/token/refresh/ (0.706s)
+INFO 2025-08-22 10:29:51,249 middleware 4844 12548 Response: 500 for POST /api/v1/auth/token/refresh/ (1.439s)
+INFO 2025-08-22 10:29:51,251 middleware 4844 5060 Response: 500 for POST /api/v1/auth/token/refresh/ (0.709s)
+INFO 2025-08-22 10:29:51,254 middleware 4844 15420 Response: 500 for POST /api/v1/auth/token/refresh/ (1.445s)
+ERROR 2025-08-22 10:29:51,259 basehttp 4844 6492 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-22 10:29:51,261 basehttp 4844 15420 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-22 10:29:51,263 basehttp 4844 5060 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+ERROR 2025-08-22 10:29:51,263 basehttp 4844 12548 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126659
+INFO 2025-08-22 10:35:29,638 basehttp 4844 11816 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-22 10:35:29,642 middleware 4844 11816 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-22 10:35:30,468 middleware 4844 11816 Response: 200 for POST /api/v1/auth/login/ (0.826s)
+INFO 2025-08-22 10:35:30,485 basehttp 4844 11816 "POST /api/v1/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-22 11:30:39,035 middleware 4844 15376 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 11:30:39,047 middleware 4844 9376 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 11:30:39,067 middleware 4844 5948 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 11:30:39,067 middleware 4844 3680 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 11:30:39,081 middleware 4844 13328 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 11:30:39,102 middleware 4844 16288 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+ERROR 2025-08-22 11:30:39,399 log 4844 5948 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 11:30:39,406 log 4844 16288 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 11:30:39,438 log 4844 13328 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 11:30:39,469 log 4844 15376 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 11:30:39,485 log 4844 9376 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+ERROR 2025-08-22 11:30:39,501 log 4844 3680 Internal Server Error: /api/v1/auth/token/refresh/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\views.py", line 44, in post
+    serializer.is_valid(raise_exception=True)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\serializers.py", line 141, in validate
+    refresh.outstand()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework_simplejwt\tokens.py", line 222, in outstand
+    return OutstandingToken.objects.get_or_create(
+AttributeError: type object 'OutstandingToken' has no attribute 'objects'
+INFO 2025-08-22 11:30:39,501 middleware 4844 5948 Response: 500 for POST /api/v1/auth/token/refresh/ (0.434s)
+INFO 2025-08-22 11:30:39,501 middleware 4844 16288 Response: 500 for POST /api/v1/auth/token/refresh/ (0.399s)
+INFO 2025-08-22 11:30:39,501 middleware 4844 13328 Response: 500 for POST /api/v1/auth/token/refresh/ (0.421s)
+INFO 2025-08-22 11:30:39,501 middleware 4844 15376 Response: 500 for POST /api/v1/auth/token/refresh/ (0.466s)
+INFO 2025-08-22 11:30:39,501 middleware 4844 9376 Response: 500 for POST /api/v1/auth/token/refresh/ (0.454s)
+INFO 2025-08-22 11:30:39,501 middleware 4844 3680 Response: 500 for POST /api/v1/auth/token/refresh/ (0.434s)
+ERROR 2025-08-22 11:30:39,517 basehttp 4844 5948 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-22 11:30:39,517 basehttp 4844 16288 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-22 11:30:39,520 basehttp 4844 13328 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-22 11:30:39,522 basehttp 4844 15376 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-22 11:30:39,522 basehttp 4844 9376 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+ERROR 2025-08-22 11:30:39,524 basehttp 4844 3680 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 500 126657
+INFO 2025-08-22 11:58:40,650 autoreload 4844 16076 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-08-22 11:58:43,150 autoreload 2244 8228 Watching for file changes with StatReloader
+INFO 2025-08-22 11:59:56,679 autoreload 2244 8228 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-08-22 11:59:58,109 autoreload 8492 13656 Watching for file changes with StatReloader
+INFO 2025-08-22 12:00:18,674 autoreload 8492 13656 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-08-22 12:00:20,118 autoreload 16272 11184 Watching for file changes with StatReloader
+INFO 2025-08-22 12:00:40,509 autoreload 16272 11184 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\settings.py changed, reloading.
+INFO 2025-08-22 12:04:55,771 autoreload 12088 15992 Watching for file changes with StatReloader
+INFO 2025-08-22 12:07:43,453 middleware 12088 11132 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-22 12:07:44,795 middleware 12088 11132 Response: 200 for POST /api/v1/auth/login/ (1.342s)
+INFO 2025-08-22 12:07:44,795 basehttp 12088 11132 "POST /api/v1/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-22 12:42:53,724 middleware 12088 3900 Request: GET / from 127.0.0.1
+INFO 2025-08-22 12:42:53,746 middleware 12088 3900 Response: 302 for GET / (0.022s)
+INFO 2025-08-22 12:42:53,752 basehttp 12088 3900 "GET / HTTP/1.1" 302 0
+INFO 2025-08-22 12:42:53,757 middleware 12088 3900 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-22 12:42:54,152 middleware 12088 3900 Response: 200 for GET /api/docs/ (0.395s)
+INFO 2025-08-22 12:42:54,156 basehttp 12088 3900 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-22 12:44:39,175 middleware 12088 17396 Request: GET / from 127.0.0.1
+INFO 2025-08-22 12:44:39,177 middleware 12088 17396 Response: 302 for GET / (0.002s)
+INFO 2025-08-22 12:44:39,178 basehttp 12088 17396 "GET / HTTP/1.1" 302 0
+INFO 2025-08-22 12:44:39,187 middleware 12088 17396 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-22 12:44:39,188 middleware 12088 17396 Response: 200 for GET /api/docs/ (0.001s)
+INFO 2025-08-22 12:44:39,188 basehttp 12088 17396 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-22 12:44:47,176 middleware 12088 17396 Request: GET /api/docs/ from 127.0.0.1
+INFO 2025-08-22 12:44:47,179 middleware 12088 17396 Response: 200 for GET /api/docs/ (0.003s)
+INFO 2025-08-22 12:44:47,181 basehttp 12088 17396 "GET /api/docs/ HTTP/1.1" 200 4650
+INFO 2025-08-22 12:57:46,039 basehttp 12088 15072 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-22 12:57:46,039 middleware 12088 15072 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 12:57:46,401 middleware 12088 15072 Response: 200 for POST /api/v1/auth/token/refresh/ (0.363s)
+INFO 2025-08-22 12:57:46,401 basehttp 12088 15072 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-22 13:03:39,022 middleware 12088 10576 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 13:03:39,022 middleware 12088 9492 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 13:03:39,022 middleware 12088 15824 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 13:03:39,035 middleware 12088 12264 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-22 13:03:39,134 middleware 12088 10576 Response: 401 for POST /api/v1/auth/token/refresh/ (0.112s)
+INFO 2025-08-22 13:03:39,134 middleware 12088 9492 Response: 401 for POST /api/v1/auth/token/refresh/ (0.112s)
+WARNING 2025-08-22 13:03:39,134 log 12088 10576 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-22 13:03:39,134 log 12088 9492 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-22 13:03:39,134 basehttp 12088 10576 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-22 13:03:39,134 basehttp 12088 9492 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-22 13:03:39,151 middleware 12088 12264 Response: 401 for POST /api/v1/auth/token/refresh/ (0.115s)
+INFO 2025-08-22 13:03:39,152 middleware 12088 15824 Response: 401 for POST /api/v1/auth/token/refresh/ (0.130s)
+WARNING 2025-08-22 13:03:39,153 log 12088 12264 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-22 13:03:39,154 log 12088 15824 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-22 13:03:39,155 basehttp 12088 12264 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-22 13:03:39,155 basehttp 12088 15824 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-22 13:04:30,042 basehttp 12088 15824 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-22 13:04:30,047 middleware 12088 15824 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-22 13:04:30,887 middleware 12088 15824 Response: 200 for POST /api/v1/auth/login/ (0.840s)
+INFO 2025-08-22 13:04:30,887 basehttp 12088 15824 "POST /api/v1/auth/login/ HTTP/1.1" 200 921
+INFO 2025-08-22 13:06:43,865 basehttp 12088 15824 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-22 13:06:43,865 basehttp 12088 12264 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-22 13:06:43,872 middleware 12088 12264 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:06:44,008 middleware 12088 12264 Response: 200 for GET /api/v1/members/ (0.135s)
+INFO 2025-08-22 13:06:44,009 basehttp 12088 12264 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:06:44,011 middleware 12088 15824 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:06:44,077 middleware 12088 15824 Response: 200 for GET /api/v1/members/ (0.066s)
+INFO 2025-08-22 13:06:44,077 basehttp 12088 15824 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:09:52,251 middleware 12088 15568 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:09:52,344 middleware 12088 15568 Response: 200 for GET /api/v1/members/ (0.092s)
+INFO 2025-08-22 13:09:52,345 basehttp 12088 15568 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:09:52,347 middleware 12088 15568 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:09:52,415 middleware 12088 15568 Response: 200 for GET /api/v1/members/ (0.068s)
+INFO 2025-08-22 13:09:52,416 basehttp 12088 15568 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:09:59,138 middleware 12088 15568 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:09:59,238 middleware 12088 15568 Response: 200 for GET /api/v1/members/ (0.100s)
+INFO 2025-08-22 13:09:59,238 basehttp 12088 15568 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:09:59,244 middleware 12088 16772 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:09:59,317 middleware 12088 16772 Response: 200 for GET /api/v1/members/ (0.073s)
+INFO 2025-08-22 13:09:59,317 basehttp 12088 16772 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:10:39,879 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,885 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,887 basehttp 12088 13080 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,897 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,904 basehttp 12088 13080 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,905 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,910 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,919 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,919 basehttp 12088 13080 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,922 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,931 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,940 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,940 basehttp 12088 13080 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,941 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,948 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,948 basehttp 12088 13080 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,950 basehttp 12088 15568 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:39,953 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:39,955 middleware 12088 15568 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:39,962 basehttp 12088 16772 "OPTIONS /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-22 13:10:40,314 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.361s)
+INFO 2025-08-22 13:10:40,318 middleware 12088 15568 Response: 404 for GET /api/v1/pledges/ (0.363s)
+WARNING 2025-08-22 13:10:40,322 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,322 log 12088 15568 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,324 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+WARNING 2025-08-22 13:10:40,324 basehttp 12088 15568 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+INFO 2025-08-22 13:10:40,324 middleware 12088 16772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,324 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,338 middleware 12088 16772 Response: 404 for GET /api/v1/pledges/ (0.014s)
+INFO 2025-08-22 13:10:40,348 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.024s)
+WARNING 2025-08-22 13:10:40,349 log 12088 16772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,349 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,350 basehttp 12088 16772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+WARNING 2025-08-22 13:10:40,351 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,352 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,366 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.014s)
+WARNING 2025-08-22 13:10:40,366 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,366 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,370 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,376 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.006s)
+WARNING 2025-08-22 13:10:40,384 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,384 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,388 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,398 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.010s)
+WARNING 2025-08-22 13:10:40,398 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,398 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,398 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,409 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.011s)
+WARNING 2025-08-22 13:10:40,410 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,410 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,414 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,425 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.012s)
+WARNING 2025-08-22 13:10:40,425 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,425 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,425 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,442 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.016s)
+WARNING 2025-08-22 13:10:40,443 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,443 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,444 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,460 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.015s)
+WARNING 2025-08-22 13:10:40,460 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,460 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,464 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,473 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.009s)
+WARNING 2025-08-22 13:10:40,474 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,476 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,478 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,487 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.009s)
+WARNING 2025-08-22 13:10:40,488 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,489 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,492 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,499 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.007s)
+WARNING 2025-08-22 13:10:40,499 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,499 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,503 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,510 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.007s)
+WARNING 2025-08-22 13:10:40,510 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,514 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,514 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,526 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.012s)
+WARNING 2025-08-22 13:10:40,526 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,526 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,526 middleware 12088 13080 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,544 middleware 12088 13080 Response: 404 for GET /api/v1/pledges/ (0.018s)
+WARNING 2025-08-22 13:10:40,544 log 12088 13080 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,544 basehttp 12088 13080 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:10:40,549 middleware 12088 7772 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:10:40,559 middleware 12088 7772 Response: 404 for GET /api/v1/pledges/ (0.009s)
+WARNING 2025-08-22 13:10:40,560 log 12088 7772 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:10:40,560 basehttp 12088 7772 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:26,849 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,853 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,892 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.045s)
+INFO 2025-08-22 13:30:26,896 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.043s)
+WARNING 2025-08-22 13:30:26,898 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,900 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,902 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+WARNING 2025-08-22 13:30:26,903 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+INFO 2025-08-22 13:30:26,907 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,908 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,922 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.015s)
+INFO 2025-08-22 13:30:26,932 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.025s)
+WARNING 2025-08-22 13:30:26,933 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,934 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,935 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at&sort_by=created_at&sort_order=desc HTTP/1.1" 404 5144
+WARNING 2025-08-22 13:30:26,935 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:26,938 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,952 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.014s)
+WARNING 2025-08-22 13:30:26,954 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,954 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:26,956 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,969 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.014s)
+WARNING 2025-08-22 13:30:26,970 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,970 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:26,972 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:26,987 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.015s)
+WARNING 2025-08-22 13:30:26,988 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:26,989 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:26,992 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,001 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.009s)
+WARNING 2025-08-22 13:30:27,002 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,003 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,004 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,011 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.007s)
+WARNING 2025-08-22 13:30:27,012 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,014 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,016 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,454 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.438s)
+WARNING 2025-08-22 13:30:27,455 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,458 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,459 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,469 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.010s)
+WARNING 2025-08-22 13:30:27,469 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,471 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,473 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,483 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.010s)
+WARNING 2025-08-22 13:30:27,484 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,485 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,487 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,495 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.008s)
+WARNING 2025-08-22 13:30:27,496 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,498 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,501 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,511 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.011s)
+WARNING 2025-08-22 13:30:27,514 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,516 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,519 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,527 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.008s)
+WARNING 2025-08-22 13:30:27,529 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,530 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,533 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,541 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.008s)
+WARNING 2025-08-22 13:30:27,542 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,544 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,546 middleware 12088 2836 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,556 middleware 12088 2836 Response: 404 for GET /api/v1/pledges/ (0.010s)
+WARNING 2025-08-22 13:30:27,556 log 12088 2836 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,557 basehttp 12088 2836 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:27,560 middleware 12088 17356 Request: GET /api/v1/pledges/ from 127.0.0.1
+INFO 2025-08-22 13:30:27,572 middleware 12088 17356 Response: 404 for GET /api/v1/pledges/ (0.012s)
+WARNING 2025-08-22 13:30:27,573 log 12088 17356 Not Found: /api/v1/pledges/
+WARNING 2025-08-22 13:30:27,574 basehttp 12088 17356 "GET /api/v1/pledges/?page=1&page_size=25&search=&ordering=-created_at HTTP/1.1" 404 5101
+INFO 2025-08-22 13:30:32,912 middleware 12088 15216 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:30:33,158 middleware 12088 15216 Response: 200 for GET /api/v1/members/ (0.246s)
+INFO 2025-08-22 13:30:33,158 basehttp 12088 15216 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 13:30:33,158 middleware 12088 2436 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 13:30:33,228 middleware 12088 2436 Response: 200 for GET /api/v1/members/ (0.071s)
+INFO 2025-08-22 13:30:33,228 basehttp 12088 2436 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 59
+INFO 2025-08-22 14:07:25,008 middleware 12088 14028 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 14:07:25,074 middleware 12088 14028 Response: 401 for GET /api/v1/members/ (0.068s)
+WARNING 2025-08-22 14:07:25,078 log 12088 14028 Unauthorized: /api/v1/members/
+WARNING 2025-08-22 14:07:25,080 basehttp 12088 14028 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-22 14:07:25,080 middleware 12088 14028 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 14:07:25,080 middleware 12088 14028 Response: 401 for GET /api/v1/members/ (0.000s)
+WARNING 2025-08-22 14:07:25,080 log 12088 14028 Unauthorized: /api/v1/members/
+WARNING 2025-08-22 14:07:25,089 basehttp 12088 14028 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-22 14:36:00,549 autoreload 12088 15992 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\urls.py changed, reloading.
+INFO 2025-08-22 14:36:02,953 autoreload 8928 9064 Watching for file changes with StatReloader
+INFO 2025-08-22 14:36:48,749 autoreload 8928 9064 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-08-22 14:36:50,309 autoreload 5520 9936 Watching for file changes with StatReloader
+INFO 2025-08-22 14:43:22,939 autoreload 8268 14216 Watching for file changes with StatReloader
+INFO 2025-08-22 14:48:58,649 autoreload 8268 14216 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-08-22 14:49:00,428 autoreload 16140 6992 Watching for file changes with StatReloader
+INFO 2025-08-22 14:49:34,084 autoreload 16140 6992 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\urls.py changed, reloading.
+INFO 2025-08-22 14:49:35,520 autoreload 2008 8000 Watching for file changes with StatReloader
+INFO 2025-08-22 14:53:51,331 middleware 2008 16704 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-22 14:53:52,523 middleware 2008 16704 Response: 200 for POST /api/v1/auth/login/ (1.191s)
+INFO 2025-08-22 14:53:52,524 basehttp 2008 16704 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-22 14:55:13,219 middleware 2008 16212 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:55:14,106 log 2008 16212 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:55:14,120 middleware 2008 16212 Response: 500 for GET /api/v1/members/ (0.901s)
+ERROR 2025-08-22 14:55:14,120 basehttp 2008 16212 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 14:55:14,122 middleware 2008 9664 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:55:14,350 log 2008 9664 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:55:14,353 middleware 2008 9664 Response: 500 for GET /api/v1/members/ (0.230s)
+ERROR 2025-08-22 14:55:14,354 basehttp 2008 9664 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 14:57:27,814 middleware 2008 5840 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:57:28,083 log 2008 5840 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:57:28,086 middleware 2008 5840 Response: 500 for GET /api/v1/members/ (0.272s)
+ERROR 2025-08-22 14:57:28,087 basehttp 2008 5840 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 14:57:28,088 middleware 2008 14960 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:57:28,209 log 2008 14960 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:57:28,211 middleware 2008 14960 Response: 500 for GET /api/v1/members/ (0.123s)
+ERROR 2025-08-22 14:57:28,212 basehttp 2008 14960 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 14:57:40,161 middleware 2008 14960 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:57:40,421 log 2008 14960 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:57:40,424 middleware 2008 14960 Response: 500 for GET /api/v1/members/ (0.263s)
+ERROR 2025-08-22 14:57:40,425 basehttp 2008 14960 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 14:57:40,427 middleware 2008 5840 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 14:57:40,577 log 2008 5840 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 14:57:40,580 middleware 2008 5840 Response: 500 for GET /api/v1/members/ (0.153s)
+ERROR 2025-08-22 14:57:40,582 basehttp 2008 5840 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 16:16:19,142 autoreload 2008 8000 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-22 16:16:21,307 autoreload 15476 2384 Watching for file changes with StatReloader
+INFO 2025-08-22 16:16:57,177 autoreload 15476 2384 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-22 16:16:58,426 autoreload 12404 2100 Watching for file changes with StatReloader
+INFO 2025-08-22 16:19:59,288 autoreload 12404 2100 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-22 16:20:00,798 autoreload 568 12936 Watching for file changes with StatReloader
+INFO 2025-08-22 16:20:02,828 autoreload 568 12936 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-22 16:20:04,348 autoreload 14096 17420 Watching for file changes with StatReloader
+INFO 2025-08-22 16:21:19,101 autoreload 14096 17420 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-22 16:21:20,377 autoreload 17120 15880 Watching for file changes with StatReloader
+INFO 2025-08-22 16:21:50,611 autoreload 8424 18332 Watching for file changes with StatReloader
+INFO 2025-08-22 16:23:12,041 basehttp 8424 5772 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-22 16:23:12,042 basehttp 8424 14148 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-22 16:23:12,059 middleware 8424 14148 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 16:23:12,275 middleware 8424 14148 Response: 401 for GET /api/v1/members/ (0.215s)
+WARNING 2025-08-22 16:23:12,275 log 8424 14148 Unauthorized: /api/v1/members/
+WARNING 2025-08-22 16:23:12,276 basehttp 8424 14148 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-22 16:23:12,279 middleware 8424 5772 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-22 16:23:12,282 middleware 8424 5772 Response: 401 for GET /api/v1/members/ (0.003s)
+WARNING 2025-08-22 16:23:12,284 log 8424 5772 Unauthorized: /api/v1/members/
+WARNING 2025-08-22 16:23:12,285 basehttp 8424 5772 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-22 16:23:48,918 basehttp 8424 5772 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-22 16:23:48,922 middleware 8424 5772 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-22 16:23:49,972 middleware 8424 5772 Response: 200 for POST /api/v1/auth/login/ (1.050s)
+INFO 2025-08-22 16:23:49,972 basehttp 8424 5772 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-22 16:24:34,871 middleware 8424 5772 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 16:24:35,055 log 8424 5772 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 16:24:35,063 middleware 8424 5772 Response: 500 for GET /api/v1/members/ (0.192s)
+ERROR 2025-08-22 16:24:35,064 basehttp 8424 5772 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 16:24:35,064 middleware 8424 14148 Request: GET /api/v1/members/ from 127.0.0.1
+ERROR 2025-08-22 16:24:35,182 log 8424 14148 Internal Server Error: /api/v1/members/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 70, in validate_number
+    if number > self.num_pages:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 116, in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 110, in count
+    return c()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 604, in count
+    return self.query.get_count(using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 644, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\query.py", line 626, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "members_member" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "members_member"
+                                          ^
+
+INFO 2025-08-22 16:24:35,186 middleware 8424 14148 Response: 500 for GET /api/v1/members/ (0.122s)
+ERROR 2025-08-22 16:24:35,187 basehttp 8424 14148 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 500 196683
+INFO 2025-08-22 17:00:15,573 autoreload 17684 10968 Watching for file changes with StatReloader

@@ -15,7 +15,37 @@ import { useMembers } from '../../hooks/useMembers';
 import { formatPhoneNumber as formatPhone } from '../../utils/formatters';
 import styles from './AdminPages.module.css';
 
+// Enhanced formatDate function with better error handling
+const formatDate = (dateString) => {
+  if (!dateString) return 'Not provided';
+  
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'Invalid date';
+    
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return 'Invalid date';
+  }
+};
 
+// Safe formatPhone function with fallback
+const safeFormatPhone = (phoneNumber) => {
+  if (!phoneNumber) return 'Not provided';
+  
+  try {
+    return formatPhone(phoneNumber);
+  } catch (error) {
+    console.error('Phone formatting error:', error);
+    return phoneNumber; // Return original if formatting fails
+  }
+};
 
 const MemberDetailPage = () => {
   const { id } = useParams();
@@ -55,11 +85,12 @@ const MemberDetailPage = () => {
         getMemberPledges(memberId),
         getMemberGroups(memberId)
       ]);
-      setMemberActivity(activity);
-      setMemberPledges(pledges);
-      setMemberGroups(groups);
+      setMemberActivity(activity || []);
+      setMemberPledges(pledges || []);
+      setMemberGroups(groups || []);
     } catch (error) {
       console.error('Error loading member data:', error);
+      showToast('Failed to load member details', 'error');
     }
   };
 
@@ -114,24 +145,24 @@ const MemberDetailPage = () => {
       <div className={styles.memberHeader}>
         <div className={styles.memberInfo}>
           <Avatar
-            src={member.photo_url}
-            alt={`${member.first_name} ${member.last_name}`}
+            src={member?.photo_url}
+            alt={`${member?.first_name || ''} ${member?.last_name || ''}`}
             size="xlarge"
             className={styles.memberAvatar}
           />
           <div className={styles.memberDetails}>
             <h2 className={styles.memberName}>
-              {member.first_name} {member.last_name}
-              {member.preferred_name && (
+              {member?.first_name} {member?.last_name}
+              {member?.preferred_name && (
                 <span className={styles.preferredName}>
                   "{member.preferred_name}"
                 </span>
               )}
             </h2>
-            <p className={styles.memberEmail}>{member.email}</p>
+            <p className={styles.memberEmail}>{member?.email || 'No email'}</p>
             <div className={styles.memberBadges}>
-              {getStatusBadge(member.is_active ? 'active' : 'inactive')}
-              {getPreferredContactBadge(member.preferred_contact_method)}
+              {getStatusBadge(member?.is_active ? 'active' : 'inactive')}
+              {getPreferredContactBadge(member?.preferred_contact_method)}
             </div>
           </div>
         </div>
@@ -161,25 +192,25 @@ const MemberDetailPage = () => {
           <div className={styles.cardBody}>
             <div className={styles.infoRow}>
               <span className={styles.label}>Email:</span>
-              <span className={styles.value}>{member.email}</span>
+              <span className={styles.value}>{member?.email || 'Not provided'}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Phone:</span>
-              <span className={styles.value}>{formatPhone(member.phone)}</span>
+              <span className={styles.value}>{safeFormatPhone(member?.phone)}</span>
             </div>
-            {member.alternate_phone && (
+            {member?.alternate_phone && (
               <div className={styles.infoRow}>
                 <span className={styles.label}>Alternate Phone:</span>
-                <span className={styles.value}>{formatPhone(member.alternate_phone)}</span>
+                <span className={styles.value}>{safeFormatPhone(member.alternate_phone)}</span>
               </div>
             )}
             <div className={styles.infoRow}>
               <span className={styles.label}>Address:</span>
-              <span className={styles.value}>{member.address || 'Not provided'}</span>
+              <span className={styles.value}>{member?.address || 'Not provided'}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Preferred Contact:</span>
-              <span className={styles.value}>{getPreferredContactBadge(member.preferred_contact_method)}</span>
+              <span className={styles.value}>{getPreferredContactBadge(member?.preferred_contact_method)}</span>
             </div>
           </div>
         </Card>
@@ -191,28 +222,28 @@ const MemberDetailPage = () => {
           <div className={styles.cardBody}>
             <div className={styles.infoRow}>
               <span className={styles.label}>Date of Birth:</span>
-              <span className={styles.value}>{formatDate(member.date_of_birth)}</span>
+              <span className={styles.value}>{formatDate(member?.date_of_birth)}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Gender:</span>
-              <span className={styles.value}>{member.gender}</span>
+              <span className={styles.value}>{member?.gender || 'Not provided'}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Preferred Language:</span>
-              <span className={styles.value}>{member.preferred_language}</span>
+              <span className={styles.value}>{member?.preferred_language || 'Not provided'}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Registration Date:</span>
-              <span className={styles.value}>{formatDate(member.registration_date)}</span>
+              <span className={styles.value}>{formatDate(member?.registration_date)}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.label}>Last Updated:</span>
-              <span className={styles.value}>{formatDate(member.last_updated)}</span>
+              <span className={styles.value}>{formatDate(member?.last_updated)}</span>
             </div>
           </div>
         </Card>
 
-        {member.accessibility_needs && (
+        {member?.accessibility_needs && (
           <Card className={styles.infoCard}>
             <div className={styles.cardHeader}>
               <h3>Accessibility Needs</h3>
@@ -223,7 +254,7 @@ const MemberDetailPage = () => {
           </Card>
         )}
 
-        {member.emergency_contact_name && (
+        {member?.emergency_contact_name && (
           <Card className={styles.infoCard}>
             <div className={styles.cardHeader}>
               <h3>Emergency Contact</h3>
@@ -235,13 +266,13 @@ const MemberDetailPage = () => {
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.label}>Phone:</span>
-                <span className={styles.value}>{formatPhone(member.emergency_contact_phone)}</span>
+                <span className={styles.value}>{safeFormatPhone(member.emergency_contact_phone)}</span>
               </div>
             </div>
           </Card>
         )}
 
-        {member.notes && (
+        {member?.notes && (
           <Card className={styles.infoCard}>
             <div className={styles.cardHeader}>
               <h3>Notes</h3>
@@ -316,7 +347,7 @@ const MemberDetailPage = () => {
             <Card key={pledge.id} className={styles.pledgeCard}>
               <div className={styles.pledgeInfo}>
                 <div className={styles.pledgeAmount}>
-                  ${pledge.amount.toLocaleString()}
+                  ${pledge.amount?.toLocaleString() || '0'}
                 </div>
                 <div className={styles.pledgeDetails}>
                   <span className={styles.pledgeFrequency}>
@@ -376,6 +407,7 @@ const MemberDetailPage = () => {
     return (
       <div className={styles.loadingContainer}>
         <LoadingSpinner />
+        <p>Loading member details...</p>
       </div>
     );
   }
@@ -456,7 +488,7 @@ const MemberDetailPage = () => {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteMember}
         title="Delete Member"
-        message={`Are you sure you want to delete ${member.first_name} ${member.last_name}? This action cannot be undone.`}
+        message={`Are you sure you want to delete ${member?.first_name} ${member?.last_name}? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
