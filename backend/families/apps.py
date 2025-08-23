@@ -9,4 +9,7 @@ class FamiliesConfig(AppConfig):
     verbose_name = 'Family Management'
 
     def ready(self):
-        import families.signals
+        # Only import signals if you decide to use them
+        # For now, we're handling the logic in models and views
+        # import families.signals
+        pass

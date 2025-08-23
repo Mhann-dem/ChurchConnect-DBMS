@@ -4,45 +4,6 @@ import { useMembers } from '../../hooks/useMembers';
 import { useToast } from '../../hooks/useToast';
 import styles from './AdminPages.module.css';
 
-// Safe component imports with fallbacks
-let MembersList, MemberForm, MemberFilters, BulkActions;
-let SearchBar, LoadingSpinner, Toast, Pagination, EmptyState;
-let Button, Card, Modal, ConfirmDialog;
-
-try {
-  // Try to import admin components
-  const adminComponents = require('../../components/admin/Members');
-  MembersList = adminComponents.MembersList;
-  MemberForm = adminComponents.MemberForm;
-  MemberFilters = adminComponents.MemberFilters;
-  BulkActions = adminComponents.BulkActions;
-} catch (error) {
-  console.warn('Admin components not found, using fallbacks');
-}
-
-try {
-  // Try to import shared components
-  const sharedComponents = require('../../components/shared');
-  SearchBar = sharedComponents.SearchBar;
-  LoadingSpinner = sharedComponents.LoadingSpinner;
-  Toast = sharedComponents.Toast;
-  Pagination = sharedComponents.Pagination;
-  EmptyState = sharedComponents.EmptyState;
-  Modal = sharedComponents.Modal;
-  ConfirmDialog = sharedComponents.ConfirmDialog;
-} catch (error) {
-  console.warn('Shared components not found, using fallbacks');
-}
-
-try {
-  // Try to import UI components
-  const uiComponents = require('../../components/ui');
-  Button = uiComponents.Button;
-  Card = uiComponents.Card;
-} catch (error) {
-  console.warn('UI components not found, using fallbacks');
-}
-
 // Fallback components
 const FallbackButton = ({ children, onClick, variant = 'primary', disabled = false, className = '', size, type = 'button', ...props }) => (
   <button
@@ -137,7 +98,7 @@ const FallbackEmptyState = ({ title, message, action, className = '' }) => (
     <p style={{ margin: '0 0 20px 0', color: '#888' }}>
       {message || 'No items to display'}
     </p>
-    {action && action}
+    {action}
   </div>
 );
 
@@ -151,16 +112,13 @@ const FallbackMembersList = ({
   onView, 
   loading = false 
 }) => {
-  const SafeButton = Button || FallbackButton;
-  const SafeEmptyState = EmptyState || FallbackEmptyState;
-
   if (loading) {
     return <FallbackLoadingSpinner />;
   }
 
   if (!members || members.length === 0) {
     return (
-      <SafeEmptyState 
+      <FallbackEmptyState 
         title="No Members Found" 
         message="No members match your current search criteria."
         className={styles.emptyState}
@@ -212,27 +170,27 @@ const FallbackMembersList = ({
             </div>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <SafeButton 
+            <FallbackButton 
               onClick={() => onView && onView(member.id)} 
               variant="primary" 
               size="small"
             >
               View
-            </SafeButton>
-            <SafeButton 
+            </FallbackButton>
+            <FallbackButton 
               onClick={() => onEdit && onEdit(member)} 
               variant="secondary" 
               size="small"
             >
               Edit
-            </SafeButton>
-            <SafeButton 
+            </FallbackButton>
+            <FallbackButton 
               onClick={() => onDelete && onDelete(member.id)} 
               variant="danger" 
               size="small"
             >
               Delete
-            </SafeButton>
+            </FallbackButton>
           </div>
         </div>
       ))}
@@ -307,8 +265,6 @@ const FallbackMemberFilters = ({
 );
 
 const FallbackPagination = ({ currentPage, totalPages, onPageChange }) => {
-  const SafeButton = Button || FallbackButton;
-  
   if (totalPages <= 1) return null;
   
   const pages = [];
@@ -326,56 +282,55 @@ const FallbackPagination = ({ currentPage, totalPages, onPageChange }) => {
   
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '20px' }}>
-      <SafeButton 
+      <FallbackButton 
         onClick={() => onPageChange && onPageChange(1)} 
         disabled={currentPage <= 1}
         variant="outline"
         size="small"
       >
         First
-      </SafeButton>
-      <SafeButton 
+      </FallbackButton>
+      <FallbackButton 
         onClick={() => onPageChange && onPageChange(currentPage - 1)} 
         disabled={currentPage <= 1}
         variant="outline"
         size="small"
       >
         Previous
-      </SafeButton>
+      </FallbackButton>
       
       {pages.map(page => (
-        <SafeButton
+        <FallbackButton
           key={page}
           onClick={() => onPageChange && onPageChange(page)}
           variant={page === currentPage ? 'primary' : 'outline'}
           size="small"
         >
           {page}
-        </SafeButton>
+        </FallbackButton>
       ))}
       
-      <SafeButton 
+      <FallbackButton 
         onClick={() => onPageChange && onPageChange(currentPage + 1)} 
         disabled={currentPage >= totalPages}
         variant="outline"
         size="small"
       >
         Next
-      </SafeButton>
-      <SafeButton 
+      </FallbackButton>
+      <FallbackButton 
         onClick={() => onPageChange && onPageChange(totalPages)} 
         disabled={currentPage >= totalPages}
         variant="outline"
         size="small"
       >
         Last
-      </SafeButton>
+      </FallbackButton>
     </div>
   );
 };
 
 const FallbackMemberForm = ({ member, onSubmit, onCancel, isEditing = false }) => {
-  const SafeButton = Button || FallbackButton;
   const [formData, setFormData] = useState({
     first_name: member?.first_name || '',
     last_name: member?.last_name || '',
@@ -508,15 +463,26 @@ const FallbackMemberForm = ({ member, onSubmit, onCancel, isEditing = false }) =
       </div>
       
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-        <SafeButton type="button" onClick={onCancel} variant="outline">
+        <FallbackButton type="button" onClick={onCancel} variant="outline">
           Cancel
-        </SafeButton>
-        <SafeButton type="submit" variant="primary">
+        </FallbackButton>
+        <FallbackButton type="submit" variant="primary">
           {isEditing ? 'Update' : 'Create'} Member
-        </SafeButton>
+        </FallbackButton>
       </div>
     </form>
   );
+};
+
+// Safe component imports
+const getSafeComponent = (importFunction, fallbackComponent) => {
+  try {
+    const component = importFunction();
+    return component || fallbackComponent;
+  } catch (error) {
+    console.warn('Component import failed, using fallback:', error);
+    return fallbackComponent;
+  }
 };
 
 const MembersPage = () => {
@@ -572,18 +538,6 @@ const MembersPage = () => {
 
   // Safe members array
   const safeMembers = Array.isArray(members) ? members : [];
-
-  // Use fallback components if imports failed
-  const SafeButton = Button || FallbackButton;
-  const SafeCard = Card || FallbackCard;
-  const SafeLoadingSpinner = LoadingSpinner || FallbackLoadingSpinner;
-  const SafeSearchBar = SearchBar || FallbackSearchBar;
-  const SafeMembersList = MembersList || FallbackMembersList;
-  const SafeMemberFilters = MemberFilters || FallbackMemberFilters;
-  const SafePagination = Pagination || FallbackPagination;
-  const SafeMemberForm = MemberForm || FallbackMemberForm;
-  const SafeModal = Modal;
-  const SafeConfirmDialog = ConfirmDialog;
 
   // Update URL params when filters change
   useEffect(() => {
@@ -741,7 +695,7 @@ const MembersPage = () => {
         justifyContent: 'center', 
         minHeight: '400px' 
       }}>
-        <SafeLoadingSpinner />
+        <FallbackLoadingSpinner />
         <p style={{ marginTop: '20px', fontSize: '16px', color: '#666' }}>Loading members...</p>
       </div>
     );
@@ -776,25 +730,25 @@ const MembersPage = () => {
           </p>
         </div>
         <div className={styles.headerActions} style={{ display: 'flex', gap: '10px' }}>
-          <SafeButton
+          <FallbackButton
             variant="outline"
             onClick={handleExportMembers}
             disabled={safeMembers.length === 0}
           >
             Export CSV
-          </SafeButton>
-          <SafeButton
+          </FallbackButton>
+          <FallbackButton
             variant="primary"
             onClick={() => setShowForm(true)}
           >
             Add New Member
-          </SafeButton>
+          </FallbackButton>
         </div>
       </div>
 
       {/* Bulk Actions Bar */}
       {selectedMembers.length > 0 && (
-        <SafeCard className={styles.bulkActionsCard}>
+        <FallbackCard className={styles.bulkActionsCard}>
           <div className={styles.bulkActionsContent} style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -808,20 +762,20 @@ const MembersPage = () => {
               }}>
                 {selectedMembers.length} members selected
               </span>
-              <SafeButton
+              <FallbackButton
                 variant="outline"
                 size="small"
                 onClick={() => setSelectedMembers([])}
               >
                 Clear Selection
-              </SafeButton>
+              </FallbackButton>
             </div>
           </div>
-        </SafeCard>
+        </FallbackCard>
       )}
 
       {/* Search and Filters */}
-      <SafeCard className={styles.filtersCard}>
+      <FallbackCard className={styles.filtersCard}>
         <div className={styles.filtersContent}>
           <div className={styles.searchRow} style={{ 
             display: 'flex', 
@@ -838,14 +792,14 @@ const MembersPage = () => {
               }}>
                 Search Members:
               </label>
-              <SafeSearchBar
+              <FallbackSearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search members by name, email, or phone..."
                 className={styles.searchInput}
               />
             </div>
-            <SafeButton
+            <FallbackButton
               variant="outline"
               onClick={clearFilters}
               disabled={
@@ -857,10 +811,10 @@ const MembersPage = () => {
               }
             >
               Clear Filters
-            </SafeButton>
+            </FallbackButton>
           </div>
           
-          <SafeMemberFilters
+          <FallbackMemberFilters
             ageFilter={ageFilter}
             groupFilter={groupFilter}
             statusFilter={statusFilter}
@@ -871,7 +825,7 @@ const MembersPage = () => {
             onJoinDateChange={setJoinDateFilter}
           />
         </div>
-      </SafeCard>
+      </FallbackCard>
 
       {/* Error Display */}
       {error && (
@@ -892,8 +846,8 @@ const MembersPage = () => {
       )}
 
       {/* Members List */}
-      <SafeCard className={styles.membersListCard}>
-        <SafeMembersList
+      <FallbackCard className={styles.membersListCard}>
+        <FallbackMembersList
           members={safeMembers}
           selectedMembers={selectedMembers}
           onSelectMember={handleSelectMember}
@@ -903,7 +857,7 @@ const MembersPage = () => {
           onView={handleViewMember}
           loading={loading}
         />
-      </SafeCard>
+      </FallbackCard>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -937,7 +891,7 @@ const MembersPage = () => {
             <span className={styles.pageSizeLabel}>per page</span>
           </div>
           
-          <SafePagination
+          <FallbackPagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
@@ -1008,34 +962,16 @@ const MembersPage = () => {
                 ×
               </button>
             </div>
-            {SafeModal && SafeMemberForm ? (
-              <SafeModal
-                isOpen={showForm}
-                onClose={handleCloseForm}
-                title={selectedMember ? 'Edit Member' : 'Add New Member'}
-                size="large"
-              >
-                <SafeMemberForm
-                  member={selectedMember}
-                  onSubmit={selectedMember ? 
-                    (data) => handleUpdateMember(selectedMember.id, data) : 
-                    handleCreateMember
-                  }
-                  onCancel={handleCloseForm}
-                  isEditing={!!selectedMember}
-                />
-              </SafeModal>
-            ) : (
-              <SafeMemberForm
-                member={selectedMember}
-                onSubmit={selectedMember ? 
-                  (data) => handleUpdateMember(selectedMember.id, data) : 
-                  handleCreateMember
-                }
-                onCancel={handleCloseForm}
-                isEditing={!!selectedMember}
-              />
-            )}
+            
+            <FallbackMemberForm
+              member={selectedMember}
+              onSubmit={selectedMember ? 
+                (data) => handleUpdateMember(selectedMember.id, data) : 
+                handleCreateMember
+              }
+              onCancel={handleCloseForm}
+              isEditing={!!selectedMember}
+            />
           </div>
         </div>
       )}
@@ -1080,25 +1016,22 @@ const MembersPage = () => {
               Are you sure you want to delete this member? This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <SafeButton
+              <FallbackButton
                 variant="outline"
                 onClick={() => setDeleteConfirmId(null)}
               >
                 Cancel
-              </SafeButton>
-              <SafeButton
+              </FallbackButton>
+              <FallbackButton
                 variant="danger"
                 onClick={() => handleDeleteMember(deleteConfirmId)}
               >
                 Delete
-              </SafeButton>
+              </FallbackButton>
             </div>
           </div>
         </div>
       )}
-
-      {/* Toast Container */}
-      {Toast && <Toast />}
     </div>
   );
 };

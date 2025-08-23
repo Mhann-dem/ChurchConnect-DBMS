@@ -3,7 +3,32 @@
 import uuid
 from django.db import models
 from django.core.validators import MinLengthValidator
+from django.core.exceptions import ValidationError
 from members.models import Member
+
+
+class GroupCategory(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    color = models.CharField(
+        max_length=7,
+        default='#3B82F6',
+        help_text="Hex color code for category display"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Group Categories"
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def __str__(self):
+        return self.name
 
 
 class Group(models.Model):
@@ -87,6 +112,7 @@ class Group(models.Model):
             models.Index(fields=['name']),
             models.Index(fields=['is_active']),
             models.Index(fields=['is_public']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self):
@@ -94,35 +120,57 @@ class Group(models.Model):
 
     @property
     def member_count(self):
-        return self.memberships.filter(is_active=True).count()
+        """Return the count of active members"""
+        return self.memberships.filter(is_active=True, status='active').count()
 
     @property
     def pending_requests_count(self):
+        """Return the count of pending membership requests"""
         return self.memberships.filter(status='pending').count()
 
     @property
     def is_full(self):
+        """Check if the group is at capacity"""
         if self.max_capacity:
             return self.member_count >= self.max_capacity
         return False
 
     @property
     def available_spots(self):
+        """Return the number of available spots"""
         if self.max_capacity:
             return max(0, self.max_capacity - self.member_count)
         return None
 
+    def get_leader_name(self):
+        """Return the leader name, prioritizing Member model over leader_name field"""
+        if self.leader:
+            return self.leader.get_full_name()
+        return self.leader_name or 'No leader assigned'
+
     def can_join(self, member):
         """Check if a member can join this group"""
-        if not self.is_active or not self.is_public:
-            return False, "Group is not available for joining"
+        if not self.is_active:
+            return False, "Group is not active"
+            
+        if not self.is_public:
+            return False, "Group is not open for public joining"
         
         if self.is_full:
             return False, "Group is at maximum capacity"
         
-        # Check if member is already in the group
-        if self.memberships.filter(member=member, is_active=True).exists():
+        # Check if member is already in the group (active or pending)
+        if self.memberships.filter(
+            member=member, 
+            is_active=True
+        ).exists():
             return False, "Member is already in this group"
+        
+        if self.memberships.filter(
+            member=member, 
+            status='pending'
+        ).exists():
+            return False, "Member already has a pending request for this group"
         
         return True, "Can join"
 
@@ -185,17 +233,22 @@ class MemberGroupRelationship(models.Model):
     )
 
     class Meta:
-        unique_together = ['member', 'group']
+        unique_together = [('member', 'group')]
         verbose_name = "Group Membership"
         verbose_name_plural = "Group Memberships"
         ordering = ['-join_date']
+        indexes = [
+            models.Index(fields=['member', 'group']),
+            models.Index(fields=['status']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['join_date']),
+        ]
 
     def __str__(self):
         return f"{self.member.get_full_name()} - {self.group.name} ({self.get_role_display()})"
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        
+        """Validate model data"""
         # Validate end_date is after start_date
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValidationError("End date cannot be before start date")
@@ -203,6 +256,11 @@ class MemberGroupRelationship(models.Model):
         # If end_date is set, membership should not be active
         if self.end_date and self.is_active:
             raise ValidationError("Membership cannot be active if end date is set")
+
+    def save(self, *args, **kwargs):
+        """Override save to run clean validation"""
+        self.clean()
+        super().save(*args, **kwargs)
 
     def deactivate(self, end_date=None):
         """Deactivate this membership"""
@@ -220,27 +278,8 @@ class MemberGroupRelationship(models.Model):
         self.save()
 
 
-class GroupCategory(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-    color = models.CharField(
-        max_length=7,
-        default='#3B82F6',
-        help_text="Hex color code for category display"
-    )
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name_plural = "Group Categories"
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
 class GroupCategoryRelationship(models.Model):
+    """Many-to-many relationship between Groups and Categories"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group = models.ForeignKey(
         Group,
@@ -255,9 +294,12 @@ class GroupCategoryRelationship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['group', 'category']
+        unique_together = [('group', 'category')]
         verbose_name = "Group Category"
         verbose_name_plural = "Group Categories"
+        indexes = [
+            models.Index(fields=['group', 'category']),
+        ]
 
     def __str__(self):
         return f"{self.group.name} - {self.category.name}"
