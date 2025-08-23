@@ -128,177 +128,201 @@ const ReportsPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports & Analytics</h1>
-        <p className="text-gray-600">Generate and view reports on member data and church statistics</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
+              <p className="text-gray-600 mt-1">Generate and view reports on member data and church statistics</p>
+            </div>
+            <div className="flex space-x-3">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Schedule Report
+              </Button>
+              <Button className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Export All
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-8">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Report Filters
-          </h2>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Select
-              label="Date Range"
-              value={filters.dateRange}
-              onChange={(value) => handleFilterChange('dateRange', value)}
-              options={dateRangeOptions}
-            />
-            <Select
-              label="Report Type"
-              value={filters.reportType}
-              onChange={(value) => handleFilterChange('reportType', value)}
-              options={reportTypeOptions}
-            />
-            <Select
-              label="Group By"
-              value={filters.groupBy}
-              onChange={(value) => handleFilterChange('groupBy', value)}
-              options={groupByOptions}
-            />
-            <div className="flex items-end">
-              <Checkbox
-                label="Include Inactive Members"
-                checked={filters.includeInactive}
-                onChange={(checked) => handleFilterChange('includeInactive', checked)}
-              />
-            </div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Filters */}
+        <Card className="mb-8">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Report Filters
+            </h2>
           </div>
-        </div>
-      </Card>
-
-      {/* Quick Reports */}
-      <Card className="mb-8">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Quick Reports</h2>
-          <p className="text-gray-600 mt-1">
-            Generate commonly used reports with one click
-          </p>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quickReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <h3 className="font-semibold text-gray-900 mb-2">{report.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{report.description}</p>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleExport(report.id)}
-                    className="flex items-center gap-1"
-                  >
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleScheduleReport(report.id)}
-                    className="flex items-center gap-1"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Schedule
-                  </Button>
-                </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Select
+                label="Date Range"
+                value={filters.dateRange}
+                onChange={(value) => handleFilterChange('dateRange', value)}
+                options={dateRangeOptions}
+              />
+              <Select
+                label="Report Type"
+                value={filters.reportType}
+                onChange={(value) => handleFilterChange('reportType', value)}
+                options={reportTypeOptions}
+              />
+              <Select
+                label="Group By"
+                value={filters.groupBy}
+                onChange={(value) => handleFilterChange('groupBy', value)}
+                options={groupByOptions}
+              />
+              <div className="flex items-end">
+                <Checkbox
+                  label="Include Inactive Members"
+                  checked={filters.includeInactive}
+                  onChange={(checked) => handleFilterChange('includeInactive', checked)}
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      </Card>
-
-      {/* Charts and Analytics */}
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card>
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Member Growth
-              </h2>
-            </div>
-            <div className="p-6">
-              <MemberGrowthChart data={reportData.memberGrowth} />
-            </div>
-          </Card>
-
-          <Card>
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Pledge Statistics
-              </h2>
-            </div>
-            <div className="p-6">
-              <PledgeChart data={reportData.pledgeStats} />
-            </div>
-          </Card>
-
-          <Card>
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Age Distribution
-              </h2>
-            </div>
-            <div className="p-6">
-              <AgeDistributionChart data={reportData.ageDistribution} />
-            </div>
-          </Card>
-
-          <Card>
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold">Ministry Distribution</h2>
-            </div>
-            <div className="p-6">
-              <MinistryChart data={reportData.ministryDistribution} />
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Export Options */}
-      <Card className="mt-8">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Export Options</h2>
-          <p className="text-gray-600 mt-1">
-            Configure how reports are exported
-          </p>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              label="Format"
-              value={exportOptions.format}
-              onChange={(value) => setExportOptions(prev => ({ ...prev, format: value }))}
-              options={[
-                { value: 'csv', label: 'CSV' },
-                { value: 'pdf', label: 'PDF' },
-                { value: 'excel', label: 'Excel' }
-              ]}
-            />
-            <div className="space-y-2">
-              <Checkbox
-                label="Include Charts"
-                checked={exportOptions.includeCharts}
-                onChange={(checked) => setExportOptions(prev => ({ ...prev, includeCharts: checked }))}
-              />
-              <Checkbox
-                label="Include Details"
-                checked={exportOptions.includeDetails}
-                onChange={(checked) => setExportOptions(prev => ({ ...prev, includeDetails: checked }))}
-              />
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Quick Reports */}
+        <Card className="mb-8">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Quick Reports</h2>
+            <p className="text-gray-600 mt-1">
+              Generate commonly used reports with one click
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {quickReports.map((report) => (
+                <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-2">{report.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{report.description}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleExport(report.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleScheduleReport(report.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Schedule
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Charts and Analytics */}
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card>
+              <div className="p-6 border-b">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  Member Growth
+                </h2>
+              </div>
+              <div className="p-6">
+                <MemberGrowthChart data={reportData.memberGrowth} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-6 border-b">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-green-600" />
+                  Pledge Statistics
+                </h2>
+              </div>
+              <div className="p-6">
+                <PledgeChart data={reportData.pledgeStats} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-6 border-b">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Age Distribution
+                </h2>
+              </div>
+              <div className="p-6">
+                <AgeDistributionChart data={reportData.ageDistribution} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-6 border-b">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                  Ministry Distribution
+                </h2>
+              </div>
+              <div className="p-6">
+                <MinistryChart data={reportData.ministryDistribution} />
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Export Options */}
+        <Card className="mt-8">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Export Options</h2>
+            <p className="text-gray-600 mt-1">
+              Configure how reports are exported
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select
+                label="Format"
+                value={exportOptions.format}
+                onChange={(value) => setExportOptions(prev => ({ ...prev, format: value }))}
+                options={[
+                  { value: 'csv', label: 'CSV' },
+                  { value: 'pdf', label: 'PDF' },
+                  { value: 'excel', label: 'Excel' }
+                ]}
+              />
+              <div className="space-y-2">
+                <Checkbox
+                  label="Include Charts"
+                  checked={exportOptions.includeCharts}
+                  onChange={(checked) => setExportOptions(prev => ({ ...prev, includeCharts: checked }))}
+                />
+                <Checkbox
+                  label="Include Details"
+                  checked={exportOptions.includeDetails}
+                  onChange={(checked) => setExportOptions(prev => ({ ...prev, includeDetails: checked }))}
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

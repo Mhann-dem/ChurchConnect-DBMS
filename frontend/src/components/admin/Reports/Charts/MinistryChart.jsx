@@ -15,11 +15,7 @@ import {
   Line,
   ComposedChart
 } from 'recharts';
-import Card from '../../../ui/Card';
-import Badge from '../../../ui/Badge';
-import Button from '../../../ui/Button';
-import Tabs from '../../../ui/Tabs';
-import { 
+import {
   Users, 
   TrendingUp, 
   TrendingDown, 
@@ -167,9 +163,20 @@ const MinistryChart = ({
   const handleRefresh = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
+      // Simulate API call to refresh data
       await new Promise(resolve => setTimeout(resolve, 1000));
-      // In real implementation, this would fetch fresh data
+      
+      // In real implementation, this would fetch fresh data from API
+      // const response = await api.get('/members');
+      // setFilteredData(response.data);
+      
+      // For now, just reload the mock data to simulate refresh
+      setFilteredData(data.length > 0 ? data : mockData);
+      
+      // Show success feedback
+      console.log('Data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -178,6 +185,37 @@ const MinistryChart = ({
   const handleExport = () => {
     if (exportCallback) {
       exportCallback(filteredData, activeTab);
+    } else {
+      // Default export functionality if no callback provided
+      const dataToExport = filteredData.map(ministry => ({
+        Name: ministry.name,
+        Leader: ministry.leader,
+        Members: ministry.members,
+        Active: ministry.active,
+        Engagement: `${ministry.engagement}%`,
+        Events: ministry.events,
+        Growth: `${ministry.growth > 0 ? '+' : ''}${ministry.growth}%`,
+        'Meeting Frequency': ministry.meetingFrequency,
+        'Last Activity': ministry.lastActivity
+      }));
+
+      // Convert to CSV format
+      const headers = Object.keys(dataToExport[0]).join(',');
+      const csvContent = [
+        headers,
+        ...dataToExport.map(row => Object.values(row).join(','))
+      ].join('\n');
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `ministry-analytics-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -213,6 +251,102 @@ const MinistryChart = ({
       );
     }
     return null;
+  };
+
+  // Custom UI Components
+  const Card = ({ children, className = '', onClick }) => (
+    <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`} onClick={onClick}>
+      {children}
+    </div>
+  );
+
+  const CardHeader = ({ children, className = '' }) => (
+    <div className={`p-6 pb-4 ${className}`}>
+      {children}
+    </div>
+  );
+
+  const CardContent = ({ children, className = '' }) => (
+    <div className={`px-6 pb-6 ${className}`}>
+      {children}
+    </div>
+  );
+
+  const CardTitle = ({ children, className = '' }) => (
+    <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>
+      {children}
+    </h3>
+  );
+
+  const Badge = ({ children, variant = 'default', className = '' }) => {
+    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+    const variants = {
+      default: 'bg-blue-100 text-blue-800',
+      secondary: 'bg-gray-100 text-gray-800',
+      outline: 'border border-gray-300 text-gray-700 bg-white',
+      destructive: 'bg-red-100 text-red-800'
+    };
+    
+    return (
+      <span className={`${baseClasses} ${variants[variant]} ${className}`}>
+        {children}
+      </span>
+    );
+  };
+
+  const Button = ({ children, variant = 'default', size = 'default', onClick, disabled, className = '' }) => {
+    const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+    const variants = {
+      default: 'bg-blue-600 text-white hover:bg-blue-700',
+      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+    };
+    const sizes = {
+      default: 'px-4 py-2',
+      sm: 'px-3 py-1.5 text-sm'
+    };
+
+    return (
+      <button 
+        className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {children}
+      </button>
+    );
+  };
+
+  const Tabs = ({ value, onValueChange, className = '', children }) => (
+    <div className={className}>
+      {children}
+    </div>
+  );
+
+  const TabsList = ({ children, className = '' }) => (
+    <div className={`inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 ${className}`}>
+      {children}
+    </div>
+  );
+
+  const TabsTrigger = ({ value, children, onClick }) => (
+    <button
+      onClick={() => setActiveTab(value)}
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+        activeTab === value
+          ? 'bg-white text-gray-950 shadow-sm'
+          : 'text-gray-500 hover:text-gray-700'
+      }`}
+    >
+      {children}
+    </button>
+  );
+
+  const TabsContent = ({ value, children, className = '' }) => {
+    return activeTab === value ? (
+      <div className={`mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 ${className}`}>
+        {children}
+      </div>
+    ) : null;
   };
 
   const renderOverviewTab = () => (
@@ -399,7 +533,7 @@ const MinistryChart = ({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
-          <CardContent className="p-4">
+          <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Members</p>
@@ -407,10 +541,10 @@ const MinistryChart = ({
               </div>
               <Users className="w-8 h-8 text-blue-500" />
             </div>
-          </CardContent>
+          </div>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Members</p>
@@ -418,10 +552,10 @@ const MinistryChart = ({
               </div>
               <Activity className="w-8 h-8 text-green-500" />
             </div>
-          </CardContent>
+          </div>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Engagement</p>
@@ -429,10 +563,10 @@ const MinistryChart = ({
               </div>
               <Target className="w-8 h-8 text-orange-500" />
             </div>
-          </CardContent>
+          </div>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Events</p>
@@ -440,14 +574,14 @@ const MinistryChart = ({
               </div>
               <Calendar className="w-8 h-8 text-purple-500" />
             </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
     );
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 p-6 bg-gray-50 min-h-screen">
       {/* Header with Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -461,7 +595,7 @@ const MinistryChart = ({
             onClick={handleRefresh}
             disabled={isLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button
@@ -469,7 +603,7 @@ const MinistryChart = ({
             size="sm"
             onClick={handleExport}
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
         </div>

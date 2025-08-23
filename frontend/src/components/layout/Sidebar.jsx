@@ -13,7 +13,6 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   GlobeAltIcon,
-  ChartBarIcon,
   PlusIcon,
   BellIcon
 } from '@heroicons/react/24/outline';
@@ -21,14 +20,6 @@ import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
 
 const navigationItems = [
-  {
-    name: 'Dashboard',
-    href: '/admin/dashboard',
-    icon: ChartBarIcon,
-    permission: null,
-    badge: null,
-    description: 'Overview & Analytics'
-  },
   {
     name: 'Members',
     href: '/admin/members',
@@ -618,7 +609,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
             {filteredNavigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href || 
-                             (item.href !== '/admin/dashboard' && location.pathname.startsWith(item.href));
+                             location.pathname.startsWith(item.href);
               
               return (
                 <li key={item.name} style={{ position: 'relative' }}>
