@@ -2,6 +2,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 
 class Member(models.Model):
@@ -48,7 +49,7 @@ class Member(models.Model):
     # Profile and media
     photo_url = models.URLField(blank=True)
     
-    # Family relationship
+    # Family relationship - make it optional for now
     family = models.ForeignKey(
         'families.Family',
         on_delete=models.SET_NULL,
@@ -82,6 +83,8 @@ class Member(models.Model):
             models.Index(fields=['registration_date']),
             models.Index(fields=['is_active']),
         ]
+        verbose_name = 'Member'
+        verbose_name_plural = 'Members'
     
     def __str__(self):
         return self.full_name
@@ -120,6 +123,12 @@ class Member(models.Model):
             return '41-60'
         else:
             return '60+'
+    
+    def save(self, *args, **kwargs):
+        # Auto-set privacy policy agreed date when agreed
+        if self.privacy_policy_agreed and not self.privacy_policy_agreed_date:
+            self.privacy_policy_agreed_date = timezone.now()
+        super().save(*args, **kwargs)
 
 class MemberNote(models.Model):
     """Notes about members by admin users"""
@@ -141,6 +150,62 @@ class MemberNote(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        verbose_name = 'Member Note'
+        verbose_name_plural = 'Member Notes'
     
     def __str__(self):
         return f"Note for {self.member.full_name} by {self.created_by.display_name}"
+
+class MemberTag(models.Model):
+    """Tags for categorizing members"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+    color = models.CharField(max_length=7, default='#007bff')  # Hex color
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        'authentication.AdminUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='member_tags'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Member Tag'
+        verbose_name_plural = 'Member Tags'
+    
+    def __str__(self):
+        return self.name
+
+class MemberTagAssignment(models.Model):
+    """Assignment of tags to members"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='tag_assignments'
+    )
+    tag = models.ForeignKey(
+        MemberTag,
+        on_delete=models.CASCADE,
+        related_name='member_assignments'
+    )
+    assigned_by = models.ForeignKey(
+        'authentication.AdminUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tag_assignments'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['member', 'tag']
+        ordering = ['-assigned_at']
+        verbose_name = 'Member Tag Assignment'
+        verbose_name_plural = 'Member Tag Assignments'
+    
+    def __str__(self):
+        return f"{self.member.full_name} - {self.tag.name}"

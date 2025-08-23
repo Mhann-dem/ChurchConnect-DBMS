@@ -1,17 +1,47 @@
-# backend/churchconnect/pledges/urls.py
-
+# ==============================================================================
+# pledges/urls.py
+# ==============================================================================
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-# Import only existing views - you'll need to create PledgeViewSet in views.py
-# For now, let's create a simple URL structure
 from . import views
 
+# Create router and register viewsets
+router = DefaultRouter()
+router.register(r'', views.PledgeViewSet, basename='pledge')
+router.register(r'payments', views.PledgePaymentViewSet, basename='pledge-payment')
+router.register(r'reminders', views.PledgeReminderViewSet, basename='pledge-reminder')
+
+# Define URL patterns
 urlpatterns = [
-    # Add basic pledge endpoints here
-    # You'll need to create these views in pledges/views.py
-    # path('', views.pledge_list, name='pledge_list'),
-    # path('<uuid:pk>/', views.pledge_detail, name='pledge_detail'),
+    # Include all router URLs
+    path('', include(router.urls)),
+    
+    # Additional custom endpoints (if needed in the future)
+    # path('custom-endpoint/', views.custom_view, name='pledge-custom'),
 ]
 
-# For now, return empty list to prevent 404 errors
-# You can add proper URLs once you create the pledge views
+# This configuration creates the following URL patterns:
+#
+# Pledges:
+# - GET/POST     /api/v1/pledges/                    - List/Create pledges
+# - GET/PUT/PATCH/DELETE /api/v1/pledges/{id}/       - Retrieve/Update/Delete pledge
+# - GET          /api/v1/pledges/statistics/         - Pledge statistics
+# - GET          /api/v1/pledges/export_csv/         - Export pledges to CSV
+# - GET          /api/v1/pledges/summary_report/     - Member summary report
+# - POST         /api/v1/pledges/{id}/add_payment/   - Add payment to specific pledge
+# - GET          /api/v1/pledges/overdue/            - List overdue pledges
+# - GET          /api/v1/pledges/upcoming_payments/  - List pledges with upcoming payments
+# - POST         /api/v1/pledges/bulk_action/        - Perform bulk actions
+# - GET          /api/v1/pledges/{id}/payment_history/ - Get payment history for pledge
+#
+# Payments:
+# - GET/POST     /api/v1/pledges/payments/           - List/Create payments
+# - GET/PUT/PATCH/DELETE /api/v1/pledges/payments/{id}/ - Retrieve/Update/Delete payment
+# - GET          /api/v1/pledges/payments/export_csv/ - Export payments to CSV
+# - GET          /api/v1/pledges/payments/statistics/ - Payment statistics
+#
+# Reminders:
+# - GET/POST     /api/v1/pledges/reminders/          - List/Create reminders
+# - GET/PUT/PATCH/DELETE /api/v1/pledges/reminders/{id}/ - Retrieve/Update/Delete reminder
+
+app_name = 'pledges'

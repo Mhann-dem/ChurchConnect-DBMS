@@ -15,77 +15,129 @@ const PledgesPage = () => {
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
   const [frequencyFilter, setFrequencyFilter] = useState(searchParams.get('frequency') || 'all');
 
-  const {
-    pledges,
-    stats,
-    loading,
-    error,
-    createPledge,
-    updatePledge,
-    deletePledge,
-    searchPledges,
-    fetchPledgeStats
-  } = usePledges();
+  // Initialize the pledges hook
+  const pledgesHookData = usePledges();
+  const toastHook = useToast();
 
-  const { showToast } = useToast();
+  // Safely extract data from hooks with fallbacks
+  const pledges = pledgesHookData?.pledges || [];
+  const statistics = pledgesHookData?.statistics || {};
+  const loading = pledgesHookData?.loading || false;
+  const error = pledgesHookData?.error || null;
+  const createPledge = pledgesHookData?.createPledge || (() => Promise.reject('Function not available'));
+  const updatePledge = pledgesHookData?.updatePledge || (() => Promise.reject('Function not available'));
+  const deletePledge = pledgesHookData?.deletePledge || (() => Promise.reject('Function not available'));
+  const fetchStatistics = pledgesHookData?.fetchStatistics || (() => {});
+  const updateFilters = pledgesHookData?.updateFilters || (() => {});
+  const setHookSearchQuery = pledgesHookData?.setSearchQuery || (() => {});
+  const exportPledges = pledgesHookData?.exportPledges;
+  
+  const { showToast } = toastHook || {};
+
+  // Map statistics to stats for component compatibility
+  const stats = statistics;
+
+  // Handle search input changes
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+    if (typeof setHookSearchQuery === 'function') {
+      setHookSearchQuery(query);
+    }
+  };
 
   // Update URL params when filters change
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('search', searchQuery);
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (frequencyFilter !== 'all') params.set('frequency', frequencyFilter);
-    setSearchParams(params);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (frequencyFilter !== 'all') params.set('frequency', frequencyFilter);
+      setSearchParams(params);
+    } catch (error) {
+      console.error('Error updating search params:', error);
+    }
   }, [searchQuery, statusFilter, frequencyFilter, setSearchParams]);
 
-  // Fetch pledges when filters change
+  // Update filters when they change
   useEffect(() => {
-    const filters = {
-      search: searchQuery,
-      status: statusFilter !== 'all' ? statusFilter : null,
-      frequency: frequencyFilter !== 'all' ? frequencyFilter : null
-    };
-    searchPledges(filters);
-  }, [searchQuery, statusFilter, frequencyFilter, searchPledges]);
+    if (typeof updateFilters === 'function') {
+      try {
+        const filters = {};
+        if (statusFilter !== 'all') filters.status = statusFilter;
+        if (frequencyFilter !== 'all') filters.frequency = frequencyFilter;
+        updateFilters(filters);
+      } catch (error) {
+        console.error('Error updating filters:', error);
+      }
+    }
+  }, [statusFilter, frequencyFilter, updateFilters]);
 
-  // Fetch stats on component mount
+  // Fetch statistics on component mount
   useEffect(() => {
-    fetchPledgeStats();
-  }, [fetchPledgeStats]);
+    if (typeof fetchStatistics === 'function') {
+      try {
+        fetchStatistics();
+      } catch (error) {
+        console.error('Error fetching statistics:', error);
+      }
+    }
+  }, [fetchStatistics]);
 
   const handleCreatePledge = async (pledgeData) => {
+    if (typeof createPledge !== 'function') {
+      if (showToast) showToast('Create pledge function not available', 'error');
+      return;
+    }
+
     try {
       await createPledge(pledgeData);
       setShowForm(false);
-      showToast('Pledge created successfully', 'success');
+      if (showToast) showToast('Pledge created successfully', 'success');
     } catch (error) {
-      showToast('Failed to create pledge', 'error');
+      console.error('Error creating pledge:', error);
+      if (showToast) showToast('Failed to create pledge', 'error');
     }
   };
 
   const handleUpdatePledge = async (pledgeId, pledgeData) => {
+    if (typeof updatePledge !== 'function') {
+      if (showToast) showToast('Update pledge function not available', 'error');
+      return;
+    }
+
     try {
       await updatePledge(pledgeId, pledgeData);
       setSelectedPledge(null);
       setShowForm(false);
-      showToast('Pledge updated successfully', 'success');
+      if (showToast) showToast('Pledge updated successfully', 'success');
     } catch (error) {
-      showToast('Failed to update pledge', 'error');
+      console.error('Error updating pledge:', error);
+      if (showToast) showToast('Failed to update pledge', 'error');
     }
   };
 
   const handleDeletePledge = async (pledgeId) => {
+    if (typeof deletePledge !== 'function') {
+      if (showToast) showToast('Delete pledge function not available', 'error');
+      return;
+    }
+
     if (window.confirm('Are you sure you want to delete this pledge?')) {
       try {
         await deletePledge(pledgeId);
-        showToast('Pledge deleted successfully', 'success');
+        if (showToast) showToast('Pledge deleted successfully', 'success');
       } catch (error) {
-        showToast('Failed to delete pledge', 'error');
+        console.error('Error deleting pledge:', error);
+        if (showToast) showToast('Failed to delete pledge', 'error');
       }
     }
   };
 
   const handleEditPledge = (pledge) => {
+    if (!pledge) {
+      console.error('No pledge provided for editing');
+      return;
+    }
     setSelectedPledge(pledge);
     setShowForm(true);
   };
@@ -95,47 +147,88 @@ const PledgesPage = () => {
     setSelectedPledge(null);
   };
 
-  const handleExportPledges = () => {
-    const filteredPledges = pledges.filter(pledge => {
-      const matchesSearch = !searchQuery || 
-        pledge.member_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pledge.notes?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || pledge.status === statusFilter;
-      const matchesFrequency = frequencyFilter === 'all' || pledge.frequency === frequencyFilter;
+  const handleExportPledges = async () => {
+    try {
+      // Use the hook's built-in export function if available
+      if (typeof exportPledges === 'function') {
+        await exportPledges('csv');
+        return;
+      }
+
+      // Fallback to manual export
+      if (!Array.isArray(pledges)) {
+        if (showToast) showToast('No pledge data available for export', 'error');
+        return;
+      }
+
+      const filteredPledges = pledges.filter(pledge => {
+        if (!pledge) return false;
+        
+        const memberName = pledge.member_name || '';
+        const notes = pledge.notes || '';
+        const pledgeStatus = pledge.status || '';
+        const pledgeFrequency = pledge.frequency || '';
+
+        const matchesSearch = !searchQuery || 
+          memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          notes.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || pledgeStatus === statusFilter;
+        const matchesFrequency = frequencyFilter === 'all' || pledgeFrequency === frequencyFilter;
+        
+        return matchesSearch && matchesStatus && matchesFrequency;
+      });
+
+      const csvContent = [
+        ['Member Name', 'Amount', 'Frequency', 'Status', 'Start Date', 'End Date', 'Notes'],
+        ...filteredPledges.map(pledge => [
+          pledge?.member_name || '',
+          pledge?.amount || '',
+          pledge?.frequency || '',
+          pledge?.status || '',
+          pledge?.start_date || '',
+          pledge?.end_date || '',
+          pledge?.notes || ''
+        ])
+      ];
+
+      const csvString = csvContent.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pledges_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
       
-      return matchesSearch && matchesStatus && matchesFrequency;
-    });
-
-    const csvContent = [
-      ['Member Name', 'Amount', 'Frequency', 'Status', 'Start Date', 'End Date', 'Notes'],
-      ...filteredPledges.map(pledge => [
-        pledge.member_name,
-        pledge.amount,
-        pledge.frequency,
-        pledge.status,
-        pledge.start_date,
-        pledge.end_date || '',
-        pledge.notes || ''
-      ])
-    ];
-
-    const csvString = csvContent.map(row => 
-      row.map(cell => `"${cell}"`).join(',')
-    ).join('\n');
-
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pledges_export_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+      if (showToast) showToast('Export completed successfully', 'success');
+    } catch (error) {
+      console.error('Error exporting pledges:', error);
+      if (showToast) showToast('Failed to export pledges', 'error');
+    }
   };
 
-  if (loading && !pledges.length) {
+  // Show loading state
+  if (loading && (!pledges || pledges.length === 0)) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Handle hook not available
+  if (!pledgesHookData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Unable to load pledges data</p>
+          <Button onClick={() => window.location.reload()}>Reload Page</Button>
+        </div>
       </div>
     );
   }
@@ -152,7 +245,7 @@ const PledgesPage = () => {
           <Button
             variant="outline"
             onClick={handleExportPledges}
-            disabled={!pledges.length}
+            disabled={!pledges || pledges.length === 0}
           >
             Export CSV
           </Button>
@@ -174,7 +267,8 @@ const PledgesPage = () => {
           <div className="flex-1">
             <SearchBar
               value={searchQuery}
-              onChange={setSearchQuery}
+              onSearch={handleSearchChange}
+              onChange={handleSearchChange}
               placeholder="Search pledges by member name or notes..."
             />
           </div>
@@ -223,7 +317,7 @@ const PledgesPage = () => {
 
       {/* Pledges List */}
       <PledgesList
-        pledges={pledges}
+        pledges={pledges || []}
         onEdit={handleEditPledge}
         onDelete={handleDeletePledge}
         loading={loading}
