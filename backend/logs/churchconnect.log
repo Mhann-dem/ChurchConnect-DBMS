@@ -4379,3 +4379,82 @@ WARNING 2025-08-23 04:57:31,481 log 16992 15176 Not Found: /api/v1/members/new/
 INFO 2025-08-23 04:57:31,482 basehttp 16992 2224 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
 INFO 2025-08-23 04:57:31,483 basehttp 16992 8208 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
 WARNING 2025-08-23 04:57:31,483 basehttp 16992 15176 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-23 13:08:52,138 autoreload 3588 18308 Watching for file changes with StatReloader
+INFO 2025-08-23 13:18:25,373 basehttp 3588 10532 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-23 13:18:25,405 middleware 3588 10532 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-23 13:18:28,267 middleware 3588 10532 Response: 200 for POST /api/v1/auth/login/ (2.862s)
+INFO 2025-08-23 13:18:28,267 basehttp 3588 10532 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-23 13:19:43,469 basehttp 3588 10532 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-23 13:19:43,484 basehttp 3588 10532 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-23 13:19:43,490 basehttp 3588 10532 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-23 13:19:43,494 basehttp 3588 10532 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-23 13:19:43,499 middleware 3588 10532 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 13:19:43,684 middleware 3588 10532 Response: 200 for GET /api/v1/members/ (0.185s)
+INFO 2025-08-23 13:19:43,685 basehttp 3588 10532 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-23 13:19:43,690 middleware 3588 10532 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-23 13:19:43,786 middleware 3588 18728 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 13:19:43,790 basehttp 3588 13616 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 0
+INFO 2025-08-23 13:19:43,797 middleware 3588 13616 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 13:19:43,879 middleware 3588 10532 Response: 404 for GET /api/v1/members/new/ (0.190s)
+INFO 2025-08-23 13:19:43,880 middleware 3588 18728 Response: 200 for GET /api/v1/members/ (0.094s)
+WARNING 2025-08-23 13:19:43,880 log 3588 10532 Not Found: /api/v1/members/new/
+INFO 2025-08-23 13:19:43,881 basehttp 3588 18728 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+WARNING 2025-08-23 13:19:43,882 basehttp 3588 10532 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-23 13:19:43,884 middleware 3588 9580 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-23 13:19:43,959 middleware 3588 9580 Response: 404 for GET /api/v1/members/new/ (0.075s)
+WARNING 2025-08-23 13:19:43,960 log 3588 9580 Not Found: /api/v1/members/new/
+WARNING 2025-08-23 13:19:43,960 basehttp 3588 9580 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-23 13:19:43,983 middleware 3588 13616 Response: 200 for GET /api/v1/members/ (0.186s)
+INFO 2025-08-23 13:19:43,983 basehttp 3588 13616 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-23 13:45:58,128 autoreload 3588 18308 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-23 13:46:00,898 autoreload 17716 20128 Watching for file changes with StatReloader
+INFO 2025-08-23 13:49:07,851 autoreload 17716 20128 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-23 13:49:09,208 autoreload 6396 18212 Watching for file changes with StatReloader
+INFO 2025-08-23 14:36:49,627 middleware 6396 15072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,098 middleware 6396 15072 Response: 401 for GET /api/v1/members/ (2.474s)
+WARNING 2025-08-23 14:36:52,102 log 6396 15072 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,108 basehttp 6396 15072 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,115 middleware 6396 4084 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,124 middleware 6396 4084 Response: 401 for GET /api/v1/members/ (0.007s)
+WARNING 2025-08-23 14:36:52,126 log 6396 4084 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,128 basehttp 6396 4084 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,155 middleware 6396 4084 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,161 middleware 6396 4084 Response: 401 for GET /api/v1/members/ (0.006s)
+WARNING 2025-08-23 14:36:52,164 log 6396 4084 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,178 basehttp 6396 4084 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,210 middleware 6396 15072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,214 middleware 6396 15072 Response: 401 for GET /api/v1/members/ (0.003s)
+WARNING 2025-08-23 14:36:52,214 log 6396 15072 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,215 basehttp 6396 15072 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,239 middleware 6396 4084 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,243 middleware 6396 4084 Response: 401 for GET /api/v1/members/ (0.003s)
+WARNING 2025-08-23 14:36:52,244 log 6396 4084 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,245 basehttp 6396 4084 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,264 middleware 6396 15072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,269 middleware 6396 15072 Response: 401 for GET /api/v1/members/ (0.004s)
+WARNING 2025-08-23 14:36:52,273 log 6396 15072 Unauthorized: /api/v1/members/
+WARNING 2025-08-23 14:36:52,275 basehttp 6396 15072 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 401 172
+INFO 2025-08-23 14:36:52,288 middleware 6396 15072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:36:52,292 middleware 6396 15072 Response: 401 for GET /api/v1/members/ (0.004s)
+WARNING 2025-08-23 14:36:52,293 log 6396 15072 Unauthorized: /api/v1/members/
+INFO 2025-08-23 14:36:52,296 basehttp 6396 15072 - Broken pipe from ('127.0.0.1', 64814)
+INFO 2025-08-23 14:40:53,344 middleware 6396 18540 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-23 14:40:54,532 middleware 6396 18540 Response: 200 for POST /api/v1/auth/login/ (1.188s)
+INFO 2025-08-23 14:40:54,532 basehttp 6396 18540 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-23 14:49:23,443 middleware 6396 19248 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-23 14:49:23,448 middleware 6396 14952 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:49:23,813 middleware 6396 19248 Response: 404 for GET /api/v1/members/new/ (0.369s)
+WARNING 2025-08-23 14:49:23,820 log 6396 19248 Not Found: /api/v1/members/new/
+WARNING 2025-08-23 14:49:23,824 basehttp 6396 19248 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-23 14:49:23,827 middleware 6396 20892 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-23 14:49:23,856 middleware 6396 14952 Response: 200 for GET /api/v1/members/ (0.408s)
+INFO 2025-08-23 14:49:23,858 basehttp 6396 14952 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-23 14:49:23,860 middleware 6396 19248 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:49:23,874 middleware 6396 14952 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-23 14:49:23,910 middleware 6396 20892 Response: 404 for GET /api/v1/members/new/ (0.084s)
+WARNING 2025-08-23 14:49:23,910 log 6396 20892 Not Found: /api/v1/members/new/
+WARNING 2025-08-23 14:49:23,910 basehttp 6396 20892 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-23 14:49:23,937 middleware 6396 19248 Response: 200 for GET /api/v1/members/ (0.077s)
+INFO 2025-08-23 14:49:23,937 basehttp 6396 19248 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-23 14:49:24,086 middleware 6396 14952 Response: 200 for GET /api/v1/members/ (0.212s)
+INFO 2025-08-23 14:49:24,086 basehttp 6396 14952 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52

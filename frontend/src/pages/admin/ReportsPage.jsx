@@ -12,7 +12,6 @@ import PledgeChart from '../../components/admin/Reports/Charts/PledgeChart';
 import AgeDistributionChart from '../../components/admin/Reports/Charts/AgeDistributionChart';
 import MinistryChart from '../../components/admin/Reports/Charts/MinistryChart';
 
-
 const ReportsPage = () => {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -137,13 +136,13 @@ const ReportsPage = () => {
 
       {/* Filters */}
       <Card className="mb-8">
-        <Card.Header>
-          <Card.Title className="flex items-center gap-2">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Report Filters
-          </Card.Title>
-        </Card.Header>
-        <Card.Content>
+          </h2>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
               label="Date Range"
@@ -171,18 +170,18 @@ const ReportsPage = () => {
               />
             </div>
           </div>
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Quick Reports */}
       <Card className="mb-8">
-        <Card.Header>
-          <Card.Title>Quick Reports</Card.Title>
-          <Card.Description>
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">Quick Reports</h2>
+          <p className="text-gray-600 mt-1">
             Generate commonly used reports with one click
-          </Card.Description>
-        </Card.Header>
-        <Card.Content>
+          </p>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {quickReports.map((report) => (
               <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50">
@@ -210,7 +209,7 @@ const ReportsPage = () => {
               </div>
             ))}
           </div>
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Charts and Analytics */}
@@ -219,61 +218,61 @@ const ReportsPage = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
-            <Card.Header>
-              <Card.Title className="flex items-center gap-2">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
                 Member Growth
-              </Card.Title>
-            </Card.Header>
-            <Card.Content>
+              </h2>
+            </div>
+            <div className="p-6">
               <MemberGrowthChart data={reportData.memberGrowth} />
-            </Card.Content>
+            </div>
           </Card>
 
           <Card>
-            <Card.Header>
-              <Card.Title className="flex items-center gap-2">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 Pledge Statistics
-              </Card.Title>
-            </Card.Header>
-            <Card.Content>
+              </h2>
+            </div>
+            <div className="p-6">
               <PledgeChart data={reportData.pledgeStats} />
-            </Card.Content>
+            </div>
           </Card>
 
           <Card>
-            <Card.Header>
-              <Card.Title className="flex items-center gap-2">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Age Distribution
-              </Card.Title>
-            </Card.Header>
-            <Card.Content>
+              </h2>
+            </div>
+            <div className="p-6">
               <AgeDistributionChart data={reportData.ageDistribution} />
-            </Card.Content>
+            </div>
           </Card>
 
           <Card>
-            <Card.Header>
-              <Card.Title>Ministry Distribution</Card.Title>
-            </Card.Header>
-            <Card.Content>
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold">Ministry Distribution</h2>
+            </div>
+            <div className="p-6">
               <MinistryChart data={reportData.ministryDistribution} />
-            </Card.Content>
+            </div>
           </Card>
         </div>
       )}
 
       {/* Export Options */}
       <Card className="mt-8">
-        <Card.Header>
-          <Card.Title>Export Options</Card.Title>
-          <Card.Description>
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">Export Options</h2>
+          <p className="text-gray-600 mt-1">
             Configure how reports are exported
-          </Card.Description>
-        </Card.Header>
-        <Card.Content>
+          </p>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Format"
@@ -298,7 +297,7 @@ const ReportsPage = () => {
               />
             </div>
           </div>
-        </Card.Content>
+        </div>
       </Card>
     </div>
   );
