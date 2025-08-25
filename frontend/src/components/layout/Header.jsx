@@ -44,6 +44,9 @@ const Header = ({ isAdmin = false }) => {
     setIsMobileMenuOpen(false);
   };
 
+  // Check if current user is admin and if we're on a public page
+  const isAdminOnPublicPage = user && (user.role === 'admin' || user.role === 'super_admin') && !location.pathname.startsWith('/admin');
+
   // Navigation links for different user types
   const getNavigationLinks = () => {
     if (isAdmin) {
@@ -58,7 +61,7 @@ const Header = ({ isAdmin = false }) => {
     } else {
       return [
         { name: 'Home', path: '/', icon: '🏠' },
-        { name: 'Member Registration', path: '/form', icon: '📝' },
+        { name: 'Member Registration', path: '/registration', icon: '📝' },
         { name: 'Events', path: '/events', icon: '📅' },
         { name: 'Ministries', path: '/ministries', icon: '🙏' },
         { name: 'Contact', path: '/contact', icon: '📧' }

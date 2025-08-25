@@ -21,6 +21,14 @@ import { useSettings } from '../../context/SettingsContext';
 
 const navigationItems = [
   {
+    name: 'Dashboard',
+    href: '/admin/dashboard',
+    icon: HomeIcon,
+    permission: 'view_dashboard',
+    badge: null,
+    description: 'Overview & Statistics'
+  },
+  {
     name: 'Members',
     href: '/admin/members',
     icon: UsersIcon,
@@ -438,7 +446,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
       {/* Header */}
       <div style={headerStyle}>
         {(!isCollapsed || isMobile) && (
-          <Link to="/" style={brandStyle}>
+          <Link to="/admin/dashboard" style={brandStyle}>
             <div style={logoStyle}>
               <img 
                 src="/logo.png" 
@@ -472,7 +480,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
         )}
         
         {isCollapsed && !isMobile && (
-          <div style={logoStyle}>
+          <Link to="/admin/dashboard" style={{...logoStyle, textDecoration: 'none'}}>
             <img 
               src="/logo.png" 
               alt="ChurchConnect" 
@@ -496,7 +504,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
             >
               CC
             </span>
-          </div>
+          </Link>
         )}
         
         <div style={controlsStyle}>
@@ -609,7 +617,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
             {filteredNavigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href || 
-                             location.pathname.startsWith(item.href);
+                             location.pathname.startsWith(item.href + '/');
               
               return (
                 <li key={item.name} style={{ position: 'relative' }}>
@@ -689,7 +697,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
 
         {/* Help Link */}
         <NavLink 
-          to="/help" 
+          to="/admin/help" 
           style={footerLinkStyle}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(255, 255, 255, 0.05)';

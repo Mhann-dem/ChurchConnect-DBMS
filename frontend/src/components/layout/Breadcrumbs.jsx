@@ -13,6 +13,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Breadcrumbs = () => {
+  // Always return null to disable breadcrumbs completely on all pages
+  return null;
+
+  // All the original breadcrumb logic is commented out below
+  // You can uncomment and modify if you want to re-enable breadcrumbs later
+
+  /*
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter(x => x);
 
@@ -117,7 +124,6 @@ const Breadcrumbs = () => {
       className="flex items-center text-sm" 
       aria-label="Breadcrumb"
     >
-      {/* Enhanced Home/Dashboard Link */}
       <Link 
         to="/admin/dashboard" 
         className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-all duration-200 group rounded-lg p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -129,10 +135,8 @@ const Breadcrumbs = () => {
         <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">Dashboard</span>
       </Link>
       
-      {/* Breadcrumb Items */}
       {generateBreadcrumbs()}
       
-      {/* Current Page Context - Show on larger screens */}
       {pathnames.length > 1 && breadcrumbDescriptionMap[pathnames[pathnames.length - 1]] && (
         <div className="hidden lg:flex items-center ml-6 pl-6 border-l border-slate-200 dark:border-slate-600">
           <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-600">
@@ -142,6 +146,7 @@ const Breadcrumbs = () => {
       )}
     </nav>
   );
+  */
 };
 
 export default Breadcrumbs;

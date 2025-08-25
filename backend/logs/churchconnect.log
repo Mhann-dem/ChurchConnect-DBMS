@@ -7957,3 +7957,1026 @@ INFO 2025-08-23 17:32:17,170 middleware 17556 14412 Response: 200 for GET /api/v
 INFO 2025-08-23 17:32:17,172 basehttp 17556 14412 - Broken pipe from ('127.0.0.1', 52583)
 INFO 2025-08-23 17:32:17,179 middleware 17556 21368 Response: 200 for GET /api/v1/members/ (0.271s)
 INFO 2025-08-23 17:32:17,182 basehttp 17556 21368 - Broken pipe from ('127.0.0.1', 56156)
+INFO 2025-08-25 10:35:59,786 autoreload 4188 6220 Watching for file changes with StatReloader
+INFO 2025-08-25 10:48:46,849 basehttp 4188 6896 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-25 10:48:46,887 middleware 4188 6896 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-25 10:48:48,555 middleware 4188 6896 Response: 200 for POST /api/v1/auth/login/ (1.668s)
+INFO 2025-08-25 10:48:48,555 basehttp 4188 6896 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-25 11:01:47,868 basehttp 4188 100 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-25 11:01:47,873 basehttp 4188 12052 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-25 11:01:47,889 middleware 4188 100 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:01:47,893 middleware 4188 12052 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:01:47,895 basehttp 4188 16236 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-25 11:01:47,895 basehttp 4188 14560 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-25 11:01:48,185 middleware 4188 100 Response: 404 for GET /api/v1/members/new/ (0.296s)
+WARNING 2025-08-25 11:01:48,186 log 4188 100 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:01:48,186 basehttp 4188 100 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:01:48,190 middleware 4188 16236 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:01:48,220 middleware 4188 12052 Response: 200 for GET /api/v1/members/ (0.327s)
+INFO 2025-08-25 11:01:48,221 basehttp 4188 12052 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:01:48,225 middleware 4188 100 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:01:48,238 basehttp 4188 12052 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 0
+INFO 2025-08-25 11:01:48,245 middleware 4188 12052 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:01:48,333 middleware 4188 100 Response: 200 for GET /api/v1/members/ (0.109s)
+INFO 2025-08-25 11:01:48,339 basehttp 4188 100 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:01:48,349 middleware 4188 12052 Response: 200 for GET /api/v1/members/ (0.104s)
+INFO 2025-08-25 11:01:48,350 basehttp 4188 12052 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 11:01:48,386 middleware 4188 16236 Response: 404 for GET /api/v1/members/new/ (0.197s)
+WARNING 2025-08-25 11:01:48,388 log 4188 16236 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:01:48,388 basehttp 4188 16236 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:30:47,318 middleware 4188 10628 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:30:47,322 middleware 4188 16368 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:30:47,660 middleware 4188 16368 Response: 404 for GET /api/v1/members/new/ (0.338s)
+WARNING 2025-08-25 11:30:47,664 log 4188 16368 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:30:47,667 basehttp 4188 16368 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:30:47,670 middleware 4188 9452 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:30:47,679 middleware 4188 10628 Response: 200 for GET /api/v1/members/ (0.363s)
+INFO 2025-08-25 11:30:47,695 basehttp 4188 10628 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:30:47,703 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:30:47,792 middleware 4188 9452 Response: 404 for GET /api/v1/members/new/ (0.122s)
+WARNING 2025-08-25 11:30:47,793 log 4188 9452 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:30:47,808 basehttp 4188 9452 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:30:47,816 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.113s)
+INFO 2025-08-25 11:30:48,126 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:30:49,855 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:30:49,856 middleware 4188 9452 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:30:49,986 middleware 4188 9452 Response: 404 for GET /api/v1/members/new/ (0.130s)
+WARNING 2025-08-25 11:30:49,992 log 4188 9452 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:30:49,992 basehttp 4188 9452 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:30:49,998 middleware 4188 10628 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:30:50,009 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.154s)
+INFO 2025-08-25 11:30:50,013 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:30:50,017 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:30:50,106 middleware 4188 10628 Response: 404 for GET /api/v1/members/new/ (0.107s)
+WARNING 2025-08-25 11:30:50,107 log 4188 10628 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:30:50,108 basehttp 4188 10628 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:30:50,141 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:30:50,143 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:30:52,051 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:30:52,415 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.364s)
+INFO 2025-08-25 11:30:52,417 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 11:35:02,887 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:35:02,893 middleware 4188 10628 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:35:03,068 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.181s)
+INFO 2025-08-25 11:35:03,072 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:35:03,075 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:35:03,087 middleware 4188 10628 Response: 404 for GET /api/v1/members/new/ (0.194s)
+WARNING 2025-08-25 11:35:03,090 log 4188 10628 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:35:03,092 basehttp 4188 10628 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:35:03,197 middleware 4188 9452 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 11:35:03,203 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:35:03,227 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:35:03,364 middleware 4188 9452 Response: 404 for GET /api/v1/members/new/ (0.167s)
+WARNING 2025-08-25 11:35:03,369 log 4188 9452 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 11:35:03,373 basehttp 4188 9452 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 11:35:04,763 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:35:04,870 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.107s)
+INFO 2025-08-25 11:35:04,871 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:28,694 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:28,905 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.211s)
+INFO 2025-08-25 11:37:28,906 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:28,908 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:29,017 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.109s)
+INFO 2025-08-25 11:37:29,020 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:29,120 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:29,357 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.236s)
+INFO 2025-08-25 11:37:29,361 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:29,363 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:29,525 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.161s)
+INFO 2025-08-25 11:37:29,527 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:29,539 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:29,691 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.152s)
+INFO 2025-08-25 11:37:29,695 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:29,698 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:29,849 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.151s)
+INFO 2025-08-25 11:37:29,849 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:29,855 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:30,017 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.162s)
+INFO 2025-08-25 11:37:30,021 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:30,023 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:30,193 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.171s)
+INFO 2025-08-25 11:37:30,197 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:30,199 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:30,423 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.224s)
+INFO 2025-08-25 11:37:30,428 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:30,432 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:30,650 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.218s)
+INFO 2025-08-25 11:37:30,653 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:30,657 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:30,821 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.164s)
+INFO 2025-08-25 11:37:30,824 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:30,825 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:31,105 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.279s)
+INFO 2025-08-25 11:37:31,107 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:31,109 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:31,256 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.147s)
+INFO 2025-08-25 11:37:31,259 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:31,262 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:31,398 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:31,399 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:31,401 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:31,546 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:31,548 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:31,553 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,130 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.576s)
+INFO 2025-08-25 11:37:32,136 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,140 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,290 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:37:32,292 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,295 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,443 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:37:32,444 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,447 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,608 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.161s)
+INFO 2025-08-25 11:37:32,621 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,623 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,769 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.146s)
+INFO 2025-08-25 11:37:32,771 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,773 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:32,906 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.133s)
+INFO 2025-08-25 11:37:32,908 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:32,910 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:33,033 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.123s)
+INFO 2025-08-25 11:37:33,036 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:33,038 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:33,185 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.147s)
+INFO 2025-08-25 11:37:33,187 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:33,189 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:33,374 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.185s)
+INFO 2025-08-25 11:37:33,375 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:33,377 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:33,500 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.123s)
+INFO 2025-08-25 11:37:33,502 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:33,506 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:33,759 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.253s)
+INFO 2025-08-25 11:37:33,762 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:33,765 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,085 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.320s)
+INFO 2025-08-25 11:37:34,089 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,092 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,370 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.278s)
+INFO 2025-08-25 11:37:34,372 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,374 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,522 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:37:34,524 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,526 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,665 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.138s)
+INFO 2025-08-25 11:37:34,666 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,668 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,844 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.176s)
+INFO 2025-08-25 11:37:34,846 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,849 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:34,983 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.134s)
+INFO 2025-08-25 11:37:34,984 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:34,986 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,120 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.134s)
+INFO 2025-08-25 11:37:35,122 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,124 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,275 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.151s)
+INFO 2025-08-25 11:37:35,277 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,278 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,558 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.280s)
+INFO 2025-08-25 11:37:35,564 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,567 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,695 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:37:35,698 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,701 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,823 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:35,827 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,831 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:35,953 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:35,954 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:35,956 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,085 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:37:36,087 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,090 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,248 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.158s)
+INFO 2025-08-25 11:37:36,256 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,258 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,388 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:36,388 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,390 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,526 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.135s)
+INFO 2025-08-25 11:37:36,527 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,532 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,680 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:37:36,681 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,684 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,806 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:36,808 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,810 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:36,954 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:36,957 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:36,959 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,117 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.158s)
+INFO 2025-08-25 11:37:37,122 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,124 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,275 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.151s)
+INFO 2025-08-25 11:37:37,276 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,278 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,404 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:37,407 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,409 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,553 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:37,554 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,557 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,703 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:37:37,704 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,706 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:37,852 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-25 11:37:37,854 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:37,856 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,107 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.251s)
+INFO 2025-08-25 11:37:38,110 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,112 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,260 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:37:38,263 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,265 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,396 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:38,397 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,399 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,538 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.139s)
+INFO 2025-08-25 11:37:38,540 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,544 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,689 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:38,690 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,694 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,849 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.155s)
+INFO 2025-08-25 11:37:38,851 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,853 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:38,979 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:38,988 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:38,990 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,124 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.133s)
+INFO 2025-08-25 11:37:39,126 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,128 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,270 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.142s)
+INFO 2025-08-25 11:37:39,271 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,273 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,397 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:39,398 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,400 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,536 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:39,537 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,540 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,676 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:39,679 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,682 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:39,865 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.184s)
+INFO 2025-08-25 11:37:39,867 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:39,870 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,119 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.249s)
+INFO 2025-08-25 11:37:40,121 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,123 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,267 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.143s)
+INFO 2025-08-25 11:37:40,268 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,271 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,404 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.134s)
+INFO 2025-08-25 11:37:40,405 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,409 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,654 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.245s)
+INFO 2025-08-25 11:37:40,656 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,659 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,795 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:40,798 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,801 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:40,918 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.118s)
+INFO 2025-08-25 11:37:40,920 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:40,922 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,053 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.131s)
+INFO 2025-08-25 11:37:41,054 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,057 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,187 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:41,188 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,192 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,308 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.114s)
+INFO 2025-08-25 11:37:41,310 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,312 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,487 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.174s)
+INFO 2025-08-25 11:37:41,488 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,494 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,631 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:37:41,632 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,634 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,838 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.204s)
+INFO 2025-08-25 11:37:41,840 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,843 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:41,992 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:37:41,996 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:41,998 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,128 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:42,129 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,132 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,368 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.236s)
+INFO 2025-08-25 11:37:42,370 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,373 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,603 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.229s)
+INFO 2025-08-25 11:37:42,604 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,608 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,729 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.121s)
+INFO 2025-08-25 11:37:42,730 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,732 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,837 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.105s)
+INFO 2025-08-25 11:37:42,839 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,841 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:42,985 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-25 11:37:42,986 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:42,993 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,129 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:43,131 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,135 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,250 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.115s)
+INFO 2025-08-25 11:37:43,253 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,257 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,396 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.139s)
+INFO 2025-08-25 11:37:43,397 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,399 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,556 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.156s)
+INFO 2025-08-25 11:37:43,559 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,561 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,685 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:43,688 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,692 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,851 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.159s)
+INFO 2025-08-25 11:37:43,854 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,857 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:43,985 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:37:43,987 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:43,989 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,134 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:44,135 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,138 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,360 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.222s)
+INFO 2025-08-25 11:37:44,362 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,364 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,492 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:37:44,493 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,498 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,634 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:37:44,638 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,641 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,793 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.153s)
+INFO 2025-08-25 11:37:44,795 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,797 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:44,928 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.131s)
+INFO 2025-08-25 11:37:44,930 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:44,932 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,055 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:45,056 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,060 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,216 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.156s)
+INFO 2025-08-25 11:37:45,218 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,222 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,338 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.117s)
+INFO 2025-08-25 11:37:45,340 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,343 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,476 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.133s)
+INFO 2025-08-25 11:37:45,477 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,479 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,605 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:45,606 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,609 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,743 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.134s)
+INFO 2025-08-25 11:37:45,745 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,747 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:45,892 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.144s)
+INFO 2025-08-25 11:37:45,894 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:45,896 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,022 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:46,024 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,027 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,156 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:46,157 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,159 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,281 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:46,282 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,284 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,417 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.132s)
+INFO 2025-08-25 11:37:46,419 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,423 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,607 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.184s)
+INFO 2025-08-25 11:37:46,608 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,611 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,734 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.123s)
+INFO 2025-08-25 11:37:46,737 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,740 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:46,955 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.215s)
+INFO 2025-08-25 11:37:46,957 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:46,960 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,098 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:37:47,100 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,103 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,272 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.169s)
+INFO 2025-08-25 11:37:47,275 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,278 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,395 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.117s)
+INFO 2025-08-25 11:37:47,396 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,398 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,522 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:47,524 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,526 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,788 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.262s)
+INFO 2025-08-25 11:37:47,791 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,792 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:47,914 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:47,917 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:47,919 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,080 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.162s)
+INFO 2025-08-25 11:37:48,081 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,086 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,312 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.226s)
+INFO 2025-08-25 11:37:48,312 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,314 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,431 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.117s)
+INFO 2025-08-25 11:37:48,434 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,436 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,549 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.113s)
+INFO 2025-08-25 11:37:48,552 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,555 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,765 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.210s)
+INFO 2025-08-25 11:37:48,766 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,771 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:48,892 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.121s)
+INFO 2025-08-25 11:37:48,893 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:48,895 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,017 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.121s)
+INFO 2025-08-25 11:37:49,019 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,022 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,152 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:49,153 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,157 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,279 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:49,280 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,283 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,515 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.232s)
+INFO 2025-08-25 11:37:49,518 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,521 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,670 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:37:49,672 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,674 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,800 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:49,801 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,803 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:49,952 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:37:49,954 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:49,958 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,060 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.103s)
+INFO 2025-08-25 11:37:50,061 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,063 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,189 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:50,190 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,192 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,330 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.138s)
+INFO 2025-08-25 11:37:50,332 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,335 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,481 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.146s)
+INFO 2025-08-25 11:37:50,483 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,487 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,612 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.125s)
+INFO 2025-08-25 11:37:50,614 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,616 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,753 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:37:50,755 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,757 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:50,880 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:50,882 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:50,885 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,012 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.127s)
+INFO 2025-08-25 11:37:51,013 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,017 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,143 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.126s)
+INFO 2025-08-25 11:37:51,144 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,146 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,294 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:37:51,295 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,296 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,396 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.100s)
+INFO 2025-08-25 11:37:51,398 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,403 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,520 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.118s)
+INFO 2025-08-25 11:37:51,522 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,524 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,632 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.108s)
+INFO 2025-08-25 11:37:51,634 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,638 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,762 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:51,766 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,769 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:51,920 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.151s)
+INFO 2025-08-25 11:37:51,923 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:51,925 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,080 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.154s)
+INFO 2025-08-25 11:37:52,083 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,085 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,222 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.138s)
+INFO 2025-08-25 11:37:52,225 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,227 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,343 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.115s)
+INFO 2025-08-25 11:37:52,344 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,346 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,473 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.128s)
+INFO 2025-08-25 11:37:52,475 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,478 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,595 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.118s)
+INFO 2025-08-25 11:37:52,598 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,600 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,830 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.230s)
+INFO 2025-08-25 11:37:52,833 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,836 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:52,961 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:37:52,963 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:52,966 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:53,213 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.247s)
+INFO 2025-08-25 11:37:53,215 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:53,218 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:53,476 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.258s)
+INFO 2025-08-25 11:37:53,479 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:53,483 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:53,612 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:37:53,616 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:53,617 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:53,754 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:37:53,755 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:53,757 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:53,996 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.239s)
+INFO 2025-08-25 11:37:54,002 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,004 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:54,180 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.177s)
+INFO 2025-08-25 11:37:54,182 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,185 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:54,376 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.191s)
+INFO 2025-08-25 11:37:54,384 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,387 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:54,543 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.156s)
+INFO 2025-08-25 11:37:54,544 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,549 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:54,703 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.154s)
+INFO 2025-08-25 11:37:54,705 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,707 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:54,868 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.161s)
+INFO 2025-08-25 11:37:54,870 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:54,872 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,054 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.181s)
+INFO 2025-08-25 11:37:55,059 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,062 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,222 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.160s)
+INFO 2025-08-25 11:37:55,224 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,227 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,363 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:55,366 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,367 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,460 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.093s)
+INFO 2025-08-25 11:37:55,462 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,464 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,583 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.119s)
+INFO 2025-08-25 11:37:55,584 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,586 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,804 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.218s)
+INFO 2025-08-25 11:37:55,805 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,807 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:55,940 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.132s)
+INFO 2025-08-25 11:37:55,941 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:55,944 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,156 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.213s)
+INFO 2025-08-25 11:37:56,158 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,160 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,274 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.114s)
+INFO 2025-08-25 11:37:56,275 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,278 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,388 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.110s)
+INFO 2025-08-25 11:37:56,391 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,394 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,567 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.174s)
+INFO 2025-08-25 11:37:56,568 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,570 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,687 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.116s)
+INFO 2025-08-25 11:37:56,690 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,695 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,817 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.122s)
+INFO 2025-08-25 11:37:56,817 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,819 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:56,919 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.100s)
+INFO 2025-08-25 11:37:56,921 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:56,923 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,047 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.123s)
+INFO 2025-08-25 11:37:57,049 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,051 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,279 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.228s)
+INFO 2025-08-25 11:37:57,280 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,283 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,420 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.136s)
+INFO 2025-08-25 11:37:57,421 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,423 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,530 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.107s)
+INFO 2025-08-25 11:37:57,532 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,534 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,743 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.209s)
+INFO 2025-08-25 11:37:57,747 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,750 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:57,895 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-25 11:37:57,899 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:57,902 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,070 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.168s)
+INFO 2025-08-25 11:37:58,073 basehttp 4188 16368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:58,074 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,235 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.161s)
+INFO 2025-08-25 11:37:58,236 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:58,238 middleware 4188 16368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,294 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,403 middleware 4188 16368 Response: 200 for GET /api/v1/members/ (0.165s)
+INFO 2025-08-25 11:37:58,411 basehttp 4188 16368 - Broken pipe from ('127.0.0.1', 55780)
+INFO 2025-08-25 11:37:58,451 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.158s)
+INFO 2025-08-25 11:37:58,453 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:58,457 middleware 4188 10628 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,606 middleware 4188 10628 Response: 200 for GET /api/v1/members/ (0.150s)
+INFO 2025-08-25 11:37:58,609 basehttp 4188 10628 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:58,613 middleware 4188 10628 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,791 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:58,884 middleware 4188 10628 Response: 200 for GET /api/v1/members/ (0.271s)
+INFO 2025-08-25 11:37:58,888 basehttp 4188 10628 - Broken pipe from ('127.0.0.1', 51993)
+INFO 2025-08-25 11:37:58,955 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.164s)
+INFO 2025-08-25 11:37:58,956 basehttp 4188 9452 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:58,974 middleware 4188 9452 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,187 middleware 4188 9452 Response: 200 for GET /api/v1/members/ (0.212s)
+INFO 2025-08-25 11:37:59,190 basehttp 4188 9452 - Broken pipe from ('127.0.0.1', 49854)
+INFO 2025-08-25 11:37:59,271 middleware 4188 14364 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,390 middleware 4188 8680 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,457 middleware 4188 14364 Response: 200 for GET /api/v1/members/ (0.187s)
+INFO 2025-08-25 11:37:59,471 basehttp 4188 14364 - Broken pipe from ('127.0.0.1', 52184)
+INFO 2025-08-25 11:37:59,570 middleware 4188 8680 Response: 200 for GET /api/v1/members/ (0.181s)
+INFO 2025-08-25 11:37:59,574 basehttp 4188 8680 - Broken pipe from ('127.0.0.1', 58791)
+INFO 2025-08-25 11:37:59,604 middleware 4188 6488 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,622 middleware 4188 5072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,803 middleware 4188 15224 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,812 middleware 4188 6488 Response: 200 for GET /api/v1/members/ (0.204s)
+INFO 2025-08-25 11:37:59,820 middleware 4188 5072 Response: 200 for GET /api/v1/members/ (0.197s)
+INFO 2025-08-25 11:37:59,824 basehttp 4188 6488 - Broken pipe from ('127.0.0.1', 63985)
+INFO 2025-08-25 11:37:59,826 basehttp 4188 5072 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:59,834 middleware 4188 5072 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,976 middleware 4188 10396 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:37:59,992 middleware 4188 15224 Response: 200 for GET /api/v1/members/ (0.187s)
+INFO 2025-08-25 11:37:59,995 basehttp 4188 15224 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:37:59,997 middleware 4188 3908 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,040 middleware 4188 5072 Response: 200 for GET /api/v1/members/ (0.207s)
+INFO 2025-08-25 11:38:00,057 basehttp 4188 5072 - Broken pipe from ('127.0.0.1', 59778)
+INFO 2025-08-25 11:38:00,181 middleware 4188 10396 Response: 200 for GET /api/v1/members/ (0.205s)
+INFO 2025-08-25 11:38:00,183 basehttp 4188 10396 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,185 middleware 4188 15224 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,231 middleware 4188 10396 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,239 middleware 4188 3908 Response: 200 for GET /api/v1/members/ (0.242s)
+INFO 2025-08-25 11:38:00,243 basehttp 4188 3908 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,247 middleware 4188 15928 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,381 middleware 4188 3908 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,405 middleware 4188 15224 Response: 200 for GET /api/v1/members/ (0.219s)
+INFO 2025-08-25 11:38:00,436 middleware 4188 10396 Response: 200 for GET /api/v1/members/ (0.205s)
+INFO 2025-08-25 11:38:00,451 basehttp 4188 15224 - Broken pipe from ('127.0.0.1', 62238)
+INFO 2025-08-25 11:38:00,458 middleware 4188 15928 Response: 200 for GET /api/v1/members/ (0.211s)
+INFO 2025-08-25 11:38:00,459 basehttp 4188 10396 - Broken pipe from ('127.0.0.1', 63041)
+INFO 2025-08-25 11:38:00,461 basehttp 4188 15928 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,473 middleware 4188 15928 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,564 middleware 4188 3908 Response: 200 for GET /api/v1/members/ (0.183s)
+INFO 2025-08-25 11:38:00,567 basehttp 4188 3908 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,586 middleware 4188 3908 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,638 middleware 4188 15928 Response: 200 for GET /api/v1/members/ (0.165s)
+INFO 2025-08-25 11:38:00,640 basehttp 4188 15928 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,647 middleware 4188 15928 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,766 middleware 4188 3908 Response: 200 for GET /api/v1/members/ (0.180s)
+INFO 2025-08-25 11:38:00,771 basehttp 4188 3908 - Broken pipe from ('127.0.0.1', 61078)
+INFO 2025-08-25 11:38:00,782 middleware 4188 8960 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,827 middleware 4188 15928 Response: 200 for GET /api/v1/members/ (0.180s)
+INFO 2025-08-25 11:38:00,834 basehttp 4188 15928 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:00,857 middleware 4188 15928 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:00,884 middleware 4188 15368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,023 middleware 4188 8960 Response: 200 for GET /api/v1/members/ (0.241s)
+INFO 2025-08-25 11:38:01,034 basehttp 4188 8960 - Broken pipe from ('127.0.0.1', 63092)
+INFO 2025-08-25 11:38:01,046 middleware 4188 15928 Response: 200 for GET /api/v1/members/ (0.189s)
+INFO 2025-08-25 11:38:01,050 basehttp 4188 15928 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,052 middleware 4188 2880 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,138 middleware 4188 15368 Response: 200 for GET /api/v1/members/ (0.254s)
+INFO 2025-08-25 11:38:01,145 middleware 4188 15928 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,147 basehttp 4188 15368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,150 middleware 4188 14396 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,237 middleware 4188 2880 Response: 200 for GET /api/v1/members/ (0.185s)
+INFO 2025-08-25 11:38:01,245 basehttp 4188 2880 - Broken pipe from ('127.0.0.1', 55203)
+INFO 2025-08-25 11:38:01,347 middleware 4188 15928 Response: 200 for GET /api/v1/members/ (0.202s)
+INFO 2025-08-25 11:38:01,350 basehttp 4188 15928 - Broken pipe from ('127.0.0.1', 51422)
+INFO 2025-08-25 11:38:01,352 middleware 4188 15368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,359 middleware 4188 14396 Response: 200 for GET /api/v1/members/ (0.210s)
+INFO 2025-08-25 11:38:01,367 basehttp 4188 14396 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,369 middleware 4188 9140 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,563 middleware 4188 15368 Response: 200 for GET /api/v1/members/ (0.211s)
+INFO 2025-08-25 11:38:01,576 basehttp 4188 15368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,579 middleware 4188 14396 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,594 middleware 4188 9140 Response: 200 for GET /api/v1/members/ (0.225s)
+INFO 2025-08-25 11:38:01,597 basehttp 4188 9140 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,599 middleware 4188 15368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,631 middleware 4188 9140 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,781 middleware 4188 14396 Response: 200 for GET /api/v1/members/ (0.202s)
+INFO 2025-08-25 11:38:01,785 basehttp 4188 14396 - Broken pipe from ('127.0.0.1', 59650)
+INFO 2025-08-25 11:38:01,802 middleware 4188 15368 Response: 200 for GET /api/v1/members/ (0.203s)
+INFO 2025-08-25 11:38:01,805 basehttp 4188 15368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:01,818 middleware 4188 1484 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,836 middleware 4188 15368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:01,846 middleware 4188 9140 Response: 200 for GET /api/v1/members/ (0.215s)
+INFO 2025-08-25 11:38:01,860 basehttp 4188 9140 - Broken pipe from ('127.0.0.1', 54022)
+INFO 2025-08-25 11:38:01,996 middleware 4188 1484 Response: 200 for GET /api/v1/members/ (0.177s)
+INFO 2025-08-25 11:38:01,998 basehttp 4188 1484 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,011 middleware 4188 1484 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,027 middleware 4188 15368 Response: 200 for GET /api/v1/members/ (0.192s)
+INFO 2025-08-25 11:38:02,031 basehttp 4188 15368 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,044 middleware 4188 15368 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,183 middleware 4188 1484 Response: 200 for GET /api/v1/members/ (0.172s)
+INFO 2025-08-25 11:38:02,186 basehttp 4188 1484 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,196 middleware 4188 1484 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,243 middleware 4188 15368 Response: 200 for GET /api/v1/members/ (0.199s)
+INFO 2025-08-25 11:38:02,250 basehttp 4188 15368 - Broken pipe from ('127.0.0.1', 52226)
+INFO 2025-08-25 11:38:02,306 middleware 4188 6488 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,361 middleware 4188 9796 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,374 middleware 4188 1484 Response: 200 for GET /api/v1/members/ (0.179s)
+INFO 2025-08-25 11:38:02,376 basehttp 4188 1484 - Broken pipe from ('127.0.0.1', 63747)
+INFO 2025-08-25 11:38:02,482 middleware 4188 6488 Response: 200 for GET /api/v1/members/ (0.176s)
+INFO 2025-08-25 11:38:02,485 basehttp 4188 6488 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,488 middleware 4188 4884 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,538 middleware 4188 6488 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,552 middleware 4188 9796 Response: 200 for GET /api/v1/members/ (0.191s)
+INFO 2025-08-25 11:38:02,555 basehttp 4188 9796 - Broken pipe from ('127.0.0.1', 65321)
+INFO 2025-08-25 11:38:02,725 middleware 4188 4884 Response: 200 for GET /api/v1/members/ (0.237s)
+INFO 2025-08-25 11:38:02,727 basehttp 4188 4884 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,729 middleware 4188 14100 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,736 middleware 4188 6488 Response: 200 for GET /api/v1/members/ (0.198s)
+INFO 2025-08-25 11:38:02,740 basehttp 4188 6488 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:02,746 middleware 4188 4884 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,794 middleware 4188 6488 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:02,992 middleware 4188 14100 Response: 200 for GET /api/v1/members/ (0.263s)
+INFO 2025-08-25 11:38:02,997 middleware 4188 5036 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:03,017 middleware 4188 6488 Response: 200 for GET /api/v1/members/ (0.223s)
+INFO 2025-08-25 11:38:03,023 basehttp 4188 14100 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:03,032 middleware 4188 4884 Response: 200 for GET /api/v1/members/ (0.286s)
+INFO 2025-08-25 11:38:03,035 basehttp 4188 6488 - Broken pipe from ('127.0.0.1', 51891)
+INFO 2025-08-25 11:38:03,042 middleware 4188 14100 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:03,070 basehttp 4188 4884 - Broken pipe from ('127.0.0.1', 57492)
+INFO 2025-08-25 11:38:03,201 middleware 4188 5036 Response: 200 for GET /api/v1/members/ (0.205s)
+INFO 2025-08-25 11:38:03,205 basehttp 4188 5036 - Broken pipe from ('127.0.0.1', 62685)
+INFO 2025-08-25 11:38:03,294 middleware 4188 10196 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:03,382 middleware 4188 14100 Response: 200 for GET /api/v1/members/ (0.340s)
+INFO 2025-08-25 11:38:03,385 middleware 4188 15632 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:03,395 basehttp 4188 14100 - Broken pipe from ('127.0.0.1', 57919)
+INFO 2025-08-25 11:38:03,523 middleware 4188 10196 Response: 200 for GET /api/v1/members/ (0.229s)
+INFO 2025-08-25 11:38:03,526 basehttp 4188 10196 - Broken pipe from ('127.0.0.1', 55080)
+INFO 2025-08-25 11:38:03,561 middleware 4188 15632 Response: 200 for GET /api/v1/members/ (0.176s)
+INFO 2025-08-25 11:38:03,564 basehttp 4188 15632 - Broken pipe from ('127.0.0.1', 58044)
+INFO 2025-08-25 11:38:04,309 middleware 4188 12200 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:04,514 middleware 4188 12200 Response: 200 for GET /api/v1/members/ (0.204s)
+INFO 2025-08-25 11:38:04,519 basehttp 4188 12200 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:04,522 middleware 4188 11676 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:04,682 middleware 4188 11676 Response: 200 for GET /api/v1/members/ (0.159s)
+INFO 2025-08-25 11:38:04,687 basehttp 4188 11676 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:09,626 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:09,728 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.102s)
+INFO 2025-08-25 11:38:09,730 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:09,734 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:09,836 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.102s)
+INFO 2025-08-25 11:38:09,837 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:10,280 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:10,399 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.119s)
+INFO 2025-08-25 11:38:10,400 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:10,403 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:10,688 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.286s)
+INFO 2025-08-25 11:38:10,690 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:10,692 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:10,842 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.150s)
+INFO 2025-08-25 11:38:10,843 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:10,845 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,094 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.249s)
+INFO 2025-08-25 11:38:11,096 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,099 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,304 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.205s)
+INFO 2025-08-25 11:38:11,306 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,308 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,475 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.167s)
+INFO 2025-08-25 11:38:11,477 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,480 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,663 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.184s)
+INFO 2025-08-25 11:38:11,666 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,668 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,823 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.155s)
+INFO 2025-08-25 11:38:11,824 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,828 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:11,977 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:38:11,982 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:11,985 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,139 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.154s)
+INFO 2025-08-25 11:38:12,140 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,143 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,288 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-25 11:38:12,290 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,292 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,428 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.137s)
+INFO 2025-08-25 11:38:12,430 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,433 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,606 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.173s)
+INFO 2025-08-25 11:38:12,609 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,612 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,767 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.156s)
+INFO 2025-08-25 11:38:12,770 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,772 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:12,921 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:38:12,922 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:12,925 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,075 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.150s)
+INFO 2025-08-25 11:38:13,082 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,084 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,225 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.141s)
+INFO 2025-08-25 11:38:13,228 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,232 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,362 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.130s)
+INFO 2025-08-25 11:38:13,365 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,367 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,492 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.124s)
+INFO 2025-08-25 11:38:13,494 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,497 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,637 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.140s)
+INFO 2025-08-25 11:38:13,638 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,641 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,784 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.143s)
+INFO 2025-08-25 11:38:13,786 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,789 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:13,943 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.154s)
+INFO 2025-08-25 11:38:13,946 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:13,948 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,097 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.149s)
+INFO 2025-08-25 11:38:14,099 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,102 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,246 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-25 11:38:14,250 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,255 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,420 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.165s)
+INFO 2025-08-25 11:38:14,422 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,424 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,588 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.164s)
+INFO 2025-08-25 11:38:14,590 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,592 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,756 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.164s)
+INFO 2025-08-25 11:38:14,756 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,760 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:14,932 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.172s)
+INFO 2025-08-25 11:38:14,934 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:14,938 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,101 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.162s)
+INFO 2025-08-25 11:38:15,104 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,110 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,265 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.155s)
+INFO 2025-08-25 11:38:15,267 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,270 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,417 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.148s)
+INFO 2025-08-25 11:38:15,420 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,422 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,590 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.166s)
+INFO 2025-08-25 11:38:15,592 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,595 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,746 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.152s)
+INFO 2025-08-25 11:38:15,748 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,751 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:15,945 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.193s)
+INFO 2025-08-25 11:38:15,967 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:15,971 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:16,262 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.291s)
+INFO 2025-08-25 11:38:16,267 basehttp 4188 3416 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:16,284 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:16,492 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.207s)
+INFO 2025-08-25 11:38:16,501 basehttp 4188 13588 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 11:38:16,507 middleware 4188 3416 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:16,672 middleware 4188 13588 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:16,678 middleware 4188 12920 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 11:38:16,699 middleware 4188 3416 Response: 200 for GET /api/v1/members/ (0.193s)
+INFO 2025-08-25 11:38:16,729 basehttp 4188 3416 - Broken pipe from ('127.0.0.1', 58715)
+INFO 2025-08-25 11:38:16,851 middleware 4188 13588 Response: 200 for GET /api/v1/members/ (0.179s)
+INFO 2025-08-25 11:38:16,868 basehttp 4188 13588 - Broken pipe from ('127.0.0.1', 64262)
+INFO 2025-08-25 11:38:16,899 middleware 4188 12920 Response: 200 for GET /api/v1/members/ (0.221s)
+INFO 2025-08-25 11:38:16,904 basehttp 4188 12920 - Broken pipe from ('127.0.0.1', 49276)
+INFO 2025-08-25 11:44:17,074 basehttp 4188 14772 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-25 11:44:17,075 basehttp 4188 10676 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-25 11:44:17,081 middleware 4188 10676 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:17,082 middleware 4188 14772 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:17,308 middleware 4188 14772 Response: 200 for POST /api/v1/auth/token/refresh/ (0.225s)
+INFO 2025-08-25 11:44:17,309 basehttp 4188 14772 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-25 11:44:17,320 middleware 4188 10676 Response: 200 for POST /api/v1/auth/token/refresh/ (0.239s)
+INFO 2025-08-25 11:44:17,321 basehttp 4188 10676 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-25 11:44:20,738 middleware 4188 10676 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:20,740 middleware 4188 14772 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:20,742 middleware 4188 15576 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:20,810 middleware 4188 10676 Response: 401 for POST /api/v1/auth/token/refresh/ (0.073s)
+WARNING 2025-08-25 11:44:20,811 log 4188 10676 Unauthorized: /api/v1/auth/token/refresh/
+INFO 2025-08-25 11:44:20,811 middleware 4188 14772 Response: 401 for POST /api/v1/auth/token/refresh/ (0.072s)
+WARNING 2025-08-25 11:44:20,812 log 4188 14772 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 11:44:20,813 basehttp 4188 10676 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 11:44:20,813 basehttp 4188 14772 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-25 11:44:20,817 middleware 4188 10676 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 11:44:20,911 middleware 4188 10676 Response: 401 for POST /api/v1/auth/token/refresh/ (0.093s)
+WARNING 2025-08-25 11:44:20,911 log 4188 10676 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 11:44:20,912 basehttp 4188 10676 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-25 11:44:20,974 middleware 4188 15576 Response: 401 for POST /api/v1/auth/token/refresh/ (0.233s)
+WARNING 2025-08-25 11:44:20,975 log 4188 15576 Unauthorized: /api/v1/auth/token/refresh/
+INFO 2025-08-25 11:44:20,977 basehttp 4188 15576 - Broken pipe from ('127.0.0.1', 58068)
+INFO 2025-08-25 12:21:24,353 middleware 4188 4012 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-25 12:21:25,704 middleware 4188 4012 Response: 200 for POST /api/v1/auth/login/ (1.351s)
+INFO 2025-08-25 12:21:25,707 basehttp 4188 4012 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-25 12:25:23,172 middleware 4188 6800 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:25:23,181 middleware 4188 336 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 12:25:23,296 middleware 4188 336 Response: 404 for GET /api/v1/members/new/ (0.115s)
+WARNING 2025-08-25 12:25:23,297 log 4188 336 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 12:25:23,298 basehttp 4188 336 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 12:25:23,302 middleware 4188 336 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 12:25:23,319 middleware 4188 6800 Response: 200 for GET /api/v1/members/ (0.146s)
+INFO 2025-08-25 12:25:23,322 basehttp 4188 6800 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 12:25:23,326 middleware 4188 6800 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:25:23,492 middleware 4188 336 Response: 404 for GET /api/v1/members/new/ (0.189s)
+WARNING 2025-08-25 12:25:23,493 log 4188 336 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 12:25:23,494 basehttp 4188 336 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 12:25:23,514 middleware 4188 6800 Response: 200 for GET /api/v1/members/ (0.187s)
+INFO 2025-08-25 12:25:23,515 basehttp 4188 6800 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 12:25:24,167 middleware 4188 6800 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:25:24,269 middleware 4188 6800 Response: 200 for GET /api/v1/members/ (0.101s)
+INFO 2025-08-25 12:25:24,270 basehttp 4188 6800 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 12:54:56,302 middleware 4188 1620 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:54:56,306 middleware 4188 3044 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 12:54:56,509 middleware 4188 3044 Response: 404 for GET /api/v1/members/new/ (0.203s)
+WARNING 2025-08-25 12:54:56,512 log 4188 3044 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 12:54:56,514 basehttp 4188 3044 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 12:54:56,517 middleware 4188 3044 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 12:54:56,526 middleware 4188 1620 Response: 200 for GET /api/v1/members/ (0.225s)
+INFO 2025-08-25 12:54:56,529 basehttp 4188 1620 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 12:54:56,530 middleware 4188 10480 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:54:56,600 middleware 4188 3044 Response: 404 for GET /api/v1/members/new/ (0.084s)
+WARNING 2025-08-25 12:54:56,601 log 4188 3044 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 12:54:56,602 basehttp 4188 3044 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 12:54:56,623 middleware 4188 10480 Response: 200 for GET /api/v1/members/ (0.094s)
+INFO 2025-08-25 12:54:56,624 basehttp 4188 10480 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 12:54:57,311 middleware 4188 10480 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 12:54:57,529 middleware 4188 10480 Response: 200 for GET /api/v1/members/ (0.218s)
+INFO 2025-08-25 12:54:57,530 basehttp 4188 10480 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 13:11:26,077 middleware 4188 3544 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 13:11:26,380 middleware 4188 3544 Response: 200 for POST /api/v1/auth/token/refresh/ (0.303s)
+INFO 2025-08-25 13:11:26,382 basehttp 4188 3544 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-25 13:16:43,081 middleware 4188 7992 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 13:16:43,085 middleware 4188 16848 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 13:16:43,089 middleware 4188 7888 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 13:16:43,095 middleware 4188 1736 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 13:16:43,174 middleware 4188 7992 Response: 401 for POST /api/v1/auth/token/refresh/ (0.094s)
+WARNING 2025-08-25 13:16:43,181 log 4188 7992 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 13:16:43,182 basehttp 4188 7992 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-25 13:16:43,196 middleware 4188 16848 Response: 401 for POST /api/v1/auth/token/refresh/ (0.112s)
+INFO 2025-08-25 13:16:43,196 middleware 4188 7888 Response: 401 for POST /api/v1/auth/token/refresh/ (0.107s)
+WARNING 2025-08-25 13:16:43,199 log 4188 16848 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 13:16:43,200 log 4188 7888 Unauthorized: /api/v1/auth/token/refresh/
+INFO 2025-08-25 13:16:43,201 middleware 4188 1736 Response: 401 for POST /api/v1/auth/token/refresh/ (0.106s)
+WARNING 2025-08-25 13:16:43,202 log 4188 1736 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 13:16:43,203 basehttp 4188 7888 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 13:16:43,203 basehttp 4188 16848 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 13:16:43,204 basehttp 4188 1736 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-25 14:35:55,969 basehttp 4188 17008 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-25 14:35:55,986 middleware 4188 17008 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-25 14:35:57,135 middleware 4188 17008 Response: 200 for POST /api/v1/auth/login/ (1.149s)
+INFO 2025-08-25 14:35:57,135 basehttp 4188 17008 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-25 14:37:59,017 basehttp 4188 17008 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-25 14:37:59,025 basehttp 4188 17008 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-25 14:37:59,029 basehttp 4188 17008 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-25 14:37:59,036 basehttp 4188 17008 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-25 14:37:59,041 middleware 4188 17008 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 14:37:59,267 middleware 4188 17008 Response: 200 for GET /api/v1/members/ (0.227s)
+INFO 2025-08-25 14:37:59,267 basehttp 4188 17008 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 14:37:59,267 middleware 4188 17008 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 14:37:59,322 middleware 4188 18360 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 14:37:59,348 basehttp 4188 4516 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 0
+INFO 2025-08-25 14:37:59,361 middleware 4188 4516 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-25 14:37:59,393 middleware 4188 17008 Response: 404 for GET /api/v1/members/new/ (0.126s)
+WARNING 2025-08-25 14:37:59,394 log 4188 17008 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 14:37:59,395 basehttp 4188 17008 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 14:37:59,399 middleware 4188 10032 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-25 14:37:59,462 middleware 4188 18360 Response: 200 for GET /api/v1/members/ (0.140s)
+INFO 2025-08-25 14:37:59,463 basehttp 4188 18360 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-25 14:37:59,494 middleware 4188 4516 Response: 200 for GET /api/v1/members/ (0.133s)
+INFO 2025-08-25 14:37:59,496 basehttp 4188 4516 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-25 14:37:59,504 middleware 4188 10032 Response: 404 for GET /api/v1/members/new/ (0.105s)
+WARNING 2025-08-25 14:37:59,504 log 4188 10032 Not Found: /api/v1/members/new/
+WARNING 2025-08-25 14:37:59,504 basehttp 4188 10032 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-25 15:25:57,510 basehttp 4188 18640 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-25 15:25:57,521 middleware 4188 18640 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 15:25:57,757 middleware 4188 18640 Response: 200 for POST /api/v1/auth/token/refresh/ (0.236s)
+INFO 2025-08-25 15:25:57,757 basehttp 4188 18640 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-25 15:31:16,950 middleware 4188 21028 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 15:31:16,961 middleware 4188 21272 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 15:31:16,970 middleware 4188 21356 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 15:31:16,987 middleware 4188 21112 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-25 15:31:17,150 middleware 4188 21112 Response: 401 for POST /api/v1/auth/token/refresh/ (0.163s)
+INFO 2025-08-25 15:31:17,152 middleware 4188 21028 Response: 401 for POST /api/v1/auth/token/refresh/ (0.202s)
+INFO 2025-08-25 15:31:17,152 middleware 4188 21272 Response: 401 for POST /api/v1/auth/token/refresh/ (0.190s)
+INFO 2025-08-25 15:31:17,152 middleware 4188 21356 Response: 401 for POST /api/v1/auth/token/refresh/ (0.181s)
+WARNING 2025-08-25 15:31:17,152 log 4188 21112 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 15:31:17,152 log 4188 21028 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 15:31:17,152 log 4188 21272 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 15:31:17,152 log 4188 21356 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-25 15:31:17,157 basehttp 4188 21028 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 15:31:17,157 basehttp 4188 21112 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 15:31:17,157 basehttp 4188 21272 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-25 15:31:17,161 basehttp 4188 21356 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
