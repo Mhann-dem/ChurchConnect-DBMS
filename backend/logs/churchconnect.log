@@ -8980,3 +8980,84 @@ WARNING 2025-08-25 15:31:17,157 basehttp 4188 21028 "POST /api/v1/auth/token/ref
 WARNING 2025-08-25 15:31:17,157 basehttp 4188 21112 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
 WARNING 2025-08-25 15:31:17,157 basehttp 4188 21272 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
 WARNING 2025-08-25 15:31:17,161 basehttp 4188 21356 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-26 11:39:21,587 autoreload 12828 11920 Watching for file changes with StatReloader
+INFO 2025-08-26 12:06:31,349 basehttp 12828 9380 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:31,369 middleware 12828 9380 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-26 12:06:33,411 middleware 12828 9380 Response: 200 for POST /api/v1/auth/login/ (2.042s)
+INFO 2025-08-26 12:06:33,412 basehttp 12828 9380 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-26 12:06:52,523 basehttp 12828 9952 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:52,523 basehttp 12828 12508 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:52,525 basehttp 12828 8468 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:52,525 basehttp 12828 9024 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:52,528 middleware 12828 12508 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:06:52,534 middleware 12828 9024 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:06:52,640 middleware 12828 12508 Response: 404 for GET /api/v1/members/new/ (0.112s)
+WARNING 2025-08-26 12:06:52,645 log 12828 12508 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:06:52,646 basehttp 12828 12508 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:06:52,648 middleware 12828 8468 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:06:52,679 middleware 12828 9024 Response: 200 for GET /api/v1/members/ (0.145s)
+INFO 2025-08-26 12:06:52,681 basehttp 12828 9024 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:06:52,684 middleware 12828 12508 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:06:52,709 basehttp 12828 9024 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:52,715 middleware 12828 9024 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:06:52,758 middleware 12828 8468 Response: 404 for GET /api/v1/members/new/ (0.110s)
+WARNING 2025-08-26 12:06:52,759 log 12828 8468 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:06:52,760 basehttp 12828 8468 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:06:52,792 middleware 12828 12508 Response: 200 for GET /api/v1/members/ (0.108s)
+INFO 2025-08-26 12:06:52,794 basehttp 12828 12508 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:06:52,814 middleware 12828 9024 Response: 200 for GET /api/v1/members/ (0.099s)
+INFO 2025-08-26 12:06:52,815 basehttp 12828 9024 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-26 12:06:55,657 basehttp 12828 12508 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:55,664 middleware 12828 12508 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:06:55,670 basehttp 12828 9024 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 12:06:55,757 middleware 12828 12508 Response: 200 for GET /api/v1/members/ (0.093s)
+INFO 2025-08-26 12:06:55,758 basehttp 12828 12508 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:06:55,759 middleware 12828 9024 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:06:55,960 middleware 12828 9024 Response: 200 for GET /api/v1/members/ (0.200s)
+INFO 2025-08-26 12:06:55,961 basehttp 12828 9024 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:33:11,910 middleware 12828 13800 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:33:11,914 middleware 12828 16576 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:33:12,221 middleware 12828 16576 Response: 404 for GET /api/v1/members/new/ (0.308s)
+WARNING 2025-08-26 12:33:12,225 log 12828 16576 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:33:12,229 basehttp 12828 16576 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:33:12,236 middleware 12828 13800 Response: 200 for GET /api/v1/members/ (0.326s)
+INFO 2025-08-26 12:33:12,243 basehttp 12828 13800 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:33:12,246 middleware 12828 16040 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:33:12,252 middleware 12828 16576 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:33:12,364 middleware 12828 13800 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:33:12,383 middleware 12828 16040 Response: 404 for GET /api/v1/members/new/ (0.137s)
+WARNING 2025-08-26 12:33:12,384 log 12828 16040 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:33:12,388 basehttp 12828 16040 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:33:12,475 middleware 12828 13800 Response: 200 for GET /api/v1/members/ (0.111s)
+INFO 2025-08-26 12:33:12,478 basehttp 12828 13800 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-26 12:33:12,494 middleware 12828 16576 Response: 200 for GET /api/v1/members/ (0.242s)
+INFO 2025-08-26 12:33:12,495 basehttp 12828 16576 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:37:22,870 middleware 12828 4392 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:37:22,852 middleware 12828 15136 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:37:24,578 middleware 12828 4392 Response: 404 for GET /api/v1/members/new/ (1.708s)
+WARNING 2025-08-26 12:37:24,591 log 12828 4392 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:37:24,606 basehttp 12828 4392 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:37:24,614 middleware 12828 8784 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 12:37:24,673 middleware 12828 15136 Response: 200 for GET /api/v1/members/ (1.830s)
+INFO 2025-08-26 12:37:24,676 basehttp 12828 15136 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:37:24,681 middleware 12828 4392 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:37:24,794 middleware 12828 8784 Response: 404 for GET /api/v1/members/new/ (0.180s)
+WARNING 2025-08-26 12:37:24,796 log 12828 8784 Not Found: /api/v1/members/new/
+WARNING 2025-08-26 12:37:24,800 basehttp 12828 8784 "GET /api/v1/members/new/ HTTP/1.1" 404 23
+INFO 2025-08-26 12:37:24,841 middleware 12828 4392 Response: 200 for GET /api/v1/members/ (0.160s)
+INFO 2025-08-26 12:37:24,844 basehttp 12828 4392 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:37:25,197 middleware 12828 4392 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:37:25,395 middleware 12828 4392 Response: 200 for GET /api/v1/members/ (0.198s)
+INFO 2025-08-26 12:37:25,397 basehttp 12828 4392 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true HTTP/1.1" 200 52
+INFO 2025-08-26 12:38:22,522 middleware 12828 15712 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:38:22,609 middleware 12828 15712 Response: 200 for GET /api/v1/members/ (0.087s)
+INFO 2025-08-26 12:38:22,610 basehttp 12828 15712 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:38:22,613 middleware 12828 15712 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:38:22,804 middleware 12828 15712 Response: 200 for GET /api/v1/members/ (0.191s)
+INFO 2025-08-26 12:38:22,805 basehttp 12828 15712 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:43:32,819 middleware 12828 15680 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:43:33,156 middleware 12828 15680 Response: 200 for GET /api/v1/members/ (0.337s)
+INFO 2025-08-26 12:43:33,159 basehttp 12828 15680 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 12:43:33,164 middleware 12828 1728 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 12:43:33,268 middleware 12828 1728 Response: 200 for GET /api/v1/members/ (0.104s)
+INFO 2025-08-26 12:43:33,271 basehttp 12828 1728 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52

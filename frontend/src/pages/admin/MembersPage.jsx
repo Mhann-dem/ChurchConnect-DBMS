@@ -1,1036 +1,376 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useMembers } from '../../hooks/useMembers';
+// frontend/src/pages/admin/MembersPage.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Search, Filter, Users, UserPlus, Download } from 'lucide-react';
+import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
+import BulkActions from '../../components/admin/Members/BulkActions';
+import MembersList from '../../components/admin/Members/MembersList';
+import MemberFilters from '../../components/admin/Members/MemberFilters';
+import { Modal, LoadingSpinner } from '../../components/shared';
+import { Button } from '../../components/ui';
 import { useToast } from '../../hooks/useToast';
+import { useMembers } from '../../hooks/useMembers';
+import membersService from '../../services/members';
 import styles from './AdminPages.module.css';
 
-// Fallback components
-const FallbackButton = ({ children, onClick, variant = 'primary', disabled = false, className = '', size, type = 'button', ...props }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    className={`btn btn-${variant} ${size ? `btn-${size}` : ''} ${className}`}
-    style={{
-      padding: size === 'small' ? '6px 12px' : '8px 16px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      backgroundColor: 
-        variant === 'primary' ? '#007bff' : 
-        variant === 'danger' ? '#dc3545' : 
-        variant === 'outline' ? 'transparent' :
-        variant === 'secondary' ? '#6c757d' :
-        variant === 'ghost' ? 'transparent' : '#6c757d',
-      color: variant === 'outline' || variant === 'ghost' ? '#007bff' : 'white',
-      border: variant === 'outline' ? '1px solid #007bff' : 'none',
-      opacity: disabled ? 0.6 : 1,
-      fontSize: size === 'small' ? '14px' : '16px'
-    }}
-    {...props}
-  >
-    {children}
-  </button>
-);
+const MembersPage = () => {
+  const { showToast } = useToast();
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    gender: '',
+    ageRange: '',
+    pledgeStatus: '',
+    registrationDateRange: '',
+    active: true
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [membersPerPage, setMembersPerPage] = useState(25);
 
-const FallbackCard = ({ children, className = '', ...props }) => (
-  <div
-    className={`card ${className}`}
-    style={{
-      padding: '20px',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      backgroundColor: 'white',
-      marginBottom: '20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}
-    {...props}
-  >
-    {children}
-  </div>
-);
-
-const FallbackLoadingSpinner = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
-    <div
-      style={{
-        width: '40px',
-        height: '40px',
-        border: '4px solid #f3f3f3',
-        borderTop: '4px solid #007bff',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite'
-      }}
-    />
-    <style>
-      {`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}
-    </style>
-  </div>
-);
-
-const FallbackSearchBar = ({ value, onChange, placeholder, className = '' }) => (
-  <input
-    type="text"
-    value={value || ''}
-    onChange={(e) => onChange && onChange(e.target.value)}
-    placeholder={placeholder}
-    className={className}
-    style={{
-      width: '100%',
-      padding: '10px',
-      border: '1px solid #ddd',
-      borderRadius: '4px',
-      fontSize: '16px'
-    }}
-  />
-);
-
-const FallbackEmptyState = ({ title, message, action, className = '' }) => (
-  <div className={className} style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-    <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>
-      {title || 'No Data Found'}
-    </h3>
-    <p style={{ margin: '0 0 20px 0', color: '#888' }}>
-      {message || 'No items to display'}
-    </p>
-    {action}
-  </div>
-);
-
-const FallbackMembersList = ({ 
-  members = [], 
-  selectedMembers = [], 
-  onSelectMember, 
-  onSelectAllMembers, 
-  onEdit, 
-  onDelete, 
-  onView, 
-  loading = false 
-}) => {
-  if (loading) {
-    return <FallbackLoadingSpinner />;
-  }
-
-  if (!members || members.length === 0) {
-    return (
-      <FallbackEmptyState 
-        title="No Members Found" 
-        message="No members match your current search criteria."
-        className={styles.emptyState}
-      />
-    );
-  }
-
-  return (
-    <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-      <div style={{ padding: '10px', borderBottom: '1px solid #ddd', backgroundColor: '#f8f9fa' }}>
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={selectedMembers.length === members.length && members.length > 0}
-            onChange={(e) => onSelectAllMembers && onSelectAllMembers(e.target.checked)}
-          />
-          <span style={{ marginLeft: '8px' }}>Select All ({members.length} members)</span>
-        </label>
-      </div>
-      {members.map((member) => (
-        <div 
-          key={member.id} 
-          style={{ 
-            padding: '15px', 
-            borderBottom: '1px solid #eee', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between' 
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <input
-              type="checkbox"
-              checked={selectedMembers.includes(member.id)}
-              onChange={() => onSelectMember && onSelectMember(member.id)}
-            />
-            <div style={{ marginLeft: '15px' }}>
-              <h4 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: '600' }}>
-                {member.first_name || ''} {member.last_name || ''}
-              </h4>
-              <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                {member.email || 'No email'}
-              </p>
-              {member.phone && (
-                <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                  {member.phone}
-                </p>
-              )}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <FallbackButton 
-              onClick={() => onView && onView(member.id)} 
-              variant="primary" 
-              size="small"
-            >
-              View
-            </FallbackButton>
-            <FallbackButton 
-              onClick={() => onEdit && onEdit(member)} 
-              variant="secondary" 
-              size="small"
-            >
-              Edit
-            </FallbackButton>
-            <FallbackButton 
-              onClick={() => onDelete && onDelete(member.id)} 
-              variant="danger" 
-              size="small"
-            >
-              Delete
-            </FallbackButton>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const FallbackMemberFilters = ({ 
-  ageFilter, 
-  groupFilter, 
-  statusFilter, 
-  joinDateFilter, 
-  onAgeChange, 
-  onGroupChange, 
-  onStatusChange, 
-  onJoinDateChange 
-}) => (
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '15px' }}>
-    <div>
-      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Age Group:</label>
-      <select 
-        value={ageFilter || 'all'} 
-        onChange={(e) => onAgeChange && onAgeChange(e.target.value)} 
-        style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-      >
-        <option value="all">All Ages</option>
-        <option value="18-25">18-25</option>
-        <option value="26-40">26-40</option>
-        <option value="41-60">41-60</option>
-        <option value="60+">60+</option>
-      </select>
-    </div>
-    <div>
-      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Group:</label>
-      <select 
-        value={groupFilter || 'all'} 
-        onChange={(e) => onGroupChange && onGroupChange(e.target.value)} 
-        style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-      >
-        <option value="all">All Groups</option>
-        <option value="youth">Youth</option>
-        <option value="adults">Adults</option>
-        <option value="seniors">Seniors</option>
-      </select>
-    </div>
-    <div>
-      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Status:</label>
-      <select 
-        value={statusFilter || 'all'} 
-        onChange={(e) => onStatusChange && onStatusChange(e.target.value)} 
-        style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-      >
-        <option value="all">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-    </div>
-    <div>
-      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Join Date:</label>
-      <select 
-        value={joinDateFilter || 'all'} 
-        onChange={(e) => onJoinDateChange && onJoinDateChange(e.target.value)} 
-        style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-      >
-        <option value="all">All Time</option>
-        <option value="last-month">Last Month</option>
-        <option value="last-3-months">Last 3 Months</option>
-        <option value="last-year">Last Year</option>
-      </select>
-    </div>
-  </div>
-);
-
-const FallbackPagination = ({ currentPage, totalPages, onPageChange }) => {
-  if (totalPages <= 1) return null;
-  
-  const pages = [];
-  const maxVisiblePages = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-  
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-  }
-
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-  
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '20px' }}>
-      <FallbackButton 
-        onClick={() => onPageChange && onPageChange(1)} 
-        disabled={currentPage <= 1}
-        variant="outline"
-        size="small"
-      >
-        First
-      </FallbackButton>
-      <FallbackButton 
-        onClick={() => onPageChange && onPageChange(currentPage - 1)} 
-        disabled={currentPage <= 1}
-        variant="outline"
-        size="small"
-      >
-        Previous
-      </FallbackButton>
-      
-      {pages.map(page => (
-        <FallbackButton
-          key={page}
-          onClick={() => onPageChange && onPageChange(page)}
-          variant={page === currentPage ? 'primary' : 'outline'}
-          size="small"
-        >
-          {page}
-        </FallbackButton>
-      ))}
-      
-      <FallbackButton 
-        onClick={() => onPageChange && onPageChange(currentPage + 1)} 
-        disabled={currentPage >= totalPages}
-        variant="outline"
-        size="small"
-      >
-        Next
-      </FallbackButton>
-      <FallbackButton 
-        onClick={() => onPageChange && onPageChange(totalPages)} 
-        disabled={currentPage >= totalPages}
-        variant="outline"
-        size="small"
-      >
-        Last
-      </FallbackButton>
-    </div>
-  );
-};
-
-const FallbackMemberForm = ({ member, onSubmit, onCancel, isEditing = false }) => {
-  const [formData, setFormData] = useState({
-    first_name: member?.first_name || '',
-    last_name: member?.last_name || '',
-    email: member?.email || '',
-    phone: member?.phone || '',
-    preferred_name: member?.preferred_name || '',
-    date_of_birth: member?.date_of_birth || '',
-    gender: member?.gender || '',
-    address: member?.address || '',
-    preferred_contact_method: member?.preferred_contact_method || 'email'
+  // Use custom hook for member data management with error handling
+  const hookResult = useMembers({
+    search: searchQuery,
+    filters,
+    page: currentPage,
+    limit: membersPerPage
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSubmit) {
-      onSubmit(formData);
-    }
-  };
+  // Safely destructure with defaults to prevent undefined errors
+  const {
+    members = [],
+    totalMembers = 0,
+    isLoading = false,
+    error = null,
+    refetch = () => Promise.resolve()
+  } = hookResult || {};
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>First Name:</label>
-          <input
-            type="text"
-            value={formData.first_name}
-            onChange={(e) => handleInputChange('first_name', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-            required
-          />
-        </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Last Name:</label>
-          <input
-            type="text"
-            value={formData.last_name}
-            onChange={(e) => handleInputChange('last_name', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-            required
-          />
-        </div>
-      </div>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Preferred Name (optional):</label>
-        <input
-          type="text"
-          value={formData.preferred_name}
-          onChange={(e) => handleInputChange('preferred_name', e.target.value)}
-          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-        />
-      </div>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Email:</label>
-        <input
-          type="email"
-          value={formData.email}
-          onChange={(e) => handleInputChange('email', e.target.value)}
-          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-          required
-        />
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Phone:</label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-        </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Date of Birth:</label>
-          <input
-            type="date"
-            value={formData.date_of_birth}
-            onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-        </div>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Gender:</label>
-          <select
-            value={formData.gender}
-            onChange={(e) => handleInputChange('gender', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-          >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-            <option value="prefer_not_to_say">Prefer not to say</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Preferred Contact:</label>
-          <select
-            value={formData.preferred_contact_method}
-            onChange={(e) => handleInputChange('preferred_contact_method', e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-          >
-            <option value="email">Email</option>
-            <option value="phone">Phone</option>
-            <option value="sms">SMS</option>
-            <option value="mail">Mail</option>
-            <option value="no_contact">No Contact</option>
-          </select>
-        </div>
-      </div>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Address (optional):</label>
-        <textarea
-          value={formData.address}
-          onChange={(e) => handleInputChange('address', e.target.value)}
-          rows="3"
-          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', resize: 'vertical' }}
-        />
-      </div>
-      
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-        <FallbackButton type="button" onClick={onCancel} variant="outline">
-          Cancel
-        </FallbackButton>
-        <FallbackButton type="submit" variant="primary">
-          {isEditing ? 'Update' : 'Create'} Member
-        </FallbackButton>
-      </div>
-    </form>
-  );
-};
-
-// Safe component imports
-const getSafeComponent = (importFunction, fallbackComponent) => {
-  try {
-    const component = importFunction();
-    return component || fallbackComponent;
-  } catch (error) {
-    console.warn('Component import failed, using fallback:', error);
-    return fallbackComponent;
-  }
-};
-
-const MembersPage = () => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [showForm, setShowForm] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const [pageSize, setPageSize] = useState(parseInt(searchParams.get('pageSize')) || 25);
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [ageFilter, setAgeFilter] = useState(searchParams.get('age') || 'all');
-  const [groupFilter, setGroupFilter] = useState(searchParams.get('group') || 'all');
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
-  const [joinDateFilter, setJoinDateFilter] = useState(searchParams.get('joinDate') || 'all');
-
-  // Safe hook initialization
-  let members = [], totalMembers = 0, loading = false, error = null;
-  let createMember, updateMember, deleteMember, searchMembers, exportMembers;
-  let showToast = () => {};
-
-  try {
-    const membersHook = useMembers();
-    if (membersHook) {
-      ({
-        members = [],
-        totalMembers = 0,
-        loading = false,
-        error = null,
-        createMember,
-        updateMember,
-        deleteMember,
-        searchMembers,
-        exportMembers
-      } = membersHook);
-    }
-  } catch (hookError) {
-    console.error('useMembers hook error:', hookError);
-    error = 'Failed to initialize members data';
-  }
-
-  try {
-    const toastHook = useToast();
-    if (toastHook?.showToast) {
-      showToast = toastHook.showToast;
-    }
-  } catch (hookError) {
-    console.error('useToast hook error:', hookError);
-  }
-
-  // Safe members array
+  // Ensure members is always an array to prevent runtime errors
   const safeMembers = Array.isArray(members) ? members : [];
+  const safeTotalMembers = typeof totalMembers === 'number' ? totalMembers : 0;
 
-  // Update URL params when filters change
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('search', searchQuery);
-    if (ageFilter !== 'all') params.set('age', ageFilter);
-    if (groupFilter !== 'all') params.set('group', groupFilter);
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (joinDateFilter !== 'all') params.set('joinDate', joinDateFilter);
-    if (currentPage !== 1) params.set('page', currentPage.toString());
-    if (pageSize !== 25) params.set('pageSize', pageSize.toString());
-    setSearchParams(params);
-  }, [searchQuery, ageFilter, groupFilter, statusFilter, joinDateFilter, currentPage, pageSize, setSearchParams]);
-
-  // Fetch members when filters change
-  useEffect(() => {
-    if (searchMembers) {
-      const filters = {
-        search: searchQuery,
-        age: ageFilter !== 'all' ? ageFilter : null,
-        group: groupFilter !== 'all' ? groupFilter : null,
-        status: statusFilter !== 'all' ? statusFilter : null,
-        joinDate: joinDateFilter !== 'all' ? joinDateFilter : null,
-        page: currentPage,
-        pageSize: pageSize
-      };
-      searchMembers(filters);
+  // Handle member registration success
+  const handleRegistrationSuccess = useCallback((newMember) => {
+    setShowRegistrationForm(false);
+    showToast('Member registered successfully!', 'success');
+    if (refetch) {
+      refetch(); // Refresh the members list
     }
-  }, [searchQuery, ageFilter, groupFilter, statusFilter, joinDateFilter, currentPage, pageSize, searchMembers]);
+  }, [showToast, refetch]);
 
-  const handleCreateMember = async (memberData) => {
+  // Handle member registration cancel
+  const handleRegistrationCancel = useCallback(() => {
+    setShowRegistrationForm(false);
+  }, []);
+
+  // Handle bulk actions
+  const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
-      if (createMember) {
-        const newMember = await createMember(memberData);
-        setShowForm(false);
-        showToast('Member created successfully', 'success');
-        if (newMember?.id) {
-          navigate(`/admin/members/${newMember.id}`);
+      const result = await membersService.performBulkAction(action, memberIds, actionData);
+      
+      if (result?.success) {
+        // Clear selection after successful action
+        setSelectedMembers([]);
+        // Refresh data
+        if (refetch) {
+          await refetch();
         }
-      }
-    } catch (error) {
-      showToast('Failed to create member', 'error');
-      console.error('Create member error:', error);
-    }
-  };
-
-  const handleUpdateMember = async (memberId, memberData) => {
-    try {
-      if (updateMember) {
-        await updateMember(memberId, memberData);
-        setSelectedMember(null);
-        setShowForm(false);
-        showToast('Member updated successfully', 'success');
-      }
-    } catch (error) {
-      showToast('Failed to update member', 'error');
-      console.error('Update member error:', error);
-    }
-  };
-
-  const handleDeleteMember = async (memberId) => {
-    try {
-      if (deleteMember) {
-        await deleteMember(memberId);
-        showToast('Member deleted successfully', 'success');
-        setSelectedMembers(prev => prev.filter(id => id !== memberId));
-        setDeleteConfirmId(null);
-      }
-    } catch (error) {
-      showToast('Failed to delete member', 'error');
-      console.error('Delete member error:', error);
-    }
-  };
-
-  const handleEditMember = (member) => {
-    setSelectedMember(member);
-    setShowForm(true);
-  };
-
-  const handleViewMember = (memberId) => {
-    navigate(`/admin/members/${memberId}`);
-  };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setSelectedMember(null);
-  };
-
-  const handleSelectMember = (memberId) => {
-    setSelectedMembers(prev => {
-      const isSelected = prev.includes(memberId);
-      if (isSelected) {
-        return prev.filter(id => id !== memberId);
+        return result;
       } else {
-        return [...prev, memberId];
+        throw new Error(result?.error || 'Bulk action failed');
       }
-    });
-  };
+    } catch (error) {
+      showToast(error?.message || 'Bulk action failed', 'error');
+      throw error;
+    }
+  }, [refetch, showToast]);
 
-  const handleSelectAllMembers = (selectAll) => {
+  // Handle member import
+  const handleImportMembers = useCallback(async (membersData, options = {}) => {
+    try {
+      const result = await membersService.bulkImportMembers(membersData, options);
+      
+      if (result?.success) {
+        if (refetch) {
+          await refetch(); // Refresh data
+        }
+        showToast(
+          `Successfully imported ${result.successful || 0} members. ${result.skipped || 0} duplicates skipped.`,
+          'success'
+        );
+        return result;
+      } else {
+        throw new Error(result?.error || 'Import failed');
+      }
+    } catch (error) {
+      showToast(error?.message || 'Import failed', 'error');
+      throw error;
+    }
+  }, [refetch, showToast]);
+
+  // Handle member selection
+  const handleMemberSelection = useCallback((memberId, isSelected) => {
+    setSelectedMembers(prev => 
+      isSelected 
+        ? [...prev, memberId]
+        : prev.filter(id => id !== memberId)
+    );
+  }, []);
+
+  // Handle select all members - Fixed potential issue
+  const handleSelectAll = useCallback((selectAll) => {
     if (selectAll) {
-      setSelectedMembers(safeMembers.map(member => member.id));
+      setSelectedMembers(safeMembers.map(member => member?.id).filter(Boolean));
     } else {
       setSelectedMembers([]);
     }
-  };
+  }, [safeMembers]);
 
-  const handleExportMembers = async () => {
+  // Handle clear selection
+  const handleClearSelection = useCallback(() => {
+    setSelectedMembers([]);
+  }, []);
+
+  // Handle search
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query || '');
+    setCurrentPage(1); // Reset to first page when searching
+  }, []);
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setCurrentPage(1); // Reset to first page when filtering
+  }, []);
+
+  // Handle pagination
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+  }, []);
+
+  // Quick export all members
+  const handleQuickExport = useCallback(async () => {
     try {
-      if (exportMembers) {
-        const filters = {
-          search: searchQuery,
-          age: ageFilter !== 'all' ? ageFilter : null,
-          group: groupFilter !== 'all' ? groupFilter : null,
-          status: statusFilter !== 'all' ? statusFilter : null,
-          joinDate: joinDateFilter !== 'all' ? joinDateFilter : null
-        };
-        await exportMembers(filters);
-        showToast('Members exported successfully', 'success');
+      const result = await membersService.exportMembers();
+      if (result?.success) {
+        showToast('Export started. File will download shortly.', 'success');
+      } else {
+        throw new Error(result?.error || 'Export failed');
       }
     } catch (error) {
-      showToast('Failed to export members', 'error');
-      console.error('Export error:', error);
+      showToast(error?.message || 'Export failed', 'error');
     }
-  };
+  }, [showToast]);
 
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    setSearchQuery('');
-    setAgeFilter('all');
-    setGroupFilter('all');
-    setStatusFilter('all');
-    setJoinDateFilter('all');
-    setCurrentPage(1);
-  };
-
-  const confirmDelete = (memberId) => {
-    setDeleteConfirmId(memberId);
-  };
-
-  if (loading && safeMembers.length === 0) {
+  // Error boundary fallback
+  if (error) {
     return (
-      <div className={styles.loadingContainer} style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '400px' 
-      }}>
-        <FallbackLoadingSpinner />
-        <p style={{ marginTop: '20px', fontSize: '16px', color: '#666' }}>Loading members...</p>
+      <div className={styles.pageContainer}>
+        <div className={styles.errorState}>
+          <div className={styles.errorContent}>
+            <Users size={48} className={styles.errorIcon} />
+            <h2 className={styles.errorTitle}>Failed to Load Members</h2>
+            <p className={styles.errorMessage}>{error}</p>
+            <Button onClick={refetch} className={styles.retryButton}>
+              Try Again
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const totalPages = Math.ceil(totalMembers / pageSize);
-
   return (
-    <div className={styles.membersPage} style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className={styles.pageContainer}>
       {/* Page Header */}
-      <div className={styles.pageHeader} style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '20px' 
-      }}>
-        <div>
-          <h1 className={styles.pageTitle} style={{ 
-            margin: '0 0 5px 0', 
-            fontSize: '28px',
-            fontWeight: '700',
-            color: '#333'
-          }}>
-            Members Management
-          </h1>
-          <p className={styles.pageSubtitle} style={{ 
-            margin: 0, 
-            color: '#666',
-            fontSize: '16px'
-          }}>
-            Manage church members and their information ({totalMembers} total)
-          </p>
+      <div className={styles.pageHeader}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerInfo}>
+            <h1 className={styles.pageTitle}>Members</h1>
+            <p className={styles.pageSubtitle}>
+              Manage church members and their information
+            </p>
+          </div>
+          
+          <div className={styles.headerActions}>
+            <Button
+              variant="outline"
+              onClick={handleQuickExport}
+              disabled={isLoading}
+              className={styles.exportButton}
+            >
+              <Download size={16} />
+              Quick Export
+            </Button>
+            
+            <Button
+              variant="primary"
+              onClick={() => setShowRegistrationForm(true)}
+              disabled={isLoading}
+              className={styles.addButton}
+            >
+              <Plus size={16} />
+              Add Member
+            </Button>
+          </div>
         </div>
-        <div className={styles.headerActions} style={{ display: 'flex', gap: '10px' }}>
-          <FallbackButton
-            variant="outline"
-            onClick={handleExportMembers}
-            disabled={safeMembers.length === 0}
-          >
-            Export CSV
-          </FallbackButton>
-          <FallbackButton
-            variant="primary"
-            onClick={() => setShowForm(true)}
-          >
-            Add New Member
-          </FallbackButton>
+
+        {/* Stats Summary - Fixed potential null reference errors */}
+        <div className={styles.statsBar}>
+          <div className={styles.statItem}>
+            <span className={styles.statValue}>{safeTotalMembers}</span>
+            <span className={styles.statLabel}>Total Members</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statValue}>
+              {safeMembers.filter(m => m?.is_active).length}
+            </span>
+            <span className={styles.statLabel}>Active</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statValue}>{selectedMembers.length}</span>
+            <span className={styles.statLabel}>Selected</span>
+          </div>
         </div>
       </div>
 
-      {/* Bulk Actions Bar */}
-      {selectedMembers.length > 0 && (
-        <FallbackCard className={styles.bulkActionsCard}>
-          <div className={styles.bulkActionsContent} style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center' 
-          }}>
-            <div className={styles.bulkActionsInfo}>
-              <span className={styles.selectedCount} style={{ 
-                marginRight: '15px',
-                fontWeight: '600',
-                color: '#007bff'
-              }}>
-                {selectedMembers.length} members selected
-              </span>
-              <FallbackButton
-                variant="outline"
-                size="small"
-                onClick={() => setSelectedMembers([])}
-              >
-                Clear Selection
-              </FallbackButton>
-            </div>
-          </div>
-        </FallbackCard>
-      )}
-
-      {/* Search and Filters */}
-      <FallbackCard className={styles.filtersCard}>
-        <div className={styles.filtersContent}>
-          <div className={styles.searchRow} style={{ 
-            display: 'flex', 
-            gap: '15px', 
-            alignItems: 'flex-end', 
-            marginBottom: '15px' 
-          }}>
-            <div className={styles.searchContainer} style={{ flex: 1 }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '5px',
-                fontWeight: '500',
-                color: '#333'
-              }}>
-                Search Members:
-              </label>
-              <FallbackSearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search members by name, email, or phone..."
-                className={styles.searchInput}
-              />
-            </div>
-            <FallbackButton
-              variant="outline"
-              onClick={clearFilters}
-              disabled={
-                !searchQuery && 
-                ageFilter === 'all' && 
-                groupFilter === 'all' && 
-                statusFilter === 'all' && 
-                joinDateFilter === 'all'
-              }
-            >
-              Clear Filters
-            </FallbackButton>
-          </div>
-          
-          <FallbackMemberFilters
-            ageFilter={ageFilter}
-            groupFilter={groupFilter}
-            statusFilter={statusFilter}
-            joinDateFilter={joinDateFilter}
-            onAgeChange={setAgeFilter}
-            onGroupChange={setGroupFilter}
-            onStatusChange={setStatusFilter}
-            onJoinDateChange={setJoinDateFilter}
-          />
-        </div>
-      </FallbackCard>
-
-      {/* Error Display */}
-      {error && (
-        <div className={styles.errorContainer} style={{ 
-          padding: '20px', 
-          backgroundColor: '#f8d7da', 
-          border: '1px solid #f5c6cb', 
-          borderRadius: '8px', 
-          marginBottom: '20px' 
-        }}>
-          <div className={styles.errorContent}>
-            <div className={styles.errorMessage}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#721c24' }}>Error Loading Members</h4>
-              <p style={{ margin: 0, color: '#721c24' }}>{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Members List */}
-      <FallbackCard className={styles.membersListCard}>
-        <FallbackMembersList
-          members={safeMembers}
-          selectedMembers={selectedMembers}
-          onSelectMember={handleSelectMember}
-          onSelectAllMembers={handleSelectAllMembers}
-          onEdit={handleEditMember}
-          onDelete={confirmDelete}
-          onView={handleViewMember}
-          loading={loading}
-        />
-      </FallbackCard>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className={styles.paginationContainer} style={{ 
-          marginTop: '20px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center' 
-        }}>
-          <div className={styles.pageSizeSelector} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px' 
-          }}>
-            <span className={styles.pageSizeLabel}>Show</span>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
-              className={styles.pageSizeSelect}
-              style={{ 
-                padding: '5px 10px', 
-                border: '1px solid #ddd', 
-                borderRadius: '4px' 
-              }}
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-            <span className={styles.pageSizeLabel}>per page</span>
-          </div>
-          
-          <FallbackPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      )}
-
-      {/* Member Form Modal */}
-      {showForm && (
-        <div className={styles.modalOverlay} style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          backgroundColor: 'rgba(0,0,0,0.5)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          zIndex: 1000 
-        }}>
-          <div className={styles.modalContent} style={{ 
-            backgroundColor: 'white', 
-            padding: '20px', 
-            borderRadius: '8px', 
-            maxWidth: '700px', 
-            width: '90%', 
-            maxHeight: '90vh', 
-            overflow: 'auto',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-          }}>
-            <div className={styles.modalHeader} style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              marginBottom: '20px',
-              paddingBottom: '15px',
-              borderBottom: '1px solid #eee'
-            }}>
-              <h2 className={styles.modalTitle} style={{ 
-                margin: 0,
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#333'
-              }}>
-                {selectedMember ? 'Edit Member' : 'Add New Member'}
-              </h2>
-              <button
-                onClick={handleCloseForm}
-                className={styles.modalCloseButton}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  fontSize: '24px', 
-                  cursor: 'pointer', 
-                  padding: '0', 
-                  width: '30px', 
-                  height: '30px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#666',
-                  borderRadius: '50%'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                ×
-              </button>
-            </div>
-            
-            <FallbackMemberForm
-              member={selectedMember}
-              onSubmit={selectedMember ? 
-                (data) => handleUpdateMember(selectedMember.id, data) : 
-                handleCreateMember
-              }
-              onCancel={handleCloseForm}
-              isEditing={!!selectedMember}
+      {/* Search and Filter Bar */}
+      <div className={styles.actionBar}>
+        <div className={styles.searchSection}>
+          <div className={styles.searchInput}>
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search members by name, email, phone..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className={styles.searchField}
             />
           </div>
+          
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className={showFilters ? styles.activeFilter : ''}
+          >
+            <Filter size={16} />
+            Filters
+          </Button>
+        </div>
+
+        <div className={styles.viewControls}>
+          <select
+            value={membersPerPage}
+            onChange={(e) => setMembersPerPage(Number(e.target.value))}
+            className={styles.perPageSelect}
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className={styles.filtersPanel}>
+          <MemberFilters
+            filters={filters}
+            onChange={handleFilterChange}
+            onClear={() => setFilters({
+              gender: '',
+              ageRange: '',
+              pledgeStatus: '',
+              registrationDateRange: '',
+              active: true
+            })}
+          />
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirmId && (
-        <div className={styles.modalOverlay} style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          backgroundColor: 'rgba(0,0,0,0.5)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          zIndex: 1000 
-        }}>
-          <div className={styles.confirmDialog} style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '8px',
-            maxWidth: '400px',
-            width: '90%',
-            textAlign: 'center',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              margin: '0 0 15px 0', 
-              color: '#dc3545',
-              fontSize: '20px',
-              fontWeight: '600'
-            }}>
-              Delete Member
-            </h3>
-            <p style={{ 
-              margin: '0 0 25px 0', 
-              color: '#666',
-              fontSize: '16px',
-              lineHeight: '1.5'
-            }}>
-              Are you sure you want to delete this member? This action cannot be undone.
-            </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <FallbackButton
-                variant="outline"
-                onClick={() => setDeleteConfirmId(null)}
-              >
-                Cancel
-              </FallbackButton>
-              <FallbackButton
-                variant="danger"
-                onClick={() => handleDeleteMember(deleteConfirmId)}
-              >
-                Delete
-              </FallbackButton>
+      {/* Bulk Actions */}
+      <BulkActions
+        selectedMembers={selectedMembers}
+        onClearSelection={handleClearSelection}
+        onBulkAction={handleBulkAction}
+        onImportMembers={handleImportMembers}
+        totalMembers={safeTotalMembers}
+        allMembers={safeMembers}
+      />
+
+      {/* Main Content */}
+      <div className={styles.mainContent}>
+        {isLoading ? (
+          <div className={styles.loadingState}>
+            <LoadingSpinner size="lg" />
+            <p>Loading members...</p>
+          </div>
+        ) : safeMembers.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyContent}>
+              <div className={styles.emptyIcon}>
+                <UserPlus size={64} />
+              </div>
+              <h3 className={styles.emptyTitle}>
+                {searchQuery || Object.values(filters).some(f => f && f !== true) 
+                  ? 'No Members Found' 
+                  : 'No Members Registered Yet'
+                }
+              </h3>
+              <p className={styles.emptyDescription}>
+                {searchQuery || Object.values(filters).some(f => f && f !== true) 
+                  ? 'No members match your search criteria. Try adjusting your filters or search terms.'
+                  : 'Get started by adding your first church member to the database.'
+                }
+              </p>
+              {!searchQuery && !Object.values(filters).some(f => f && f !== true) && (
+                <div className={styles.emptyActions}>
+                  <Button 
+                    onClick={() => setShowRegistrationForm(true)}
+                    size="lg"
+                    className={styles.primaryAction}
+                  >
+                    <Plus size={20} />
+                    Add First Member
+                  </Button>
+                  <p className={styles.emptyHint}>
+                    You can also bulk import members using a CSV file once you have some data.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        ) : (
+          <MembersList
+            members={safeMembers}
+            selectedMembers={selectedMembers}
+            onMemberSelection={handleMemberSelection}
+            onSelectAll={handleSelectAll}
+            currentPage={currentPage}
+            totalMembers={safeTotalMembers}
+            membersPerPage={membersPerPage}
+            onPageChange={handlePageChange}
+            isLoading={isLoading}
+          />
+        )}
+      </div>
+
+      {/* Registration Form Modal */}
+      {showRegistrationForm && (
+        <Modal
+          isOpen={showRegistrationForm}
+          onClose={handleRegistrationCancel}
+          title="Register New Member"
+          size="large"
+          className={styles.registrationModal}
+        >
+          <MemberRegistrationForm
+            isAdminMode={true}
+            onSuccess={handleRegistrationSuccess}
+            onCancel={handleRegistrationCancel}
+          />
+        </Modal>
       )}
     </div>
   );

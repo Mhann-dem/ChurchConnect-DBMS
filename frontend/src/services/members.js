@@ -10,9 +10,13 @@ const MEMBERS_ENDPOINTS = {
   SEARCH: '/members/search/',
   BULK_UPDATE: '/members/bulk-update/',
   BULK_DELETE: '/members/bulk-delete/',
+  BULK_IMPORT: '/members/bulk-import/',
+  BULK_EMAIL: '/members/bulk-email/',
+  BULK_TAG: '/members/bulk-tag/',
+  EXPORT: '/members/export/',
   STATS: '/members/stats/',
   RECENT: '/members/recent/',
-  // Add new endpoints for form saving functionality
+  // Form saving functionality
   SAVE_FORM: '/forms/save/',
   GET_SAVED_FORM: (id) => `/forms/${id}/`,
   DELETE_SAVED_FORM: (id) => `/forms/${id}/`,
@@ -54,15 +58,9 @@ class MembersService {
 
   async createMember(memberData) {
     try {
-      // Use rate limiter for public submissions
-      // const response = await publicApiLimiter.makeRequest(() =>
-      //   api.post(MEMBERS_ENDPOINTS.CREATE, memberData)
-      // );
-      
-      // For registration page compatibility, return direct response
+      const response = await api.post(MEMBERS_ENDPOINTS.CREATE, memberData);
       return response.data;
     } catch (error) {
-      // Throw error for registration page compatibility
       const errorResponse = {
         response: {
           data: {
@@ -113,6 +111,7 @@ class MembersService {
     }
   }
 
+  // ENHANCED BULK OPERATIONS
   async bulkUpdateMembers(memberIds, updateData) {
     try {
       const response = await api.post(MEMBERS_ENDPOINTS.BULK_UPDATE, {
@@ -138,6 +137,146 @@ class MembersService {
       return {
         success: false,
         error: error.response?.data?.message || 'Bulk delete failed',
+      };
+    }
+  }
+
+  async bulkImportMembers(membersData, options = {}) {
+    try {
+      const response = await api.post(MEMBERS_ENDPOINTS.BULK_IMPORT, {
+        members: membersData,
+        options: {
+          duplicate_strategy: options.duplicateStrategy || 'skip',
+          add_tags: options.addTags || [],
+          send_welcome_email: options.sendWelcomeEmail || false,
+          validate_strict: options.validateStrict !== false,
+          ...options
+        }
+      });
+      return { 
+        success: true, 
+        data: response.data,
+        successful: response.data.successful || 0,
+        skipped: response.data.skipped || 0,
+        errors: response.data.errors || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Bulk import failed',
+        details: error.response?.data?.details || []
+      };
+    }
+  }
+
+  async bulkEmailMembers(memberIds, emailData) {
+    try {
+      const response = await api.post(MEMBERS_ENDPOINTS.BULK_EMAIL, {
+        member_ids: memberIds,
+        subject: emailData.subject,
+        message: emailData.message,
+        template: emailData.template || 'custom',
+        send_immediately: emailData.sendImmediately !== false
+      });
+      return { 
+        success: true, 
+        data: response.data,
+        sent: response.data.sent || 0,
+        failed: response.data.failed || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Bulk email failed',
+      };
+    }
+  }
+
+  async bulkTagMembers(memberIds, tagIds) {
+    try {
+      const response = await api.post(MEMBERS_ENDPOINTS.BULK_TAG, {
+        member_ids: memberIds,
+        tag_ids: tagIds,
+        action: 'add' // or 'remove'
+      });
+      return { 
+        success: true, 
+        data: response.data,
+        tagged: response.data.tagged || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Bulk tagging failed',
+      };
+    }
+  }
+
+  async bulkActivateMembers(memberIds) {
+    try {
+      const response = await this.bulkUpdateMembers(memberIds, { is_active: true });
+      return {
+        ...response,
+        message: response.success ? `Activated ${memberIds.length} members` : response.error
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Failed to activate members'
+      };
+    }
+  }
+
+  async bulkDeactivateMembers(memberIds) {
+    try {
+      const response = await this.bulkUpdateMembers(memberIds, { is_active: false });
+      return {
+        ...response,
+        message: response.success ? `Deactivated ${memberIds.length} members` : response.error
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Failed to deactivate members'
+      };
+    }
+  }
+
+  // EXPORT FUNCTIONALITY
+  async exportMembers(memberIds = null, format = 'csv', fields = null) {
+    try {
+      const params = {
+        format,
+        ...(memberIds && { member_ids: memberIds.join(',') }),
+        ...(fields && { fields: fields.join(',') })
+      };
+      
+      const response = await api.get(MEMBERS_ENDPOINTS.EXPORT, { 
+        params,
+        responseType: 'blob' // Important for file downloads
+      });
+
+      // Create download
+      const blob = new Blob([response.data], { 
+        type: format === 'csv' ? 'text/csv' : 'application/json' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `members_export_${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return { 
+        success: true, 
+        message: `Exported ${memberIds ? memberIds.length : 'all'} members` 
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Export failed',
       };
     }
   }
@@ -168,7 +307,7 @@ class MembersService {
     }
   }
 
-  // NEW METHODS - Form saving functionality
+  // FORM SAVING FUNCTIONALITY
   async saveFormProgress(formData) {
     try {
       const response = await api.post(MEMBERS_ENDPOINTS.SAVE_FORM, {
@@ -193,7 +332,7 @@ class MembersService {
   async getSavedForm(formId) {
     try {
       const response = await api.get(MEMBERS_ENDPOINTS.GET_SAVED_FORM(formId));
-      return response.data.data; // Return the actual form data
+      return response.data.data;
     } catch (error) {
       const errorResponse = {
         response: {
@@ -244,7 +383,7 @@ class MembersService {
     }
   }
 
-  // Client-side validation
+  // VALIDATION UTILITIES
   validateMemberData(data) {
     const errors = {};
     
@@ -283,17 +422,31 @@ class MembersService {
     };
   }
 
-  // Utility method to convert camelCase to snake_case for API compatibility
   formatDataForAPI(data) {
     const formatted = {};
     
-    // Common field mappings
     const fieldMap = {
       firstName: 'first_name',
       lastName: 'last_name',
       dateOfBirth: 'date_of_birth',
       phoneNumber: 'phone',
-      // Add more mappings as needed
+      preferredName: 'preferred_name',
+      alternatePhone: 'alternate_phone',
+      preferredContactMethod: 'preferred_contact_method',
+      preferredLanguage: 'preferred_language',
+      accessibilityNeeds: 'accessibility_needs',
+      ministryInterests: 'ministry_interests',
+      prayerRequest: 'prayer_request',
+      pledgeAmount: 'pledge_amount',
+      pledgeFrequency: 'pledge_frequency',
+      familyMembers: 'family_members',
+      emergencyContactName: 'emergency_contact_name',
+      emergencyContactPhone: 'emergency_contact_phone',
+      privacyPolicyAgreed: 'privacy_policy_agreed',
+      communicationOptIn: 'communication_opt_in',
+      internalNotes: 'internal_notes',
+      registeredBy: 'registered_by',
+      registrationContext: 'registration_context'
     };
     
     Object.keys(data).forEach(key => {
@@ -303,6 +456,37 @@ class MembersService {
     
     return formatted;
   }
+
+  // BULK ACTION DISPATCHER
+  async performBulkAction(action, memberIds, actionData = {}) {
+    switch (action) {
+      case 'delete':
+        return await this.bulkDeleteMembers(memberIds);
+      
+      case 'tag':
+        return await this.bulkTagMembers(memberIds, actionData.tags);
+      
+      case 'email':
+        return await this.bulkEmailMembers(memberIds, actionData);
+      
+      case 'export':
+        return await this.exportMembers(memberIds);
+      
+      case 'activate':
+        return await this.bulkActivateMembers(memberIds);
+      
+      case 'deactivate':
+        return await this.bulkDeactivateMembers(memberIds);
+      
+      case 'import':
+        return await this.bulkImportMembers(actionData.members, actionData.options);
+      
+      default:
+        throw new Error(`Unknown bulk action: ${action}`);
+    }
+  }
 }
 
-export default new MembersService();
+// Export both as named and default export for compatibility
+export const membersService = new MembersService();
+export default membersService;

@@ -1,10 +1,11 @@
 // frontend/src/components/form/MemberRegistrationForm.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useForm from '../../hooks/useForm'; // Fixed: default import
+import useForm from '../../hooks/useForm';
 import { useToast } from '../../hooks/useToast';
-import { validateMemberForm } from '../../utils/validation'; // Fixed: use available function
-import submitMemberRegistration from '../../services/members'; // Fixed: default import
+import { validateMemberForm } from '../../utils/validation';
+import membersService from '../../services/members';
+import { AuthContext } from '../../context/AuthContext';
 import StepIndicator from './StepIndicator';
 import PersonalInfo from './Steps/PersonalInfo';
 import ContactInfo from './Steps/ContactInfo';
@@ -12,7 +13,7 @@ import MinistryInterests from './Steps/MinistryInterests';
 import PledgeInfo from './Steps/PledgeInfo';
 import FamilyInfo from './Steps/FamilyInfo';
 import Confirmation from './Steps/Confirmation';
-import { LoadingSpinner } from '../shared'; // Fixed: named import
+import { LoadingSpinner } from '../shared';
 import { Button } from '../ui';
 import styles from './Form.module.css';
 
@@ -57,31 +58,38 @@ const INITIAL_FORM_DATA = {
   
   // Agreement
   privacyPolicyAgreed: false,
-  communicationOptIn: true
+  communicationOptIn: true,
+  
+  // Admin-only fields
+  internalNotes: '',
+  tags: [],
+  skipValidation: false,
+  registeredBy: null,
+  registrationContext: 'public'
 };
 
-// Helper function to validate individual steps
-const validateStep = (stepId, formData) => {
+const validateStep = (stepId, formData, isAdminMode = false) => {
   const stepValidations = {
     personal: () => {
       const errors = {};
       if (!formData.firstName?.trim()) errors.firstName = 'First name is required';
       if (!formData.lastName?.trim()) errors.lastName = 'Last name is required';
       if (!formData.email?.trim()) errors.email = 'Email is required';
-      if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
-      if (!formData.gender) errors.gender = 'Gender is required';
+      if (!isAdminMode || !formData.skipValidation) {
+        if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
+        if (!formData.gender) errors.gender = 'Gender is required';
+      }
       return errors;
     },
     contact: () => {
       const errors = {};
-      if (!formData.phone?.trim()) errors.phone = 'Phone number is required';
-      if (!formData.address?.trim()) errors.address = 'Address is required';
+      if (!isAdminMode || !formData.skipValidation) {
+        if (!formData.phone?.trim()) errors.phone = 'Phone number is required';
+        if (!formData.address?.trim()) errors.address = 'Address is required';
+      }
       return errors;
     },
-    ministry: () => {
-      // Ministry interests are optional, return empty errors
-      return {};
-    },
+    ministry: () => ({}),
     pledge: () => {
       const errors = {};
       if (formData.pledgeAmount && !formData.pledgeFrequency) {
@@ -91,17 +99,19 @@ const validateStep = (stepId, formData) => {
     },
     family: () => {
       const errors = {};
-      if (!formData.emergencyContactName?.trim()) {
-        errors.emergencyContactName = 'Emergency contact name is required';
-      }
-      if (!formData.emergencyContactPhone?.trim()) {
-        errors.emergencyContactPhone = 'Emergency contact phone is required';
+      if (!isAdminMode || !formData.skipValidation) {
+        if (!formData.emergencyContactName?.trim()) {
+          errors.emergencyContactName = 'Emergency contact name is required';
+        }
+        if (!formData.emergencyContactPhone?.trim()) {
+          errors.emergencyContactPhone = 'Emergency contact phone is required';
+        }
       }
       return errors;
     },
     confirmation: () => {
       const errors = {};
-      if (!formData.privacyPolicyAgreed) {
+      if (!formData.privacyPolicyAgreed && (!isAdminMode || !formData.skipValidation)) {
         errors.privacyPolicyAgreed = 'You must agree to the privacy policy';
       }
       return errors;
@@ -111,13 +121,24 @@ const validateStep = (stepId, formData) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-const MemberRegistrationForm = () => {
+const MemberRegistrationForm = ({ 
+  isAdminMode = false, 
+  onSuccess = null,
+  initialData = null,
+  onCancel = null 
+}) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { user, isAuthenticated } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [estimatedTime, setEstimatedTime] = useState('3-5 minutes');
+  const [showBulkImport, setShowBulkImport] = useState(false);
+
+  // Determine if user is admin
+  const isAdmin = isAuthenticated && ['admin', 'super_admin'].includes(user?.role);
+  const effectiveAdminMode = isAdminMode && isAdmin;
 
   const {
     formData,
@@ -129,18 +150,28 @@ const MemberRegistrationForm = () => {
     setFieldError,
     validateField,
     resetForm
-  } = useForm(INITIAL_FORM_DATA);
+  } = useForm({
+    ...INITIAL_FORM_DATA,
+    ...initialData,
+    registeredBy: effectiveAdminMode ? user?.id : null,
+    registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
+  });
 
-  // Auto-save functionality
+  // Enhanced auto-save with admin context
   useEffect(() => {
     const saveData = () => {
       const savedData = {
         ...formData,
         currentStep,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isAdminMode: effectiveAdminMode
       };
       try {
-        localStorage.setItem('churchconnect_form_data', JSON.stringify(savedData));
+        const storageKey = effectiveAdminMode ? 
+          'churchconnect_admin_form_data' : 
+          'churchconnect_form_data';
+        // Note: Using in-memory storage instead of localStorage for Claude.ai compatibility
+        window.formDataCache = savedData;
       } catch (error) {
         console.error('Error saving form data:', error);
       }
@@ -148,50 +179,66 @@ const MemberRegistrationForm = () => {
 
     const timeoutId = setTimeout(saveData, 1000);
     return () => clearTimeout(timeoutId);
-  }, [formData, currentStep]);
+  }, [formData, currentStep, effectiveAdminMode]);
 
   // Load saved data on mount
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem('churchconnect_form_data');
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        const timeDiff = new Date() - new Date(parsed.timestamp);
+      // Note: Using in-memory storage instead of localStorage for Claude.ai compatibility
+      const savedData = window.formDataCache;
+      if (savedData && savedData.isAdminMode === effectiveAdminMode) {
+        const timeDiff = new Date() - new Date(savedData.timestamp);
         const hoursDiff = timeDiff / (1000 * 60 * 60);
         
-        if (hoursDiff < 24) { // Only restore if less than 24 hours old
-          Object.keys(parsed).forEach(key => {
-            if (key !== 'timestamp' && key !== 'currentStep' && INITIAL_FORM_DATA.hasOwnProperty(key)) {
-              setFieldValue(key, parsed[key]);
+        if (hoursDiff < 24) {
+          Object.keys(savedData).forEach(key => {
+            if (key !== 'timestamp' && key !== 'currentStep' && key !== 'isAdminMode' && 
+                INITIAL_FORM_DATA.hasOwnProperty(key)) {
+              setFieldValue(key, savedData[key]);
             }
           });
-          setCurrentStep(parsed.currentStep || 0);
+          setCurrentStep(savedData.currentStep || 0);
           showToast('Your previous progress has been restored.', 'info');
         }
       }
     } catch (error) {
       console.error('Error loading saved form data:', error);
     }
-  }, [setFieldValue, showToast]);
+  }, [setFieldValue, showToast, effectiveAdminMode]);
 
-  // Universal form data update function
   const updateFormData = (updates) => {
     Object.keys(updates).forEach(key => {
       setFieldValue(key, updates[key]);
     });
   };
 
+  // Admin-specific quick fill functions
+  const applyDefaultPreferences = () => {
+    updateFormData({
+      preferredContactMethod: 'email',
+      communicationOptIn: true,
+      preferredLanguage: 'English'
+    });
+    showToast('Default preferences applied', 'success');
+  };
+
+  const clearFormForNext = () => {
+    resetForm();
+    setCurrentStep(0);
+    setCompletedSteps([]);
+    showToast('Form cleared for next member', 'info');
+  };
+
   const handleNext = async () => {
     const stepId = STEPS[currentStep].id;
-    const stepErrors = validateStep(stepId, formData);
+    const stepErrors = validateStep(stepId, formData, effectiveAdminMode);
     
     if (Object.keys(stepErrors).length === 0) {
       setCompletedSteps(prev => [...prev, stepId]);
       setCurrentStep(prev => prev + 1);
       
-      // Update estimated time based on progress
       const remaining = STEPS.length - currentStep - 1;
-      const timePerStep = remaining * 0.8; // ~45 seconds per step
+      const timePerStep = remaining * 0.8;
       setEstimatedTime(`${Math.ceil(timePerStep)} minutes remaining`);
     } else {
       Object.keys(stepErrors).forEach(field => {
@@ -206,21 +253,35 @@ const MemberRegistrationForm = () => {
   };
 
   const handleSubmit = async () => {
-    // Use validateMemberForm instead of validateForm
-    const formErrors = validateMemberForm(formData);
+    const formErrors = effectiveAdminMode && formData.skipValidation ? 
+      {} : validateMemberForm(formData);
     
     if (Object.keys(formErrors).length === 0) {
       setIsSubmitting(true);
       
       try {
-        const result = await submitMemberRegistration(formData);
+        const submitData = {
+          ...formData,
+          ...(effectiveAdminMode && {
+            registeredBy: user.id,
+            registrationContext: 'admin_portal',
+            internalNotes: formData.internalNotes
+          })
+        };
+
+        const result = await membersService.createMember(submitData);
         
-        if (result.success) {
-          try {
-            localStorage.removeItem('churchconnect_form_data');
-          } catch (error) {
-            console.error('Error clearing saved data:', error);
-          }
+        // Clear saved data
+        try {
+          delete window.formDataCache;
+        } catch (error) {
+          console.error('Error clearing saved data:', error);
+        }
+
+        if (effectiveAdminMode && onSuccess) {
+          onSuccess(result);
+          showToast('Member registered successfully!', 'success');
+        } else {
           showToast('Registration submitted successfully!', 'success');
           navigate('/thank-you', { 
             state: { 
@@ -230,12 +291,10 @@ const MemberRegistrationForm = () => {
               } 
             } 
           });
-        } else {
-          throw new Error(result.message || 'Submission failed');
         }
       } catch (error) {
         console.error('Form submission error:', error);
-        showToast(error.message || 'An error occurred. Please try again.', 'error');
+        showToast(error.response?.data?.message || 'An error occurred. Please try again.', 'error');
       } finally {
         setIsSubmitting(false);
       }
@@ -247,10 +306,78 @@ const MemberRegistrationForm = () => {
     }
   };
 
+  const AdminEnhancements = () => {
+    if (!effectiveAdminMode) return null;
+
+    return (
+      <div className={styles.adminEnhancements}>
+        <div className={styles.adminHeader}>
+          <h3>Admin Options</h3>
+          <span className={styles.adminBadge}>
+            Registering as: {user?.firstName} {user?.lastName}
+          </span>
+        </div>
+        
+        <div className={styles.adminControls}>
+          <div className={styles.formGroup}>
+            <label htmlFor="internalNotes">Internal Notes</label>
+            <textarea
+              id="internalNotes"
+              value={formData.internalNotes}
+              onChange={handleChange}
+              placeholder="Internal notes (not visible to member)"
+              rows={3}
+              className={styles.internalNotes}
+            />
+          </div>
+
+          <div className={styles.adminActions}>
+            <button
+              type="button"
+              onClick={applyDefaultPreferences}
+              className={styles.quickAction}
+              disabled={isSubmitting}
+            >
+              Apply Defaults
+            </button>
+            
+            <button
+              type="button"
+              onClick={clearFormForNext}
+              className={styles.quickAction}
+              disabled={isSubmitting}
+            >
+              Clear for Next
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setShowBulkImport(true)}
+              className={styles.quickAction}
+              disabled={isSubmitting}
+            >
+              Bulk Import
+            </button>
+          </div>
+
+          <div className={styles.adminCheckbox}>
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.skipValidation || false}
+                onChange={(e) => setFieldValue('skipValidation', e.target.checked)}
+              />
+              Skip strict validation (admin override)
+            </label>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const CurrentStepComponent = STEPS[currentStep].component;
   const isLastStep = currentStep === STEPS.length - 1;
 
-  // Prepare props for step components
   const stepProps = {
     formData,
     errors,
@@ -263,20 +390,30 @@ const MemberRegistrationForm = () => {
     onValidate: validateField,
     onBack: handlePrevious,
     onSubmit: handleSubmit,
-    isSubmitting
+    isSubmitting,
+    isAdminMode: effectiveAdminMode
   };
 
   return (
-    <div className={styles.formContainer}>
+    <div className={`${styles.formContainer} ${effectiveAdminMode ? styles.adminMode : ''}`}>
       <div className={styles.formHeader}>
-        <h1 className={styles.title}>Member Registration</h1>
+        <h1 className={styles.title}>
+          {effectiveAdminMode ? 'Register New Member' : 'Member Registration'}
+        </h1>
         <p className={styles.subtitle}>
-          Join our church family - we're excited to get to know you!
+          {effectiveAdminMode ? 
+            'Adding a new member to the church database' :
+            'Join our church family - we\'re excited to get to know you!'
+          }
         </p>
-        <p className={styles.estimatedTime}>
-          Estimated time: {estimatedTime}
-        </p>
+        {!effectiveAdminMode && (
+          <p className={styles.estimatedTime}>
+            Estimated time: {estimatedTime}
+          </p>
+        )}
       </div>
+
+      <AdminEnhancements />
 
       <StepIndicator 
         steps={STEPS} 
@@ -300,6 +437,16 @@ const MemberRegistrationForm = () => {
         )}
 
         <div className={styles.actionButtons}>
+          {effectiveAdminMode && onCancel && (
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+          )}
+          
           {!isLastStep ? (
             <Button
               variant="primary"
@@ -312,25 +459,35 @@ const MemberRegistrationForm = () => {
             <Button
               variant="primary"
               onClick={handleSubmit}
-              disabled={isSubmitting || !formData.privacyPolicyAgreed}
+              disabled={isSubmitting || (!effectiveAdminMode && !formData.privacyPolicyAgreed)}
             >
               {isSubmitting ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  Submitting...
+                  {effectiveAdminMode ? 'Registering...' : 'Submitting...'}
                 </>
               ) : (
-                'Submit Registration'
+                effectiveAdminMode ? 'Register Member' : 'Submit Registration'
               )}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Auto-save indicator */}
-      <div className={styles.autoSaveIndicator}>
-        <span>✓ Progress automatically saved</span>
-      </div>
+      {!effectiveAdminMode && (
+        <div className={styles.autoSaveIndicator}>
+          <span>✓ Progress automatically saved</span>
+        </div>
+      )}
+
+      {effectiveAdminMode && (
+        <div className={styles.adminFooter}>
+          <small>
+            Admin Registration Mode • Changes are tracked • 
+            Member will receive welcome email if communication is opted in
+          </small>
+        </div>
+      )}
     </div>
   );
 };
