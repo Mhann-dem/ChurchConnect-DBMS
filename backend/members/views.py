@@ -1,23 +1,29 @@
 # members/views.py
 import csv
+import json
 from django.http import HttpResponse
 from django.db.models import Count, Q, Avg
 from django.utils import timezone
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from datetime import datetime, timedelta, date
 
-from .models import Member, MemberNote, MemberTag, MemberTagAssignment
+from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from .serializers import (
-    MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer,
+    MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
     MemberSummarySerializer, MemberExportSerializer, MemberNoteSerializer,
-    MemberTagSerializer, MemberStatsSerializer
+    MemberTagSerializer, MemberTagAssignmentSerializer, MemberStatsSerializer,
+    BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
 from .filters import MemberFilter
-from .permissions import IsAuthenticatedOrCreateOnly
+from .permissions import IsAuthenticatedOrCreateOnly, IsAdminUserOrReadOnly
+from .utils import BulkImportProcessor, validate_import_file, get_import_template
 
 
 class MemberViewSet(viewsets.ModelViewSet):
@@ -31,6 +37,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     ).order_by('-registration_date')
     
     permission_classes = [IsAuthenticatedOrCreateOnly]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = MemberFilter
     search_fields = [
@@ -46,6 +53,9 @@ class MemberViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Return appropriate serializer based on action"""
         if self.action == 'create':
+            # Check if this is an admin user for flexible validation
+            if self.request.user.is_authenticated and self._is_admin_user():
+                return MemberAdminCreateSerializer
             return MemberCreateSerializer
         elif self.action in ['update', 'partial_update']:
             return MemberUpdateSerializer
@@ -55,6 +65,25 @@ class MemberViewSet(viewsets.ModelViewSet):
         elif self.action == 'export':
             return MemberExportSerializer
         return MemberSerializer
+    
+    def _is_admin_user(self):
+        """Check if current user is admin"""
+        user = self.request.user
+        return (
+            user.is_authenticated and (
+                (hasattr(user, 'is_admin') and user.is_admin) or
+                (hasattr(user, 'role') and user.role in ['admin', 'super_admin']) or
+                user.is_superuser
+            )
+        )
+    
+    def get_permissions(self):
+        """Override permissions based on action"""
+        if self.action in ['bulk_import', 'import_template', 'import_logs']:
+            permission_classes = [IsAdminUserOrReadOnly]
+        else:
+            permission_classes = self.permission_classes
+        return [permission() for permission in permission_classes]
     
     def get_queryset(self):
         """Filter queryset based on user permissions and query params"""
@@ -114,17 +143,49 @@ class MemberViewSet(viewsets.ModelViewSet):
         return queryset
     
     def create(self, request, *args, **kwargs):
-        """Create a new member (public registration)"""
+        """Create a new member (public registration or admin)"""
         serializer = self.get_serializer(data=request.data)
+        
         if serializer.is_valid():
-            member = serializer.save()
-            # Return simplified response for public form
-            response_data = {
-                'success': True,
-                'message': 'Registration successful! Thank you for joining our church family.',
-                'member_id': str(member.id)
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
+            # Set additional fields for admin users
+            extra_fields = {}
+            if self._is_admin_user():
+                extra_fields['registered_by'] = request.user
+                if not serializer.validated_data.get('registration_source'):
+                    extra_fields['registration_source'] = 'admin_portal'
+            
+            member = serializer.save(**extra_fields)
+            
+            # Return appropriate response based on user type
+            if self._is_admin_user():
+                response_serializer = MemberSerializer(member)
+                return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                # Simplified response for public form
+                response_data = {
+                    'success': True,
+                    'message': 'Registration successful! Thank you for joining our church family.',
+                    'member_id': str(member.id)
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def update(self, request, *args, **kwargs):
+        """Update member with audit tracking"""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        if serializer.is_valid():
+            # Set last_modified_by if user is admin
+            if self._is_admin_user():
+                serializer.save(last_modified_by=request.user)
+            else:
+                serializer.save()
+            
+            return Response(serializer.data)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
@@ -238,6 +299,68 @@ class MemberViewSet(viewsets.ModelViewSet):
         
         return response
     
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def bulk_import(self, request):
+        """Bulk import members from CSV/Excel file"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Only admin users can perform bulk imports'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        serializer = BulkImportRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        file = serializer.validated_data['file']
+        skip_duplicates = serializer.validated_data.get('skip_duplicates', True)
+        admin_override = serializer.validated_data.get('admin_override', False)
+        
+        # Validate file
+        is_valid, error_message = validate_import_file(file)
+        if not is_valid:
+            return Response(
+                {'error': error_message}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Process the import
+        processor = BulkImportProcessor(request.user)
+        import_log = processor.process_file(file, skip_duplicates, admin_override)
+        
+        # Return import results
+        serializer = BulkImportLogSerializer(import_log)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['get'])
+    def import_template(self, request):
+        """Get template information for bulk import"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Only admin users can access import templates'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        template_info = get_import_template()
+        serializer = BulkImportTemplateSerializer(template_info)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def import_logs(self, request):
+        """Get bulk import logs"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Only admin users can view import logs'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        logs = BulkImportLog.objects.filter(
+            uploaded_by=request.user
+        ).order_by('-started_at')[:10]
+        
+        serializer = BulkImportLogSerializer(logs, many=True)
+        return Response(serializer.data)
+    
     @action(detail=True, methods=['post'])
     def add_note(self, request, pk=None):
         """Add a note to a member"""
@@ -260,7 +383,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         notes = member.member_notes.all()
         
         # Filter private notes if user doesn't have permission
-        if not request.user.is_superuser:
+        if not self._is_admin_user():
             notes = notes.filter(
                 Q(is_private=False) | Q(created_by=request.user)
             )
@@ -518,3 +641,17 @@ class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             })
         
         return Response(list(reversed(monthly_registrations)))
+
+
+class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing bulk import logs"""
+    serializer_class = BulkImportLogSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Filter logs by user - admins see all, regular users see only their own"""
+        if self.request.user.is_superuser or getattr(self.request.user, 'is_admin', False):
+            return BulkImportLog.objects.all().order_by('-started_at')
+        return BulkImportLog.objects.filter(
+            uploaded_by=self.request.user
+        ).order_by('-started_at')

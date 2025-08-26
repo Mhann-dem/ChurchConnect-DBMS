@@ -22,6 +22,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default='False', cast=bool)
 
+# Trailing slash handling - Add this to your existing settings
+APPEND_SLASH = False  # This prevents automatic slash appending that causes redirects
+
+
 # Enhanced ALLOWED_HOSTS for both HTTP and HTTPS
 ALLOWED_HOSTS = [
     'localhost', 
@@ -72,17 +76,20 @@ if DEBUG:
     except ImportError:
         pass
 
+# Update your MIDDLEWARE to handle this properly
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'django.middleware.common.CommonMiddleware',  # This handles APPEND_SLASH
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.RequestLoggingMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'churchconnect.urls'
 
@@ -163,7 +170,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings - Updated for both HTTP and HTTPS
+# Update CORS settings to be more permissive with trailing slashes
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",   # React development server HTTP
     "https://localhost:3000",  # React development server HTTPS
@@ -184,7 +191,7 @@ if DEBUG:
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
-    'accept-encoding',
+    'accept-encoding', 
     'authorization',
     'content-type',
     'dnt',
@@ -226,7 +233,18 @@ if DEBUG and USE_HTTPS:
     SSL_CERTIFICATE_PATH = config('SSL_CERT_PATH', default=str(BASE_DIR / 'ssl' / 'cert.pem'))
     SSL_PRIVATE_KEY_PATH = config('SSL_KEY_PATH', default=str(BASE_DIR / 'ssl' / 'key.pem'))
 
-# REST Framework configuration
+# Add these to prevent CORS preflight issues
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# REST Framework settings update
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -246,12 +264,11 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-    # Use spectacular for schema generation
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-        'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
 }
+
+# Add this custom setting to control URL patterns
+API_TRAILING_SLASH = False  # This is used by routers
 
 # JWT Configuration
 SIMPLE_JWT = {

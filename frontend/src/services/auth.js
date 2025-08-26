@@ -1,5 +1,5 @@
 // ============================================================================
-// services/auth.js - Updated version with better error handling
+// services/auth.js - Updated version with token refresh deduplication
 // ============================================================================
 import { api } from './api';
 
@@ -17,6 +17,8 @@ const AUTH_ENDPOINTS = {
 class AuthService {
   constructor() {
     this.refreshTimer = null;
+    this.refreshPromise = null; // Add this to prevent concurrent refreshes
+    this.isRefreshing = false; // Add flag to track refresh state
   }
 
   // Validate credentials format
@@ -150,11 +152,15 @@ class AuthService {
     try {
       console.log('[AuthService] Starting logout process...');
       
-      // Clear refresh timer
+      // Clear refresh timer and promises
       if (this.refreshTimer) {
         clearTimeout(this.refreshTimer);
         this.refreshTimer = null;
       }
+      
+      // Reset refresh state
+      this.refreshPromise = null;
+      this.isRefreshing = false;
       
       // Try to logout on server (optional)
       const token = this.getAccessToken();
@@ -181,6 +187,84 @@ class AuthService {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    
+    // Reset refresh state
+    this.refreshPromise = null;
+    this.isRefreshing = false;
+  }
+
+  // Enhanced refresh token method with deduplication
+  async refreshToken() {
+    // If already refreshing, return the existing promise
+    if (this.refreshPromise) {
+      console.log('[AuthService] Token refresh already in progress, waiting...');
+      return this.refreshPromise;
+    }
+
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      const error = new Error('No refresh token available');
+      console.error('[AuthService] No refresh token available');
+      this.clearAuthData();
+      throw error;
+    }
+
+    // Set flag and create promise
+    this.isRefreshing = true;
+    this.refreshPromise = this._performTokenRefresh(refreshToken);
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } catch (error) {
+      console.error('[AuthService] Token refresh failed:', error);
+      this.clearAuthData();
+      throw error;
+    } finally {
+      // Always clear the promise and flag when done
+      this.refreshPromise = null;
+      this.isRefreshing = false;
+    }
+  }
+
+  // Internal method to perform the actual refresh
+  async _performTokenRefresh(refreshToken) {
+    try {
+      console.log('[AuthService] Performing token refresh...');
+      
+      const response = await api.post(AUTH_ENDPOINTS.REFRESH_TOKEN, {
+        refresh: refreshToken,
+      });
+      
+      const { access, refresh: newRefresh } = response.data;
+      
+      if (!access) {
+        throw new Error('No access token in refresh response');
+      }
+      
+      // Update stored tokens
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('authToken', access); // Backward compatibility
+      
+      if (newRefresh) {
+        localStorage.setItem('refresh_token', newRefresh);
+      }
+      
+      console.log('[AuthService] Token refresh successful');
+      
+      // Schedule next refresh
+      this.scheduleTokenRefresh();
+      
+      return access;
+    } catch (error) {
+      if (error.response?.status === 401) {
+        console.error('[AuthService] Refresh token expired or invalid');
+        throw new Error('Session expired. Please login again.');
+      } else {
+        console.error('[AuthService] Token refresh network error:', error);
+        throw new Error('Unable to refresh session. Please try again.');
+      }
+    }
   }
 
   // Verify token
@@ -291,47 +375,23 @@ class AuthService {
     }
   }
 
-  // Refresh tokens
-  async refreshToken() {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    try {
-      const response = await api.post(AUTH_ENDPOINTS.REFRESH_TOKEN, {
-        refresh: refreshToken,
-      });
-      
-      const { access } = response.data;
-      
-      if (access) {
-        localStorage.setItem('access_token', access);
-        localStorage.setItem('authToken', access); // Backward compatibility
-        this.scheduleTokenRefresh();
-        return access;
-      } else {
-        throw new Error('No access token in refresh response');
-      }
-    } catch (error) {
-      console.error('[AuthService] Token refresh failed:', error);
-      this.clearAuthData();
-      throw new Error('Session expired. Please login again.');
-    }
-  }
-
-  // Schedule token refresh
+  // Schedule token refresh with improved timing
   scheduleTokenRefresh() {
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
     }
     
     // Schedule refresh for 50 minutes (assuming 1 hour token expiry)
+    // Add some randomization to prevent multiple tabs from refreshing at the same time
+    const refreshTime = (50 * 60 * 1000) + Math.random() * 60000; // 50-51 minutes
+    
     this.refreshTimer = setTimeout(() => {
-      this.refreshToken().catch(error => {
-        console.error('[AuthService] Automatic token refresh failed:', error);
-      });
-    }, 50 * 60 * 1000);
+      if (!this.isRefreshing) {
+        this.refreshToken().catch(error => {
+          console.error('[AuthService] Automatic token refresh failed:', error);
+        });
+      }
+    }, refreshTime);
   }
 
   // Check if user is authenticated
@@ -339,6 +399,11 @@ class AuthService {
     const token = this.getAccessToken();
     const user = this.getCurrentUser();
     return !!(token && user);
+  }
+
+  // Check if currently refreshing
+  isTokenRefreshing() {
+    return this.isRefreshing;
   }
 
   // Get current user
@@ -378,6 +443,8 @@ class AuthService {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = null;
     }
+    this.refreshPromise = null;
+    this.isRefreshing = false;
   }
 }
 

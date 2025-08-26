@@ -23,6 +23,14 @@ class Member(models.Model):
         ('no_contact', 'No Contact'),
     ]
     
+    REGISTRATION_SOURCE_CHOICES = [
+        ('public_form', 'Public Form'),
+        ('admin_portal', 'Admin Portal'),
+        ('bulk_import', 'Bulk Import'),
+        ('migration', 'Data Migration'),
+        ('manual', 'Manual Entry'),
+    ]
+    
     # Primary fields
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(max_length=100)
@@ -74,6 +82,38 @@ class Member(models.Model):
     privacy_policy_agreed = models.BooleanField(default=False)
     privacy_policy_agreed_date = models.DateTimeField(null=True, blank=True)
     
+    # NEW: Audit and admin tracking fields
+    registration_source = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_SOURCE_CHOICES,
+        default='public_form'
+    )
+    registered_by = models.ForeignKey(
+        'authentication.AdminUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='registered_members'
+    )
+    last_modified_by = models.ForeignKey(
+        'authentication.AdminUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='modified_members'
+    )
+    
+    # Bulk import tracking
+    import_batch_id = models.UUIDField(null=True, blank=True)
+    import_row_number = models.IntegerField(null=True, blank=True)
+    import_validation_overridden = models.BooleanField(default=False)
+    
+    # Admin-only fields
+    internal_notes = models.TextField(
+        blank=True,
+        help_text="Internal notes not visible to the member"
+    )
+    
     class Meta:
         ordering = ['last_name', 'first_name']
         indexes = [
@@ -82,6 +122,7 @@ class Member(models.Model):
             models.Index(fields=['phone']),
             models.Index(fields=['registration_date']),
             models.Index(fields=['is_active']),
+            models.Index(fields=['import_batch_id']),
         ]
         verbose_name = 'Member'
         verbose_name_plural = 'Members'
@@ -154,7 +195,7 @@ class MemberNote(models.Model):
         verbose_name_plural = 'Member Notes'
     
     def __str__(self):
-        return f"Note for {self.member.full_name} by {self.created_by.display_name}"
+        return f"Note for {self.member.full_name} by {self.created_by.username}"
 
 class MemberTag(models.Model):
     """Tags for categorizing members"""
@@ -209,3 +250,60 @@ class MemberTagAssignment(models.Model):
     
     def __str__(self):
         return f"{self.member.full_name} - {self.tag.name}"
+
+class BulkImportLog(models.Model):
+    """Log for bulk import operations"""
+    
+    STATUS_CHOICES = [
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('completed_with_errors', 'Completed with Errors'),
+        ('failed', 'Failed'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    batch_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    uploaded_by = models.ForeignKey(
+        'authentication.AdminUser',
+        on_delete=models.CASCADE,
+        related_name='bulk_imports'
+    )
+    filename = models.CharField(max_length=255)
+    total_rows = models.IntegerField(default=0)
+    successful_rows = models.IntegerField(default=0)
+    failed_rows = models.IntegerField(default=0)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='processing')
+    error_summary = models.JSONField(default=list, blank=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-started_at']
+        verbose_name = 'Bulk Import Log'
+        verbose_name_plural = 'Bulk Import Logs'
+    
+    def __str__(self):
+        return f"Bulk import {self.batch_id} - {self.filename}"
+
+class BulkImportError(models.Model):
+    """Individual errors from bulk import operations"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    import_log = models.ForeignKey(
+        BulkImportLog,
+        on_delete=models.CASCADE,
+        related_name='import_errors'
+    )
+    row_number = models.IntegerField()
+    field_name = models.CharField(max_length=100, blank=True)
+    error_message = models.TextField()
+    row_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['row_number']
+        verbose_name = 'Bulk Import Error'
+        verbose_name_plural = 'Bulk Import Errors'
+    
+    def __str__(self):
+        return f"Error at row {self.row_number}: {self.error_message}"

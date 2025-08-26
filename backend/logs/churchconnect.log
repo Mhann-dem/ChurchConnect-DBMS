@@ -9061,3 +9061,148 @@ INFO 2025-08-26 12:43:33,159 basehttp 12828 15680 "GET /api/v1/members/?search=&
 INFO 2025-08-26 12:43:33,164 middleware 12828 1728 Request: GET /api/v1/members/ from 127.0.0.1
 INFO 2025-08-26 12:43:33,268 middleware 12828 1728 Response: 200 for GET /api/v1/members/ (0.104s)
 INFO 2025-08-26 12:43:33,271 basehttp 12828 1728 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 52
+INFO 2025-08-26 17:35:45,601 autoreload 5852 20188 Watching for file changes with StatReloader
+INFO 2025-08-26 19:23:26,427 basehttp 5852 18352 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:23:26,442 basehttp 5852 13448 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:23:26,442 basehttp 5852 12256 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:23:26,442 basehttp 5852 7192 "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:23:26,608 middleware 5852 12256 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:23:26,608 middleware 5852 18352 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:23:26,608 middleware 5852 13448 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:23:26,608 middleware 5852 7192 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:23:29,214 middleware 5852 13448 Response: 200 for POST /api/v1/auth/token/refresh/ (2.606s)
+INFO 2025-08-26 19:23:29,232 basehttp 5852 13448 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-26 19:23:29,234 middleware 5852 18352 Response: 200 for POST /api/v1/auth/token/refresh/ (2.626s)
+INFO 2025-08-26 19:23:29,237 basehttp 5852 18352 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-26 19:23:29,239 middleware 5852 12256 Response: 200 for POST /api/v1/auth/token/refresh/ (2.631s)
+INFO 2025-08-26 19:23:29,241 middleware 5852 7192 Response: 200 for POST /api/v1/auth/token/refresh/ (2.633s)
+INFO 2025-08-26 19:23:29,243 basehttp 5852 12256 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-26 19:23:29,243 basehttp 5852 7192 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-08-26 19:24:26,036 middleware 5852 20728 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:24:26,036 middleware 5852 19992 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:24:26,036 middleware 5852 20544 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:24:26,050 middleware 5852 5172 Request: POST /api/v1/auth/token/refresh/ from 127.0.0.1
+INFO 2025-08-26 19:24:26,156 middleware 5852 20728 Response: 401 for POST /api/v1/auth/token/refresh/ (0.121s)
+INFO 2025-08-26 19:24:26,163 middleware 5852 19992 Response: 401 for POST /api/v1/auth/token/refresh/ (0.128s)
+WARNING 2025-08-26 19:24:26,163 log 5852 20728 Unauthorized: /api/v1/auth/token/refresh/
+INFO 2025-08-26 19:24:26,163 middleware 5852 20544 Response: 401 for POST /api/v1/auth/token/refresh/ (0.128s)
+WARNING 2025-08-26 19:24:26,163 log 5852 19992 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-26 19:24:26,167 log 5852 20544 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-26 19:24:26,168 basehttp 5852 20728 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-26 19:24:26,170 basehttp 5852 19992 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+WARNING 2025-08-26 19:24:26,173 basehttp 5852 20544 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-26 19:24:26,179 middleware 5852 5172 Response: 401 for POST /api/v1/auth/token/refresh/ (0.129s)
+WARNING 2025-08-26 19:24:26,179 log 5852 5172 Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-08-26 19:24:26,181 basehttp 5852 5172 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-08-26 19:26:18,974 basehttp 5852 20852 "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:18,982 middleware 5852 20852 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-26 19:26:20,058 middleware 5852 20852 Response: 200 for POST /api/v1/auth/login/ (1.076s)
+INFO 2025-08-26 19:26:20,058 basehttp 5852 20852 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-26 19:26:28,655 basehttp 5852 20536 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:28,664 middleware 5852 20536 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:26:28,673 basehttp 5852 10536 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:28,683 basehttp 5852 17608 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:28,683 basehttp 5852 18680 "OPTIONS /api/v1/members/new/ HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:28,692 middleware 5852 17608 Request: GET /api/v1/members/new/ from 127.0.0.1
+INFO 2025-08-26 19:26:28,869 middleware 5852 17608 Response: 301 for GET /api/v1/members/new/ (0.177s)
+INFO 2025-08-26 19:26:29,002 middleware 5852 20536 Response: 200 for GET /api/v1/members/ (0.338s)
+INFO 2025-08-26 19:26:29,002 basehttp 5852 17608 "GET /api/v1/members/new/ HTTP/1.1" 301 138
+INFO 2025-08-26 19:26:29,012 basehttp 5852 20536 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:26:29,017 middleware 5852 17608 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:26:29,102 middleware 5852 17608 Response: 200 for GET /api/v1/members/ (0.086s)
+INFO 2025-08-26 19:26:29,112 basehttp 5852 17608 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:26:55,498 basehttp 5852 17608 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:55,498 basehttp 5852 20536 "OPTIONS /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-08-26 19:26:55,501 middleware 5852 17608 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:26:55,614 middleware 5852 17608 Response: 200 for GET /api/v1/members/ (0.112s)
+INFO 2025-08-26 19:26:55,620 basehttp 5852 17608 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:26:55,638 middleware 5852 20536 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:26:55,733 middleware 5852 20536 Response: 200 for GET /api/v1/members/ (0.095s)
+INFO 2025-08-26 19:26:55,733 basehttp 5852 20536 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:36:46,798 middleware 5852 9768 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:36:47,978 middleware 5852 9768 Response: 200 for GET /api/v1/members/ (1.190s)
+INFO 2025-08-26 19:36:47,988 basehttp 5852 9768 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:36:47,997 middleware 5852 15788 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:36:48,189 middleware 5852 15788 Response: 200 for GET /api/v1/members/ (0.192s)
+INFO 2025-08-26 19:36:48,193 basehttp 5852 15788 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:36:59,914 middleware 5852 15788 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:37:00,120 middleware 5852 15788 Response: 200 for GET /api/v1/members/ (0.206s)
+INFO 2025-08-26 19:37:00,121 basehttp 5852 15788 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 19:37:00,124 middleware 5852 9768 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 19:37:00,307 middleware 5852 9768 Response: 200 for GET /api/v1/members/ (0.182s)
+INFO 2025-08-26 19:37:00,308 basehttp 5852 9768 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:25:24,835 autoreload 16528 20436 Watching for file changes with StatReloader
+INFO 2025-08-26 20:26:05,697 autoreload 16528 20436 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-26 20:26:07,262 autoreload 4592 19084 Watching for file changes with StatReloader
+INFO 2025-08-26 20:26:16,103 autoreload 4592 19084 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-08-26 20:26:17,448 autoreload 16976 7660 Watching for file changes with StatReloader
+INFO 2025-08-26 20:26:30,005 autoreload 14232 11524 Watching for file changes with StatReloader
+INFO 2025-08-26 20:28:38,897 autoreload 14232 11524 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-08-26 20:28:40,407 autoreload 17812 19088 Watching for file changes with StatReloader
+INFO 2025-08-26 20:28:46,544 autoreload 17812 19088 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-08-26 20:28:48,253 autoreload 18656 17760 Watching for file changes with StatReloader
+INFO 2025-08-26 20:29:03,607 autoreload 18656 17760 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-08-26 20:29:05,088 autoreload 18528 15968 Watching for file changes with StatReloader
+INFO 2025-08-26 20:30:06,816 basehttp 18528 18292 "OPTIONS /auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-26 20:30:06,837 middleware 18528 18292 Request: POST /auth/logout/ from 127.0.0.1
+INFO 2025-08-26 20:30:07,242 middleware 18528 18292 Response: 404 for POST /auth/logout/ (0.405s)
+WARNING 2025-08-26 20:30:07,242 log 18528 18292 Not Found: /auth/logout/
+WARNING 2025-08-26 20:30:07,243 basehttp 18528 18292 "POST /auth/logout/ HTTP/1.1" 404 3531
+INFO 2025-08-26 20:30:16,392 basehttp 18528 18292 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-26 20:30:16,402 middleware 18528 18292 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:30:16,412 middleware 18528 18292 Response: 404 for POST /auth/login/ (0.010s)
+WARNING 2025-08-26 20:30:16,412 log 18528 18292 Not Found: /auth/login/
+WARNING 2025-08-26 20:30:16,412 basehttp 18528 18292 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:30:45,137 middleware 18528 18292 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:30:45,145 middleware 18528 18292 Response: 404 for POST /auth/login/ (0.007s)
+WARNING 2025-08-26 20:30:45,147 log 18528 18292 Not Found: /auth/login/
+WARNING 2025-08-26 20:30:45,149 basehttp 18528 18292 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:32:31,883 autoreload 18528 15968 C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-08-26 20:32:33,637 autoreload 7248 17768 Watching for file changes with StatReloader
+INFO 2025-08-26 20:32:55,742 middleware 7248 21272 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:32:55,762 middleware 7248 21272 Response: 404 for POST /auth/login/ (0.020s)
+WARNING 2025-08-26 20:32:55,762 log 7248 21272 Not Found: /auth/login/
+WARNING 2025-08-26 20:32:55,762 basehttp 7248 21272 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:33:24,108 autoreload 19224 19700 Watching for file changes with StatReloader
+INFO 2025-08-26 20:34:08,730 autoreload 18048 19452 Watching for file changes with StatReloader
+INFO 2025-08-26 20:36:08,180 middleware 18048 1772 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:36:09,507 middleware 18048 1772 Response: 200 for POST /api/v1/auth/login/ (1.326s)
+INFO 2025-08-26 20:36:09,507 basehttp 18048 1772 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-08-26 20:36:31,900 middleware 18048 15056 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:32,194 middleware 18048 15056 Response: 200 for GET /api/v1/members/ (0.294s)
+INFO 2025-08-26 20:36:32,197 basehttp 18048 15056 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:36:32,199 middleware 18048 18536 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:32,265 middleware 18048 18536 Response: 200 for GET /api/v1/members/ (0.066s)
+INFO 2025-08-26 20:36:32,266 basehttp 18048 18536 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:36:35,371 middleware 18048 18536 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:35,452 middleware 18048 18536 Response: 200 for GET /api/v1/members/ (0.081s)
+INFO 2025-08-26 20:36:35,453 basehttp 18048 18536 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:36:35,456 middleware 18048 15056 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:35,517 middleware 18048 15056 Response: 200 for GET /api/v1/members/ (0.061s)
+INFO 2025-08-26 20:36:35,517 basehttp 18048 15056 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&filters[gender]=&filters[ageRange]=&filters[pledgeStatus]=&filters[registrationDateRange]=&filters[active]=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:36:39,098 middleware 18048 15056 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:39,191 middleware 18048 15056 Response: 200 for GET /api/v1/members/ (0.093s)
+INFO 2025-08-26 20:36:39,192 basehttp 18048 15056 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:36:39,196 middleware 18048 18536 Request: GET /api/v1/members/ from 127.0.0.1
+INFO 2025-08-26 20:36:39,283 middleware 18048 18536 Response: 200 for GET /api/v1/members/ (0.087s)
+INFO 2025-08-26 20:36:39,284 basehttp 18048 18536 "GET /api/v1/members/?search=&gender=&ageRange=&pledgeStatus=&registrationDateRange=&active=true&page=1&limit=25 HTTP/1.1" 200 241
+INFO 2025-08-26 20:37:18,952 middleware 18048 18536 Request: POST /auth/logout/ from 127.0.0.1
+INFO 2025-08-26 20:37:19,006 middleware 18048 18536 Response: 404 for POST /auth/logout/ (0.053s)
+WARNING 2025-08-26 20:37:19,010 log 18048 18536 Not Found: /auth/logout/
+WARNING 2025-08-26 20:37:19,011 basehttp 18048 18536 "POST /auth/logout/ HTTP/1.1" 404 3531
+INFO 2025-08-26 20:37:38,316 middleware 18048 18536 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:37:38,330 middleware 18048 18536 Response: 404 for POST /auth/login/ (0.014s)
+WARNING 2025-08-26 20:37:38,332 log 18048 18536 Not Found: /auth/login/
+WARNING 2025-08-26 20:37:38,334 basehttp 18048 18536 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:44:44,009 middleware 18048 1856 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:44:44,028 middleware 18048 1856 Response: 404 for POST /auth/login/ (0.019s)
+WARNING 2025-08-26 20:44:44,028 log 18048 1856 Not Found: /auth/login/
+WARNING 2025-08-26 20:44:44,041 basehttp 18048 1856 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:45:29,565 middleware 18048 1856 Request: POST /auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:45:29,579 middleware 18048 1856 Response: 404 for POST /auth/login/ (0.013s)
+WARNING 2025-08-26 20:45:29,580 log 18048 1856 Not Found: /auth/login/
+WARNING 2025-08-26 20:45:29,581 basehttp 18048 1856 "POST /auth/login/ HTTP/1.1" 404 3528
+INFO 2025-08-26 20:46:11,987 autoreload 5336 6344 Watching for file changes with StatReloader
+INFO 2025-08-26 20:46:33,554 middleware 5336 20088 Request: POST /api/v1/auth/login/ from 127.0.0.1
+INFO 2025-08-26 20:46:34,908 middleware 5336 20088 Response: 200 for POST /api/v1/auth/login/ (1.354s)
+INFO 2025-08-26 20:46:34,910 basehttp 5336 20088 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
