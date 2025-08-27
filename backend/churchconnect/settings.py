@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import Config, RepositoryEnv
+from rest_framework.pagination import PageNumberPagination
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +25,6 @@ DEBUG = config('DEBUG', default='False', cast=bool)
 
 # Trailing slash handling - Add this to your existing settings
 APPEND_SLASH = False  # This prevents automatic slash appending that causes redirects
-
 
 # Enhanced ALLOWED_HOSTS for both HTTP and HTTPS
 ALLOWED_HOSTS = [
@@ -88,8 +88,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.RequestLoggingMiddleware',
 ]
-
-
 
 ROOT_URLCONF = 'churchconnect.urls'
 
@@ -201,6 +199,17 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# Add these to prevent CORS preflight issues
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 # SSL/HTTPS Configuration
 USE_HTTPS = config('USE_HTTPS', default='False', cast=bool)
 
@@ -233,39 +242,51 @@ if DEBUG and USE_HTTPS:
     SSL_CERTIFICATE_PATH = config('SSL_CERT_PATH', default=str(BASE_DIR / 'ssl' / 'cert.pem'))
     SSL_PRIVATE_KEY_PATH = config('SSL_KEY_PATH', default=str(BASE_DIR / 'ssl' / 'key.pem'))
 
-# Add these to prevent CORS preflight issues
-CORS_PREFLIGHT_MAX_AGE = 86400
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
-
-# REST Framework settings update
+# REST Framework Configuration
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25,
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25,
 }
+
+# Custom Pagination Class (Optional - for more control)
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 25
+    page_size_query_param = 'limit'
+    max_page_size = 100
+    
+    def get_paginated_response(self, data):
+        return Response({
+            'count': self.page.paginator.count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+            'current_page': self.page.number,
+            'total_pages': self.page.paginator.num_pages,
+            'page_size': self.page_size,
+        })
 
 # Add this custom setting to control URL patterns
 API_TRAILING_SLASH = False  # This is used by routers

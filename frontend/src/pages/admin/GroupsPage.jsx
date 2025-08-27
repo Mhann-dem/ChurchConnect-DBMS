@@ -31,25 +31,28 @@ const GroupsPage = () => {
     groups,
     loading,
     error,
-    totalGroups,
     pagination,
     createGroup,
     updateGroup,
     deleteGroup,
-    fetchGroups,
+    refreshGroups, // Use refreshGroups instead of fetchGroups
     searchGroups
   } = useGroups();
 
   const { showToast } = useToast();
 
+  // Calculate totalGroups from pagination or groups length
+  const totalGroups = pagination?.total || groups?.length || 0;
+
   useEffect(() => {
     if (searchTerm) {
       searchGroups(searchTerm, filters);
     } else {
-      fetchGroups(filters);
+      refreshGroups(filters); // Use refreshGroups instead of fetchGroups
     }
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, searchGroups, refreshGroups]);
 
+  // Fix the handleSearch function - SearchBar expects onSearch prop
   const handleSearch = (term) => {
     setSearchTerm(term);
     if (term) {
@@ -184,8 +187,8 @@ const GroupsPage = () => {
       {/* Search and Filters */}
       <div className={styles.searchSection}>
         <SearchBar
+          onSearch={handleSearch} // Fixed: pass onSearch instead of onChange
           value={searchTerm}
-          onChange={handleSearch}
           placeholder="Search groups by name, description, or leader..."
           className={styles.searchBar}
         />
@@ -257,7 +260,7 @@ const GroupsPage = () => {
       {error ? (
         <Card className={styles.errorCard}>
           <p>Error loading groups: {error}</p>
-          <Button onClick={() => fetchGroups(filters)} variant="outline">
+          <Button onClick={() => refreshGroups(filters)} variant="outline">
             Try Again
           </Button>
         </Card>
@@ -269,7 +272,7 @@ const GroupsPage = () => {
           onView={handleViewGroup}
           onDelete={handleDeleteGroup}
           pagination={pagination}
-          onPageChange={(page) => fetchGroups(filters, page)}
+          onPageChange={(page) => refreshGroups(filters, page)}
         />
       )}
 

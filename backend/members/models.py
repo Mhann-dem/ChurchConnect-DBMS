@@ -82,7 +82,7 @@ class Member(models.Model):
     privacy_policy_agreed = models.BooleanField(default=False)
     privacy_policy_agreed_date = models.DateTimeField(null=True, blank=True)
     
-    # NEW: Audit and admin tracking fields
+    # Audit and admin tracking fields
     registration_source = models.CharField(
         max_length=20,
         choices=REGISTRATION_SOURCE_CHOICES,
@@ -171,6 +171,7 @@ class Member(models.Model):
             self.privacy_policy_agreed_date = timezone.now()
         super().save(*args, **kwargs)
 
+
 class MemberNote(models.Model):
     """Notes about members by admin users"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -191,34 +192,30 @@ class MemberNote(models.Model):
     
     class Meta:
         ordering = ['-created_at']
-        verbose_name = 'Member Note'
-        verbose_name_plural = 'Member Notes'
     
     def __str__(self):
         return f"Note for {self.member.full_name} by {self.created_by.username}"
 
+
 class MemberTag(models.Model):
-    """Tags for categorizing members"""
+    """Tags that can be assigned to members"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, unique=True)
-    color = models.CharField(max_length=7, default='#007bff')  # Hex color
+    name = models.CharField(max_length=50, unique=True)
+    color = models.CharField(max_length=7, default='#007bff')  # Hex color code
     description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         'authentication.AdminUser',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='member_tags'
+        on_delete=models.CASCADE,
+        related_name='created_member_tags'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['name']
-        verbose_name = 'Member Tag'
-        verbose_name_plural = 'Member Tags'
     
     def __str__(self):
         return self.name
+
 
 class MemberTagAssignment(models.Model):
     """Assignment of tags to members"""
@@ -231,63 +228,59 @@ class MemberTagAssignment(models.Model):
     tag = models.ForeignKey(
         MemberTag,
         on_delete=models.CASCADE,
-        related_name='member_assignments'
+        related_name='tag_assignments'
     )
     assigned_by = models.ForeignKey(
         'authentication.AdminUser',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='tag_assignments'
+        on_delete=models.CASCADE,
+        related_name='member_tag_assignments'
     )
     assigned_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         unique_together = ['member', 'tag']
         ordering = ['-assigned_at']
-        verbose_name = 'Member Tag Assignment'
-        verbose_name_plural = 'Member Tag Assignments'
     
     def __str__(self):
-        return f"{self.member.full_name} - {self.tag.name}"
+        return f"{self.tag.name} -> {self.member.full_name}"
+
 
 class BulkImportLog(models.Model):
-    """Log for bulk import operations"""
+    """Log of bulk import operations"""
     
     STATUS_CHOICES = [
+        ('pending', 'Pending'),
         ('processing', 'Processing'),
         ('completed', 'Completed'),
-        ('completed_with_errors', 'Completed with Errors'),
         ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    batch_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    batch_id = models.UUIDField(unique=True, default=uuid.uuid4)
+    filename = models.CharField(max_length=255)
+    total_rows = models.IntegerField(default=0)
+    successful_rows = models.IntegerField(default=0)
+    failed_rows = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    error_summary = models.TextField(blank=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     uploaded_by = models.ForeignKey(
         'authentication.AdminUser',
         on_delete=models.CASCADE,
         related_name='bulk_imports'
     )
-    filename = models.CharField(max_length=255)
-    total_rows = models.IntegerField(default=0)
-    successful_rows = models.IntegerField(default=0)
-    failed_rows = models.IntegerField(default=0)
-    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='processing')
-    error_summary = models.JSONField(default=list, blank=True)
-    started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         ordering = ['-started_at']
-        verbose_name = 'Bulk Import Log'
-        verbose_name_plural = 'Bulk Import Logs'
     
     def __str__(self):
-        return f"Bulk import {self.batch_id} - {self.filename}"
+        return f"Import {self.filename} - {self.status}"
+
 
 class BulkImportError(models.Model):
     """Individual errors from bulk import operations"""
-    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     import_log = models.ForeignKey(
         BulkImportLog,
@@ -302,8 +295,6 @@ class BulkImportError(models.Model):
     
     class Meta:
         ordering = ['row_number']
-        verbose_name = 'Bulk Import Error'
-        verbose_name_plural = 'Bulk Import Errors'
     
     def __str__(self):
-        return f"Error at row {self.row_number}: {self.error_message}"
+        return f"Row {self.row_number}: {self.error_message[:50]}"

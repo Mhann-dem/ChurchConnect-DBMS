@@ -1,0 +1,839 @@
+# ChurchConnect DBMS Documentation
+
+## Project Overview
+
+ChurchConnect DBMS is a custom-built Church Data Management System designed to streamline member data collection and administrative workflows while ensuring excellent usability for all user types. The system consists of:
+
+1. A public-facing form portal for members to submit their information without requiring login - designed to be intuitive for users of all ages and technical abilities
+2. A secure admin dashboard for church staff to view, search, and manage member records, pledges, groups, and events - with role-based interfaces optimized for different administrative needs
+3. A robust backend API and database to store and manage the collected data
+4. An integrated help system with context-sensitive guidance for all user types
+
+### Primary User Personas
+
+*1. Church Members (Form Users)*
+- Demographics: All ages (teens to seniors), varying technical abilities
+- Goals: Submit personal information, update contact details, register interest in ministries, make pledges
+- Challenges: May have limited technical skills, accessibility needs, privacy concerns
+- Needs: Simple, intuitive interface, clear instructions, support for different devices
+
+*2. Church Administrators*
+- Demographics: Staff members responsible for member management
+- Goals: Efficiently process member data, generate reports, manage communications
+- Challenges: May have limited technical training, need to perform complex data operations
+- Needs: Streamlined workflows, bulk operations, search/filter capabilities
+
+*3. Church Leadership*
+- Demographics: Pastors, ministry leaders, finance committee
+- Goals: Understand membership trends, track ministry growth, monitor financial commitments
+- Challenges: Limited time for data analysis, need actionable insights
+- Needs: Visual dashboards, exportable reports, high-level statistics
+
+*4. IT Support Staff*
+- Demographics: Technical personnel (may be volunteers)
+- Goals: Maintain system, troubleshoot issues, train users
+- Challenges: Limited resources, supporting users with varying technical abilities
+- Needs: Clear documentation, simplified user management, efficient troubleshooting tools
+
+## Technical Architecture
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React.js |
+| Backend API | Django REST Framework (alternative: Node.js + Express) |
+| Database | PostgreSQL (SQLite for development) |
+| Hosting | Vercel (frontend), Render/Heroku (backend), Supabase/ElephantSQL (database) |
+| Optional | Docker, Tailwind CSS, Twilio/SendGrid (notifications) |
+
+### System Components
+
+mermaid
+graph TD
+    A[Public Form Portal] -->|Submits Data| B[API Endpoints]
+    C[Admin Dashboard] -->|Auth Request| D[Authentication]
+    D -->|Auth Token| C
+    C -->|CRUD Operations| B
+    B -->|Store/Retrieve| E[Database]
+    F[Export Module] -->|Generate| G[CSV/Reports]
+
+
+## Core Modules
+
+### 1. Member Form Page (Public)
+
+*Route*: /form
+
+*Purpose*: Allow church members to submit their personal information, interests, and pledges without requiring login.
+
+*Form Fields*:
+- Full Name (required)
+- Email Address (required)
+- Phone Number (required)
+- Date of Birth (required)
+- Gender (required - dropdown)
+- Address (optional)
+- Group/Ministry Interest (checkboxes/multi-select)
+- Pledge Amount (optional)
+- Pledge Frequency (dropdown - if pledge amount entered)
+- Prayer Request (text area)
+- Agreement to Privacy Policy (checkbox)
+- Preferred Contact Method (dropdown - email/phone/SMS)
+- Preferred Language (dropdown)
+- Accessibility Needs (optional - checkboxes)
+- Family Members (optional - expandable section)
+
+*User Experience Features*:
+- Multi-step form with clear progress indicator (reduces cognitive load)
+- "Save and continue later" functionality with emailed magic link
+- Responsive design that works on all devices (desktop, tablet, mobile)
+- Estimated completion time displayed (3-5 minutes)
+- Visual assistance for form fields (icons and examples)
+- Large, touch-friendly input controls for mobile and elderly users
+- Auto-formatting for phone numbers and dates
+- Clear visual feedback for validation errors
+- Screen reader compatible with proper ARIA labels
+
+*Implementation Notes*:
+- Form validation should occur on both frontend and backend
+- Success response: "Thank you" message with option to submit another entry
+- CSRF protection required
+- Consider reCAPTCHA integration to prevent spam
+- Support for slow internet connections with optimized loading
+- Form analytics to identify abandonment points
+- Localization/internationalization support for multilingual congregations
+
+### 2. Admin Authentication
+
+*Routes*:
+- /admin/login
+- /admin/password-reset
+- /admin/logout
+
+*Features*:
+- Secure login form with email/password
+- Password reset functionality
+- Session management with timeout/auto-logout
+- Role-based permissions (Super Admin, Regular Admin, Read-only)
+
+*Security Requirements*:
+- JWT token authentication
+- Password hashing (bcrypt)
+- HTTPS required
+- Failed login attempt limiting
+
+### 3. Admin Dashboard
+
+*Routes*:
+- /admin/dashboard (main stats overview)
+- /admin/members (member listing)
+- /admin/groups (ministry/group management)
+- /admin/pledges (financial pledges)
+- /admin/reports (data exports)
+- /admin/settings (system settings)
+- /admin/help (integrated help center)
+
+*User-Centered Design Features*:
+- Responsive layout adaptive to different screen sizes and devices
+- Customizable dashboard widgets based on role and frequency of use
+- Color-coded visual indicators for quick status recognition
+- Streamlined workflows for common tasks (minimal clicks required)
+- Keyboard shortcuts for power users
+- Dark mode and high contrast mode options
+- Font size adjustment controls
+- Consistent UI patterns across all sections
+- Undo/redo functionality for critical actions
+- Guided tours for new features
+
+*Key Features*:
+
+*Member Management*:
+- View all members with pagination (25 per page default, adjustable)
+- Detailed member profile views with activity timeline
+- Add/Edit/Delete member records with change history
+- Bulk actions (tag, export, delete, communication)
+- Family grouping and relationship management
+- Member photos with privacy controls
+- Visual indicators for members requiring follow-up
+- Birthday notifications and automated greeting system
+
+*Search & Filter*:
+- Full-text search across member data with typo tolerance
+- Natural language search capability ("show me all seniors who joined last month")
+- Filter by:
+  - Ministry/Group affiliation
+  - Pledge status (has pledged/not pledged)
+  - Age bracket (18-25, 26-40, 41-60, 60+)
+  - Registration date range
+  - Custom tags
+  - Attendance patterns
+  - Communication preferences
+  - Geographic location/neighborhood
+- Saved searches for commonly used queries
+- Search result export options
+
+*Data Visualization*:
+- Interactive member growth charts (weekly/monthly)
+- Pledge statistics with forecasting
+- Ministry distribution with engagement metrics
+- Age demographics with comparative analysis
+- Attendance tracking and trends
+- Member journey visualization
+- Geographic distribution map
+- Data comparison across time periods
+- Printable visual reports for leadership meetings
+
+*Communication Tools*:
+- Bulk email/SMS sending with templates
+- Targeted communication based on filters
+- Automated birthday/anniversary greetings
+- Event invitations and RSVP tracking
+- Communication history and open/click tracking
+- Follow-up scheduling and reminders
+
+*Export Functionality*:
+- CSV export with customizable fields
+- PDF reports with branding options
+- Print-friendly reports for different purposes
+- Data backup options
+- Scheduled automatic reports (weekly/monthly)
+- Integration with common office software
+- Mobile-friendly data viewing options
+
+## Data Models
+
+### Members
+
+id: UUID (primary key)
+first_name: string
+last_name: string
+preferred_name: string (optional)
+email: string (unique)
+phone: string
+alternate_phone: string (optional)
+date_of_birth: date
+gender: enum ['male', 'female', 'other', 'prefer_not_to_say']
+address: text (optional)
+preferred_contact_method: enum ['email', 'phone', 'sms', 'mail', 'no_contact']
+preferred_language: string (default 'English')
+accessibility_needs: text (optional)
+photo_url: string (optional)
+family_id: UUID (foreign key to Families, optional)
+registration_date: datetime
+last_updated: datetime
+last_contact_date: datetime (optional)
+notes: text
+is_active: boolean
+communication_opt_in: boolean
+emergency_contact_name: string (optional)
+emergency_contact_phone: string (optional)
+
+
+### Families
+
+id: UUID (primary key)
+family_name: string
+primary_contact_id: UUID (foreign key to Members)
+address: text (optional)
+created_at: datetime
+updated_at: datetime
+notes: text
+
+
+### Family_Relationships
+
+id: UUID (primary key)
+family_id: UUID (foreign key to Families)
+member_id: UUID (foreign key to Members)
+relationship_type: enum ['head', 'spouse', 'child', 'dependent', 'other']
+notes: text
+
+
+### Groups/Ministries
+
+id: UUID (primary key)
+name: string
+description: text
+leader_name: string (optional)
+meeting_schedule: string (optional)
+created_at: datetime
+active: boolean
+
+
+### Member-Group Relationship
+
+id: UUID (primary key)
+member_id: UUID (foreign key to Members)
+group_id: UUID (foreign key to Groups)
+join_date: datetime
+role: string (optional)
+
+
+### Pledges
+
+id: UUID (primary key)
+member_id: UUID (foreign key to Members)
+amount: decimal
+frequency: enum ['one-time', 'weekly', 'monthly', 'quarterly', 'annually']
+start_date: date
+end_date: date (optional)
+status: enum ['active', 'completed', 'cancelled']
+notes: text
+created_at: datetime
+
+
+### Admin Users
+
+id: UUID (primary key)
+username: string (unique)
+email: string (unique)
+password: string (hashed)
+first_name: string
+last_name: string
+role: enum ['super_admin', 'admin', 'readonly']
+last_login: datetime
+active: boolean
+
+
+### Tags
+
+id: UUID (primary key)
+name: string
+color: string (hex color)
+created_by: UUID (foreign key to Admin Users)
+created_at: datetime
+
+
+### Member Tags
+
+id: UUID (primary key)
+member_id: UUID (foreign key to Members)
+tag_id: UUID (foreign key to Tags)
+created_at: datetime
+created_by: UUID (foreign key to Admin Users)
+
+
+## API Endpoints
+
+### Public Endpoints
+
+POST /api/members/
+- Creates new member record
+- No authentication required
+- Rate limited
+
+### Protected Endpoints (requires authentication)
+
+*Members*
+- GET /api/members/ - List all members (paginated)
+- GET /api/members/{id}/ - Get specific member details
+- PUT /api/members/{id}/ - Update member
+- DELETE /api/members/{id}/ - Delete member
+- GET /api/members/search/?q={query} - Search members
+
+*Groups*
+- GET /api/groups/ - List all groups
+- POST /api/groups/ - Create new group
+- GET /api/groups/{id}/ - Get specific group
+- PUT /api/groups/{id}/ - Update group
+- DELETE /api/groups/{id}/ - Delete group
+- GET /api/groups/{id}/members/ - List members in group
+
+*Pledges*
+- GET /api/pledges/ - List all pledges
+- POST /api/pledges/ - Create pledge
+- GET /api/pledges/{id}/ - Get specific pledge
+- PUT /api/pledges/{id}/ - Update pledge
+- DELETE /api/pledges/{id}/ - Delete pledge
+- GET /api/pledges/stats/ - Get pledge statistics
+
+*Authentication*
+- POST /api/auth/login/ - Login
+- POST /api/auth/logout/ - Logout
+- POST /api/auth/password-reset/ - Request password reset
+- POST /api/auth/password-reset/confirm/ - Confirm password reset
+
+*Reports*
+- GET /api/reports/members/csv/ - Export members CSV
+- GET /api/reports/pledges/csv/ - Export pledges CSV
+- GET /api/reports/stats/ - Get system statistics
+
+## Implementation Plan
+
+### Phase 1: Foundation & User Research (3 weeks)
+- Initial user research with all stakeholder groups
+- Conduct usability interviews with representative users from each persona
+- Create wireframes and prototype testing
+- Database schema setup
+- Basic API endpoints
+- Authentication system
+- Public form (frontend + backend) with usability focus
+
+### Phase 2: Core Admin Dashboard (3 weeks)
+- Member management interface with user-centered design
+- Search and filtering with natural language capabilities
+- Basic reporting with visual elements
+- Group management with drag-and-drop interface
+- Early user testing with administrative staff
+- Iterative improvements based on feedback
+
+### Phase 3: Advanced Features & Accessibility (3 weeks)
+- Data visualization optimized for decision-making
+- Advanced reporting with scheduled delivery
+- Email/SMS notification system
+- Data export with multiple format options
+- System settings and user preferences
+- Comprehensive accessibility implementation
+- Multi-language support framework
+- User acceptance testing with diverse user groups
+
+### Phase 4: Refinement & Training (2 weeks)
+- Usability refinements based on testing feedback
+- Performance optimization for all user contexts (including low bandwidth)
+- Development of help system and documentation
+- Creation of training materials for different user types
+- Production of video tutorials for common tasks
+- Setup of support ticketing system
+
+### Phase 5: Testing & Deployment (2 weeks)
+- Comprehensive testing with real users from all personas
+- Accessibility audit and remediation
+- Security review and penetration testing
+- Performance testing under various conditions
+- Deployment to production with monitoring
+- Post-launch support plan implementation
+
+### Phase 6: Post-Launch Evaluation (Ongoing)
+- Usage analytics review
+- User satisfaction surveys
+- Identification of pain points and optimization opportunities
+- Regular usability testing with new and existing users
+- Continuous improvement plan implementation
+
+## Development Guidelines
+
+### Code Organization
+
+*Frontend (React)*
+
+/src
+  /components
+    /form        # Public form components
+    /admin       # Admin dashboard components
+    /shared      # Shared UI components
+  /pages         # Page components
+  /services      # API service functions
+  /hooks         # Custom React hooks
+  /utils         # Utility functions
+  /context       # React context providers
+  /styles        # Global styles
+
+
+*Backend (Django)*
+
+/churchconnect
+  /members       # Members app
+  /groups        # Groups app
+  /pledges       # Pledges app
+  /authentication # Auth app
+  /reports       # Reporting app
+
+
+### Security Considerations
+
+1. *Data Protection*:
+   - PII (Personally Identifiable Information) should be encrypted at rest
+   - HTTPS required for all communications
+   - Role-based access control for admin functions
+
+2. *Authentication & Authorization*:
+   - JWT token-based authentication
+   - Token expiration and renewal
+   - Password policies (minimum length, complexity)
+   - IP-based rate limiting
+
+3. *Input Validation*:
+   - Validate all form inputs (frontend and backend)
+   - Sanitize data to prevent XSS attacks
+   - Parameterized queries to prevent SQL injection
+
+4. *Regulatory Compliance*:
+   - Privacy policy display and acceptance
+   - Data retention policies
+   - Export and deletion capabilities for GDPR compliance
+
+## Deployment Recommendations
+
+### Development Environment
+- Local development with Docker Compose
+- SQLite database for simplicity
+- Hot reloading for frontend and backend
+
+### Staging Environment
+- Vercel for frontend deployment
+- Render/Heroku for backend API
+- PostgreSQL test database (ElephantSQL)
+- CI/CD integration for automated testing
+
+### Production Environment
+- Vercel for frontend (with Custom Domain)
+- Render/Heroku for backend API (Production Tier)
+- Managed PostgreSQL database with regular backups
+- CDN for static assets
+- Monitoring and logging solution
+
+## Maintenance Considerations
+
+1. *Backup Strategy*:
+   - Daily automated database backups
+   - Backup retention policy (30 days minimum)
+   - Disaster recovery plan
+
+2. *Monitoring*:
+   - Server health monitoring
+   - Application error tracking
+   - User activity logging
+   - Performance metrics
+
+3. *Updates*:
+   - Scheduled security updates
+   - Dependency management
+   - Feature release planning
+
+4. *Support*:
+   - Admin user documentation
+   - Support request system
+   - Bug reporting workflow
+
+## User Experience & Accessibility Improvements
+
+### Church Member Experience (Public Form Users)
+1. *Form Usability*:
+   - Multi-step form with progress indicator to reduce overwhelming feelings
+   - Form field auto-save to prevent data loss if interrupted
+   - Mobile-responsive design optimized for all devices
+   - Clear error messages with suggestions for correction
+   - Option to receive a confirmation email with submitted information
+
+2. *Multilingual Support*:
+   - Translation capability for common languages in the congregation
+   - Language selector prominently displayed
+   - Culturally sensitive form fields (e.g., name formats, cultural considerations)
+
+3. *Accessibility Requirements*:
+   - WCAG 2.1 AA compliance minimum (AAA recommended)
+   - Screen reader compatibility with proper ARIA attributes
+   - Keyboard navigation support for all interactive elements
+   - Sufficient color contrast and text sizing options
+   - Support for text-to-speech and speech-to-text input methods
+   - Alternative input methods for those with motor difficulties
+
+### Admin/Staff User Experience
+1. *Dashboard Usability*:
+   - Customizable dashboard layouts based on role and preference
+   - Quick-access shortcuts to frequent tasks
+   - Contextual help and tooltips for complex features
+   - Bulk action capabilities for efficient data management
+   - Saved searches and filters for repeated tasks
+   - User activity history to track changes
+
+2. *Training & Onboarding*:
+   - Interactive tutorial for new admin users
+   - Role-specific training modules
+   - Searchable knowledge base and FAQ section
+   - Guided workflows for complex processes
+   - Context-sensitive help documentation
+
+3. *Productivity Features*:
+   - Customizable email/SMS templates for member communications
+   - Scheduled reports delivered automatically
+   - Task management system for follow-ups
+   - Calendar integration for event planning
+   - Notification center for important updates and tasks
+
+### Elderly and Technology-Challenged Users
+1. *Special Considerations*:
+   - Larger text options and simplified layouts
+   - Clear, jargon-free instructions
+   - Consistent navigation patterns
+   - Forgiving input validation (e.g., phone number formats)
+   - Option for assisted form completion
+
+2. *Alternative Access Methods*:
+   - Print-friendly form versions for manual completion
+   - QR code linking directly to specific form sections
+   - Option to schedule phone assistance for form completion
+   - Family member/proxy submission capability
+
+### Technical Enhancements
+1. *Progressive Enhancement*:
+   - Offline mode with data synchronization for poor connectivity
+   - SMS notifications for events/confirmations
+   - Mobile app wrapper (React Native) for better mobile experience
+   - Integration with church accounting software
+   - Calendar/scheduling functionality
+
+2. *Performance Optimization*:
+   - Implement caching for frequently accessed data
+   - Optimize database queries with proper indexing
+   - Lazy loading for dashboard components
+   - Image optimization for any uploads
+   - Performance testing under various network conditions
+
+## Usability Testing Plan
+
+### Testing Phases
+
+1. *Early Prototype Testing*
+   - Paper prototypes and wireframes with representatives from each user persona
+   - Focus on navigation flow and information architecture
+   - 5-7 participants per user group
+
+2. *Interactive Prototype Testing*
+   - Clickable prototypes before full development
+   - Task-based scenarios for each user type
+   - Measure completion rates and subjective satisfaction
+
+3. *Alpha/Beta Testing*
+   - Working system testing with real users in controlled environment
+   - Combination of observed tasks and independent exploration
+   - Collection of quantitative metrics and qualitative feedback
+
+4. *Post-Launch Testing*
+   - Regular testing cycles after deployment
+   - A/B testing for feature improvements
+   - Longitudinal studies of system adoption and satisfaction
+
+### Test Methodologies
+
+1. *Task-Based Testing*
+   - Define key tasks for each user persona
+   - Measure success rates, time-on-task, and error rates
+   - Examples:
+     - Member completing registration form
+     - Admin searching for specific member information
+     - Leader generating monthly ministry report
+
+2. *Heuristic Evaluation*
+   - Expert review against usability principles
+   - Focus on accessibility compliance
+   - Identify issues before user testing
+
+3. *Satisfaction Surveys*
+   - System Usability Scale (SUS) assessments
+   - Custom feedback forms for specific features
+   - Regular pulse surveys for continuous improvement
+
+## Training and Support Resources
+
+### For Members (Form Users)
+- Short video tutorials embedded in form
+- Printable step-by-step guides
+- FAQ section with common questions
+- Support contact information prominently displayed
+- Optional in-person assistance sessions at church
+
+### For Administrators
+- Comprehensive admin manual with screenshots
+- Interactive tutorial within the system
+- Regular training webinars
+- Quick reference guides for common tasks
+- Admin-specific FAQ and troubleshooting guide
+
+### For Church Leadership
+- Executive dashboard guide
+- Report interpretation guide
+- Strategic decision-making examples using system data
+- Regular data review meeting templates
+
+### For IT Support
+- Technical documentation
+- System architecture diagrams
+- Troubleshooting decision trees
+- Support ticket templates
+- Performance monitoring guide
+
+## Contact and Support
+
+For questions or support during implementation, please contact:
+[Project Manager Contact Information]
+# ChurchConnect DBMS Folder Structure Explanation
+
+## Overview
+
+The folder structure for ChurchConnect DBMS follows modern best practices for a full-stack web application with separate frontend and backend codebases. This document explains the purpose of each directory and the rationale behind the organization.
+
+## Root Directory
+
+The root directory contains the following:
+
+- README.md - Project overview and quick start guide
+- .gitignore - Git ignore configuration file
+- docker-compose.yml - Docker Compose configuration for development and production
+- .env.example - Example environment variables template
+- frontend/ - React frontend application
+- backend/ - Django REST Framework backend
+- docs/ - Project documentation
+- nginx/ - Nginx configuration for production deployment
+
+## Frontend Structure
+
+The frontend follows a component-based architecture using React:
+
+
+frontend/
+├── public/               # Static public assets
+├── src/
+│   ├── components/       # Reusable UI components
+│   │   ├── admin/        # Admin dashboard components
+│   │   ├── form/         # Public form components
+│   │   ├── layout/       # Layout components (header, footer, etc.)
+│   │   ├── shared/       # Shared UI components 
+│   │   └── ui/           # Basic UI building blocks
+│   ├── pages/            # Page components
+│   │   ├── admin/        # Admin dashboard pages
+│   │   ├── auth/         # Authentication pages
+│   │   └── public/       # Public-facing pages
+│   ├── services/         # API service functions
+│   ├── hooks/            # Custom React hooks
+│   ├── utils/            # Utility functions
+│   ├── context/          # React context providers
+│   ├── styles/           # Global styles
+│   ├── assets/           # Static assets (images, icons, fonts)
+│   ├── App.jsx           # Main App component
+│   └── index.jsx         # Application entry point
+├── package.json          # NPM dependencies and scripts
+├── .env.example          # Frontend environment variables template
+└── Dockerfile            # Frontend Docker configuration
+
+
+### Key Frontend Files
+
+- components/form/MemberForm.jsx - The public-facing member registration form
+- components/admin/Dashboard.jsx - Main admin dashboard component
+- pages/auth/LoginPage.jsx - Admin authentication page
+- services/api.js - API service layer for backend communication
+- context/AuthContext.jsx - Authentication context provider
+- hooks/useForm.js - Custom hook for form handling
+- utils/validation.js - Form validation utilities
+
+## Backend Structure
+
+The backend follows Django's recommended project structure with separate apps for different domains:
+
+
+backend/
+├── churchconnect/        # Main Django project
+│   ├── members/          # Members app
+│   ├── groups/           # Groups/Ministries app
+│   ├── pledges/          # Financial pledges app
+│   ├── authentication/   # Custom authentication app
+│   ├── reports/          # Reporting and exports app
+│   ├── families/         # Family relationships app
+│   ├── core/             # Core functionality app
+│   ├── static/           # Static files
+│   ├── templates/        # Django templates
+│   ├── media/            # User-uploaded content
+│   ├── settings.py       # Django settings
+│   ├── urls.py           # Main URL configuration
+│   ├── wsgi.py           # WSGI configuration
+│   └── asgi.py           # ASGI configuration
+├── scripts/              # Utility scripts
+├── tests/                # Additional tests
+├── docs/                 # Backend-specific documentation
+├── requirements.txt      # Python dependencies
+├── manage.py             # Django management script
+└── Dockerfile            # Backend Docker configuration
+
+
+### Django App Structure
+
+Each Django app follows the same structure:
+
+
+app_name/
+├── migrations/           # Database migrations
+├── templates/            # App-specific templates
+├── __init__.py           # Python package initialization
+├── admin.py              # Django admin configuration
+├── apps.py               # App configuration
+├── models.py             # Database models
+├── serializers.py        # DRF serializers
+├── urls.py               # App URL patterns
+├── views.py              # API views
+└── tests.py              # App-specific tests
+
+
+## Documentation
+
+The docs directory contains comprehensive documentation:
+
+
+docs/
+├── api/                  # API documentation
+├── user-guides/          # End-user documentation
+├── development/          # Developer guides
+└── deployment/           # Deployment instructions
+
+
+## Nginx Configuration
+
+The nginx directory contains configuration for production deployment:
+
+
+nginx/
+├── nginx.conf            # Main Nginx configuration
+└── conf.d/               # Server blocks
+    └── default.conf      # Default server configuration
+
+
+## Usage Instructions
+
+### For Linux/macOS Users
+
+1. Save the bash script to a file (e.g., create-project.sh)
+2. Make it executable: chmod +x create-project.sh
+3. Run the script: ./create-project.sh
+
+### For Windows Users
+
+1. Save the batch script to a file (e.g., create-project.bat)
+2. Run the script by double-clicking it or from Command Prompt
+
+### After Structure Creation
+
+1. Initialize a Git repository:
+   
+   cd ChurchConnect-DBMS
+   git init
+   git add .
+   git commit -m "Initial project structure"
+   
+
+2. Set up the frontend:
+   
+   cd frontend
+   npm init -y
+   npm install react react-dom react-router-dom axios formik yup
+   
+
+3. Set up the backend:
+   
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install django djangorestframework django-cors-headers psycopg2-binary
+   
+
+## Best Practices for This Structure
+
+1. *Component Isolation*: Keep components focused on a single responsibility
+2. *API Service Layer*: Centralize API calls in the services directory
+3. *Custom Hooks*: Extract complex logic into reusable hooks
+4. *Django App Separation*: Each app should have a distinct domain responsibility
+5. *Documentation First*: Update documentation as you develop features
+6. *Environment Configuration*: Use environment variables for configuration
+7. *Testing*: Write tests alongside feature development
+
+Following this structure will help maintain code organization as the project grows and make it easier for new developers to understand the codebase.

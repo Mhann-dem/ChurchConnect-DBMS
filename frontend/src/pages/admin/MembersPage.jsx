@@ -1,5 +1,5 @@
-// frontend/src/pages/admin/MembersPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+// pages/admin/MembersPage.jsx - Fixed version
+import React, { useState, useCallback, useMemo } from 'react';
 import { Plus, Search, Filter, Users, UserPlus, Download } from 'lucide-react';
 import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
 import BulkActions from '../../components/admin/Members/BulkActions';
@@ -14,9 +14,14 @@ import styles from './AdminPages.module.css';
 
 const MembersPage = () => {
   const { showToast } = useToast();
+  
+  // UI State
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [membersPerPage, setMembersPerPage] = useState(25);
   const [filters, setFilters] = useState({
     gender: '',
     ageRange: '',
@@ -24,37 +29,49 @@ const MembersPage = () => {
     registrationDateRange: '',
     active: true
   });
-  const [showFilters, setShowFilters] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [membersPerPage, setMembersPerPage] = useState(25);
 
-  // Use custom hook for member data management with error handling
-  const hookResult = useMembers({
+  // Memoize the hook options to prevent unnecessary re-renders
+  const hookOptions = useMemo(() => ({
     search: searchQuery,
     filters,
     page: currentPage,
     limit: membersPerPage
-  });
+  }), [searchQuery, filters, currentPage, membersPerPage]);
 
-  // Safely destructure with defaults to prevent undefined errors
+  // Use the members hook with proper error handling
+  const membersHook = useMembers(hookOptions);
+  
+  // Safely extract values with defaults
   const {
     members = [],
     totalMembers = 0,
     isLoading = false,
     error = null,
-    refetch = () => Promise.resolve()
-  } = hookResult || {};
+    refetch = () => Promise.resolve(),
+    createMember,
+    deleteMember,
+    updateMemberStatus,
+    totalPages = 1,
+    activeMembers = 0
+  } = membersHook || {};
 
-  // Ensure members is always an array to prevent runtime errors
+  // Ensure members is always an array
   const safeMembers = Array.isArray(members) ? members : [];
   const safeTotalMembers = typeof totalMembers === 'number' ? totalMembers : 0;
 
   // Handle member registration success
-  const handleRegistrationSuccess = useCallback((newMember) => {
-    setShowRegistrationForm(false);
-    showToast('Member registered successfully!', 'success');
-    if (refetch) {
-      refetch(); // Refresh the members list
+  const handleRegistrationSuccess = useCallback(async (newMember) => {
+    try {
+      setShowRegistrationForm(false);
+      showToast('Member registered successfully!', 'success');
+      
+      // Refresh the members list
+      if (refetch) {
+        await refetch();
+      }
+    } catch (error) {
+      console.error('Error after registration:', error);
+      showToast('Member registered but failed to refresh list', 'warning');
     }
   }, [showToast, refetch]);
 
@@ -66,44 +83,27 @@ const MembersPage = () => {
   // Handle bulk actions
   const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
+      console.log('Performing bulk action:', action, memberIds, actionData);
+      
       const result = await membersService.performBulkAction(action, memberIds, actionData);
       
       if (result?.success) {
         // Clear selection after successful action
         setSelectedMembers([]);
+        
         // Refresh data
         if (refetch) {
           await refetch();
         }
+        
+        showToast(result.message || 'Bulk action completed successfully', 'success');
         return result;
       } else {
         throw new Error(result?.error || 'Bulk action failed');
       }
     } catch (error) {
+      console.error('Bulk action error:', error);
       showToast(error?.message || 'Bulk action failed', 'error');
-      throw error;
-    }
-  }, [refetch, showToast]);
-
-  // Handle member import
-  const handleImportMembers = useCallback(async (membersData, options = {}) => {
-    try {
-      const result = await membersService.bulkImportMembers(membersData, options);
-      
-      if (result?.success) {
-        if (refetch) {
-          await refetch(); // Refresh data
-        }
-        showToast(
-          `Successfully imported ${result.successful || 0} members. ${result.skipped || 0} duplicates skipped.`,
-          'success'
-        );
-        return result;
-      } else {
-        throw new Error(result?.error || 'Import failed');
-      }
-    } catch (error) {
-      showToast(error?.message || 'Import failed', 'error');
       throw error;
     }
   }, [refetch, showToast]);
@@ -117,10 +117,11 @@ const MembersPage = () => {
     );
   }, []);
 
-  // Handle select all members - Fixed potential issue
+  // Handle select all members
   const handleSelectAll = useCallback((selectAll) => {
     if (selectAll) {
-      setSelectedMembers(safeMembers.map(member => member?.id).filter(Boolean));
+      const memberIds = safeMembers.map(member => member?.id).filter(Boolean);
+      setSelectedMembers(memberIds);
     } else {
       setSelectedMembers([]);
     }
@@ -135,17 +136,28 @@ const MembersPage = () => {
   const handleSearch = useCallback((query) => {
     setSearchQuery(query || '');
     setCurrentPage(1); // Reset to first page when searching
+    setSelectedMembers([]); // Clear selection when searching
   }, []);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters) => {
+    console.log('Filter change:', newFilters);
     setFilters(prev => ({ ...prev, ...newFilters }));
     setCurrentPage(1); // Reset to first page when filtering
+    setSelectedMembers([]); // Clear selection when filtering
   }, []);
 
   // Handle pagination
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
+    setSelectedMembers([]); // Clear selection when changing pages
+  }, []);
+
+  // Handle per-page change
+  const handlePerPageChange = useCallback((perPage) => {
+    setMembersPerPage(Number(perPage));
+    setCurrentPage(1); // Reset to first page
+    setSelectedMembers([]); // Clear selection
   }, []);
 
   // Quick export all members
@@ -158,9 +170,21 @@ const MembersPage = () => {
         throw new Error(result?.error || 'Export failed');
       }
     } catch (error) {
+      console.error('Export error:', error);
       showToast(error?.message || 'Export failed', 'error');
     }
   }, [showToast]);
+
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    setFilters({
+      gender: '',
+      ageRange: '',
+      pledgeStatus: '',
+      registrationDateRange: '',
+      active: true
+    });
+  }, []);
 
   // Error boundary fallback
   if (error) {
@@ -171,14 +195,28 @@ const MembersPage = () => {
             <Users size={48} className={styles.errorIcon} />
             <h2 className={styles.errorTitle}>Failed to Load Members</h2>
             <p className={styles.errorMessage}>{error}</p>
-            <Button onClick={refetch} className={styles.retryButton}>
-              Try Again
-            </Button>
+            <div className={styles.errorActions}>
+              <Button onClick={refetch} className={styles.retryButton}>
+                Try Again
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()} 
+                className={styles.reloadButton}
+              >
+                Reload Page
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
+
+  // Check if we have any active filters
+  const hasActiveFilters = Object.values(filters).some(value => 
+    value !== '' && value !== true && value !== null && value !== undefined
+  );
 
   return (
     <div className={styles.pageContainer}>
@@ -215,22 +253,26 @@ const MembersPage = () => {
           </div>
         </div>
 
-        {/* Stats Summary - Fixed potential null reference errors */}
+        {/* Stats Summary */}
         <div className={styles.statsBar}>
           <div className={styles.statItem}>
             <span className={styles.statValue}>{safeTotalMembers}</span>
             <span className={styles.statLabel}>Total Members</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statValue}>
-              {safeMembers.filter(m => m?.is_active).length}
-            </span>
+            <span className={styles.statValue}>{activeMembers}</span>
             <span className={styles.statLabel}>Active</span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statValue}>{selectedMembers.length}</span>
             <span className={styles.statLabel}>Selected</span>
           </div>
+          {hasActiveFilters && (
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>Filtered</span>
+              <span className={styles.statLabel}>Results</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -245,6 +287,7 @@ const MembersPage = () => {
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className={styles.searchField}
+              disabled={isLoading}
             />
           </div>
           
@@ -252,17 +295,19 @@ const MembersPage = () => {
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
             className={showFilters ? styles.activeFilter : ''}
+            disabled={isLoading}
           >
             <Filter size={16} />
-            Filters
+            Filters {hasActiveFilters && '(Active)'}
           </Button>
         </div>
 
         <div className={styles.viewControls}>
           <select
             value={membersPerPage}
-            onChange={(e) => setMembersPerPage(Number(e.target.value))}
+            onChange={(e) => handlePerPageChange(e.target.value)}
             className={styles.perPageSelect}
+            disabled={isLoading}
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
@@ -278,30 +323,27 @@ const MembersPage = () => {
           <MemberFilters
             filters={filters}
             onChange={handleFilterChange}
-            onClear={() => setFilters({
-              gender: '',
-              ageRange: '',
-              pledgeStatus: '',
-              registrationDateRange: '',
-              active: true
-            })}
+            onClear={handleClearFilters}
+            disabled={isLoading}
           />
         </div>
       )}
 
       {/* Bulk Actions */}
-      <BulkActions
-        selectedMembers={selectedMembers}
-        onClearSelection={handleClearSelection}
-        onBulkAction={handleBulkAction}
-        onImportMembers={handleImportMembers}
-        totalMembers={safeTotalMembers}
-        allMembers={safeMembers}
-      />
+      {selectedMembers.length > 0 && (
+        <BulkActions
+          selectedMembers={selectedMembers}
+          onClearSelection={handleClearSelection}
+          onBulkAction={handleBulkAction}
+          totalMembers={safeTotalMembers}
+          allMembers={safeMembers}
+          disabled={isLoading}
+        />
+      )}
 
       {/* Main Content */}
       <div className={styles.mainContent}>
-        {isLoading ? (
+        {isLoading && safeMembers.length === 0 ? (
           <div className={styles.loadingState}>
             <LoadingSpinner size="lg" />
             <p>Loading members...</p>
@@ -313,23 +355,24 @@ const MembersPage = () => {
                 <UserPlus size={64} />
               </div>
               <h3 className={styles.emptyTitle}>
-                {searchQuery || Object.values(filters).some(f => f && f !== true) 
+                {searchQuery || hasActiveFilters
                   ? 'No Members Found' 
                   : 'No Members Registered Yet'
                 }
               </h3>
               <p className={styles.emptyDescription}>
-                {searchQuery || Object.values(filters).some(f => f && f !== true) 
+                {searchQuery || hasActiveFilters
                   ? 'No members match your search criteria. Try adjusting your filters or search terms.'
                   : 'Get started by adding your first church member to the database.'
                 }
               </p>
-              {!searchQuery && !Object.values(filters).some(f => f && f !== true) && (
+              {!searchQuery && !hasActiveFilters ? (
                 <div className={styles.emptyActions}>
                   <Button 
                     onClick={() => setShowRegistrationForm(true)}
                     size="lg"
                     className={styles.primaryAction}
+                    disabled={isLoading}
                   >
                     <Plus size={20} />
                     Add First Member
@@ -337,6 +380,19 @@ const MembersPage = () => {
                   <p className={styles.emptyHint}>
                     You can also bulk import members using a CSV file once you have some data.
                   </p>
+                </div>
+              ) : (
+                <div className={styles.emptyActions}>
+                  <Button 
+                    onClick={() => {
+                      setSearchQuery('');
+                      handleClearFilters();
+                    }}
+                    variant="outline"
+                    disabled={isLoading}
+                  >
+                    Clear Search & Filters
+                  </Button>
                 </div>
               )}
             </div>
@@ -348,10 +404,13 @@ const MembersPage = () => {
             onMemberSelection={handleMemberSelection}
             onSelectAll={handleSelectAll}
             currentPage={currentPage}
+            totalPages={totalPages}
             totalMembers={safeTotalMembers}
             membersPerPage={membersPerPage}
             onPageChange={handlePageChange}
             isLoading={isLoading}
+            onDelete={deleteMember}
+            onUpdateStatus={updateMemberStatus}
           />
         )}
       </div>

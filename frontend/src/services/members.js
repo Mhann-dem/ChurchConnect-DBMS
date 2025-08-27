@@ -1,250 +1,232 @@
-// services/members.js
-import { api, publicApiLimiter } from './api';
+// services/members.js - Fixed version with proper error handling
+import api from './api';
 
 const MEMBERS_ENDPOINTS = {
-  LIST: '/members/',
-  DETAIL: (id) => `/members/${id}/`,
-  CREATE: '/members/',
-  UPDATE: (id) => `/members/${id}/`,
-  DELETE: (id) => `/members/${id}/`,
-  SEARCH: '/members/search/',
-  BULK_UPDATE: '/members/bulk-update/',
-  BULK_DELETE: '/members/bulk-delete/',
-  BULK_IMPORT: '/members/bulk-import/',
-  BULK_EMAIL: '/members/bulk-email/',
-  BULK_TAG: '/members/bulk-tag/',
-  EXPORT: '/members/export/',
-  STATS: '/members/stats/',
-  RECENT: '/members/recent/',
-  // Form saving functionality
-  SAVE_FORM: '/forms/save/',
-  GET_SAVED_FORM: (id) => `/forms/${id}/`,
-  DELETE_SAVED_FORM: (id) => `/forms/${id}/`,
-  SEND_CONTINUE_EMAIL: '/forms/send-continue-email/',
+  LIST: 'members/members/',
+  DETAIL: (id) => `members/members/${id}/`,
+  CREATE: 'members/members/',
+  UPDATE: (id) => `members/members/${id}/`,
+  DELETE: (id) => `members/members/${id}/`,
+  SEARCH: 'members/members/',
+  EXPORT: 'members/members/export/',
+  STATS: 'members/members/statistics/',
+  BULK_IMPORT: 'members/members/bulk_import/',
+  IMPORT_TEMPLATE: 'members/members/import_template/',
+  IMPORT_LOGS: 'members/members/import_logs/',
+  ADD_NOTE: (id) => `members/members/${id}/add_note/`,
+  GET_NOTES: (id) => `members/members/${id}/notes/`,
+  ADD_TAG: (id) => `members/members/${id}/add_tag/`,
+  REMOVE_TAG: (id) => `members/members/${id}/remove_tag/`,
 };
 
 class MembersService {
   async getMembers(params = {}) {
     try {
-      const response = await api.get(MEMBERS_ENDPOINTS.LIST, { params });
+      console.log('[MembersService] Getting members with params:', params);
+      
+      // Clean up the parameters to match what the API expects
+      const cleanParams = {};
+      
+      // Handle search
+      if (params.search) {
+        cleanParams.search = params.search;
+      }
+      
+      // Handle filters - flatten them if they're nested
+      if (params.filters) {
+        Object.keys(params.filters).forEach(key => {
+          if (params.filters[key] !== '' && params.filters[key] !== null && params.filters[key] !== undefined) {
+            cleanParams[key] = params.filters[key];
+          }
+        });
+      } else {
+        // Handle direct filter parameters
+        ['gender', 'ageRange', 'pledgeStatus', 'registrationDateRange', 'active'].forEach(key => {
+          if (params[key] !== '' && params[key] !== null && params[key] !== undefined) {
+            cleanParams[key] = params[key];
+          }
+        });
+      }
+      
+      // Handle pagination
+      if (params.page) {
+        cleanParams.page = params.page;
+      }
+      if (params.limit || params.page_size) {
+        cleanParams.limit = params.limit || params.page_size;
+      }
+      
+      console.log('[MembersService] Clean params:', cleanParams);
+      
+      const response = await api.get(MEMBERS_ENDPOINTS.LIST, { params: cleanParams });
+      
+      console.log('[MembersService] API response:', response.data);
+      
+      // Handle different response formats
+      let members = [];
+      let totalMembers = 0;
+      let pagination = null;
+      
+      if (response.data) {
+        if (response.data.results) {
+          // Paginated response
+          members = Array.isArray(response.data.results) ? response.data.results : [];
+          totalMembers = response.data.count || members.length;
+          pagination = {
+            count: response.data.count || members.length,
+            next: response.data.next,
+            previous: response.data.previous,
+            current_page: response.data.current_page || 1,
+            total_pages: response.data.total_pages || 1,
+          };
+        } else if (Array.isArray(response.data)) {
+          // Direct array response
+          members = response.data;
+          totalMembers = members.length;
+        } else {
+          console.warn('[MembersService] Unexpected response format:', response.data);
+          members = [];
+          totalMembers = 0;
+        }
+      }
+      
       return {
         success: true,
-        data: response.data.results,
-        pagination: {
-          count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
-        },
+        data: members,
+        totalMembers,
+        pagination,
       };
     } catch (error) {
+      console.error('[MembersService] Error fetching members:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to fetch members',
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch members',
+        data: [],
+        totalMembers: 0,
+        pagination: null,
       };
     }
   }
 
   async getMember(id) {
     try {
+      console.log('[MembersService] Getting member:', id);
       const response = await api.get(MEMBERS_ENDPOINTS.DETAIL(id));
-      return { success: true, data: response.data };
+      return { 
+        success: true, 
+        data: response.data 
+      };
     } catch (error) {
+      console.error('[MembersService] Error fetching member:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to fetch member',
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch member',
       };
     }
   }
 
   async createMember(memberData) {
     try {
-      const response = await api.post(MEMBERS_ENDPOINTS.CREATE, memberData);
-      return response.data;
+      console.log('[MembersService] Creating member with data:', memberData);
+      
+      // Format the data for the API
+      const formattedData = this.formatDataForAPI(memberData);
+      
+      console.log('[MembersService] Formatted data:', formattedData);
+      
+      const response = await api.post(MEMBERS_ENDPOINTS.CREATE, formattedData);
+      
+      return {
+        success: true,
+        data: response.data
+      };
     } catch (error) {
-      const errorResponse = {
+      console.error('[MembersService] Error creating member:', error);
+      
+      const errorData = error.response?.data || {};
+      const errorMessage = errorData.error || errorData.detail || error.message || 'Failed to create member';
+      
+      throw {
         response: {
           data: {
-            message: error.response?.data?.message || 'Failed to create member',
-            errors: error.response?.data?.errors || {}
+            message: errorMessage,
+            errors: errorData.errors || errorData
           }
         }
       };
-      throw errorResponse;
     }
   }
 
   async updateMember(id, memberData) {
     try {
-      const response = await api.put(MEMBERS_ENDPOINTS.UPDATE(id), memberData);
-      return { success: true, data: response.data };
+      console.log('[MembersService] Updating member:', id, memberData);
+      const formattedData = this.formatDataForAPI(memberData);
+      const response = await api.put(MEMBERS_ENDPOINTS.UPDATE(id), formattedData);
+      return { 
+        success: true, 
+        data: response.data 
+      };
     } catch (error) {
+      console.error('[MembersService] Error updating member:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to update member',
-        validationErrors: error.response?.data?.errors,
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to update member',
+        validationErrors: error.response?.data?.errors || error.response?.data,
       };
     }
   }
 
   async deleteMember(id) {
     try {
+      console.log('[MembersService] Deleting member:', id);
       await api.delete(MEMBERS_ENDPOINTS.DELETE(id));
       return { success: true };
     } catch (error) {
+      console.error('[MembersService] Error deleting member:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to delete member',
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to delete member',
       };
     }
   }
 
   async searchMembers(query, filters = {}) {
     try {
-      const params = { q: query, ...filters };
-      const response = await api.get(MEMBERS_ENDPOINTS.SEARCH, { params });
-      return { success: true, data: response.data };
+      console.log('[MembersService] Searching members:', query, filters);
+      const params = { search: query, ...filters };
+      return await this.getMembers(params);
     } catch (error) {
+      console.error('[MembersService] Error searching members:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Search failed',
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Search failed',
+        data: [],
+        totalMembers: 0,
       };
     }
   }
 
-  // ENHANCED BULK OPERATIONS
-  async bulkUpdateMembers(memberIds, updateData) {
+  async getMemberStats() {
     try {
-      const response = await api.post(MEMBERS_ENDPOINTS.BULK_UPDATE, {
-        member_ids: memberIds,
-        update_data: updateData,
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Bulk update failed',
-      };
-    }
-  }
-
-  async bulkDeleteMembers(memberIds) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.BULK_DELETE, {
-        member_ids: memberIds,
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Bulk delete failed',
-      };
-    }
-  }
-
-  async bulkImportMembers(membersData, options = {}) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.BULK_IMPORT, {
-        members: membersData,
-        options: {
-          duplicate_strategy: options.duplicateStrategy || 'skip',
-          add_tags: options.addTags || [],
-          send_welcome_email: options.sendWelcomeEmail || false,
-          validate_strict: options.validateStrict !== false,
-          ...options
-        }
-      });
+      console.log('[MembersService] Getting member statistics');
+      const response = await api.get(MEMBERS_ENDPOINTS.STATS);
       return { 
         success: true, 
-        data: response.data,
-        successful: response.data.successful || 0,
-        skipped: response.data.skipped || 0,
-        errors: response.data.errors || []
+        data: response.data 
       };
     } catch (error) {
+      console.error('[MembersService] Error fetching stats:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Bulk import failed',
-        details: error.response?.data?.details || []
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch member stats',
       };
     }
   }
 
-  async bulkEmailMembers(memberIds, emailData) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.BULK_EMAIL, {
-        member_ids: memberIds,
-        subject: emailData.subject,
-        message: emailData.message,
-        template: emailData.template || 'custom',
-        send_immediately: emailData.sendImmediately !== false
-      });
-      return { 
-        success: true, 
-        data: response.data,
-        sent: response.data.sent || 0,
-        failed: response.data.failed || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Bulk email failed',
-      };
-    }
-  }
-
-  async bulkTagMembers(memberIds, tagIds) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.BULK_TAG, {
-        member_ids: memberIds,
-        tag_ids: tagIds,
-        action: 'add' // or 'remove'
-      });
-      return { 
-        success: true, 
-        data: response.data,
-        tagged: response.data.tagged || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Bulk tagging failed',
-      };
-    }
-  }
-
-  async bulkActivateMembers(memberIds) {
-    try {
-      const response = await this.bulkUpdateMembers(memberIds, { is_active: true });
-      return {
-        ...response,
-        message: response.success ? `Activated ${memberIds.length} members` : response.error
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: 'Failed to activate members'
-      };
-    }
-  }
-
-  async bulkDeactivateMembers(memberIds) {
-    try {
-      const response = await this.bulkUpdateMembers(memberIds, { is_active: false });
-      return {
-        ...response,
-        message: response.success ? `Deactivated ${memberIds.length} members` : response.error
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: 'Failed to deactivate members'
-      };
-    }
-  }
-
-  // EXPORT FUNCTIONALITY
   async exportMembers(memberIds = null, format = 'csv', fields = null) {
     try {
+      console.log('[MembersService] Exporting members:', { memberIds, format, fields });
+      
       const params = {
         format,
         ...(memberIds && { member_ids: memberIds.join(',') }),
@@ -253,7 +235,7 @@ class MembersService {
       
       const response = await api.get(MEMBERS_ENDPOINTS.EXPORT, { 
         params,
-        responseType: 'blob' // Important for file downloads
+        responseType: 'blob'
       });
 
       // Create download
@@ -274,134 +256,55 @@ class MembersService {
         message: `Exported ${memberIds ? memberIds.length : 'all'} members` 
       };
     } catch (error) {
+      console.error('[MembersService] Error exporting members:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Export failed',
+        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Export failed',
       };
     }
   }
 
-  async getMemberStats() {
+  // BULK OPERATIONS
+  async bulkDeleteMembers(memberIds) {
     try {
-      const response = await api.get(MEMBERS_ENDPOINTS.STATS);
-      return { success: true, data: response.data };
+      console.log('[MembersService] Bulk deleting members:', memberIds);
+      // For now, delete one by one - implement bulk endpoint later
+      const promises = memberIds.map(id => this.deleteMember(id));
+      const results = await Promise.allSettled(promises);
+      
+      const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+      const failed = results.length - successful;
+      
+      return { 
+        success: failed === 0, 
+        data: { successful, failed },
+        message: `Deleted ${successful} members${failed > 0 ? `, ${failed} failed` : ''}`
+      };
     } catch (error) {
+      console.error('[MembersService] Error in bulk delete:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to fetch member stats',
+        error: error.message || 'Bulk delete failed',
       };
     }
   }
 
-  async getRecentMembers(limit = 10) {
-    try {
-      const response = await api.get(MEMBERS_ENDPOINTS.RECENT, {
-        params: { limit },
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Failed to fetch recent members',
-      };
+  async performBulkAction(action, memberIds, actionData = {}) {
+    console.log('[MembersService] Performing bulk action:', action, memberIds, actionData);
+    
+    switch (action) {
+      case 'delete':
+        return await this.bulkDeleteMembers(memberIds);
+      case 'export':
+        return await this.exportMembers(memberIds);
+      default:
+        throw new Error(`Unknown bulk action: ${action}`);
     }
   }
 
-  // FORM SAVING FUNCTIONALITY
-  async saveFormProgress(formData) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.SAVE_FORM, {
-        data: formData,
-        timestamp: new Date().toISOString(),
-        email: formData.email
-      });
-      return response.data;
-    } catch (error) {
-      const errorResponse = {
-        response: {
-          data: {
-            message: error.response?.data?.message || 'Failed to save form progress',
-            errors: error.response?.data?.errors || {}
-          }
-        }
-      };
-      throw errorResponse;
-    }
-  }
-
-  async getSavedForm(formId) {
-    try {
-      const response = await api.get(MEMBERS_ENDPOINTS.GET_SAVED_FORM(formId));
-      return response.data.data;
-    } catch (error) {
-      const errorResponse = {
-        response: {
-          data: {
-            message: error.response?.data?.message || 'Failed to retrieve saved form',
-            errors: error.response?.data?.errors || {}
-          }
-        }
-      };
-      throw errorResponse;
-    }
-  }
-
-  async deleteSavedForm(formId) {
-    try {
-      await api.delete(MEMBERS_ENDPOINTS.DELETE_SAVED_FORM(formId));
-      return true;
-    } catch (error) {
-      const errorResponse = {
-        response: {
-          data: {
-            message: error.response?.data?.message || 'Failed to delete saved form',
-            errors: error.response?.data?.errors || {}
-          }
-        }
-      };
-      throw errorResponse;
-    }
-  }
-
-  async sendContinueEmail(email, formId) {
-    try {
-      const response = await api.post(MEMBERS_ENDPOINTS.SEND_CONTINUE_EMAIL, {
-        email,
-        form_id: formId
-      });
-      return response.data;
-    } catch (error) {
-      const errorResponse = {
-        response: {
-          data: {
-            message: error.response?.data?.message || 'Failed to send continuation email',
-            errors: error.response?.data?.errors || {}
-          }
-        }
-      };
-      throw errorResponse;
-    }
-  }
-
-  // VALIDATION UTILITIES
+  // UTILITY METHODS
   validateMemberData(data) {
     const errors = {};
-    
-    if (!data.first_name?.trim() && !data.firstName?.trim()) {
-      errors.first_name = 'First name is required';
-      errors.firstName = 'First name is required';
-    }
-    
-    if (!data.last_name?.trim() && !data.lastName?.trim()) {
-      errors.last_name = 'Last name is required';
-      errors.lastName = 'Last name is required';
-    }
-    
-    if (!data.email?.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      errors.email = 'Please enter a valid email address';
-    }
     
     if (!data.phone?.trim()) {
       errors.phone = 'Phone number is required';
@@ -425,6 +328,7 @@ class MembersService {
   formatDataForAPI(data) {
     const formatted = {};
     
+    // Field mapping from frontend to API
     const fieldMap = {
       firstName: 'first_name',
       lastName: 'last_name',
@@ -446,44 +350,34 @@ class MembersService {
       communicationOptIn: 'communication_opt_in',
       internalNotes: 'internal_notes',
       registeredBy: 'registered_by',
-      registrationContext: 'registration_context'
+      registrationContext: 'registration_context',
+      isActive: 'is_active'
     };
     
+    // Convert field names and copy values
     Object.keys(data).forEach(key => {
       const apiKey = fieldMap[key] || key;
-      formatted[apiKey] = data[key];
+      let value = data[key];
+      
+      // Handle special formatting
+      if (key === 'dateOfBirth' || key === 'date_of_birth') {
+        // Ensure date is in YYYY-MM-DD format
+        if (value) {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            value = date.toISOString().split('T')[0];
+          }
+        }
+      }
+      
+      // Only include non-empty values
+      if (value !== null && value !== undefined && value !== '') {
+        formatted[apiKey] = value;
+      }
     });
     
+    console.log('[MembersService] Formatted data:', formatted);
     return formatted;
-  }
-
-  // BULK ACTION DISPATCHER
-  async performBulkAction(action, memberIds, actionData = {}) {
-    switch (action) {
-      case 'delete':
-        return await this.bulkDeleteMembers(memberIds);
-      
-      case 'tag':
-        return await this.bulkTagMembers(memberIds, actionData.tags);
-      
-      case 'email':
-        return await this.bulkEmailMembers(memberIds, actionData);
-      
-      case 'export':
-        return await this.exportMembers(memberIds);
-      
-      case 'activate':
-        return await this.bulkActivateMembers(memberIds);
-      
-      case 'deactivate':
-        return await this.bulkDeactivateMembers(memberIds);
-      
-      case 'import':
-        return await this.bulkImportMembers(actionData.members, actionData.options);
-      
-      default:
-        throw new Error(`Unknown bulk action: ${action}`);
-    }
   }
 }
 

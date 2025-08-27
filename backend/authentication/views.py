@@ -35,6 +35,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from .serializers import AdminUserSerializer
 
+from drf_spectacular.openapi import AutoSchema
+
+class MyAPIView(APIView):
+    schema = AutoSchema()
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):

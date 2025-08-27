@@ -8,15 +8,20 @@ class IsAuthenticatedOrCreateOnly(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         # Allow POST (create) for everyone (public registration)
-        # Accept both generic POST and action-based create
-        if request.method == 'POST' or getattr(view, 'action', None) == 'create':
+        if request.method == 'POST':
             return True
+        
+        # Allow GET for listing if user is authenticated
+        if request.method == 'GET' and view.action == 'list':
+            return request.user and request.user.is_authenticated
+        
         # Require authentication for all other operations
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         # Require authentication for object-level operations
         return request.user and request.user.is_authenticated
+
 
 class IsAdminUserOrReadOnly(permissions.BasePermission):
     """
@@ -33,9 +38,12 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
             request.user.is_authenticated and 
             (
                 (hasattr(request.user, 'is_admin') and request.user.is_admin) or
-                (hasattr(request.user, 'role') and request.user.role in ['admin', 'super_admin'])
+                (hasattr(request.user, 'role') and request.user.role in ['admin', 'super_admin']) or
+                request.user.is_staff or
+                request.user.is_superuser
             )
         )
+
 
 class IsSuperAdminOnly(permissions.BasePermission):
     """
@@ -51,6 +59,7 @@ class IsSuperAdminOnly(permissions.BasePermission):
                 (hasattr(request.user, 'role') and request.user.role == 'super_admin')
             )
         )
+
 
 class CanManageNotes(permissions.BasePermission):
     """
@@ -69,9 +78,11 @@ class CanManageNotes(permissions.BasePermission):
             (hasattr(request.user, 'role') and request.user.role == 'super_admin')
         ):
             return True
+        
         # For reading notes
         if request.method in permissions.SAFE_METHODS:
             # Can read non-private notes or own notes
             return not obj.is_private or obj.created_by == request.user
+        
         # For writing, only note creator or super admin
-        return
+        return obj.created_by == request.user

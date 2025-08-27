@@ -1,10 +1,21 @@
 # members/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from datetime import date
 
 User = get_user_model()
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = '__all__'
+
+class MemberListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'registration_date', 'is_active']
 
 class MemberTagSerializer(serializers.ModelSerializer):
     """Serializer for member tags"""
@@ -67,7 +78,7 @@ class FamilySummarySerializer(serializers.Serializer):
             'family_name': getattr(instance, 'family_name', 'Unknown Family')
         }
 
-class MemberSerializer(serializers.ModelSerializer):
+class MemberDetailSerializer(serializers.ModelSerializer):
     """Full serializer for member details"""
     family = FamilySummarySerializer(read_only=True)
     family_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
@@ -107,6 +118,9 @@ class MemberSerializer(serializers.ModelSerializer):
             }
             for assignment in obj.tag_assignments.all()
         ]
+
+# Rename the second MemberSerializer to avoid conflicts
+MemberSerializer = MemberDetailSerializer
 
 class MemberCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating members (public form)"""
