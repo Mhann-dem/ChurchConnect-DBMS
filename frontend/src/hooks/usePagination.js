@@ -10,19 +10,20 @@ const usePagination = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
+  const [totalCount, setTotalCount] = useState(totalItems);
 
-  // Calculate pagination values
+  // Use totalCount as the authoritative source for totalItems
   const totalPages = useMemo(() => {
-    return Math.ceil(totalItems / pageSize);
-  }, [totalItems, pageSize]);
+    return Math.ceil(totalCount / pageSize);
+  }, [totalCount, pageSize]);
 
   const startIndex = useMemo(() => {
     return (currentPage - 1) * pageSize;
   }, [currentPage, pageSize]);
 
   const endIndex = useMemo(() => {
-    return Math.min(startIndex + pageSize - 1, totalItems - 1);
-  }, [startIndex, pageSize, totalItems]);
+    return Math.min(startIndex + pageSize - 1, totalCount - 1);
+  }, [startIndex, pageSize, totalCount]);
 
   const hasNextPage = useMemo(() => {
     return currentPage < totalPages;
@@ -93,18 +94,18 @@ const usePagination = ({
 
   // Get current page info for display
   const getPageInfo = useCallback(() => {
-    const start = totalItems === 0 ? 0 : startIndex + 1;
-    const end = totalItems === 0 ? 0 : endIndex + 1;
+    const start = totalCount === 0 ? 0 : startIndex + 1;
+    const end = totalCount === 0 ? 0 : endIndex + 1;
     
     return {
       start,
       end,
-      total: totalItems,
+      total: totalCount,
       currentPage,
       totalPages,
       pageSize
     };
-  }, [startIndex, endIndex, totalItems, currentPage, totalPages, pageSize]);
+  }, [startIndex, endIndex, totalCount, currentPage, totalPages, pageSize]);
 
   // Get slice bounds for array slicing
   const getSliceBounds = useCallback(() => {
@@ -133,7 +134,7 @@ const usePagination = ({
     currentPage,
     pageSize,
     totalPages,
-    totalItems,
+    totalItems: totalCount, // Use totalCount as totalItems
     startIndex,
     endIndex,
     hasNextPage,
@@ -148,6 +149,7 @@ const usePagination = ({
     goToLastPage,
     changePageSize,
     reset,
+    setTotalCount, // ADDED: Export this for the hook to use
     
     // Utilities
     getPageInfo,

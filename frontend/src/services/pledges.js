@@ -9,6 +9,9 @@ const PLEDGES_ENDPOINTS = {
   DELETE: (id) => `/pledges/${id}/`,
   STATS: '/pledges/stats/',
   MEMBER_PLEDGES: (memberId) => `/pledges/member/${memberId}/`,
+  EXPORT: '/pledges/export/',
+  BULK_UPDATE: '/pledges/bulk-update/',
+  BULK_DELETE: '/pledges/bulk-delete/',
 };
 
 class PledgesService {
@@ -17,12 +20,7 @@ class PledgesService {
       const response = await api.get(PLEDGES_ENDPOINTS.LIST, { params });
       return {
         success: true,
-        data: response.data.results,
-        pagination: {
-          count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
-        },
+        data: response.data,  // Keep full response structure
       };
     } catch (error) {
       return {
@@ -82,7 +80,8 @@ class PledgesService {
     }
   }
 
-  async getPledgeStats() {
+  // FIXED: Renamed from getPledgeStats to getStatistics to match hook
+  async getStatistics() {
     try {
       const response = await api.get(PLEDGES_ENDPOINTS.STATS);
       return { success: true, data: response.data };
@@ -92,6 +91,11 @@ class PledgesService {
         error: error.response?.data?.message || 'Failed to fetch pledge stats',
       };
     }
+  }
+
+  // Keep the old method name for backward compatibility
+  async getPledgeStats() {
+    return this.getStatistics();
   }
 
   async getMemberPledges(memberId) {
@@ -106,11 +110,57 @@ class PledgesService {
     }
   }
 
+  // NEW: Export functionality
+  async exportPledges(params = {}) {
+    try {
+      const response = await api.get(PLEDGES_ENDPOINTS.EXPORT, { 
+        params,
+        responseType: 'blob' 
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to export pledges',
+      };
+    }
+  }
+
+  // NEW: Bulk operations
+  async bulkUpdatePledges(pledgeIds, updates) {
+    try {
+      const response = await api.post(PLEDGES_ENDPOINTS.BULK_UPDATE, {
+        pledge_ids: pledgeIds,
+        updates: updates
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to bulk update pledges',
+      };
+    }
+  }
+
+  async bulkDeletePledges(pledgeIds) {
+    try {
+      const response = await api.post(PLEDGES_ENDPOINTS.BULK_DELETE, {
+        pledge_ids: pledgeIds
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to bulk delete pledges',
+      };
+    }
+  }
+
   // Calculate pledge totals
   calculateTotalPledgeAmount(pledges) {
     return pledges.reduce((total, pledge) => {
       if (pledge.status === 'active') {
-        return total + parseFloat(pledge.amount);
+        return total + parseFloat(pledge.amount || 0);
       }
       return total;
     }, 0);

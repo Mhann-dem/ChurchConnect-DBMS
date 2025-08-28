@@ -1,495 +1,202 @@
+// hooks/usePledges.js
 import { useState, useEffect, useCallback } from 'react';
 import pledgesService from '../services/pledges';
-import { useToast } from './useToast';
-import usePagination from './usePagination';
-import { useDebounce } from './useDebounce';
 
-/**
- * Custom hook for managing pledges
- * Handles CRUD operations, filtering, searching, and statistics
- */
-export const usePledges = (options = {}) => {
-  const {
-    initialFilters = {},
-    autoFetch = true,
-    pageSize = 25,
-    enableRealTimeUpdates = false
-  } = options;
-
-  // State management
+export const usePledges = () => {
   const [pledges, setPledges] = useState([]);
+  const [statistics, setStatistics] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState(initialFilters);
+  const [pagination, setPagination] = useState({});
+  const [filters, setFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [statistics, setStatistics] = useState({
-    totalPledges: 0,
-    totalAmount: 0,
-    activePledges: 0,
-    completedPledges: 0,
-    averageAmount: 0,
-    monthlyTotal: 0,
-    yearlyTotal: 0
-  });
 
-  // Hooks
-  const { showToast } = useToast();
-  const pagination = usePagination({ pageSize });
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  // Fetch pledges with filters and pagination
-  const fetchPledges = useCallback(async (customFilters = {}) => {
+  // Fetch pledges with parameters
+  const fetchPledges = useCallback(async (params = {}) => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      const params = {
-        page: pagination.currentPage,
-        page_size: pagination.pageSize,
-        search: debouncedSearchQuery,
-        ordering: sortOrder === 'desc' ? `-${sortBy}` : sortBy,
+      const response = await pledgesService.getPledges({
         ...filters,
-        ...customFilters
-      };
-
-      const response = await pledgesService.getPledges(params);
+        search: searchQuery,
+        ...params
+      });
       
-      setPledges(response.data.results);
-      pagination.setTotalCount(response.data.count);
-      
-      return response.data;
+      if (response.success) {
+        // Handle both paginated and non-paginated responses
+        if (response.data.results) {
+          setPledges(response.data.results);
+          setPagination({
+            totalPages: Math.ceil(response.data.count / (response.data.limit || 25)),
+            totalItems: response.data.count,
+            itemsPerPage: response.data.limit || 25,
+            currentPage: response.data.page || 1
+          });
+        } else {
+          setPledges(Array.isArray(response.data) ? response.data : []);
+        }
+      } else {
+        setError(response.error);
+        setPledges([]);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch pledges';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
+      setError(err.message || 'Failed to fetch pledges');
+      setPledges([]);
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.pageSize, debouncedSearchQuery, sortBy, sortOrder, filters, pagination, showToast]);
+  }, [filters, searchQuery]);
 
-  // Fetch pledge statistics
+  // Fetch statistics
   const fetchStatistics = useCallback(async () => {
     try {
       const response = await pledgesService.getStatistics();
-      setStatistics(response.data);
-      return response.data;
+      if (response.success) {
+        setStatistics(response.data);
+      } else {
+        console.error('Failed to fetch statistics:', response.error);
+      }
     } catch (err) {
-      console.error('Failed to fetch pledge statistics:', err);
-      // Don't show toast for statistics errors as they're not critical
+      console.error('Error fetching statistics:', err);
     }
   }, []);
 
-  // Get single pledge by ID
-  const getPledge = useCallback(async (pledgeId) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await pledgesService.getPledge(pledgeId);
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
-
-  // Create new pledge
+  // Create pledge
   const createPledge = useCallback(async (pledgeData) => {
     setLoading(true);
     setError(null);
-
+    
     try {
       const response = await pledgesService.createPledge(pledgeData);
-      
-      // Add new pledge to the list
-      setPledges(prev => [response.data, ...prev]);
-      
-      // Update statistics
-      await fetchStatistics();
-      
-      showToast('Pledge created successfully', 'success');
-      return response.data;
+      if (response.success) {
+        // Refresh the pledges list
+        await fetchPledges();
+        // Refresh statistics
+        await fetchStatistics();
+        return response.data;
+      } else {
+        setError(response.error);
+        throw new Error(response.error);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to create pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
+      setError(err.message || 'Failed to create pledge');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [showToast, fetchStatistics]);
+  }, [fetchPledges, fetchStatistics]);
 
-  // Update existing pledge
+  // Update pledge
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     setLoading(true);
     setError(null);
-
+    
     try {
       const response = await pledgesService.updatePledge(pledgeId, pledgeData);
-      
-      // Update pledge in the list
-      setPledges(prev => prev.map(pledge => 
-        pledge.id === pledgeId ? response.data : pledge
-      ));
-      
-      // Update statistics
-      await fetchStatistics();
-      
-      showToast('Pledge updated successfully', 'success');
-      return response.data;
+      if (response.success) {
+        // Update the pledge in the current list
+        setPledges(prev => prev.map(pledge => 
+          pledge.id === pledgeId ? response.data : pledge
+        ));
+        // Refresh statistics
+        await fetchStatistics();
+        return response.data;
+      } else {
+        setError(response.error);
+        throw new Error(response.error);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to update pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
+      setError(err.message || 'Failed to update pledge');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [showToast, fetchStatistics]);
+  }, [fetchStatistics]);
 
   // Delete pledge
   const deletePledge = useCallback(async (pledgeId) => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      await pledgesService.deletePledge(pledgeId);
-      
-      // Remove pledge from the list
-      setPledges(prev => prev.filter(pledge => pledge.id !== pledgeId));
-      
-      // Update statistics
-      await fetchStatistics();
-      
-      showToast('Pledge deleted successfully', 'success');
+      const response = await pledgesService.deletePledge(pledgeId);
+      if (response.success) {
+        // Remove the pledge from the current list
+        setPledges(prev => prev.filter(pledge => pledge.id !== pledgeId));
+        // Refresh statistics
+        await fetchStatistics();
+      } else {
+        setError(response.error);
+        throw new Error(response.error);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to delete pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
+      setError(err.message || 'Failed to delete pledge');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [showToast, fetchStatistics]);
+  }, [fetchStatistics]);
 
-  // Bulk operations
-  const bulkUpdatePledges = useCallback(async (pledgeIds, updates) => {
-    setLoading(true);
-    setError(null);
-
+  // Export pledges
+  const exportPledges = useCallback(async (format = 'csv') => {
     try {
-      const response = await pledgesService.bulkUpdatePledges(pledgeIds, updates);
+      const response = await pledgesService.exportPledges({
+        format,
+        ...filters,
+        search: searchQuery
+      });
       
-      // Update pledges in the list
-      setPledges(prev => prev.map(pledge => {
-        if (pledgeIds.includes(pledge.id)) {
-          return { ...pledge, ...updates };
-        }
-        return pledge;
-      }));
-      
-      // Update statistics
-      await fetchStatistics();
-      
-      showToast(`${pledgeIds.length} pledges updated successfully`, 'success');
-      return response.data;
+      if (response.success) {
+        // Create download link
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `pledges_export_${new Date().toISOString().split('T')[0]}.${format}`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        throw new Error(response.error);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to update pledges';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
+      console.error('Export error:', err);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [showToast, fetchStatistics]);
+  }, [filters, searchQuery]);
 
-  const bulkDeletePledges = useCallback(async (pledgeIds) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      await pledgesService.bulkDeletePledges(pledgeIds);
-      
-      // Remove pledges from the list
-      setPledges(prev => prev.filter(pledge => !pledgeIds.includes(pledge.id)));
-      
-      // Update statistics
-      await fetchStatistics();
-      
-      showToast(`${pledgeIds.length} pledges deleted successfully`, 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to delete pledges';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast, fetchStatistics]);
-
-  // Pledge-specific operations
-  const markPledgeAsCompleted = useCallback(async (pledgeId) => {
-    return await updatePledge(pledgeId, { status: 'completed' });
-  }, [updatePledge]);
-
-  const markPledgeAsCancelled = useCallback(async (pledgeId) => {
-    return await updatePledge(pledgeId, { status: 'cancelled' });
-  }, [updatePledge]);
-
-  const reactivatePledge = useCallback(async (pledgeId) => {
-    return await updatePledge(pledgeId, { status: 'active' });
-  }, [updatePledge]);
-
-  // Filter and search operations
+  // Update filters
   const updateFilters = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    pagination.goToPage(1); // Reset to first page when filters change
-  }, [pagination]);
+  }, []);
 
-  const clearFilters = useCallback(() => {
-    setFilters(initialFilters);
-    setSearchQuery('');
-    setSortBy('created_at');
-    setSortOrder('desc');
-    pagination.goToPage(1);
-  }, [initialFilters, pagination]);
+  // Update search query
+  const setHookSearchQuery = useCallback((query) => {
+    setSearchQuery(query);
+  }, []);
 
-  const updateSort = useCallback((field, order = 'asc') => {
-    setSortBy(field);
-    setSortOrder(order);
-    pagination.goToPage(1);
-  }, [pagination]);
-
-  // Export operations
-  const exportPledges = useCallback(async (format = 'csv', customFilters = {}) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = {
-        format,
-        search: debouncedSearchQuery,
-        ...filters,
-        ...customFilters
-      };
-
-      const response = await pledgesService.exportPledges(params);
-      
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `pledges_export_${new Date().toISOString().split('T')[0]}.${format}`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      showToast('Pledges exported successfully', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to export pledges';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearchQuery, filters, showToast]);
-
-  // Real-time updates (if enabled)
+  // Initial load
   useEffect(() => {
-    if (enableRealTimeUpdates) {
-      const interval = setInterval(() => {
-        fetchPledges();
-        fetchStatistics();
-      }, 30000); // Update every 30 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [enableRealTimeUpdates, fetchPledges, fetchStatistics]);
-
-  // Initial data fetch
-  useEffect(() => {
-    if (autoFetch) {
-      fetchPledges();
-      fetchStatistics();
-    }
-  }, [autoFetch, fetchPledges, fetchStatistics]);
-
-  // Refetch when dependencies change
-  useEffect(() => {
-    if (autoFetch) {
-      fetchPledges();
-    }
-  }, [pagination.currentPage, debouncedSearchQuery, sortBy, sortOrder, filters]);
-
-  // Utility functions
-  const getFilteredPledges = useCallback((customFilters = {}) => {
-    return pledges.filter(pledge => {
-      const allFilters = { ...filters, ...customFilters };
-      
-      // Apply filters
-      for (const [key, value] of Object.entries(allFilters)) {
-        if (value && pledge[key] !== value) {
-          return false;
-        }
-      }
-      
-      // Apply search
-      if (debouncedSearchQuery) {
-        const searchLower = debouncedSearchQuery.toLowerCase();
-        return (
-          pledge.member_name?.toLowerCase().includes(searchLower) ||
-          pledge.member_email?.toLowerCase().includes(searchLower) ||
-          pledge.notes?.toLowerCase().includes(searchLower) ||
-          pledge.amount?.toString().includes(searchLower)
-        );
-      }
-      
-      return true;
-    });
-  }, [pledges, filters, debouncedSearchQuery]);
-
-  const getTotalPledgeAmount = useCallback((pledgeList = pledges) => {
-    return pledgeList.reduce((total, pledge) => total + parseFloat(pledge.amount || 0), 0);
-  }, [pledges]);
-
-  const getActivePledges = useCallback(() => {
-    return pledges.filter(pledge => pledge.status === 'active');
-  }, [pledges]);
-
-  const getCompletedPledges = useCallback(() => {
-    return pledges.filter(pledge => pledge.status === 'completed');
-  }, [pledges]);
-
-  const getPledgesByFrequency = useCallback((frequency) => {
-    return pledges.filter(pledge => pledge.frequency === frequency);
-  }, [pledges]);
-
-  const refreshData = useCallback(() => {
     fetchPledges();
-    fetchStatistics();
-  }, [fetchPledges, fetchStatistics]);
+  }, [fetchPledges]);
 
   return {
-    // Data
     pledges,
     statistics,
     loading,
     error,
-    
-    // Pagination
-    ...pagination,
-    
-    // Filters and search
-    filters,
-    searchQuery,
-    sortBy,
-    sortOrder,
-    setSearchQuery,
-    updateFilters,
-    clearFilters,
-    updateSort,
-    
-    // CRUD operations
+    pagination,
     fetchPledges,
-    getPledge,
+    fetchStatistics,
     createPledge,
     updatePledge,
     deletePledge,
-    
-    // Bulk operations
-    bulkUpdatePledges,
-    bulkDeletePledges,
-    
-    // Pledge-specific operations
-    markPledgeAsCompleted,
-    markPledgeAsCancelled,
-    reactivatePledge,
-    
-    // Export
     exportPledges,
-    
-    // Utility functions
-    getFilteredPledges,
-    getTotalPledgeAmount,
-    getActivePledges,
-    getCompletedPledges,
-    getPledgesByFrequency,
-    refreshData,
-    
-    // Statistics
-    fetchStatistics
+    updateFilters,
+    setSearchQuery: setHookSearchQuery,
+    // Legacy support - keep the old name too for backward compatibility
+    pledgeStats: statistics,
+    fetchPledgeStats: fetchStatistics // ADD THIS LINE for backward compatibility
   };
 };
-
-// Hook for managing a single pledge
-export const usePledge = (pledgeId) => {
-  const [pledge, setPledge] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const { showToast } = useToast();
-
-  const fetchPledge = useCallback(async () => {
-    if (!pledgeId) return;
-    
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await pledgesService.getPledge(pledgeId);
-      setPledge(response.data);
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [pledgeId, showToast]);
-
-  const updatePledge = useCallback(async (pledgeData) => {
-    if (!pledgeId) return;
-    
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await pledgesService.updatePledge(pledgeId, pledgeData);
-      setPledge(response.data);
-      showToast('Pledge updated successfully', 'success');
-      return response.data;
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to update pledge';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [pledgeId, showToast]);
-
-  useEffect(() => {
-    fetchPledge();
-  }, [fetchPledge]);
-
-  return {
-    pledge,
-    loading,
-    error,
-    fetchPledge,
-    updatePledge,
-    setPledge
-  };
-};
-
-export default usePledges;

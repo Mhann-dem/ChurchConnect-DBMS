@@ -132,6 +132,7 @@ else:
     }
 
 # Custom User Model
+# Add this line to use your custom user model
 AUTH_USER_MODEL = 'authentication.AdminUser'
 
 # Password validation
