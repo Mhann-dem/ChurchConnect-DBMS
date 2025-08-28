@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Users, Calendar, MapPin, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import GroupCard from './GroupCard';
@@ -13,8 +13,19 @@ import ConfirmDialog from '../../ui/ConfirmDialog';
 
 const GroupsList = () => {
   const navigate = useNavigate();
-  const { groups, loading, error, fetchGroups, deleteGroup } = useGroups();
+  const { 
+    groups, 
+    loading, 
+    error, 
+    refreshGroups, 
+    deleteGroup,
+    searchGroups,
+    filterGroups 
+  } = useGroups();
+  
   const { showToast } = useToast();
+  const mountedRef = useRef(true);
+  const searchTimeoutRef = useRef(null);
   
   // State
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,17 +36,73 @@ const GroupsList = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
   const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'list'
+  const [localGroups, setLocalGroups] = useState([]); // Local filtered state
 
-  // Load groups on mount
+  // FIXED: Single effect for initial load only
   useEffect(() => {
-    fetchGroups();
-  }, []);
+    console.log('[GroupsList] Component mounted, loading groups...');
+    
+    // Only fetch if we don't have groups yet
+    if (groups.length === 0 && !loading) {
+      refreshGroups();
+    }
+    
+    return () => {
+      mountedRef.current = false;
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []); // Empty dependency array - only run on mount
 
-  // Filter groups based on search term and status
-  const filteredGroups = groups.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (group.leader_name && group.leader_name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // FIXED: Update local groups when groups change
+  useEffect(() => {
+    setLocalGroups(groups);
+  }, [groups]);
+
+  // FIXED: Stable search handler with debouncing
+  const handleSearchChange = useCallback((newSearchTerm) => {
+    setSearchTerm(newSearchTerm);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Debounce search to prevent excessive API calls
+    searchTimeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        console.log('[GroupsList] Performing debounced search:', newSearchTerm);
+        
+        if (newSearchTerm.trim()) {
+          // Use the hook's search function
+          searchGroups(newSearchTerm.trim());
+        } else {
+          // If search is empty, refresh all groups
+          refreshGroups();
+        }
+      }
+    }, 500); // 500ms debounce
+  }, [searchGroups, refreshGroups]);
+
+  // FIXED: Stable filter handler
+  const handleFilterChange = useCallback((newFilter) => {
+    console.log('[GroupsList] Filter changed:', newFilter);
+    setFilterStatus(newFilter);
+    
+    // Convert filter status to API format
+    const filterValue = newFilter === 'all' ? null : (newFilter === 'active');
+    
+    // Use the hook's filter function
+    filterGroups({ active: filterValue });
+  }, [filterGroups]);
+
+  // Filter groups locally for immediate UI feedback
+  const filteredGroups = localGroups.filter(group => {
+    const matchesSearch = !searchTerm || 
+      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (group.leader_name && group.leader_name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesFilter = filterStatus === 'all' || 
                          (filterStatus === 'active' && group.active) ||
@@ -44,61 +111,70 @@ const GroupsList = () => {
     return matchesSearch && matchesFilter;
   });
 
-  // Handle create group
-  const handleCreateGroup = () => {
+  // FIXED: Stable event handlers
+  const handleCreateGroup = useCallback(() => {
     setSelectedGroup(null);
     setShowCreateForm(true);
-  };
+  }, []);
 
-  // Handle edit group
-  const handleEditGroup = (group) => {
+  const handleEditGroup = useCallback((group) => {
     setSelectedGroup(group);
     setShowEditForm(true);
-  };
+  }, []);
 
-  // Handle delete group
-  const handleDeleteGroup = (group) => {
+  const handleDeleteGroup = useCallback((group) => {
     setGroupToDelete(group);
     setShowDeleteDialog(true);
-  };
+  }, []);
 
-  // Confirm delete
-  const confirmDelete = async () => {
-    if (groupToDelete) {
+  const handleViewGroup = useCallback((group) => {
+    navigate(`/admin/groups/${group.id}`);
+  }, [navigate]);
+
+  // FIXED: Stable delete confirmation
+  const confirmDelete = useCallback(async () => {
+    if (groupToDelete && mountedRef.current) {
       try {
         await deleteGroup(groupToDelete.id);
         showToast('Group deleted successfully', 'success');
         setShowDeleteDialog(false);
         setGroupToDelete(null);
-        fetchGroups(); // Refresh the list
+        
+        // Remove from local state immediately for better UX
+        setLocalGroups(prev => prev.filter(g => g.id !== groupToDelete.id));
+        
+        // Refresh the list from server
+        refreshGroups();
       } catch (error) {
+        console.error('[GroupsList] Delete error:', error);
         showToast('Failed to delete group', 'error');
       }
     }
-  };
+  }, [groupToDelete, deleteGroup, showToast, refreshGroups]);
 
-  // Handle view group details
-  const handleViewGroup = (group) => {
-    navigate(`/admin/groups/${group.id}`);
-  };
-
-  // Handle form success
-  const handleFormSuccess = () => {
+  // FIXED: Stable form handlers
+  const handleFormSuccess = useCallback(() => {
     setShowCreateForm(false);
     setShowEditForm(false);
     setSelectedGroup(null);
-    fetchGroups();
-    showToast(selectedGroup ? 'Group updated successfully' : 'Group created successfully', 'success');
-  };
+    
+    // Show success message
+    showToast(
+      selectedGroup ? 'Group updated successfully' : 'Group created successfully', 
+      'success'
+    );
+    
+    // Refresh the list
+    refreshGroups();
+  }, [selectedGroup, showToast, refreshGroups]);
 
-  // Handle form cancel
-  const handleFormCancel = () => {
+  const handleFormCancel = useCallback(() => {
     setShowCreateForm(false);
     setShowEditForm(false);
     setSelectedGroup(null);
-  };
+  }, []);
 
-  if (loading) {
+  if (loading && localGroups.length === 0) {
     return (
       <div className={styles.container}>
         <LoadingSpinner />
@@ -106,13 +182,13 @@ const GroupsList = () => {
     );
   }
 
-  if (error) {
+  if (error && localGroups.length === 0) {
     return (
       <div className={styles.container}>
         <div className={styles.error}>
           <h3>Error Loading Groups</h3>
           <p>{error}</p>
-          <button onClick={fetchGroups} className={styles.retryButton}>
+          <button onClick={() => refreshGroups()} className={styles.retryButton}>
             Retry
           </button>
         </div>
@@ -144,7 +220,7 @@ const GroupsList = () => {
         <div className={styles.searchContainer}>
           <SearchBar
             value={searchTerm}
-            onChange={setSearchTerm}
+            onChange={handleSearchChange}
             placeholder="Search groups, leaders, or descriptions..."
             className={styles.searchBar}
           />
@@ -153,7 +229,7 @@ const GroupsList = () => {
         <div className={styles.filters}>
           <select 
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => handleFilterChange(e.target.value)}
             className={styles.filterSelect}
           >
             <option value="all">All Groups</option>
@@ -185,7 +261,7 @@ const GroupsList = () => {
             <Users size={20} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statValue}>{groups.length}</span>
+            <span className={styles.statValue}>{localGroups.length}</span>
             <span className={styles.statLabel}>Total Groups</span>
           </div>
         </div>
@@ -195,7 +271,7 @@ const GroupsList = () => {
             <Calendar size={20} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statValue}>{groups.filter(g => g.active).length}</span>
+            <span className={styles.statValue}>{localGroups.filter(g => g.active).length}</span>
             <span className={styles.statLabel}>Active Groups</span>
           </div>
         </div>
@@ -206,7 +282,7 @@ const GroupsList = () => {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {groups.reduce((total, group) => total + (group.member_count || 0), 0)}
+              {localGroups.reduce((total, group) => total + (group.member_count || 0), 0)}
             </span>
             <span className={styles.statLabel}>Total Members</span>
           </div>
@@ -215,6 +291,13 @@ const GroupsList = () => {
 
       {/* Groups Grid/List */}
       <div className={styles.content}>
+        {loading && (
+          <div className={styles.loadingOverlay}>
+            <LoadingSpinner size="small" />
+            <span>Loading groups...</span>
+          </div>
+        )}
+        
         {filteredGroups.length === 0 ? (
           <div className={styles.emptyState}>
             <Users size={48} className={styles.emptyIcon} />

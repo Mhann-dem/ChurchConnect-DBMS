@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGroups } from '../../hooks/useGroups';
 import { useToast } from '../../hooks/useToast';
@@ -35,7 +35,7 @@ const GroupsPage = () => {
     createGroup,
     updateGroup,
     deleteGroup,
-    refreshGroups, // Use refreshGroups instead of fetchGroups
+    refreshGroups,
     searchGroups
   } = useGroups();
 
@@ -44,40 +44,46 @@ const GroupsPage = () => {
   // Calculate totalGroups from pagination or groups length
   const totalGroups = pagination?.total || groups?.length || 0;
 
-  useEffect(() => {
+  // FIXED: Use useCallback to memoize the refresh function
+  const handleRefresh = useCallback(() => {
     if (searchTerm) {
       searchGroups(searchTerm, filters);
     } else {
-      refreshGroups(filters); // Use refreshGroups instead of fetchGroups
+      refreshGroups(filters);
     }
-  }, [searchTerm, filters, searchGroups, refreshGroups]);
+  }, [searchTerm, filters]); // Remove function dependencies
 
-  // Fix the handleSearch function - SearchBar expects onSearch prop
-  const handleSearch = (term) => {
+  // FIXED: Use the memoized function in useEffect
+  useEffect(() => {
+    handleRefresh();
+  }, [handleRefresh]);
+
+  // FIXED: Memoize search handler
+  const handleSearch = useCallback((term) => {
     setSearchTerm(term);
     if (term) {
       setSearchParams({ search: term });
     } else {
       setSearchParams({});
     }
-  };
+  }, [setSearchParams]);
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = useCallback(() => {
     setSelectedGroup(null);
     setShowGroupForm(true);
-  };
+  }, []);
 
-  const handleEditGroup = (group) => {
+  const handleEditGroup = useCallback((group) => {
     setSelectedGroup(group);
     setShowGroupForm(true);
-  };
+  }, []);
 
-  const handleViewGroup = (group) => {
+  const handleViewGroup = useCallback((group) => {
     setSelectedGroup(group);
     setShowGroupDetail(true);
-  };
+  }, []);
 
-  const handleSaveGroup = async (groupData) => {
+  const handleSaveGroup = useCallback(async (groupData) => {
     try {
       if (selectedGroup) {
         await updateGroup(selectedGroup.id, groupData);
@@ -91,9 +97,9 @@ const GroupsPage = () => {
     } catch (error) {
       showToast(error.message || 'Failed to save group', 'error');
     }
-  };
+  }, [selectedGroup, updateGroup, createGroup, showToast]);
 
-  const handleDeleteGroup = async (groupId) => {
+  const handleDeleteGroup = useCallback(async (groupId) => {
     if (window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
       try {
         await deleteGroup(groupId);
@@ -106,11 +112,12 @@ const GroupsPage = () => {
         showToast(error.message || 'Failed to delete group', 'error');
       }
     }
-  };
+  }, [deleteGroup, showToast, selectedGroup]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
+  // FIXED: Memoize filter change handler  
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  }, []);
 
   const filteredGroupsCount = groups?.length || 0;
 
@@ -187,7 +194,7 @@ const GroupsPage = () => {
       {/* Search and Filters */}
       <div className={styles.searchSection}>
         <SearchBar
-          onSearch={handleSearch} // Fixed: pass onSearch instead of onChange
+          onSearch={handleSearch}
           value={searchTerm}
           placeholder="Search groups by name, description, or leader..."
           className={styles.searchBar}
@@ -200,7 +207,7 @@ const GroupsPage = () => {
                 <label>Status</label>
                 <select
                   value={filters.status}
-                  onChange={(e) => handleFilterChange({ ...filters, status: e.target.value })}
+                  onChange={(e) => handleFilterChange({ status: e.target.value })}
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
@@ -211,7 +218,7 @@ const GroupsPage = () => {
                 <label>Category</label>
                 <select
                   value={filters.category}
-                  onChange={(e) => handleFilterChange({ ...filters, category: e.target.value })}
+                  onChange={(e) => handleFilterChange({ category: e.target.value })}
                 >
                   <option value="all">All Categories</option>
                   <option value="ministry">Ministry</option>
@@ -224,7 +231,7 @@ const GroupsPage = () => {
                 <label>Leadership</label>
                 <select
                   value={filters.hasLeader}
-                  onChange={(e) => handleFilterChange({ ...filters, hasLeader: e.target.value })}
+                  onChange={(e) => handleFilterChange({ hasLeader: e.target.value })}
                 >
                   <option value="all">All Groups</option>
                   <option value="yes">Has Leader</option>
@@ -235,7 +242,7 @@ const GroupsPage = () => {
                 <label>Size</label>
                 <select
                   value={filters.memberCount}
-                  onChange={(e) => handleFilterChange({ ...filters, memberCount: e.target.value })}
+                  onChange={(e) => handleFilterChange({ memberCount: e.target.value })}
                 >
                   <option value="all">All Sizes</option>
                   <option value="small">Small (1-10)</option>
@@ -260,7 +267,7 @@ const GroupsPage = () => {
       {error ? (
         <Card className={styles.errorCard}>
           <p>Error loading groups: {error}</p>
-          <Button onClick={() => refreshGroups(filters)} variant="outline">
+          <Button onClick={handleRefresh} variant="outline">
             Try Again
           </Button>
         </Card>

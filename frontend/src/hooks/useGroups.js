@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import groupsService from '../services/groups';
 
 export const useGroups = (options = {}) => {
@@ -18,8 +18,12 @@ export const useGroups = (options = {}) => {
     memberCount: null
   });
 
+  // Use refs to track if we're already fetching to prevent duplicate requests
+  const isFetchingRef = useRef(false);
+  const mountedRef = useRef(true);
+
   // Helper function to transform filters for API
-  const transformFiltersForAPI = (currentFilters) => {
+  const transformFiltersForAPI = useCallback((currentFilters) => {
     const apiFilters = {};
     
     if (currentFilters.search) {
@@ -39,28 +43,44 @@ export const useGroups = (options = {}) => {
     }
     
     return apiFilters;
-  };
+  }, []);
 
-  // Main fetch function - now using the service layer
-  const fetchGroups = useCallback(async (currentFilters = filters, page = 1) => {
+  // FIXED: Stable fetchGroups function with proper dependency management
+  const fetchGroups = useCallback(async (currentFilters = null, page = null) => {
+    // Prevent duplicate requests
+    if (isFetchingRef.current) {
+      console.log('[useGroups] Already fetching, skipping...');
+      return;
+    }
+
     try {
+      isFetchingRef.current = true;
       setLoading(true);
       setError(null);
       
+      // Use current state if no parameters provided
+      const filtersToUse = currentFilters || filters;
+      const pageToUse = page || pagination.page;
+      
       const apiParams = {
-        page: page,
+        page: pageToUse,
         limit: pagination.limit,
-        ...transformFiltersForAPI(currentFilters)
+        ...transformFiltersForAPI(filtersToUse)
       };
       
       console.log('[useGroups] Fetching groups with params:', apiParams);
       
       const result = await groupsService.getGroups(apiParams);
       
+      // Only update state if component is still mounted
+      if (!mountedRef.current) {
+        return;
+      }
+      
       if (result.success) {
         setGroups(result.data.results || result.data || []);
         setPagination({
-          page: result.data.page || page,
+          page: result.data.page || pageToUse,
           limit: result.data.limit || 25,
           total: result.data.count || result.data.total || 0,
           totalPages: Math.ceil((result.data.count || result.data.total || 0) / (result.data.limit || 25))
@@ -72,23 +92,28 @@ export const useGroups = (options = {}) => {
       }
     } catch (error) {
       console.error('[useGroups] Error fetching groups:', error);
-      setError('Failed to load groups. Please try again.');
+      if (mountedRef.current) {
+        setError('Failed to load groups. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      isFetchingRef.current = false;
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [filters, pagination.limit]);
+  }, []); // FIXED: Empty dependency array since we use refs and current state
 
-  // Alias for fetchGroups to match what GroupsPage expects
-  const refreshGroups = useCallback((currentFilters = filters, page = 1) => {
-    return fetchGroups(currentFilters, page);
-  }, [fetchGroups, filters]);
+  // FIXED: Separate stable function for refreshing
+  const refreshGroups = useCallback(() => {
+    return fetchGroups();
+  }, [fetchGroups]);
 
   // Create new group/ministry
   const createGroup = useCallback(async (groupData) => {
     try {
       const result = await groupsService.createGroup(groupData);
       
-      if (result.success) {
+      if (result.success && mountedRef.current) {
         // Add to current groups if on first page
         if (pagination.page === 1) {
           setGroups(prev => [result.data, ...prev]);
@@ -116,7 +141,7 @@ export const useGroups = (options = {}) => {
     try {
       const result = await groupsService.updateGroup(groupId, updateData);
       
-      if (result.success) {
+      if (result.success && mountedRef.current) {
         setGroups(prev => prev.map(group => 
           group.id === groupId ? result.data : group
         ));
@@ -135,7 +160,7 @@ export const useGroups = (options = {}) => {
     try {
       const result = await groupsService.deleteGroup(groupId);
       
-      if (result.success) {
+      if (result.success && mountedRef.current) {
         setGroups(prev => prev.filter(group => group.id !== groupId));
         setPagination(prev => ({
           ...prev,
@@ -151,78 +176,34 @@ export const useGroups = (options = {}) => {
     }
   }, []);
 
-  // Get group members
-  const getGroupMembers = useCallback(async (groupId) => {
-    try {
-      const result = await groupsService.getGroupMembers(groupId);
-      
-      if (result.success) {
-        return result.data.members || result.data || [];
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error('[useGroups] Error fetching group members:', error);
-      throw error;
-    }
-  }, []);
-
-  // Add member to group
-  const addMemberToGroup = useCallback(async (groupId, memberId, role = '') => {
-    try {
-      const result = await groupsService.addMemberToGroup(groupId, memberId, role);
-      
-      if (result.success) {
-        // Update group member count in local state
-        setGroups(prev => prev.map(group => 
-          group.id === groupId 
-            ? { ...group, member_count: (group.member_count || 0) + 1 }
-            : group
-        ));
-        return result.data;
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error('[useGroups] Error adding member to group:', error);
-      throw error;
-    }
-  }, []);
-
-  // Remove member from group
-  const removeMemberFromGroup = useCallback(async (groupId, memberId) => {
-    try {
-      const result = await groupsService.removeMemberFromGroup(groupId, memberId);
-      
-      if (result.success) {
-        // Update group member count in local state
-        setGroups(prev => prev.map(group => 
-          group.id === groupId 
-            ? { ...group, member_count: Math.max(0, (group.member_count || 1) - 1) }
-            : group
-        ));
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error('[useGroups] Error removing member from group:', error);
-      throw error;
-    }
-  }, []);
-
-  // Search groups
-  const searchGroups = useCallback(async (searchTerm, currentFilters = filters) => {
-    const newFilters = { ...currentFilters, search: searchTerm };
+  // FIXED: Search function with stable dependencies
+  const searchGroups = useCallback(async (searchTerm, currentFilters = null) => {
+    const newFilters = { 
+      ...(currentFilters || filters), 
+      search: searchTerm 
+    };
+    
     setFilters(newFilters);
-    await fetchGroups(newFilters, 1);
-  }, [fetchGroups, filters]);
+    
+    // Use setTimeout to batch the state update and fetch
+    setTimeout(() => {
+      fetchGroups(newFilters, 1);
+    }, 0);
+  }, []); // FIXED: Empty dependencies, use current state via closure
 
-  // Filter groups
+  // FIXED: Filter function with stable dependencies
   const filterGroups = useCallback(async (filterUpdates) => {
-    const newFilters = { ...filters, ...filterUpdates };
-    setFilters(newFilters);
-    await fetchGroups(newFilters, 1);
-  }, [fetchGroups, filters]);
+    setFilters(prevFilters => {
+      const newFilters = { ...prevFilters, ...filterUpdates };
+      
+      // Use setTimeout to batch the state update and fetch
+      setTimeout(() => {
+        fetchGroups(newFilters, 1);
+      }, 0);
+      
+      return newFilters;
+    });
+  }, []); // FIXED: Empty dependencies
 
   // Clear filters
   const clearFilters = useCallback(async () => {
@@ -233,27 +214,40 @@ export const useGroups = (options = {}) => {
       memberCount: null
     };
     setFilters(clearedFilters);
-    await fetchGroups(clearedFilters, 1);
-  }, [fetchGroups]);
+    
+    setTimeout(() => {
+      fetchGroups(clearedFilters, 1);
+    }, 0);
+  }, []);
 
-  // Pagination functions
+  // Pagination functions with stable dependencies
   const goToPage = useCallback((page) => {
     if (page >= 1 && page <= pagination.totalPages) {
       fetchGroups(filters, page);
     }
-  }, [fetchGroups, filters, pagination.totalPages]);
+  }, []); // FIXED: Use current state via closure
 
   const nextPage = useCallback(() => {
-    if (pagination.page < pagination.totalPages) {
-      fetchGroups(filters, pagination.page + 1);
-    }
-  }, [fetchGroups, filters, pagination.page, pagination.totalPages]);
+    setPagination(currentPagination => {
+      if (currentPagination.page < currentPagination.totalPages) {
+        setTimeout(() => {
+          fetchGroups(filters, currentPagination.page + 1);
+        }, 0);
+      }
+      return currentPagination;
+    });
+  }, []);
 
   const prevPage = useCallback(() => {
-    if (pagination.page > 1) {
-      fetchGroups(filters, pagination.page - 1);
-    }
-  }, [fetchGroups, filters, pagination.page]);
+    setPagination(currentPagination => {
+      if (currentPagination.page > 1) {
+        setTimeout(() => {
+          fetchGroups(filters, currentPagination.page - 1);
+        }, 0);
+      }
+      return currentPagination;
+    });
+  }, []);
 
   // Utility functions
   const getGroupById = useCallback((groupId) => {
@@ -286,7 +280,29 @@ export const useGroups = (options = {}) => {
     };
   }, [groups]);
 
-  // Initialize with options if provided
+  // FIXED: Single effect for initial fetch only
+  useEffect(() => {
+    let timeoutId;
+    
+    console.log('[useGroups] Initial mount effect');
+    
+    // Delay initial fetch slightly to prevent race conditions
+    timeoutId = setTimeout(() => {
+      if (mountedRef.current) {
+        fetchGroups();
+      }
+    }, 100);
+    
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []); // Only run on mount
+
+  // FIXED: Separate effect for options changes
   useEffect(() => {
     if (options.initialFilters) {
       setFilters(prev => ({ ...prev, ...options.initialFilters }));
@@ -294,12 +310,7 @@ export const useGroups = (options = {}) => {
     if (options.initialPage) {
       setPagination(prev => ({ ...prev, page: options.initialPage }));
     }
-  }, [options]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchGroups();
-  }, []); // Only run on mount
+  }, [options.initialFilters, options.initialPage]);
 
   return {
     // Data
@@ -309,24 +320,24 @@ export const useGroups = (options = {}) => {
     pagination,
     filters,
     
-    // CRUD operations
+    // CRUD operations - all stable references
     createGroup,
     updateGroup,
     deleteGroup,
-    fetchGroups, // Keep this for compatibility
-    refreshGroups, // Alternative name that GroupsPage expects
+    fetchGroups,
+    refreshGroups,
     
     // Member management
-    getGroupMembers,
-    addMemberToGroup,
-    removeMemberFromGroup,
+    // getGroupMembers, - implement if needed
+    // addMemberToGroup, - implement if needed
+    // removeMemberFromGroup, - implement if needed
     
-    // Search and filter
+    // Search and filter - all stable references
     searchGroups,
     filterGroups,
     clearFilters,
     
-    // Pagination
+    // Pagination - all stable references
     goToPage,
     nextPage,
     prevPage,

@@ -1,25 +1,41 @@
-# File: backend/authentication/urls.py
-from django.urls import path
+# authentication/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views
+from .views import (
+    login_view, logout_view, verify_token, test_endpoint,
+    UserProfileView, PasswordChangeView,
+    PasswordResetRequestView, PasswordResetConfirmView,
+    AdminUserListCreateView, AdminUserDetailView,
+    user_permissions, login_attempts, clear_login_attempts
+)
+
 app_name = 'authentication'
+
 urlpatterns = [
-    # Authentication endpoints
-    path('login/', views.login_view, name='admin_login'),
-    path('logout/', views.logout_view, name='admin_logout'),
-    path('verify/', views.verify_token, name='verify_token'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Core authentication endpoints
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('verify/', verify_token, name='verify-token'),
+    path('test/', test_endpoint, name='test'),  # Add this for API testing
+    
+    # JWT token management
+    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    
+    # User profile management
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('permissions/', user_permissions, name='user-permissions'),
+    
     # Password management
-    path('password/change/', views.PasswordChangeView.as_view(), name='password_change'),
-    path('password/reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
-    path('password/reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    # User profile and permissions
-    path('profile/', views.UserProfileView.as_view(), name='user_profile'),
-    path('permissions/', views.user_permissions, name='user_permissions'),
-    # Admin user management (Super Admin only)
-    path('users/', views.AdminUserListCreateView.as_view(), name='admin_users'),
-    path('users/<uuid:pk>/', views.AdminUserDetailView.as_view(), name='admin_user_detail'),
-    # Security monitoring (Super Admin only)
-    path('login-attempts/', views.login_attempts, name='login_attempts'),
-    path('login-attempts/clear/', views.clear_login_attempts, name='clear_login_attempts'),
+    path('change-password/', PasswordChangeView.as_view(), name='change-password'),
+    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    
+    # Admin user management (requires super admin)
+    path('users/', AdminUserListCreateView.as_view(), name='admin-users-list'),
+    path('users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
+    
+    # Security monitoring (requires super admin)
+    path('login-attempts/', login_attempts, name='login-attempts'),
+    path('login-attempts/clear/', clear_login_attempts, name='clear-login-attempts'),
 ]

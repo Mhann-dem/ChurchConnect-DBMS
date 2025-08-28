@@ -3,13 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 import { useTheme } from './context/ThemeContext';
 import { useToast } from './context/ToastContext';
-import { SettingsProvider } from './context/SettingsContext';
-
-
-// Context Providers
-import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { ToastProvider } from './context/ToastContext';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -19,7 +12,7 @@ import AdminLayout from './components/layout/AdminLayout';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import Toast from './components/shared/Toast';
 
-// Lazy-loaded components for better performance
+// Lazy-loaded components
 const HomePage = lazy(() => import('./pages/public/HomePage'));
 const RegistrationPage = lazy(() => import('./pages/public/RegistrationPage'));
 const ThankYouPage = lazy(() => import('./pages/public/ThankYouPage'));
@@ -50,11 +43,38 @@ const PledgesPage = lazy(() => import('./pages/admin/PledgesPage'));
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 
-// Member login page (separate from admin)
+// Member login page
 const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
 
-// Inner App component that uses the contexts
-function AppContent() {
+// FIXED: Move ProtectedRoute components outside to prevent recreation
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
+};
+
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  
+  return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
+};
+
+// Main App component - REMOVED duplicate providers
+function App() {
   const { theme } = useTheme();
   const { toasts } = useToast();
   const location = useLocation();
@@ -64,7 +84,7 @@ function AppContent() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Track page views for analytics (optional)
+  // Track page views for analytics
   useEffect(() => {
     console.log('Page view:', location.pathname);
   }, [location]);
@@ -72,42 +92,15 @@ function AppContent() {
   // Determine if current path is admin-related
   const isAdminPath = location.pathname.startsWith('/admin');
 
-  // MOVE ROUTE COMPONENTS INSIDE AppContent so they have access to contexts
-  const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isLoading } = useAuth();
-    
-    if (isLoading) {
-      return <LoadingSpinner />;
-    }
-    
-    return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
-  };
-
-  const PublicRoute = ({ children }) => {
-    const { isAuthenticated } = useAuth();
-    
-    return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
-  };
-
-  const AdminRoute = ({ children }) => {
-    const { isAuthenticated, isLoading } = useAuth();
-    
-    if (isLoading) {
-      return <LoadingSpinner />;
-    }
-    
-    return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
-  };
-
   return (
     <div className="app">
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Public Routes - Primary focus for church members */}
+          {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<HomePage />} />
             
-            {/* Registration Routes - Multiple paths for flexibility */}
+            {/* Registration Routes */}
             <Route path="register" element={<RegistrationPage />} />
             <Route path="form" element={<RegistrationPage />} />
             <Route path="member-registration" element={<RegistrationPage />} />
@@ -138,14 +131,14 @@ function AppContent() {
             <Route path="registration-success" element={<ThankYouPage />} />
           </Route>
 
-          {/* Member Login - Separate from admin */}
+          {/* Member Login */}
           <Route path="/login" element={
             <PublicRoute>
               <MemberLoginPage />
             </PublicRoute>
           } />
 
-          {/* Authentication Routes - Clean, separate from main navigation */}
+          {/* Authentication Routes */}
           <Route path="/admin/login" element={
             <PublicRoute>
               <LoginPage />
@@ -162,7 +155,7 @@ function AppContent() {
             </PublicRoute>
           } />
 
-          {/* Admin Routes - Protected and feature-rich */}
+          {/* Admin Routes */}
           <Route path="/admin" element={
             <AdminRoute>
               <AdminLayout />
@@ -189,7 +182,7 @@ function AppContent() {
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
-          {/* Redirects for common misspellings/variations */}
+          {/* Redirects */}
           <Route path="/registration" element={<Navigate to="/register" replace />} />
           <Route path="/join" element={<Navigate to="/register" replace />} />
           <Route path="/signup" element={<Navigate to="/register" replace />} />
@@ -222,21 +215,5 @@ function AppContent() {
     </div>
   );
 }
-
-// Main App component with all providers
-function App() {
-  return (
-    <ThemeProvider>
-      <ToastProvider>
-        <SettingsProvider>  {/* Add this */}
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </SettingsProvider>  {/* Add this */}
-      </ToastProvider>
-    </ThemeProvider>
-  );
-}
-
 
 export default App;

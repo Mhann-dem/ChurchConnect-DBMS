@@ -1,7 +1,7 @@
 // ============================================================================
-// context/AuthContext.jsx - Fixed version
+// context/AuthContext.jsx - Fixed version to prevent infinite loops
 // ============================================================================
-import React, { createContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import authService from '../services/auth';
 
 export const AuthContext = createContext();
@@ -24,14 +24,17 @@ const initialState = {
   token: null,
   isAuthenticated: false,
   isLoading: true,
-  error: null
+  error: null,
+  authChecked: false // ADDED: Track if initial auth check is complete
 };
 
 const authReducer = (state, action) => {
   switch (action.type) {
     case AUTH_ACTIONS.SET_LOADING:
-    case AUTH_ACTIONS.CHECK_AUTH_START:
       return { ...state, isLoading: action.payload ?? true };
+      
+    case AUTH_ACTIONS.CHECK_AUTH_START:
+      return { ...state, isLoading: true };
       
     case AUTH_ACTIONS.LOGIN_SUCCESS:
     case AUTH_ACTIONS.CHECK_AUTH_SUCCESS:
@@ -41,10 +44,21 @@ const authReducer = (state, action) => {
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
-        error: null
+        error: null,
+        authChecked: true // ADDED: Mark auth as checked
       };
       
     case AUTH_ACTIONS.LOGIN_FAILURE:
+      return {
+        ...state,
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: action.payload,
+        authChecked: true // ADDED: Mark auth as checked even on failure
+      };
+      
     case AUTH_ACTIONS.CHECK_AUTH_FAILURE:
       return {
         ...state,
@@ -52,13 +66,15 @@ const authReducer = (state, action) => {
         token: null,
         isAuthenticated: false,
         isLoading: false,
-        error: action.payload
+        error: null, // Don't show error for failed auth checks
+        authChecked: true // ADDED: Mark auth as checked
       };
       
     case AUTH_ACTIONS.LOGOUT:
       return {
         ...initialState,
-        isLoading: false
+        isLoading: false,
+        authChecked: true // ADDED: Keep auth checked state
       };
       
     case AUTH_ACTIONS.UPDATE_USER:
@@ -80,28 +96,51 @@ const authReducer = (state, action) => {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  
+  // ADDED: Use refs to prevent duplicate operations
+  const isCheckingAuthRef = useRef(false);
+  const isLoggingInRef = useRef(false);
+  const mountedRef = useRef(true);
 
+  // FIXED: Stable setLoading function
   const setLoading = useCallback((loading) => {
-    dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: loading });
+    if (mountedRef.current) {
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: loading });
+    }
   }, []);
 
+  // FIXED: Stable clearError function
   const clearError = useCallback(() => {
-    dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+    if (mountedRef.current) {
+      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+    }
   }, []);
 
+  // FIXED: Stable logout function
   const logout = useCallback(async () => {
     try {
+      console.log('[AuthContext] Starting logout...');
       setLoading(true);
       await authService.logout();
     } catch (error) {
-      console.error('Logout API error:', error);
+      console.error('[AuthContext] Logout API error:', error);
     } finally {
-      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      if (mountedRef.current) {
+        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      }
     }
   }, [setLoading]);
 
+  // FIXED: Stable login function with duplicate prevention
   const login = useCallback(async (credentials) => {
+    // Prevent duplicate login attempts
+    if (isLoggingInRef.current) {
+      console.log('[AuthContext] Login already in progress, skipping...');
+      return;
+    }
+
     try {
+      isLoggingInRef.current = true;
       console.log('[AuthContext] Starting login...');
       setLoading(true);
       clearError();
@@ -109,6 +148,10 @@ export const AuthProvider = ({ children }) => {
       // Call authService.login which returns { success, user, access_token, refresh_token }
       const result = await authService.login(credentials);
       console.log('[AuthContext] AuthService result:', result);
+      
+      if (!mountedRef.current) {
+        return;
+      }
       
       if (result.success) {
         // Map access_token to token for consistency
@@ -135,25 +178,45 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('[AuthContext] Login error:', error);
       const errorMessage = error.message || 'Login failed';
-      dispatch({ 
-        type: AUTH_ACTIONS.LOGIN_FAILURE, 
-        payload: errorMessage 
-      });
+      
+      if (mountedRef.current) {
+        dispatch({ 
+          type: AUTH_ACTIONS.LOGIN_FAILURE, 
+          payload: errorMessage 
+        });
+      }
       throw error;
     } finally {
-      setLoading(false);
+      isLoggingInRef.current = false;
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [setLoading, clearError]);
 
+  // FIXED: Stable updateUser function
   const updateUser = useCallback((userData) => {
-    dispatch({ type: AUTH_ACTIONS.UPDATE_USER, payload: userData });
+    if (mountedRef.current) {
+      dispatch({ type: AUTH_ACTIONS.UPDATE_USER, payload: userData });
+    }
   }, []);
 
+  // FIXED: Stable checkAuthStatus with duplicate prevention
   const checkAuthStatus = useCallback(async () => {
-    console.log('[AuthContext] Checking auth status...');
-    dispatch({ type: AUTH_ACTIONS.CHECK_AUTH_START });
+    // Prevent duplicate auth checks
+    if (isCheckingAuthRef.current || state.authChecked) {
+      console.log('[AuthContext] Auth check already complete or in progress, skipping...');
+      return;
+    }
     
     try {
+      isCheckingAuthRef.current = true;
+      console.log('[AuthContext] Checking auth status...');
+      
+      if (mountedRef.current) {
+        dispatch({ type: AUTH_ACTIONS.CHECK_AUTH_START });
+      }
+      
       // Check if authService has stored auth data
       const isAuth = authService.isAuthenticated();
       const user = authService.getCurrentUser();
@@ -161,10 +224,13 @@ export const AuthProvider = ({ children }) => {
       
       console.log('[AuthContext] Stored auth data:', { isAuth, hasUser: !!user, hasToken: !!token });
       
+      if (!mountedRef.current) {
+        return;
+      }
+      
       if (isAuth && user && token) {
         console.log('[AuthContext] Found stored auth, verifying...');
         
-        // For now, trust the stored data. You can add token verification later
         dispatch({
           type: AUTH_ACTIONS.CHECK_AUTH_SUCCESS,
           payload: { user, token }
@@ -180,28 +246,56 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('[AuthContext] Auth check failed:', error);
-      dispatch({
-        type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
-        payload: error.message || 'Authentication check failed'
-      });
+      if (mountedRef.current) {
+        dispatch({
+          type: AUTH_ACTIONS.CHECK_AUTH_FAILURE,
+          payload: error.message || 'Authentication check failed'
+        });
+      }
+    } finally {
+      isCheckingAuthRef.current = false;
+    }
+  }, []); // FIXED: Empty dependency array since we check authChecked state
+
+  // FIXED: Stable setToken function
+  const setToken = useCallback((token) => {
+    if (mountedRef.current) {
+      dispatch({ type: AUTH_ACTIONS.SET_TOKEN, payload: token });
     }
   }, []);
 
-  const setToken = useCallback((token) => {
-    dispatch({ type: AUTH_ACTIONS.SET_TOKEN, payload: token });
-  }, []);
-
-  // Initialize auth state on mount
+  // FIXED: Single effect for initialization only
   useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+    console.log('[AuthContext] Initializing auth context...');
+    
+    // Only check auth status if not already checked
+    if (!state.authChecked) {
+      // Small delay to prevent race conditions
+      const timeoutId = setTimeout(() => {
+        if (mountedRef.current && !state.authChecked) {
+          checkAuthStatus();
+        }
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+    
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []); // Only run on mount
 
+  // FIXED: Memoized context value to prevent unnecessary re-renders
   const contextValue = {
     user: state.user,
     token: state.token,
     isAuthenticated: state.isAuthenticated,
     isLoading: state.isLoading,
     error: state.error,
+    authChecked: state.authChecked, // ADDED: Expose auth check status
     login,
     logout,
     updateUser,
