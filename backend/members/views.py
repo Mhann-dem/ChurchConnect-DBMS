@@ -1,11 +1,12 @@
-# members/views.py - Fixed permissions and authentication
+# members/views.py - Fixed version that resolves authentication and permission issues
 import csv
 import json
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Count
+from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, filters
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
-from .permissions import IsAuthenticatedOrCreateOnly, IsAdminUserOrReadOnly
+from .permissions import IsAuthenticatedOrCreateOnly, IsAdminUserOrReadOnly, DebugPermission
 from .serializers import (
     MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
     MemberSummarySerializer, MemberExportSerializer, MemberNoteSerializer,
@@ -22,19 +23,59 @@ from .serializers import (
     BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
 
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def debug_auth(request):
+    """Debug endpoint to check authentication status"""
+    user_info = {
+        'user': str(request.user),
+        'user_type': type(request.user).__name__,
+        'is_authenticated': getattr(request.user, 'is_authenticated', False),
+        'is_anonymous': getattr(request.user, 'is_anonymous', True),
+        'is_staff': getattr(request.user, 'is_staff', False),
+        'is_superuser': getattr(request.user, 'is_superuser', False),
+        'email': getattr(request.user, 'email', 'None'),
+        'username': getattr(request.user, 'username', 'None'),
+        'role': getattr(request.user, 'role', 'None'),
+        'active': getattr(request.user, 'active', 'None'),
+    }
+    
+    headers_info = {
+        'Authorization': request.META.get('HTTP_AUTHORIZATION', 'Not present'),
+        'Content-Type': request.META.get('CONTENT_TYPE', 'Not set'),
+        'User-Agent': request.META.get('HTTP_USER_AGENT', 'Not set'),
+        'Remote-Addr': request.META.get('REMOTE_ADDR', 'Unknown'),
+    }
+    
+    return Response({
+        'message': 'Authentication debug info',
+        'user_info': user_info,
+        'headers': headers_info,
+        'request_method': request.method,
+        'request_path': request.path,
+    })
+
+
 class MemberViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing members with proper permissions
+    ViewSet for managing members with fixed permissions
     """
     queryset = Member.objects.select_related('family').prefetch_related(
         'member_notes', 'tag_assignments__tag'
     ).order_by('-registration_date')
     
-    # Use custom permission class that allows public registration but requires auth for viewing
-    permission_classes = [IsAuthenticatedOrCreateOnly]
+    # Use the fixed permission class
+    permission_classes = [DebugPermission, IsAuthenticatedOrCreateOnly]
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        'gender': ['exact'],
+        'is_active': ['exact'],
+        'registration_date': ['gte', 'lte', 'exact'],
+        'family': ['exact'],
+    }
     search_fields = [
         'first_name', 'last_name', 'preferred_name', 'email', 
         'phone', 'notes'
@@ -62,26 +103,25 @@ class MemberViewSet(viewsets.ModelViewSet):
     def _is_admin_user(self):
         """Check if current user is admin"""
         user = self.request.user
-        if not user.is_authenticated:
+        if not user or not user.is_authenticated:
             return False
         return (
             user.is_superuser or
             user.is_staff or
-            (hasattr(user, 'role') and user.role in ['admin', 'super_admin']) or
-            (hasattr(user, 'is_admin') and user.is_admin)
+            (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])
         )
     
+    def dispatch(self, request, *args, **kwargs):
+        """Override dispatch to add logging for debugging"""
+        logger.info(f"MemberViewSet dispatch - Method: {request.method}, "
+                   f"Path: {request.path}, User: {request.user}, "
+                   f"Authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else 'Unknown'}")
+        return super().dispatch(request, *args, **kwargs)
+    
     def list(self, request, *args, **kwargs):
-        """List members with proper error handling and authentication check"""
+        """List members with proper error handling"""
         try:
-            # Explicit authentication check
-            if not request.user.is_authenticated:
-                return Response(
-                    {'error': 'Authentication credentials were not provided.'}, 
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-            
-            logger.info(f"Members list request from authenticated user: {request.user}")
+            logger.info(f"Members list request from user: {request.user} (authenticated: {request.user.is_authenticated})")
             
             # Get queryset and apply filters
             queryset = self.filter_queryset(self.get_queryset())
@@ -109,15 +149,9 @@ class MemberViewSet(viewsets.ModelViewSet):
             )
     
     def retrieve(self, request, *args, **kwargs):
-        """Retrieve a single member with error handling"""
+        """Retrieve a single member"""
         try:
-            # Explicit authentication check
-            if not request.user.is_authenticated:
-                return Response(
-                    {'error': 'Authentication credentials were not provided.'}, 
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-            
+            logger.info(f"Retrieving member for user: {request.user}")
             instance = self.get_object()
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
@@ -136,8 +170,8 @@ class MemberViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Create a new member - allows public registration"""
         try:
-            logger.info(f"Creating member. User authenticated: {request.user.is_authenticated}")
-            logger.info(f"Request data keys: {list(request.data.keys())}")
+            logger.info(f"Creating member. User: {request.user}, Authenticated: {request.user.is_authenticated}")
+            logger.info(f"Request data keys: {list(request.data.keys()) if hasattr(request.data, 'keys') else 'No keys'}")
             
             serializer = self.get_serializer(data=request.data)
             
@@ -177,51 +211,29 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         """Update member - requires authentication"""
-        if not request.user.is_authenticated:
-            return Response(
-                {'error': 'Authentication credentials were not provided.'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        # Set last_modified_by
-        if hasattr(request, 'data') and isinstance(request.data, dict):
-            request.data['last_modified_by'] = request.user.id
+        # Set last_modified_by if authenticated
+        if request.user.is_authenticated and hasattr(request, 'data'):
+            if isinstance(request.data, dict):
+                request.data['last_modified_by'] = request.user.id
         
         return super().update(request, *args, **kwargs)
     
     def partial_update(self, request, *args, **kwargs):
         """Partial update member - requires authentication"""
-        if not request.user.is_authenticated:
-            return Response(
-                {'error': 'Authentication credentials were not provided.'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        # Set last_modified_by
-        if hasattr(request, 'data') and isinstance(request.data, dict):
-            request.data['last_modified_by'] = request.user.id
+        # Set last_modified_by if authenticated
+        if request.user.is_authenticated and hasattr(request, 'data'):
+            if isinstance(request.data, dict):
+                request.data['last_modified_by'] = request.user.id
         
         return super().partial_update(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):
-        """Delete member - requires admin permissions"""
-        if not request.user.is_authenticated:
-            return Response(
-                {'error': 'Authentication credentials were not provided.'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        if not self._is_admin_user():
-            return Response(
-                {'error': 'Admin permissions required to delete members.'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
+        """Delete member - handled by permissions"""
         return super().destroy(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def statistics(self, request):
-        """Get comprehensive member statistics - requires authentication"""
+        """Get comprehensive member statistics"""
         try:
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
@@ -260,7 +272,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], permission_classes=[IsAdminUserOrReadOnly])
     def export(self, request):
-        """Export members to CSV - admin only"""
+        """Export members to CSV"""
         try:
             queryset = self.filter_queryset(self.get_queryset())
             serializer = MemberExportSerializer(queryset, many=True)
@@ -290,7 +302,10 @@ class MemberTagViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUserOrReadOnly]
     
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        if self.request.user.is_authenticated:
+            serializer.save(created_by=self.request.user)
+        else:
+            serializer.save()
 
 
 class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):

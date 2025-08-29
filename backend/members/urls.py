@@ -1,12 +1,13 @@
-# members/urls.py
+# members/urls.py - Updated with debug endpoint
 from django.urls import path, include
-from django.http import HttpResponseRedirect
-from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .views import MemberViewSet, MemberTagViewSet, MemberStatisticsViewSet, BulkImportLogViewSet
+from .views import (
+    MemberViewSet, MemberTagViewSet, MemberStatisticsViewSet, 
+    BulkImportLogViewSet, debug_auth
+)
 
 app_name = 'members'
 
@@ -21,10 +22,8 @@ router.register(r'import-logs', BulkImportLogViewSet, basename='import-log')
 def new_member_redirect(request):
     """
     Handle /new/ endpoint for backward compatibility
-    Maintains backward compatibility for existing frontend code
     """
     if request.method == 'GET':
-        # For GET requests, return info about using the standard endpoint
         return Response({
             'message': 'Please use POST /api/v1/members/members/ for member registration',
             'redirect_url': '/api/v1/members/members/',
@@ -32,18 +31,15 @@ def new_member_redirect(request):
         }, status=status.HTTP_301_MOVED_PERMANENTLY)
     
     elif request.method == 'POST':
-        # For POST requests, proxy to the actual member creation logic
-        # This avoids redirect issues with POST data
+        # Proxy to the actual member creation logic
         from .views import MemberViewSet
         
-        # Create a viewset instance and call create method
         viewset = MemberViewSet()
         viewset.request = request
         viewset.format_kwarg = None
         
         try:
             response = viewset.create(request)
-            # Add deprecation header
             response['X-Deprecated'] = 'Please use POST /api/v1/members/members/ instead'
             return response
         except Exception as e:
@@ -53,6 +49,9 @@ def new_member_redirect(request):
             }, status=status.HTTP_302_FOUND)
 
 urlpatterns = [
+    # Debug endpoint for troubleshooting authentication
+    path('debug-auth/', debug_auth, name='debug-auth'),
+    
     # Backward compatibility redirect
     path('new/', new_member_redirect, name='member-new-redirect'),
     

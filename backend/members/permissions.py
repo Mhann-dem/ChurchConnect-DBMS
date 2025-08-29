@@ -1,5 +1,8 @@
-# members/permissions.py - Fixed permissions with better error handling
+# members/permissions.py - Fixed version that resolves 403 errors
 from rest_framework import permissions
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class IsAuthenticatedOrCreateOnly(permissions.BasePermission):
@@ -9,27 +12,23 @@ class IsAuthenticatedOrCreateOnly(permissions.BasePermission):
     - Only authenticated users for other operations
     """
     
-    message = "Authentication credentials were not provided."
-    
     def has_permission(self, request, view):
         # Allow POST (create) for everyone (public registration)
         if request.method == 'POST':
+            logger.info(f"Allowing POST request from {request.META.get('REMOTE_ADDR', 'unknown')}")
             return True
         
         # For all other methods, require authentication
         if not request.user or not request.user.is_authenticated:
-            # Provide specific error message for debugging
-            self.message = f"Authentication required. User: {request.user}, Is authenticated: {request.user.is_authenticated if request.user else 'No user'}"
+            logger.warning(f"Denying {request.method} request - user not authenticated: {request.user}")
             return False
         
+        logger.info(f"Allowing {request.method} request for authenticated user: {request.user.email}")
         return True
 
     def has_object_permission(self, request, view, obj):
         # Require authentication for object-level operations
-        if not request.user or not request.user.is_authenticated:
-            self.message = "Authentication required for object access."
-            return False
-        return True
+        return request.user and request.user.is_authenticated
 
 
 class IsAdminUserOrReadOnly(permissions.BasePermission):
@@ -39,22 +38,26 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
     - Write permissions only for admin users
     """
     
-    message = "Admin permissions required."
-    
     def has_permission(self, request, view):
         # Check if user is authenticated first
         if not request.user or not request.user.is_authenticated:
-            self.message = "Authentication required."
+            logger.warning(f"Denying request - user not authenticated: {request.user}")
             return False
             
         # Read permissions for authenticated users
         if request.method in permissions.SAFE_METHODS:
+            logger.info(f"Allowing read access for user: {request.user.email}")
             return True
             
         # Write permissions only for admin users
         is_admin = self._is_admin_user(request.user)
         if not is_admin:
-            self.message = f"Admin permissions required. User role: {getattr(request.user, 'role', 'None')}, Is staff: {request.user.is_staff}, Is superuser: {request.user.is_superuser}"
+            logger.warning(f"Denying write access - user {request.user.email} is not admin. "
+                         f"Role: {getattr(request.user, 'role', 'None')}, "
+                         f"Is staff: {request.user.is_staff}, "
+                         f"Is superuser: {request.user.is_superuser}")
+        else:
+            logger.info(f"Allowing write access for admin user: {request.user.email}")
         return is_admin
     
     def _is_admin_user(self, user):
@@ -62,8 +65,7 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
         return (
             user.is_superuser or
             user.is_staff or
-            (hasattr(user, 'role') and user.role in ['admin', 'super_admin']) or
-            (hasattr(user, 'is_admin') and user.is_admin)
+            (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])
         )
 
 
@@ -72,30 +74,28 @@ class IsSuperAdminOnly(permissions.BasePermission):
     Permission that allows only super admin users
     """
     
-    message = "Super admin permissions required."
-    
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
-            self.message = "Authentication required."
+            logger.warning(f"Denying super admin request - user not authenticated: {request.user}")
             return False
             
         is_super_admin = (
-            user.is_superuser or
-            (hasattr(user, 'role') and user.role == 'super_admin')
+            request.user.is_superuser or
+            (hasattr(request.user, 'role') and request.user.role == 'super_admin')
         )
         
         if not is_super_admin:
-            self.message = f"Super admin permissions required. User: {request.user.username}, Role: {getattr(request.user, 'role', 'None')}"
+            logger.warning(f"Denying super admin request - user {request.user.email} is not super admin. "
+                         f"Role: {getattr(request.user, 'role', 'None')}")
+        else:
+            logger.info(f"Allowing super admin access for user: {request.user.email}")
             
         return is_super_admin
 
 
 class CanManageNotes(permissions.BasePermission):
     """
-    Permission for managing member notes:
-    - Any authenticated user can read non-private notes
-    - Only note creators and super admins can read private notes
-    - Only note creators and super admins can edit/delete notes
+    Permission for managing member notes
     """
     
     def has_permission(self, request, view):
@@ -123,34 +123,33 @@ class CanManageNotes(permissions.BasePermission):
         return obj.created_by == request.user
 
 
-# Debug permission class for troubleshooting
+# Temporary debug permission class
 class DebugPermission(permissions.BasePermission):
     """
-    Debug permission that logs all permission checks
+    Debug permission that logs all permission checks and allows everything
     Use this temporarily to debug permission issues
     """
     
     def has_permission(self, request, view):
-        import logging
-        logger = logging.getLogger(__name__)
-        
         user_info = {
             'user': str(request.user),
-            'is_authenticated': request.user.is_authenticated if request.user else False,
-            'is_anonymous': request.user.is_anonymous if request.user else True,
+            'user_type': type(request.user).__name__,
+            'is_authenticated': getattr(request.user, 'is_authenticated', False),
+            'is_anonymous': getattr(request.user, 'is_anonymous', True),
             'is_staff': getattr(request.user, 'is_staff', False),
             'is_superuser': getattr(request.user, 'is_superuser', False),
             'role': getattr(request.user, 'role', 'None'),
-            'is_admin': getattr(request.user, 'is_admin', False),
+            'active': getattr(request.user, 'active', 'None'),
+            'email': getattr(request.user, 'email', 'None'),
         }
         
-        logger.info(f"Permission check - Method: {request.method}, View: {view.__class__.__name__}, User info: {user_info}")
+        logger.info(f"DEBUG PERMISSION CHECK - Method: {request.method}, "
+                   f"View: {view.__class__.__name__}, User info: {user_info}")
         
         # Allow everything for debugging
         return True
     
     def has_object_permission(self, request, view, obj):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Object permission check - Method: {request.method}, View: {view.__class__.__name__}, Object: {obj}")
+        logger.info(f"DEBUG OBJECT PERMISSION - Method: {request.method}, "
+                   f"View: {view.__class__.__name__}, Object: {obj}, User: {request.user}")
         return True
