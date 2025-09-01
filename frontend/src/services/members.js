@@ -1,5 +1,6 @@
-// services/members.js - Fixed version with proper error handling
+// services/members.js - Fixed version with proper auth handling and rate limiting
 import api from './api';
+import authService from './auth';
 
 const MEMBERS_ENDPOINTS = {
   LIST: 'members/members/',
@@ -20,367 +21,594 @@ const MEMBERS_ENDPOINTS = {
 };
 
 class MembersService {
+  constructor() {
+    this.cache = new Map();
+    this.cacheTTL = 5 * 60 * 1000; // 5 minutes cache
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 100; // Minimum 100ms between requests
+  }
+
+  // Rate limiting helper
+  async waitForRateLimit() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const waitTime = this.minRequestInterval - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastRequestTime = Date.now();
+  }
+
+  // Check authentication before making requests
+  ensureAuthenticated() {
+    if (!authService.isAuthenticated()) {
+      console.warn('[MembersService] Not authenticated, request may fail');
+      return false;
+    }
+    return true;
+  }
+
+  // Cache helpers
+  getCacheKey(params) {
+    return JSON.stringify(params);
+  }
+
+  setCache(key, data) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  getCache(key) {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
+      return cached.data;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  clearCache() {
+    this.cache.clear();
+  }
+
   async getMembers(params = {}) {
     try {
-      console.log('[MembersService] Getting members with params:', params);
+      console.log('[MembersService] getMembers called with:', params);
       
-      // Clean up the parameters to match what the API expects
-      const cleanParams = {};
+      // Check authentication
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      // Rate limiting
+      await this.waitForRateLimit();
+
+      // Check cache first
+      const cacheKey = this.getCacheKey({ action: 'getMembers', ...params });
+      const cached = this.getCache(cacheKey);
+      if (cached) {
+        console.log('[MembersService] Returning cached data');
+        return cached;
+      }
+
+      // Prepare query parameters
+      const queryParams = new URLSearchParams();
       
-      // Handle search
-      if (params.search) {
-        cleanParams.search = params.search;
+      if (params.page && params.page > 1) {
+        queryParams.append('page', params.page);
       }
       
-      // Handle filters - flatten them if they're nested
+      if (params.limit && params.limit !== 25) {
+        queryParams.append('limit', params.limit);
+      }
+      
+      if (params.search?.trim()) {
+        queryParams.append('search', params.search.trim());
+      }
+
+      // Add filters
       if (params.filters) {
-        Object.keys(params.filters).forEach(key => {
-          if (params.filters[key] !== '' && params.filters[key] !== null && params.filters[key] !== undefined) {
-            cleanParams[key] = params.filters[key];
-          }
-        });
-      } else {
-        // Handle direct filter parameters
-        ['gender', 'ageRange', 'pledgeStatus', 'registrationDateRange', 'active'].forEach(key => {
-          if (params[key] !== '' && params[key] !== null && params[key] !== undefined) {
-            cleanParams[key] = params[key];
+        Object.entries(params.filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            queryParams.append(key, value);
           }
         });
       }
-      
-      // Handle pagination
-      if (params.page) {
-        cleanParams.page = params.page;
+
+      const queryString = queryParams.toString();
+      const url = queryString ? `${MEMBERS_ENDPOINTS.LIST}?${queryString}` : MEMBERS_ENDPOINTS.LIST;
+
+      console.log('[MembersService] Making request to:', url);
+
+      // Add abort signal if provided
+      const config = {};
+      if (params.signal) {
+        config.signal = params.signal;
       }
-      if (params.limit || params.page_size) {
-        cleanParams.limit = params.limit || params.page_size;
-      }
-      
-      console.log('[MembersService] Clean params:', cleanParams);
-      
-      const response = await api.get(MEMBERS_ENDPOINTS.LIST, { params: cleanParams });
-      
-      console.log('[MembersService] API response:', response.data);
-      
+
+      const response = await api.get(url, config);
+      console.log('[MembersService] Response received:', response.status);
+
       // Handle different response formats
-      let members = [];
-      let totalMembers = 0;
-      let pagination = null;
-      
-      if (response.data) {
-        if (response.data.results) {
-          // Paginated response
-          members = Array.isArray(response.data.results) ? response.data.results : [];
-          totalMembers = response.data.count || members.length;
-          pagination = {
-            count: response.data.count || members.length,
+      let result;
+      if (response.data?.results) {
+        // Paginated response
+        result = {
+          success: true,
+          data: response.data.results,
+          totalMembers: response.data.count || 0,
+          pagination: {
+            count: response.data.count || 0,
             next: response.data.next,
             previous: response.data.previous,
-            current_page: response.data.current_page || 1,
-            total_pages: response.data.total_pages || 1,
-          };
-        } else if (Array.isArray(response.data)) {
-          // Direct array response
-          members = response.data;
-          totalMembers = members.length;
-        } else {
-          console.warn('[MembersService] Unexpected response format:', response.data);
-          members = [];
-          totalMembers = 0;
-        }
+            current_page: response.data.current_page || params.page || 1,
+            total_pages: response.data.total_pages || Math.ceil((response.data.count || 0) / (params.limit || 25)),
+            page_size: response.data.page_size || params.limit || 25
+          }
+        };
+      } else if (Array.isArray(response.data)) {
+        // Direct array response
+        result = {
+          success: true,
+          data: response.data,
+          totalMembers: response.data.length,
+          pagination: {
+            count: response.data.length,
+            current_page: 1,
+            total_pages: 1,
+            page_size: response.data.length
+          }
+        };
+      } else {
+        // Unexpected format
+        console.warn('[MembersService] Unexpected response format:', response.data);
+        result = {
+          success: true,
+          data: [],
+          totalMembers: 0,
+          pagination: null
+        };
       }
+
+      // Cache successful results
+      this.setCache(cacheKey, result);
       
-      return {
-        success: true,
-        data: members,
-        totalMembers,
-        pagination,
-      };
+      console.log('[MembersService] Processed result:', {
+        dataLength: result.data?.length,
+        totalMembers: result.totalMembers
+      });
+      
+      return result;
+
     } catch (error) {
-      console.error('[MembersService] Error fetching members:', error);
+      console.error('[MembersService] getMembers error:', error);
+      
+      // Handle specific error cases
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Request was cancelled'
+        };
+      }
+
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          error: 'Authentication required'
+        };
+      }
+
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          error: 'Access denied'
+        };
+      }
+
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to fetch members';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch members',
-        data: [],
-        totalMembers: 0,
-        pagination: null,
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
-  async getMember(id) {
+  async getMember(memberId) {
     try {
-      console.log('[MembersService] Getting member:', id);
-      const response = await api.get(MEMBERS_ENDPOINTS.DETAIL(id));
-      return { 
-        success: true, 
-        data: response.data 
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Getting member:', memberId);
+      
+      const response = await api.get(MEMBERS_ENDPOINTS.DETAIL(memberId));
+      
+      return {
+        success: true,
+        data: response.data
       };
+
     } catch (error) {
-      console.error('[MembersService] Error fetching member:', error);
+      console.error('[MembersService] getMember error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to fetch member';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch member',
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
   async createMember(memberData) {
     try {
-      console.log('[MembersService] Creating member with data:', memberData);
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Creating member');
       
-      // Format the data for the API
-      const formattedData = this.formatDataForAPI(memberData);
+      const response = await api.post(MEMBERS_ENDPOINTS.CREATE, memberData);
       
-      console.log('[MembersService] Formatted data:', formattedData);
-      
-      const response = await api.post(MEMBERS_ENDPOINTS.CREATE, formattedData);
+      // Clear cache after successful creation
+      this.clearCache();
       
       return {
         success: true,
         data: response.data
       };
+
     } catch (error) {
-      console.error('[MembersService] Error creating member:', error);
+      console.error('[MembersService] createMember error:', error);
       
-      const errorData = error.response?.data || {};
-      const errorMessage = errorData.error || errorData.detail || error.message || 'Failed to create member';
-      
-      throw {
-        response: {
-          data: {
-            message: errorMessage,
-            errors: errorData.errors || errorData
-          }
-        }
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to create member';
+
+      return {
+        success: false,
+        error: errorMessage,
+        validationErrors: error.response?.data,
+        status: error.response?.status
       };
     }
   }
 
-  async updateMember(id, memberData) {
+  async updateMember(memberId, memberData) {
     try {
-      console.log('[MembersService] Updating member:', id, memberData);
-      const formattedData = this.formatDataForAPI(memberData);
-      const response = await api.put(MEMBERS_ENDPOINTS.UPDATE(id), formattedData);
-      return { 
-        success: true, 
-        data: response.data 
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Updating member:', memberId);
+      
+      const response = await api.patch(MEMBERS_ENDPOINTS.UPDATE(memberId), memberData);
+      
+      // Clear cache after successful update
+      this.clearCache();
+      
+      return {
+        success: true,
+        data: response.data
       };
+
     } catch (error) {
-      console.error('[MembersService] Error updating member:', error);
+      console.error('[MembersService] updateMember error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to update member';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to update member',
-        validationErrors: error.response?.data?.errors || error.response?.data,
+        error: errorMessage,
+        validationErrors: error.response?.data,
+        status: error.response?.status
       };
     }
   }
 
-  async deleteMember(id) {
+  async deleteMember(memberId) {
     try {
-      console.log('[MembersService] Deleting member:', id);
-      await api.delete(MEMBERS_ENDPOINTS.DELETE(id));
-      return { success: true };
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Deleting member:', memberId);
+      
+      await api.delete(MEMBERS_ENDPOINTS.DELETE(memberId));
+      
+      // Clear cache after successful deletion
+      this.clearCache();
+      
+      return {
+        success: true
+      };
+
     } catch (error) {
-      console.error('[MembersService] Error deleting member:', error);
+      console.error('[MembersService] deleteMember error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to delete member';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to delete member',
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
   async searchMembers(query, filters = {}) {
     try {
-      console.log('[MembersService] Searching members:', query, filters);
-      const params = { search: query, ...filters };
-      return await this.getMembers(params);
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Searching members:', query);
+      
+      const searchParams = new URLSearchParams();
+      
+      if (query?.trim()) {
+        searchParams.append('q', query.trim());
+      }
+
+      // Add filters
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          searchParams.append(key, value);
+        }
+      });
+
+      const url = `${MEMBERS_ENDPOINTS.SEARCH}?${searchParams.toString()}`;
+      const response = await api.get(url);
+      
+      return {
+        success: true,
+        data: response.data?.results || response.data || [],
+        totalMembers: response.data?.count || 0,
+        pagination: response.data?.pagination || null
+      };
+
     } catch (error) {
-      console.error('[MembersService] Error searching members:', error);
+      console.error('[MembersService] searchMembers error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Search failed';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Search failed',
-        data: [],
-        totalMembers: 0,
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
-  async getMemberStats() {
+  async bulkAction(action, memberIds, data = {}) {
     try {
-      console.log('[MembersService] Getting member statistics');
-      const response = await api.get(MEMBERS_ENDPOINTS.STATS);
-      return { 
-        success: true, 
-        data: response.data 
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Bulk action:', action, memberIds.length, 'members');
+      
+      const response = await api.post(MEMBERS_ENDPOINTS.BULK_ACTIONS, {
+        action,
+        member_ids: memberIds,
+        data
+      });
+      
+      // Clear cache after bulk operation
+      this.clearCache();
+      
+      return {
+        success: true,
+        data: response.data
       };
+
     } catch (error) {
-      console.error('[MembersService] Error fetching stats:', error);
+      console.error('[MembersService] bulkAction error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Bulk action failed';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Failed to fetch member stats',
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
-  async exportMembers(memberIds = null, format = 'csv', fields = null) {
+  async exportMembers(filters = {}) {
     try {
-      console.log('[MembersService] Exporting members:', { memberIds, format, fields });
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      console.log('[MembersService] Exporting members');
       
-      const params = {
-        format,
-        ...(memberIds && { member_ids: memberIds.join(',') }),
-        ...(fields && { fields: fields.join(',') })
-      };
-      
-      const response = await api.get(MEMBERS_ENDPOINTS.EXPORT, { 
-        params,
+      const response = await api.get(MEMBERS_ENDPOINTS.EXPORT, {
+        params: filters,
         responseType: 'blob'
       });
-
-      // Create download
-      const blob = new Blob([response.data], { 
-        type: format === 'csv' ? 'text/csv' : 'application/json' 
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `members_export_${new Date().toISOString().split('T')[0]}.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      return { 
-        success: true, 
-        message: `Exported ${memberIds ? memberIds.length : 'all'} members` 
+      
+      return {
+        success: true,
+        data: response.data,
+        filename: response.headers['content-disposition']?.match(/filename="(.+)"/)?.[1] || 'members.csv'
       };
+
     } catch (error) {
-      console.error('[MembersService] Error exporting members:', error);
+      console.error('[MembersService] exportMembers error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.message || 
+                          'Export failed';
+
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.detail || error.message || 'Export failed',
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
-  // BULK OPERATIONS
-  async bulkDeleteMembers(memberIds) {
+  async getStats() {
     try {
-      console.log('[MembersService] Bulk deleting members:', memberIds);
-      // For now, delete one by one - implement bulk endpoint later
-      const promises = memberIds.map(id => this.deleteMember(id));
-      const results = await Promise.allSettled(promises);
+      if (!this.ensureAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated'
+        };
+      }
+
+      await this.waitForRateLimit();
+
+      // Check cache first
+      const cacheKey = this.getCacheKey({ action: 'getStats' });
+      const cached = this.getCache(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      console.log('[MembersService] Getting member statistics');
       
-      const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-      const failed = results.length - successful;
+      const response = await api.get(MEMBERS_ENDPOINTS.STATS);
       
-      return { 
-        success: failed === 0, 
-        data: { successful, failed },
-        message: `Deleted ${successful} members${failed > 0 ? `, ${failed} failed` : ''}`
+      const result = {
+        success: true,
+        data: response.data
       };
+
+      // Cache stats for shorter time
+      this.setCache(cacheKey, result, 2 * 60 * 1000); // 2 minutes
+      
+      return result;
+
     } catch (error) {
-      console.error('[MembersService] Error in bulk delete:', error);
+      console.error('[MembersService] getStats error:', error);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to fetch statistics';
+
       return {
         success: false,
-        error: error.message || 'Bulk delete failed',
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
 
-  async performBulkAction(action, memberIds, actionData = {}) {
-    console.log('[MembersService] Performing bulk action:', action, memberIds, actionData);
-    
-    switch (action) {
-      case 'delete':
-        return await this.bulkDeleteMembers(memberIds);
-      case 'export':
-        return await this.exportMembers(memberIds);
-      default:
-        throw new Error(`Unknown bulk action: ${action}`);
-    }
+  // Utility methods
+  getCacheKey(params) {
+    return JSON.stringify(params);
   }
 
-  // UTILITY METHODS
-  validateMemberData(data) {
-    const errors = {};
-    
-    if (!data.phone?.trim()) {
-      errors.phone = 'Phone number is required';
-    }
-    
-    if (!data.date_of_birth && !data.dateOfBirth) {
-      errors.date_of_birth = 'Date of birth is required';
-      errors.dateOfBirth = 'Date of birth is required';
-    }
-    
-    if (!data.gender) {
-      errors.gender = 'Gender is required';
-    }
-    
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors,
-    };
-  }
-
-  formatDataForAPI(data) {
-    const formatted = {};
-    
-    // Field mapping from frontend to API
-    const fieldMap = {
-      firstName: 'first_name',
-      lastName: 'last_name',
-      dateOfBirth: 'date_of_birth',
-      phoneNumber: 'phone',
-      preferredName: 'preferred_name',
-      alternatePhone: 'alternate_phone',
-      preferredContactMethod: 'preferred_contact_method',
-      preferredLanguage: 'preferred_language',
-      accessibilityNeeds: 'accessibility_needs',
-      ministryInterests: 'ministry_interests',
-      prayerRequest: 'prayer_request',
-      pledgeAmount: 'pledge_amount',
-      pledgeFrequency: 'pledge_frequency',
-      familyMembers: 'family_members',
-      emergencyContactName: 'emergency_contact_name',
-      emergencyContactPhone: 'emergency_contact_phone',
-      privacyPolicyAgreed: 'privacy_policy_agreed',
-      communicationOptIn: 'communication_opt_in',
-      internalNotes: 'internal_notes',
-      registeredBy: 'registered_by',
-      registrationContext: 'registration_context',
-      isActive: 'is_active'
-    };
-    
-    // Convert field names and copy values
-    Object.keys(data).forEach(key => {
-      const apiKey = fieldMap[key] || key;
-      let value = data[key];
-      
-      // Handle special formatting
-      if (key === 'dateOfBirth' || key === 'date_of_birth') {
-        // Ensure date is in YYYY-MM-DD format
-        if (value) {
-          const date = new Date(value);
-          if (!isNaN(date.getTime())) {
-            value = date.toISOString().split('T')[0];
-          }
-        }
-      }
-      
-      // Only include non-empty values
-      if (value !== null && value !== undefined && value !== '') {
-        formatted[apiKey] = value;
-      }
+  setCache(key, data, ttl = this.cacheTTL) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
     });
-    
-    console.log('[MembersService] Formatted data:', formatted);
-    return formatted;
+  }
+
+  getCache(key) {
+    const cached = this.cache.get(key);
+    if (cached) {
+      const age = Date.now() - cached.timestamp;
+      const ttl = cached.ttl || this.cacheTTL;
+      
+      if (age < ttl) {
+        return cached.data;
+      }
+      this.cache.delete(key);
+    }
+    return null;
+  }
+
+  // Health check method
+  async healthCheck() {
+    try {
+      const response = await api.get('/auth/test/', {
+        timeout: 5000
+      });
+      return {
+        success: true,
+        status: response.status,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        status: error.response?.status
+      };
+    }
   }
 }
 
-// Export both as named and default export for compatibility
-export const membersService = new MembersService();
+// Export singleton instance
+const membersService = new MembersService();
 export default membersService;

@@ -1,14 +1,10 @@
-# ================================================================
-# File: backend/churchconnect/settings.py
-"""
-Django settings for ChurchConnect project.
-"""
-
+# backend/churchconnect/settings.py - Fixed version with proper authentication
 import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import Config, RepositoryEnv
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,17 +19,15 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default='False', cast=bool)
 
-# Trailing slash handling - Add this to your existing settings
-APPEND_SLASH = False  # This prevents automatic slash appending that causes redirects
+# Trailing slash handling
+APPEND_SLASH = False
 
 # Enhanced ALLOWED_HOSTS for both HTTP and HTTPS
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1',
-    '0.0.0.0',  # For Docker
+    '0.0.0.0',
     # Add your domain names here for production
-    # 'yourdomain.com', 
-    # 'www.yourdomain.com'
 ]
 
 # Application definition
@@ -53,7 +47,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters',
     'channels',
-    'drf_spectacular',  # Added for modern API documentation
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -68,7 +62,6 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-# Add django-extensions for development HTTPS support only if available
 if DEBUG:
     try:
         import django_extensions
@@ -76,7 +69,7 @@ if DEBUG:
     except ImportError:
         pass
 
-# Update your MIDDLEWARE to handle this properly
+# FIXED: Updated middleware order for better auth handling
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -86,7 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.RequestLoggingMiddleware',  # Your custom middleware should be last
+    'core.middleware.RequestLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'churchconnect.urls'
@@ -110,8 +103,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'churchconnect.wsgi.application'
 ASGI_APPLICATION = 'churchconnect.asgi.application'
 
-# Database
-# Use PostgreSQL if DB_NAME is provided, otherwise fall back to SQLite
+# Database configuration
 if config('DB_NAME', default=None):
     DATABASES = {
         'default': {
@@ -132,7 +124,6 @@ else:
     }
 
 # Custom User Model
-# Add this line to use your custom user model
 AUTH_USER_MODEL = 'authentication.AdminUser'
 
 # Password validation
@@ -157,7 +148,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -169,17 +160,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Update CORS settings to be more permissive with trailing slashes
+# FIXED: CORS settings with proper authentication handling
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",   # React development server HTTP
-    "https://localhost:3000",  # React development server HTTPS
-    "http://127.0.0.1:3000",   # Alternative local HTTP
-    "https://127.0.0.1:3000",  # Alternative local HTTPS
-    "http://localhost:8000",   # Django dev server HTTP
-    "https://localhost:8000",  # Django dev server HTTPS
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "http://localhost:8000",
+    "https://localhost:8000",
 ]
 
-# Allow all origins in development (use with caution)
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -200,7 +190,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Add these to prevent CORS preflight issues
 CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -214,9 +203,7 @@ CORS_ALLOW_METHODS = [
 # SSL/HTTPS Configuration
 USE_HTTPS = config('USE_HTTPS', default='False', cast=bool)
 
-# Conditional HTTPS settings
 if USE_HTTPS and not DEBUG:
-    # Production HTTPS settings
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -226,34 +213,29 @@ if USE_HTTPS and not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 elif USE_HTTPS and DEBUG:
-    # Development HTTPS settings (less strict)
-    SECURE_SSL_REDIRECT = False  # Don't force redirect in dev
-    SESSION_COOKIE_SECURE = False  # Allow non-HTTPS cookies in dev
-    CSRF_COOKIE_SECURE = False  # Allow non-HTTPS CSRF in dev
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
-    # HTTP settings (development default)
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 
-# Add SSL context settings for development
 if DEBUG and USE_HTTPS:
-    # Development SSL settings
     SSL_CERTIFICATE_PATH = config('SSL_CERT_PATH', default=str(BASE_DIR / 'ssl' / 'cert.pem'))
     SSL_PRIVATE_KEY_PATH = config('SSL_KEY_PATH', default=str(BASE_DIR / 'ssl' / 'key.pem'))
 
-# Update your REST_FRAMEWORK settings in settings.py
+# FIXED: REST Framework settings with proper authentication
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    # CRITICAL FIX: Change from AllowAny to IsAuthenticated for protected endpoints
     'DEFAULT_PERMISSION_CLASSES': [
-        # Changed from IsAuthenticated to AllowAny to prevent blanket auth requirement
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -271,10 +253,20 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',  # Custom handler
+    
+    # Rate limiting settings
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
 }
 
-# Custom Pagination Class (Optional - for more control)
+# Custom Pagination Class with better response format
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 25
     page_size_query_param = 'limit'
@@ -291,46 +283,48 @@ class CustomPageNumberPagination(PageNumberPagination):
             'page_size': self.page_size,
         })
 
-# Add this custom setting to control URL patterns
-API_TRAILING_SLASH = False  # This is used by routers
-
-# JWT Configuration with better settings
+# FIXED: JWT Configuration with better security settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
     'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    
+    # Token validation
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    
+    # Custom claims
+    'TOKEN_OBTAIN_SERIALIZER': 'authentication.serializers.CustomTokenObtainPairSerializer',
 }
 
-# drf-spectacular settings for API documentation
+# drf-spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ChurchConnect API',
-    'DESCRIPTION': 'A comprehensive Church Management System API for managing members, groups, families, pledges, and reports.',
+    'DESCRIPTION': 'A comprehensive Church Management System API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SCHEMA_PATH_PREFIX': '/api/v1/',
     'COMPONENT_SPLIT_REQUEST': True,
     'SORT_OPERATIONS': False,
-    'ENUM_NAME_OVERRIDES': {
-        'ValidationErrorEnum': 'drf_spectacular.utils.validation_error_name_override',
-    },
-    'POSTPROCESSING_HOOKS': [
-        'drf_spectacular.hooks.postprocess_schema_enums'
-    ],
-    'TAGS': [
-        {'name': 'Authentication', 'description': 'User authentication and authorization'},
-        {'name': 'Members', 'description': 'Church member management'},
-        {'name': 'Families', 'description': 'Family management'},
-        {'name': 'Groups', 'description': 'Group and ministry management'},
-        {'name': 'Pledges', 'description': 'Pledge and donation tracking'},
-        {'name': 'Reports', 'description': 'Reporting and analytics'},
-        {'name': 'Core', 'description': 'Core system functionality'},
-    ],
+    'SECURITY': [{
+        'type': 'http',
+        'scheme': 'bearer',
+        'bearerFormat': 'JWT',
+    }],
 }
 
 # Email configuration
@@ -342,18 +336,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@churchconnect.com')
 
-# Security settings for production
-if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-# Logging configuration
+# Enhanced logging for debugging auth issues
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -375,9 +358,15 @@ LOGGING = {
             'formatter': 'verbose',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+        },
+        'auth_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'auth.log',
+            'formatter': 'verbose',
         },
     },
     'root': {
@@ -395,6 +384,16 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'authentication': {
+            'handlers': ['auth_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework_simplejwt': {
+            'handlers': ['auth_file', 'console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         'django.security': {
             'handlers': ['file', 'console'],
             'level': 'DEBUG' if DEBUG else 'INFO',
@@ -403,10 +402,10 @@ LOGGING = {
     },
 }
 
-# Create logs directory if it doesn't exist
+# Create logs directory
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
-# ChurchConnect specific settings
+# Church-specific settings
 CHURCH_NAME = config('CHURCH_NAME', default='Your Church Name')
 CHURCH_ADDRESS = config('CHURCH_ADDRESS', default='')
 CHURCH_PHONE = config('CHURCH_PHONE', default='')
@@ -421,11 +420,22 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+        'TIMEOUT': 300,  # 5 minutes default timeout
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     } if config('REDIS_URL', default=None) else {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,
     }
 }
+
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Channels configuration
 CHANNEL_LAYERS = {
@@ -438,3 +448,31 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     }
 }
+
+# CRITICAL: Security settings for production
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_REDIRECT_EXEMPT = []
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Additional security headers
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+    
+    # Content Security Policy (basic)
+    CSP_DEFAULT_SRC = ("'self'",)
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+
+# Rate limiting settings
+RATELIMIT_ENABLE = True
+RATELIMIT_USE_CACHE = 'default'
+
+# API versioning
+API_VERSION = 'v1'
+API_TRAILING_SLASH = False

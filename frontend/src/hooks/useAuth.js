@@ -28,7 +28,6 @@ const useAuth = () => {
   } = context;
 
   // REMOVED: Duplicate auth check effect that was causing loops
-  // The AuthContext already handles initial auth checking
   
   useEffect(() => {
     return () => {

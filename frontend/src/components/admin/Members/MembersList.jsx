@@ -1,9 +1,7 @@
-// ===============================
-// src/components/admin/Members/MembersList.jsx
-// ===============================
-
-import React, { useState, useEffect } from 'react';
+// src/components/admin/Members/MembersList.jsx - Fixed version with proper loading states
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../../context/AuthContext';
 import { useMembers } from '../../../hooks/useMembers';
 import { useToast } from '../../../hooks/useToast';
 import MemberCard from './MemberCard';
@@ -11,12 +9,14 @@ import MemberFilters from './MemberFilters';
 import BulkActions from './BulkActions';
 import { SearchBar, Pagination, LoadingSpinner, EmptyState } from '../../shared';
 import { Button } from '../../ui';
-import { Plus, Filter, Download, Users } from 'lucide-react';
+import { Plus, Filter, Download, Users, RefreshCw } from 'lucide-react';
 import styles from './Members.module.css';
 
 const MembersList = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isAuthenticated, isLoading: authLoading, authChecked } = useContext(AuthContext);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -29,86 +29,194 @@ const MembersList = () => {
     status: 'active'
   });
 
+  // Refs to prevent infinite loops
+  const searchTimeoutRef = useRef(null);
+  const mountedRef = useRef(true);
+  const lastFetchRef = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const {
     members,
-    loading,
+    loading: membersLoading,
     error,
     totalPages,
     totalMembers,
     fetchMembers,
     deleteMember,
-    updateMemberStatus
+    updateMemberStatus,
+    refetch
   } = useMembers({
     page: currentPage,
     search: searchQuery,
-    filters
+    filters,
+    autoFetch: false // Disable auto-fetch, we'll control it manually
   });
 
+  // Wait for auth to be checked before fetching members
   useEffect(() => {
-    fetchMembers();
-  }, [currentPage, searchQuery, filters]);
+    if (!authChecked || authLoading) {
+      console.log('[MembersList] Waiting for auth check...', { authChecked, authLoading });
+      return;
+    }
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
+    if (!isAuthenticated) {
+      console.log('[MembersList] Not authenticated, redirecting...');
+      navigate('/admin/login');
+      return;
+    }
 
-  const handleFilterChange = (newFilters) => {
+    console.log('[MembersList] Auth verified, fetching members...');
+    
+    // Only fetch if this is a new request
+    const currentFetchKey = JSON.stringify({ currentPage, searchQuery, filters });
+    if (lastFetchRef.current !== currentFetchKey) {
+      lastFetchRef.current = currentFetchKey;
+      fetchMembers();
+    }
+  }, [authChecked, authLoading, isAuthenticated, currentPage, searchQuery, filters, navigate, fetchMembers]);
+
+  const handleSearch = useCallback((query) => {
+    console.log('[MembersList] Search query changed:', query);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Debounce search to prevent excessive API calls
+    searchTimeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setSearchQuery(query);
+        setCurrentPage(1);
+      }
+    }, 300); // 300ms debounce
+  }, []);
+
+  const handleFilterChange = useCallback((newFilters) => {
+    console.log('[MembersList] Filters changed:', newFilters);
     setFilters(newFilters);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleMemberSelect = (memberId) => {
+  const handlePageChange = useCallback((page) => {
+    console.log('[MembersList] Page changed:', page);
+    setCurrentPage(page);
+  }, []);
+
+  const handleMemberSelect = useCallback((memberId) => {
     setSelectedMembers(prev => 
       prev.includes(memberId) 
         ? prev.filter(id => id !== memberId)
         : [...prev, memberId]
     );
-  };
+  }, []);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedMembers.length === members.length) {
       setSelectedMembers([]);
     } else {
       setSelectedMembers(members.map(member => member.id));
     }
-  };
+  }, [selectedMembers.length, members]);
 
-  const handleMemberDelete = async (memberId) => {
-    if (window.confirm('Are you sure you want to delete this member?')) {
-      try {
-        await deleteMember(memberId);
-        showToast('Member deleted successfully', 'success');
-        setSelectedMembers(prev => prev.filter(id => id !== memberId));
-      } catch (error) {
-        showToast('Failed to delete member', 'error');
-      }
+  const handleMemberDelete = useCallback(async (memberId) => {
+    if (!window.confirm('Are you sure you want to delete this member?')) {
+      return;
     }
-  };
 
-  const handleStatusChange = async (memberId, newStatus) => {
+    try {
+      await deleteMember(memberId);
+      showToast('Member deleted successfully', 'success');
+      setSelectedMembers(prev => prev.filter(id => id !== memberId));
+    } catch (error) {
+      console.error('[MembersList] Delete error:', error);
+      showToast('Failed to delete member', 'error');
+    }
+  }, [deleteMember, showToast]);
+
+  const handleStatusChange = useCallback(async (memberId, newStatus) => {
     try {
       await updateMemberStatus(memberId, newStatus);
       showToast(`Member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`, 'success');
     } catch (error) {
+      console.error('[MembersList] Status change error:', error);
       showToast('Failed to update member status', 'error');
     }
-  };
+  }, [updateMemberStatus, showToast]);
 
-  const handleExport = () => {
+  const handleRefresh = useCallback(async () => {
+    try {
+      await refetch();
+      showToast('Members list refreshed', 'success');
+    } catch (error) {
+      console.error('[MembersList] Refresh error:', error);
+      showToast('Failed to refresh members list', 'error');
+    }
+  }, [refetch, showToast]);
+
+  const handleExport = useCallback(() => {
     // Export functionality will be implemented
     showToast('Export functionality coming soon', 'info');
-  };
+  }, [showToast]);
 
-  if (loading && !members.length) {
-    return <LoadingSpinner />;
+  // Show loading while auth is being checked
+  if (!authChecked || authLoading) {
+    return (
+      <div className={styles.container}>
+        <LoadingSpinner message="Checking authentication..." />
+      </div>
+    );
   }
 
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <p>Authentication required. Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading for initial members fetch
+  if (membersLoading && !members.length) {
+    return (
+      <div className={styles.container}>
+        <LoadingSpinner message="Loading members..." />
+      </div>
+    );
+  }
+
+  // Show error state with retry option
   if (error) {
     return (
-      <div className={styles.error}>
-        <p>Error loading members: {error}</p>
-        <Button onClick={fetchMembers}>Retry</Button>
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <h3>Error Loading Members</h3>
+          <p>{error}</p>
+          <div className={styles.errorActions}>
+            <Button onClick={handleRefresh} variant="primary">
+              <RefreshCw size={16} />
+              Retry
+            </Button>
+            <Button 
+              onClick={() => navigate('/admin/dashboard')} 
+              variant="outline"
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -126,6 +234,15 @@ const MembersList = () => {
           </p>
         </div>
         <div className={styles.actions}>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={membersLoading}
+            className={styles.refreshButton}
+          >
+            <RefreshCw size={16} className={membersLoading ? styles.spinning : ''} />
+            Refresh
+          </Button>
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
@@ -157,6 +274,7 @@ const MembersList = () => {
           placeholder="Search members by name, email, or phone..."
           onSearch={handleSearch}
           className={styles.searchBar}
+          debounce={300}
         />
         
         {showFilters && (
@@ -171,7 +289,7 @@ const MembersList = () => {
           <BulkActions
             selectedMembers={selectedMembers}
             onClearSelection={() => setSelectedMembers([])}
-            onRefresh={fetchMembers}
+            onRefresh={handleRefresh}
           />
         )}
       </div>
@@ -180,11 +298,46 @@ const MembersList = () => {
         {members.length === 0 ? (
           <EmptyState
             title="No members found"
-            description="Try adjusting your search or filters"
+            description={
+              searchQuery || Object.values(filters).some(f => f) 
+                ? "Try adjusting your search or filters" 
+                : "Get started by adding your first member"
+            }
             icon={Users}
+            actions={
+              !searchQuery && !Object.values(filters).some(f => f) ? (
+                <Button onClick={() => navigate('/admin/members/new')}>
+                  <Plus size={16} />
+                  Add Your First Member
+                </Button>
+              ) : null
+            }
           />
         ) : (
           <>
+            <div className={styles.listHeader}>
+              <div className={styles.bulkSelect}>
+                <input
+                  type="checkbox"
+                  checked={selectedMembers.length === members.length}
+                  onChange={handleSelectAll}
+                  disabled={membersLoading}
+                />
+                <span>
+                  {selectedMembers.length > 0 
+                    ? `${selectedMembers.length} selected` 
+                    : 'Select all'
+                  }
+                </span>
+              </div>
+              {membersLoading && (
+                <div className={styles.loadingIndicator}>
+                  <RefreshCw size={16} className={styles.spinning} />
+                  Loading...
+                </div>
+              )}
+            </div>
+
             <div className={styles.memberGrid}>
               {members.map(member => (
                 <MemberCard
@@ -194,6 +347,7 @@ const MembersList = () => {
                   onSelect={() => handleMemberSelect(member.id)}
                   onDelete={() => handleMemberDelete(member.id)}
                   onStatusChange={(status) => handleStatusChange(member.id, status)}
+                  disabled={membersLoading}
                 />
               ))}
             </div>
@@ -202,8 +356,9 @@ const MembersList = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
                 className={styles.pagination}
+                disabled={membersLoading}
               />
             )}
           </>

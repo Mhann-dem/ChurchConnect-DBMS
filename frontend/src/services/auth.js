@@ -1,4 +1,4 @@
-// services/auth.js - Fixed version
+// services/auth.js - Fixed version with improved token management
 import api from './api';
 
 const AUTH_ENDPOINTS = {
@@ -10,7 +10,8 @@ const AUTH_ENDPOINTS = {
   RESET_PASSWORD: 'auth/password-reset/request/',
   RESET_PASSWORD_CONFIRM: 'auth/password-reset/confirm/',
   USER_PROFILE: 'auth/profile/',
-  USER_PERMISSIONS: 'auth/permissions/'
+  USER_PERMISSIONS: 'auth/permissions/',
+  TEST: 'auth/test/'
 };
 
 class AuthService {
@@ -20,17 +21,25 @@ class AuthService {
       access: null,
       refresh: null
     };
+    this.tokenRefreshPromise = null; // Prevent concurrent token refreshes
+    this.isRefreshing = false;
     
     // Initialize from localStorage
     this.loadFromStorage();
   }
   
-  // Storage methods
+  // Enhanced storage methods with error handling
   saveToStorage(tokens, user) {
     try {
+      console.log('[AuthService] Saving to storage:', { 
+        hasAccess: !!tokens?.access, 
+        hasRefresh: !!tokens?.refresh, 
+        hasUser: !!user 
+      });
+
       if (tokens?.access) {
         localStorage.setItem('access_token', tokens.access);
-        localStorage.setItem('authToken', tokens.access); // For backwards compatibility
+        localStorage.setItem('authToken', tokens.access); // Backwards compatibility
       }
       if (tokens?.refresh) {
         localStorage.setItem('refresh_token', tokens.refresh);
@@ -38,7 +47,15 @@ class AuthService {
       if (user) {
         localStorage.setItem('user', JSON.stringify(user));
       }
-      console.log('[AuthService] Saved to storage:', { hasTokens: !!tokens?.access, hasUser: !!user });
+      
+      // Update instance variables
+      if (tokens) {
+        this.tokens = { ...this.tokens, ...tokens };
+      }
+      if (user) {
+        this.user = user;
+      }
+      
     } catch (error) {
       console.error('[AuthService] Failed to save to storage:', error);
     }
@@ -50,12 +67,11 @@ class AuthService {
       const refreshToken = localStorage.getItem('refresh_token');
       const userString = localStorage.getItem('user');
       
-      if (accessToken) {
-        this.tokens.access = accessToken;
-      }
-      if (refreshToken) {
-        this.tokens.refresh = refreshToken;
-      }
+      this.tokens = {
+        access: accessToken,
+        refresh: refreshToken
+      };
+      
       if (userString) {
         this.user = JSON.parse(userString);
       }
@@ -63,35 +79,59 @@ class AuthService {
       console.log('[AuthService] Loaded from storage:', {
         hasAccessToken: !!this.tokens.access,
         hasRefreshToken: !!this.tokens.refresh,
-        hasUser: !!this.user
+        hasUser: !!this.user,
+        userRole: this.user?.role
       });
+      
+      return this.isAuthenticated();
     } catch (error) {
       console.error('[AuthService] Failed to load from storage:', error);
       this.clearStorage();
+      return false;
     }
   }
   
   clearStorage() {
     try {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      const keysToRemove = ['access_token', 'authToken', 'refresh_token', 'user'];
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+      
       this.tokens = { access: null, refresh: null };
       this.user = null;
-      console.log('[AuthService] Cleared storage');
+      this.isRefreshing = false;
+      this.tokenRefreshPromise = null;
+      
+      console.log('[AuthService] Cleared storage and reset state');
     } catch (error) {
       console.error('[AuthService] Failed to clear storage:', error);
     }
   }
   
-  // Authentication methods
+  // Enhanced login with better error handling
   async login(credentials) {
     try {
-      console.log('[AuthService] Login attempt:', { email: credentials.email });
+      console.log('[AuthService] Login attempt for:', credentials.email);
       
-      const response = await api.post(AUTH_ENDPOINTS.LOGIN, credentials);
-      console.log('[AuthService] Login response:', response.data);
+      // Validate credentials
+      if (!credentials.email?.trim() || !credentials.password) {
+        return {
+          success: false,
+          error: 'Email and password are required'
+        };
+      }
+      
+      // Clear any existing auth data
+      this.clearStorage();
+      
+      const response = await api.post(AUTH_ENDPOINTS.LOGIN, {
+        email: credentials.email.trim().toLowerCase(),
+        password: credentials.password
+      });
+      
+      console.log('[AuthService] Login response status:', response.status);
       
       if (response.data) {
         const { access, refresh, user } = response.data;
@@ -100,12 +140,15 @@ class AuthService {
           throw new Error('Invalid response format: missing access token or user data');
         }
         
-        // Store tokens and user
-        this.tokens = { access, refresh };
-        this.user = user;
-        this.saveToStorage(this.tokens, user);
+        // Validate token format (basic check)
+        if (!access.includes('.')) {
+          throw new Error('Invalid token format');
+        }
         
-        console.log('[AuthService] Login successful');
+        // Store tokens and user
+        this.saveToStorage({ access, refresh }, user);
+        
+        console.log('[AuthService] Login successful for user:', user.email);
         return {
           success: true,
           user: user,
@@ -119,14 +162,29 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] Login error:', error);
       
-      const errorMessage = error.response?.data?.error || 
-                          error.response?.data?.detail || 
-                          error.message || 
-                          'Login failed';
+      // Clear any partial auth data on error
+      this.clearStorage();
+      
+      let errorMessage = 'Login failed';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Account is disabled';
+      } else if (error.response?.status === 429) {
+        errorMessage = 'Too many login attempts. Please try again later.';
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
+        status: error.response?.status
       };
     }
   }
@@ -137,38 +195,62 @@ class AuthService {
       
       // Try to logout on server with refresh token
       if (this.tokens.refresh) {
-        await api.post(AUTH_ENDPOINTS.LOGOUT, {
-          refresh: this.tokens.refresh
-        });
+        try {
+          await api.post(AUTH_ENDPOINTS.LOGOUT, {
+            refresh: this.tokens.refresh
+          });
+          console.log('[AuthService] Server logout successful');
+        } catch (error) {
+          console.warn('[AuthService] Server logout failed, proceeding with local logout:', error);
+        }
       }
-    } catch (error) {
-      console.error('[AuthService] Logout API error:', error);
     } finally {
-      // Always clear local storage
+      // Always clear local storage regardless of server response
       this.clearStorage();
-      console.log('[AuthService] Logout completed');
+      console.log('[AuthService] Local logout completed');
     }
   }
   
   async refreshToken() {
+    // Prevent concurrent refresh attempts
+    if (this.isRefreshing && this.tokenRefreshPromise) {
+      console.log('[AuthService] Token refresh already in progress, waiting...');
+      return await this.tokenRefreshPromise;
+    }
+    
+    if (!this.tokens.refresh) {
+      console.error('[AuthService] No refresh token available');
+      this.clearStorage();
+      return false;
+    }
+    
+    this.isRefreshing = true;
+    this.tokenRefreshPromise = this.performTokenRefresh();
+    
     try {
-      if (!this.tokens.refresh) {
-        throw new Error('No refresh token available');
-      }
-      
-      console.log('[AuthService] Refreshing token');
+      const result = await this.tokenRefreshPromise;
+      return result;
+    } finally {
+      this.isRefreshing = false;
+      this.tokenRefreshPromise = null;
+    }
+  }
+  
+  async performTokenRefresh() {
+    try {
+      console.log('[AuthService] Refreshing token...');
       
       const response = await api.post(AUTH_ENDPOINTS.REFRESH, {
         refresh: this.tokens.refresh
       });
       
       if (response.data?.access) {
-        this.tokens.access = response.data.access;
-        if (response.data.refresh) {
-          this.tokens.refresh = response.data.refresh;
-        }
+        const newTokens = {
+          access: response.data.access,
+          refresh: response.data.refresh || this.tokens.refresh
+        };
         
-        this.saveToStorage(this.tokens, this.user);
+        this.saveToStorage(newTokens, this.user);
         console.log('[AuthService] Token refreshed successfully');
         return true;
       }
@@ -177,6 +259,8 @@ class AuthService {
       
     } catch (error) {
       console.error('[AuthService] Token refresh failed:', error);
+      
+      // If refresh fails, clear all auth data
       this.clearStorage();
       return false;
     }
@@ -185,16 +269,21 @@ class AuthService {
   async verifyToken() {
     try {
       if (!this.tokens.access) {
+        console.log('[AuthService] No access token to verify');
         return false;
       }
       
-      console.log('[AuthService] Verifying token');
+      console.log('[AuthService] Verifying token...');
       
       const response = await api.get(AUTH_ENDPOINTS.VERIFY);
       
       if (response.data?.user) {
-        this.user = response.data.user;
-        this.saveToStorage(this.tokens, this.user);
+        // Update user data if it's newer
+        if (response.data.user.updated_at !== this.user?.updated_at) {
+          this.user = response.data.user;
+          this.saveToStorage(this.tokens, this.user);
+        }
+        
         console.log('[AuthService] Token verified successfully');
         return true;
       }
@@ -204,8 +293,9 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] Token verification failed:', error);
       
-      // Try to refresh token if verification fails
+      // Try to refresh token if verification fails with 401
       if (error.response?.status === 401) {
+        console.log('[AuthService] Token expired, attempting refresh...');
         return await this.refreshToken();
       }
       
@@ -213,14 +303,34 @@ class AuthService {
     }
   }
   
-  // Getters
+  // FIXED: Enhanced authentication check
   isAuthenticated() {
     const hasToken = !!this.tokens.access;
     const hasUser = !!this.user;
-    console.log('[AuthService] isAuthenticated check:', { hasToken, hasUser });
-    return hasToken && hasUser;
+    const hasValidToken = hasToken && this.tokens.access.includes('.');
+    
+    // Simple check - if we have token and user, consider authenticated
+    // Let the API handle token expiration on actual requests
+    return hasToken && hasUser && hasValidToken;
   }
   
+  // FIXED: Check if token is expired (basic JWT parsing)
+  isTokenExpired() {
+    if (!this.tokens.access) return true;
+    
+    try {
+      // Parse JWT payload without verification (for expiration check only)
+      const payload = JSON.parse(atob(this.tokens.access.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+      
+      return payload.exp && payload.exp < now;
+    } catch (error) {
+      console.warn('[AuthService] Failed to parse token:', error);
+      return true; // Assume expired if we can't parse
+    }
+  }
+  
+  // Getters
   getCurrentUser() {
     return this.user;
   }
@@ -231,6 +341,24 @@ class AuthService {
   
   getRefreshToken() {
     return this.tokens.refresh;
+  }
+  
+  getUserRole() {
+    return this.user?.role || null;
+  }
+  
+  hasPermission(permission) {
+    const userPermissions = this.user?.permissions || {};
+    return userPermissions[permission] || false;
+  }
+  
+  isAdmin() {
+    const role = this.getUserRole();
+    return role === 'admin' || role === 'super_admin';
+  }
+  
+  isSuperAdmin() {
+    return this.getUserRole() === 'super_admin';
   }
   
   // Profile management
@@ -338,24 +466,24 @@ class AuthService {
       };
     }
   }
-  
-  // Utility methods
-  getUserRole() {
-    return this.user?.role || null;
-  }
-  
-  hasPermission(permission) {
-    const userPermissions = this.user?.permissions || {};
-    return userPermissions[permission] || false;
-  }
-  
-  isAdmin() {
-    const role = this.getUserRole();
-    return role === 'admin' || role === 'super_admin';
-  }
-  
-  isSuperAdmin() {
-    return this.getUserRole() === 'super_admin';
+
+  // Health check method
+  async healthCheck() {
+    try {
+      const response = await api.get(AUTH_ENDPOINTS.TEST);
+      return {
+        success: true,
+        data: response.data,
+        authenticated: response.data.authenticated || false
+      };
+    } catch (error) {
+      console.error('[AuthService] Health check failed:', error);
+      return {
+        success: false,
+        error: error.message,
+        status: error.response?.status
+      };
+    }
   }
 }
 
