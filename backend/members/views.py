@@ -1,10 +1,10 @@
-# members/views.py - SECURE VERSION - Remove debug endpoint and fix permissions
+# members/views.py - FIXED VERSION - Added bulk_actions and better logging
 
 import csv
 import json
 from datetime import date, datetime, timedelta
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action, api_view, permission_classes
@@ -23,14 +23,6 @@ from .serializers import (
     BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
 
-# SECURITY FIX: Remove the debug endpoint entirely
-# @api_view(['GET'])
-# @permission_classes([permissions.AllowAny])
-# def debug_auth(request):
-#     """DEBUG ENDPOINT REMOVED FOR SECURITY"""
-#     pass
-
-# Create separate views for public and authenticated operations
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def public_member_registration(request):
@@ -63,6 +55,8 @@ def public_member_registration(request):
                 privacy_policy_agreed_date=timezone.now()
             )
             
+            logger.info(f"Public registration successful for: {member.email}")
+            
             return Response({
                 'success': True,
                 'message': 'Registration successful! Thank you for joining our church family.',
@@ -81,13 +75,12 @@ def public_member_registration(request):
 
 class MemberViewSet(viewsets.ModelViewSet):
     """
-    SECURE ViewSet for managing members - AUTHENTICATION REQUIRED
+    FIXED ViewSet for managing members - AUTHENTICATION REQUIRED
     """
     queryset = Member.objects.select_related('family').prefetch_related(
         'member_notes', 'tag_assignments__tag'
     ).order_by('-registration_date')
     
-    # SECURITY FIX: Simple, clear permissions
     permission_classes = [permissions.IsAuthenticated]
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -132,32 +125,38 @@ class MemberViewSet(viewsets.ModelViewSet):
         )
     
     def list(self, request, *args, **kwargs):
-        """List members with proper error handling"""
+        """FIXED: List members with proper logging and error handling"""
         try:
-            # SECURITY: Only log minimal information
-            logger.info(f"Members list request from user: {request.user.email}")
+            logger.info(f"[MemberViewSet] Members list request from user: {request.user.email}")
+            logger.info(f"[MemberViewSet] Query params: {request.query_params}")
             
             # Get queryset and apply filters
             queryset = self.filter_queryset(self.get_queryset())
+            
+            # Log queryset info
+            logger.info(f"[MemberViewSet] Filtered queryset count: {queryset.count()}")
             
             # Apply pagination
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
+                result = self.get_paginated_response(serializer.data)
+                logger.info(f"[MemberViewSet] Returning paginated response with {len(serializer.data)} items")
+                return result
 
             # If no pagination
             serializer = self.get_serializer(queryset, many=True)
-            return Response({
+            result = Response({
                 'count': queryset.count(),
                 'results': serializer.data,
                 'next': None,
                 'previous': None
             })
+            logger.info(f"[MemberViewSet] Returning non-paginated response with {len(serializer.data)} items")
+            return result
             
         except Exception as e:
-            logger.error(f"Error in members list view: {str(e)}")
-            # SECURITY: Don't expose internal error details
+            logger.error(f"[MemberViewSet] Error in members list view: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Failed to retrieve members'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -172,7 +171,7 @@ class MemberViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_403_FORBIDDEN
                 )
             
-            logger.info(f"Admin member creation by: {request.user.email}")
+            logger.info(f"[MemberViewSet] Admin member creation by: {request.user.email}")
             
             serializer = self.get_serializer(data=request.data)
             
@@ -183,13 +182,16 @@ class MemberViewSet(viewsets.ModelViewSet):
                     registration_source='admin_portal'
                 )
                 
+                logger.info(f"[MemberViewSet] Member created successfully: {member.email}")
+                
                 response_serializer = MemberSerializer(member)
                 return Response(response_serializer.data, status=status.HTTP_201_CREATED)
             else:
+                logger.warning(f"[MemberViewSet] Member creation validation errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
-            logger.error(f"Error creating member: {str(e)}")
+            logger.error(f"[MemberViewSet] Error creating member: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Failed to create member'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -197,15 +199,31 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         """Update member - set last_modified_by"""
-        if hasattr(request, 'data') and isinstance(request.data, dict):
-            request.data['last_modified_by'] = request.user.id
-        return super().update(request, *args, **kwargs)
+        try:
+            logger.info(f"[MemberViewSet] Member update request by: {request.user.email}")
+            if hasattr(request, 'data') and isinstance(request.data, dict):
+                request.data['last_modified_by'] = request.user.id
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error updating member: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Failed to update member'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def partial_update(self, request, *args, **kwargs):
         """Partial update member - set last_modified_by"""
-        if hasattr(request, 'data') and isinstance(request.data, dict):
-            request.data['last_modified_by'] = request.user.id
-        return super().partial_update(request, *args, **kwargs)
+        try:
+            logger.info(f"[MemberViewSet] Member partial update request by: {request.user.email}")
+            if hasattr(request, 'data') and isinstance(request.data, dict):
+                request.data['last_modified_by'] = request.user.id
+            return super().partial_update(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error partially updating member: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Failed to update member'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def destroy(self, request, *args, **kwargs):
         """Delete member - admin only"""
@@ -214,12 +232,15 @@ class MemberViewSet(viewsets.ModelViewSet):
                 {'error': 'Admin privileges required'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
+        logger.info(f"[MemberViewSet] Member delete request by: {request.user.email}")
         return super().destroy(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'])
     def statistics(self, request):
         """Get basic member statistics"""
         try:
+            logger.info(f"[MemberViewSet] Statistics request from: {request.user.email}")
+            
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             
@@ -238,10 +259,12 @@ class MemberViewSet(viewsets.ModelViewSet):
                 }
             }
             
+            logger.info(f"[MemberViewSet] Statistics returned: {stats_data}")
+            
             return Response(stats_data)
             
         except Exception as e:
-            logger.error(f"Error getting statistics: {str(e)}")
+            logger.error(f"[MemberViewSet] Error getting statistics: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Failed to get statistics'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -257,6 +280,8 @@ class MemberViewSet(viewsets.ModelViewSet):
             )
         
         try:
+            logger.info(f"[MemberViewSet] Export request from: {request.user.email}")
+            
             queryset = self.filter_queryset(self.get_queryset())
             serializer = MemberExportSerializer(queryset, many=True)
             
@@ -268,12 +293,121 @@ class MemberViewSet(viewsets.ModelViewSet):
                 writer.writeheader()
                 writer.writerows(serializer.data)
             
+            logger.info(f"[MemberViewSet] Export completed with {len(serializer.data)} records")
+            
             return response
             
         except Exception as e:
-            logger.error(f"Error exporting members: {str(e)}")
+            logger.error(f"[MemberViewSet] Error exporting members: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Failed to export members'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    # FIXED: Added missing bulk_actions endpoint
+    @action(detail=False, methods=['post'])
+    def bulk_actions(self, request):
+        """Handle bulk actions on members - Admin only"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            action = request.data.get('action')
+            member_ids = request.data.get('member_ids', [])
+            action_data = request.data.get('data', {})
+            
+            logger.info(f"[MemberViewSet] Bulk action request: {action} for {len(member_ids)} members by {request.user.email}")
+            
+            if not action or not member_ids:
+                return Response(
+                    {'error': 'Action and member_ids are required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get members queryset
+            members = Member.objects.filter(id__in=member_ids)
+            actual_count = members.count()
+            
+            if actual_count != len(member_ids):
+                logger.warning(f"[MemberViewSet] Some member IDs not found: requested {len(member_ids)}, found {actual_count}")
+            
+            result_message = ""
+            
+            if action == 'delete':
+                deleted_count = members.count()
+                members.delete()
+                result_message = f"Successfully deleted {deleted_count} members"
+                
+            elif action == 'activate':
+                updated_count = members.update(is_active=True, last_modified_by=request.user)
+                result_message = f"Successfully activated {updated_count} members"
+                
+            elif action == 'deactivate':
+                updated_count = members.update(is_active=False, last_modified_by=request.user)
+                result_message = f"Successfully deactivated {updated_count} members"
+                
+            elif action == 'export':
+                # Export selected members
+                serializer = MemberExportSerializer(members, many=True)
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = f'attachment; filename="selected_members_{timezone.now().strftime("%Y%m%d")}.csv"'
+                
+                if serializer.data:
+                    writer = csv.DictWriter(response, fieldnames=serializer.data[0].keys())
+                    writer.writeheader()
+                    writer.writerows(serializer.data)
+                
+                return response
+                
+            elif action == 'tag':
+                tag_id = action_data.get('tag_id')
+                if not tag_id:
+                    return Response(
+                        {'error': 'tag_id is required for tag action'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                try:
+                    tag = MemberTag.objects.get(id=tag_id)
+                    created_count = 0
+                    for member in members:
+                        obj, created = MemberTagAssignment.objects.get_or_create(
+                            member=member,
+                            tag=tag,
+                            defaults={'assigned_by': request.user}
+                        )
+                        if created:
+                            created_count += 1
+                    
+                    result_message = f"Successfully tagged {created_count} members with '{tag.name}'"
+                    
+                except MemberTag.DoesNotExist:
+                    return Response(
+                        {'error': 'Tag not found'}, 
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            
+            else:
+                return Response(
+                    {'error': f'Unknown action: {action}'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            logger.info(f"[MemberViewSet] Bulk action completed: {result_message}")
+            
+            return Response({
+                'success': True,
+                'message': result_message,
+                'processed_count': actual_count
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error in bulk action: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Bulk action failed'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -285,34 +419,34 @@ class MemberTagViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def list(self, request, *args, **kwargs):
-        # All authenticated users can view tags
+        logger.info(f"[MemberTagViewSet] Tag list request from: {request.user.email}")
         return super().list(request, *args, **kwargs)
     
     def create(self, request, *args, **kwargs):
-        # Only admins can create tags
         if not self._is_admin_user():
             return Response(
                 {'error': 'Admin privileges required'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
+        logger.info(f"[MemberTagViewSet] Tag creation by: {request.user.email}")
         return super().create(request, *args, **kwargs)
     
     def update(self, request, *args, **kwargs):
-        # Only admins can update tags
         if not self._is_admin_user():
             return Response(
                 {'error': 'Admin privileges required'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
+        logger.info(f"[MemberTagViewSet] Tag update by: {request.user.email}")
         return super().update(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):
-        # Only admins can delete tags
         if not self._is_admin_user():
             return Response(
                 {'error': 'Admin privileges required'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
+        logger.info(f"[MemberTagViewSet] Tag delete by: {request.user.email}")
         return super().destroy(request, *args, **kwargs)
     
     def _is_admin_user(self):
@@ -338,18 +472,25 @@ class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request):
         """Get dashboard statistics"""
         try:
+            logger.info(f"[MemberStatisticsViewSet] Statistics request from: {request.user.email}")
+            
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             
-            return Response({
+            result = {
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
                     'inactive_members': total_members - active_members,
                 }
-            })
+            }
+            
+            logger.info(f"[MemberStatisticsViewSet] Returning statistics: {result}")
+            
+            return Response(result)
+            
         except Exception as e:
-            logger.error(f"Error getting statistics: {str(e)}")
+            logger.error(f"[MemberStatisticsViewSet] Error getting statistics: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Failed to get statistics'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -362,11 +503,11 @@ class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        # Only admins can view import logs
         user = self.request.user
         if (user.is_superuser or user.is_staff or 
             (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])):
+            logger.info(f"[BulkImportLogViewSet] Import logs request from admin: {user.email}")
             return BulkImportLog.objects.all().order_by('-started_at')
         else:
-            # Return empty queryset for non-admin users
+            logger.warning(f"[BulkImportLogViewSet] Non-admin user {user.email} attempted to access import logs")
             return BulkImportLog.objects.none()

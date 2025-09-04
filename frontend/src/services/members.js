@@ -1,23 +1,25 @@
-// services/members.js - Fixed version with proper auth handling and rate limiting
+// services/members.js - FIXED VERSION - Corrected endpoints
 import api from './api';
 import authService from './auth';
 
+// FIXED: Corrected endpoint structure to match Django URLs
 const MEMBERS_ENDPOINTS = {
-  LIST: 'members/members/',
-  DETAIL: (id) => `members/members/${id}/`,
-  CREATE: 'members/members/',
-  UPDATE: (id) => `members/members/${id}/`,
-  DELETE: (id) => `members/members/${id}/`,
-  SEARCH: 'members/members/',
-  EXPORT: 'members/members/export/',
-  STATS: 'members/members/statistics/',
-  BULK_IMPORT: 'members/members/bulk_import/',
-  IMPORT_TEMPLATE: 'members/members/import_template/',
-  IMPORT_LOGS: 'members/members/import_logs/',
-  ADD_NOTE: (id) => `members/members/${id}/add_note/`,
-  GET_NOTES: (id) => `members/members/${id}/notes/`,
-  ADD_TAG: (id) => `members/members/${id}/add_tag/`,
-  REMOVE_TAG: (id) => `members/members/${id}/remove_tag/`,
+  LIST: 'members/',  // FIXED: Should be /api/v1/members/ not /api/v1/members/members/
+  DETAIL: (id) => `members/${id}/`,
+  CREATE: 'members/',
+  UPDATE: (id) => `members/${id}/`,
+  DELETE: (id) => `members/${id}/`,
+  SEARCH: 'members/',
+  EXPORT: 'members/export/',
+  STATS: 'members/statistics/',
+  BULK_ACTIONS: 'members/bulk_actions/', 
+  BULK_IMPORT: 'members/bulk_import/',
+  IMPORT_TEMPLATE: 'members/import_template/',
+  IMPORT_LOGS: 'members/import_logs/',
+  ADD_NOTE: (id) => `members/${id}/add_note/`,
+  GET_NOTES: (id) => `members/${id}/notes/`,
+  ADD_TAG: (id) => `members/${id}/add_tag/`,
+  REMOVE_TAG: (id) => `members/${id}/remove_tag/`,
 };
 
 class MembersService {
@@ -43,11 +45,27 @@ class MembersService {
 
   // Check authentication before making requests
   ensureAuthenticated() {
-    if (!authService.isAuthenticated()) {
-      console.warn('[MembersService] Not authenticated, request may fail');
-      return false;
+    try {
+      if (!authService || typeof authService.isAuthenticated !== 'function') {
+        console.warn('[MembersService] AuthService not properly initialized');
+        const token = localStorage.getItem('access_token') || 
+                     localStorage.getItem('authToken') ||
+                     sessionStorage.getItem('access_token');
+        return !!token;
+      }
+      
+      const isAuth = authService.isAuthenticated();
+      if (!isAuth) {
+        console.warn('[MembersService] Not authenticated, request may fail');
+      }
+      return isAuth;
+    } catch (error) {
+      console.error('[MembersService] Error checking authentication:', error);
+      const token = localStorage.getItem('access_token') || 
+                   localStorage.getItem('authToken') ||
+                   sessionStorage.getItem('access_token');
+      return !!token;
     }
-    return true;
   }
 
   // Cache helpers
@@ -55,47 +73,60 @@ class MembersService {
     return JSON.stringify(params);
   }
 
-  setCache(key, data) {
+  setCache(key, data, ttl = this.cacheTTL) {
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      ttl
     });
   }
 
   getCache(key) {
     const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
-      return cached.data;
+    if (cached) {
+      const age = Date.now() - cached.timestamp;
+      const ttl = cached.ttl || this.cacheTTL;
+      
+      if (age < ttl) {
+        console.log('[MembersService] Cache hit for:', key);
+        return cached.data;
+      }
+      this.cache.delete(key);
     }
-    this.cache.delete(key);
     return null;
   }
 
   clearCache() {
     this.cache.clear();
+    console.log('[MembersService] Cache cleared');
   }
 
   async getMembers(params = {}) {
     try {
       console.log('[MembersService] getMembers called with:', params);
       
-      // Check authentication
-      if (!this.ensureAuthenticated()) {
+      // Check authentication with fallback
+      const isAuthenticated = this.ensureAuthenticated();
+      if (!isAuthenticated) {
+        console.error('[MembersService] Authentication check failed');
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated - please log in again',
+          requiresAuth: true
         };
       }
 
       // Rate limiting
       await this.waitForRateLimit();
 
-      // Check cache first
-      const cacheKey = this.getCacheKey({ action: 'getMembers', ...params });
-      const cached = this.getCache(cacheKey);
-      if (cached) {
-        console.log('[MembersService] Returning cached data');
-        return cached;
+      // Check cache first (but not for real-time data)
+      if (!params.forceRefresh) {
+        const cacheKey = this.getCacheKey({ action: 'getMembers', ...params });
+        const cached = this.getCache(cacheKey);
+        if (cached) {
+          console.log('[MembersService] Returning cached data');
+          return cached;
+        }
       }
 
       // Prepare query parameters
@@ -116,7 +147,7 @@ class MembersService {
       // Add filters
       if (params.filters) {
         Object.entries(params.filters).forEach(([key, value]) => {
-          if (value !== null && value !== undefined && value !== '') {
+          if (value !== null && value !== undefined && value !== '' && value !== true) {
             queryParams.append(key, value);
           }
         });
@@ -134,7 +165,12 @@ class MembersService {
       }
 
       const response = await api.get(url, config);
-      console.log('[MembersService] Response received:', response.status);
+      console.log('[MembersService] Response received:', {
+        status: response.status,
+        dataType: typeof response.data,
+        hasResults: !!response.data?.results,
+        isArray: Array.isArray(response.data)
+      });
 
       // Handle different response formats
       let result;
@@ -142,7 +178,7 @@ class MembersService {
         // Paginated response
         result = {
           success: true,
-          data: response.data.results,
+          data: Array.isArray(response.data.results) ? response.data.results : [],
           totalMembers: response.data.count || 0,
           pagination: {
             count: response.data.count || 0,
@@ -167,22 +203,31 @@ class MembersService {
           }
         };
       } else {
-        // Unexpected format
+        // Unexpected format - log for debugging
         console.warn('[MembersService] Unexpected response format:', response.data);
         result = {
           success: true,
           data: [],
           totalMembers: 0,
-          pagination: null
+          pagination: {
+            count: 0,
+            current_page: 1,
+            total_pages: 1,
+            page_size: 0
+          }
         };
       }
 
-      // Cache successful results
-      this.setCache(cacheKey, result);
+      // Cache successful results (but not empty results on first load)
+      if (!params.forceRefresh && (result.data.length > 0 || params.page > 1)) {
+        const cacheKey = this.getCacheKey({ action: 'getMembers', ...params });
+        this.setCache(cacheKey, result);
+      }
       
       console.log('[MembersService] Processed result:', {
         dataLength: result.data?.length,
-        totalMembers: result.totalMembers
+        totalMembers: result.totalMembers,
+        success: result.success
       });
       
       return result;
@@ -201,19 +246,28 @@ class MembersService {
       if (error.response?.status === 401) {
         return {
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication expired - please log in again',
+          requiresAuth: true
         };
       }
 
       if (error.response?.status === 403) {
         return {
           success: false,
-          error: 'Access denied'
+          error: 'Access denied - insufficient permissions'
+        };
+      }
+
+      if (error.response?.status === 404) {
+        return {
+          success: false,
+          error: 'Members endpoint not found - check API configuration'
         };
       }
 
       const errorMessage = error.response?.data?.error || 
                           error.response?.data?.detail || 
+                          error.response?.data?.message ||
                           error.message || 
                           'Failed to fetch members';
 
@@ -230,7 +284,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -266,7 +321,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -281,7 +337,8 @@ class MembersService {
       
       return {
         success: true,
-        data: response.data
+        data: response.data,
+        message: 'Member created successfully'
       };
 
     } catch (error) {
@@ -306,7 +363,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -321,7 +379,8 @@ class MembersService {
       
       return {
         success: true,
-        data: response.data
+        data: response.data,
+        message: 'Member updated successfully'
       };
 
     } catch (error) {
@@ -346,7 +405,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -360,7 +420,8 @@ class MembersService {
       this.clearCache();
       
       return {
-        success: true
+        success: true,
+        message: 'Member deleted successfully'
       };
 
     } catch (error) {
@@ -384,7 +445,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -395,12 +457,12 @@ class MembersService {
       const searchParams = new URLSearchParams();
       
       if (query?.trim()) {
-        searchParams.append('q', query.trim());
+        searchParams.append('search', query.trim());
       }
 
       // Add filters
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
+        if (value !== null && value !== undefined && value !== '' && value !== true) {
           searchParams.append(key, value);
         }
       });
@@ -431,12 +493,13 @@ class MembersService {
     }
   }
 
-  async bulkAction(action, memberIds, data = {}) {
+  async performBulkAction(action, memberIds, actionData = {}) {
     try {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -447,7 +510,7 @@ class MembersService {
       const response = await api.post(MEMBERS_ENDPOINTS.BULK_ACTIONS, {
         action,
         member_ids: memberIds,
-        data
+        data: actionData
       });
       
       // Clear cache after bulk operation
@@ -455,11 +518,12 @@ class MembersService {
       
       return {
         success: true,
-        data: response.data
+        data: response.data,
+        message: response.data?.message || `Bulk action "${action}" completed successfully`
       };
 
     } catch (error) {
-      console.error('[MembersService] bulkAction error:', error);
+      console.error('[MembersService] performBulkAction error:', error);
       
       const errorMessage = error.response?.data?.error || 
                           error.response?.data?.detail || 
@@ -479,7 +543,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -492,10 +557,22 @@ class MembersService {
         responseType: 'blob'
       });
       
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const filename = response.headers['content-disposition']?.match(/filename="(.+)"/)?.[1] || 'members.csv';
+      link.setAttribute('download', filename);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
       return {
         success: true,
-        data: response.data,
-        filename: response.headers['content-disposition']?.match(/filename="(.+)"/)?.[1] || 'members.csv'
+        message: 'Export completed successfully'
       };
 
     } catch (error) {
@@ -518,7 +595,8 @@ class MembersService {
       if (!this.ensureAuthenticated()) {
         return {
           success: false,
-          error: 'Not authenticated'
+          error: 'Not authenticated',
+          requiresAuth: true
         };
       }
 
@@ -559,33 +637,6 @@ class MembersService {
         status: error.response?.status
       };
     }
-  }
-
-  // Utility methods
-  getCacheKey(params) {
-    return JSON.stringify(params);
-  }
-
-  setCache(key, data, ttl = this.cacheTTL) {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl
-    });
-  }
-
-  getCache(key) {
-    const cached = this.cache.get(key);
-    if (cached) {
-      const age = Date.now() - cached.timestamp;
-      const ttl = cached.ttl || this.cacheTTL;
-      
-      if (age < ttl) {
-        return cached.data;
-      }
-      this.cache.delete(key);
-    }
-    return null;
   }
 
   // Health check method

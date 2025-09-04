@@ -1,4 +1,581 @@
-/* AdminLayout.css - Enhanced styles for the admin layout */
+/* AdminLayout.css - Consolidated and enhanced styles */
+
+/* Variables for consistent theming */
+:root {
+  --sidebar-width: 280px;
+  --header-height: 64px;
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --success-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+  --background-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --background-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-light: rgba(148, 163, 184, 0.1);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Enhanced Admin Layout Styles */
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background-light);
+  transition: var(--transition);
+}
+
+.adminLayout.dark {
+  background: var(--background-dark);
+}
+
+/* Enhanced Sidebar Container */
+.sidebarContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  z-index: 50;
+  transition: var(--transition);
+}
+
+.sidebarContainer.mobile {
+  transform: translateX(-100%);
+}
+
+.sidebarContainer.mobile.open {
+  transform: translateX(0);
+}
+
+/* Enhanced Main Application */
+.mainApplication {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mainApplication.mobile {
+  margin-left: 0 !important;
+}
+
+/* Enhanced Header Styles */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.header.scrolled {
+  box-shadow: var(--shadow);
+}
+
+.header.admin {
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Context Indicator Styles */
+.contextIndicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  margin: 0 16px;
+}
+
+.contextLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.contextBadge {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.mobileContextIndicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+}
+
+.contextIcon {
+  font-size: 16px;
+}
+
+.contextInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contextTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contextSubtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Enhanced Admin Dashboard Button */
+.adminDashboardButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--success-gradient);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.adminDashboardButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4);
+}
+
+.adminDashboardButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.adminDashboardButton.loading {
+  pointer-events: none;
+}
+
+.returnPath {
+  font-size: 11px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* Loading Spinner */
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingSpinner svg {
+  animation: spin 1s linear infinite;
+}
+
+/* Enhanced Mobile Menu */
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 320px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-left: 1px solid var(--border-light);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+}
+
+.mobileMenu.open {
+  transform: translateX(0);
+}
+
+.mobileMenuContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.adminDashboardMobileLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--success-gradient);
+  color: white;
+  text-decoration: none;
+  margin: 0 16px;
+  border-radius: 12px;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+  border: none;
+  cursor: pointer;
+  width: calc(100% - 32px);
+}
+
+.adminDashboardMobileLink:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4);
+}
+
+.adminDashboardMobileLink.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.linkContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+/* Enhanced Loading Container */
+.loadingContainer {
+  position: fixed;
+  inset: 0;
+  background: var(--background-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  text-align: center;
+  color: white;
+}
+
+.loadingLogo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoSpinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.logoText {
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+}
+
+.loadingRings {
+  position: absolute;
+  inset: -20px;
+}
+
+.ring {
+  position: absolute;
+  border: 2px solid transparent;
+  border-top: 2px solid rgba(59, 130, 246, 0.6);
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+}
+
+.ring1 {
+  width: 120px;
+  height: 120px;
+  animation-delay: 0s;
+}
+
+.ring2 {
+  width: 100px;
+  height: 100px;
+  top: 10px;
+  left: 10px;
+  animation-delay: 0.5s;
+  border-top-color: rgba(124, 58, 237, 0.6);
+}
+
+.ring3 {
+  width: 80px;
+  height: 80px;
+  top: 20px;
+  left: 20px;
+  animation-delay: 1s;
+  border-top-color: rgba(236, 72, 153, 0.6);
+}
+
+.loadingProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  border-radius: 2px;
+  animation: progressAnimation 2s ease-in-out infinite;
+}
+
+.progressText {
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Enhanced Content Area */
+.contentArea {
+  flex: 1;
+  padding: 24px;
+  margin-bottom: 0;
+}
+
+.contentCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+  min-height: calc(100vh - 200px);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.adminLayout.dark .contentCard {
+  background: #1e293b;
+}
+
+/* Page Header */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.pageTitleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.pageDescription {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.pageActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.actionButton.secondary {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-secondary);
+}
+
+.actionButton.secondary:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: #475569;
+}
+
+/* Error Boundary Styles */
+.errorBoundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.errorContent {
+  text-align: center;
+  max-width: 500px;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.errorContent h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.errorContent p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.errorDetails {
+  text-align: left;
+  margin: 24px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.errorDetails pre {
+  font-size: 12px;
+  color: #475569;
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.errorButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.errorButton.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.errorButton.primary:hover {
+  background: #2563eb;
+}
+
+.errorButton.secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.errorButton.secondary:hover {
+  background: #e2e8f0;
+}
+
+/* Keyboard Shortcuts */
+.keyboardShortcuts {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 30;
+}
+
+.shortcutHint {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  animation: fadeInOut 4s ease-in-out;
+}
+
+.shortcutHint kbd {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Enhanced Mobile Overlay */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 45;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mobileOverlay:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
 
 /* Animation classes for smooth transitions */
 @keyframes fadeIn {
@@ -105,7 +682,7 @@
 
 /* Sidebar improvements */
 .sidebar-container {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .sidebar-nav-item {
@@ -120,7 +697,7 @@
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+  background: var(--primary-gradient);
   border-radius: 1.5px 0 0 1.5px;
 }
 
@@ -145,24 +722,10 @@
   backdrop-filter: blur(8px);
 }
 
-/* Loading state improvements */
-.loading-spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Button hover effects */
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  transition: all 0.2s ease;
+  background: var(--primary-gradient);
+  transition: var(--transition);
 }
 
 .btn-primary:hover {
@@ -176,7 +739,7 @@
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .admin-card:hover {
@@ -188,7 +751,7 @@
 
 /* Search input improvements */
 .search-input {
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .search-input:focus {
@@ -201,16 +764,75 @@
   animation: pulse 2s infinite;
 }
 
+/* Keyframe Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes pulse {
-  0%, 100% {
+  0%, 100% { 
+    transform: scale(1); 
     opacity: 1;
   }
-  50% {
+  50% { 
+    transform: scale(1.05); 
     opacity: 0.7;
   }
 }
 
-/* Responsive utilities */
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; transform: translateY(10px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progressAnimation {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .headerContainer {
+    padding: 0 16px;
+  }
+  
+  .contextIndicator {
+    display: none;
+  }
+  
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .contentArea {
+    padding: 16px;
+  }
+  
+  .keyboardShortcuts {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .adminLayout.tablet .mainApplication {
+    margin-left: 64px !important;
+  }
+  
+  .contextIndicator {
+    margin: 0 8px;
+    padding: 6px 12px;
+  }
+  
+  .contextLabel {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .mobile-hidden {
     display: none !important;
@@ -223,32 +845,48 @@
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .dark .admin-header {
-    background-color: rgba(17, 24, 39, 0.95);
-    border-color: rgba(75, 85, 99, 0.3);
-  }
-  
-  .dark .admin-card {
-    background: rgba(17, 24, 39, 0.8);
-    border-color: rgba(75, 85, 99, 0.3);
-  }
-  
-  .dark .user-dropdown {
-    background: rgba(17, 24, 39, 0.98);
-    border-color: rgba(75, 85, 99, 0.3);
-  }
+/* Focus Management */
+.adminLayout :focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
-/* Focus improvements for accessibility */
+.adminLayout :focus:not(:focus-visible) {
+  outline: none;
+}
+
 .focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
+/* Dark mode support */
+.dark .admin-header {
+  background-color: rgba(17, 24, 39, 0.95);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark .admin-card {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark .user-dropdown {
+  background: rgba(17, 24, 39, 0.98);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
+  .contextBadge {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .adminDashboardButton {
+    border: 2px solid #ffffff;
+  }
+  
   .nav-link:hover,
   .nav-link.active {
     background-color: #000;

@@ -1,10 +1,10 @@
-// services/api.js - Fixed version with proper auth handling
+// services/api.js - Complete fixed version with enhanced debugging and error handling
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const API_VERSION = 'v1';
 
-console.log('API Base URL configured as:', `${API_BASE_URL}/api/${API_VERSION}/`);
+console.log('[API] Base URL configured as:', `${API_BASE_URL}/api/${API_VERSION}/`);
 
 // Create axios instance with default configuration
 const api = axios.create({
@@ -29,7 +29,8 @@ api.interceptors.request.use(
     
     console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
       headers: Object.keys(config.headers || {}),
-      hasData: !!config.data
+      hasData: !!config.data,
+      params: config.params
     });
     
     // Get token from multiple possible locations
@@ -57,6 +58,18 @@ api.interceptors.response.use(
   (response) => {
     const duration = new Date() - response.config.metadata?.startTime;
     console.log(`[API Response] ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`);
+    
+    // Log response data structure for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[API Response Data]:', {
+        hasResults: !!response.data?.results,
+        isArray: Array.isArray(response.data),
+        dataKeys: response.data ? Object.keys(response.data) : [],
+        dataLength: Array.isArray(response.data) ? response.data.length : 
+                   response.data?.results ? response.data.results.length : 'N/A'
+      });
+    }
+    
     return response;
   },
   async (error) => {
@@ -65,6 +78,7 @@ api.interceptors.response.use(
     console.error('[API Response Error]:', {
       message: error.message,
       status: error.response?.status,
+      statusText: error.response?.statusText,
       url: error.config?.url,
       method: error.config?.method,
       data: error.response?.data
@@ -114,6 +128,21 @@ api.interceptors.response.use(
       redirectToLogin();
     }
     
+    // Handle 403 errors (Forbidden)
+    if (error.response?.status === 403) {
+      console.warn('[API] Access forbidden - insufficient permissions');
+    }
+    
+    // Handle 404 errors (Not Found)
+    if (error.response?.status === 404) {
+      console.warn('[API] Endpoint not found:', originalRequest.url);
+    }
+    
+    // Handle 500 errors (Internal Server Error)
+    if (error.response?.status >= 500) {
+      console.error('[API] Server error:', error.response?.status);
+    }
+    
     // Handle rate limiting (429)
     if (error.response?.status === 429) {
       const retryAfter = error.response.headers['retry-after'] || 5;
@@ -132,6 +161,7 @@ api.interceptors.response.use(
     
     // Handle network errors with retry
     if (!error.response && originalRequest && !originalRequest._retryCount) {
+      console.log('[API] Network error detected, attempting retry');
       originalRequest._retryCount = 0;
       
       if (originalRequest._retryCount < MAX_RETRIES) {
@@ -140,6 +170,11 @@ api.interceptors.response.use(
         await delay(RETRY_DELAY * originalRequest._retryCount);
         return api(originalRequest);
       }
+    }
+    
+    // Handle timeout errors
+    if (error.code === 'ECONNABORTED') {
+      console.error('[API] Request timeout');
     }
     
     return Promise.reject(error);
@@ -163,54 +198,93 @@ const redirectToLogin = () => {
   }
 };
 
-// Enhanced API methods with better error handling
+// Enhanced API methods with better error handling and debugging
 const apiMethods = {
   get: async (url, config = {}) => {
     try {
+      console.log(`[API GET] Requesting: ${url}`, config.params || {});
       const response = await api.get(url, config);
       return response;
     } catch (error) {
-      console.error(`[API GET Error] ${url}:`, error.response?.data || error.message);
+      console.error(`[API GET Error] ${url}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },
   
   post: async (url, data, config = {}) => {
     try {
+      console.log(`[API POST] Requesting: ${url}`, { 
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : []
+      });
       const response = await api.post(url, data, config);
       return response;
     } catch (error) {
-      console.error(`[API POST Error] ${url}:`, error.response?.data || error.message);
+      console.error(`[API POST Error] ${url}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },
   
   put: async (url, data, config = {}) => {
     try {
+      console.log(`[API PUT] Requesting: ${url}`, { 
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : []
+      });
       const response = await api.put(url, data, config);
       return response;
     } catch (error) {
-      console.error(`[API PUT Error] ${url}:`, error.response?.data || error.message);
+      console.error(`[API PUT Error] ${url}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },
   
   patch: async (url, data, config = {}) => {
     try {
+      console.log(`[API PATCH] Requesting: ${url}`, { 
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : []
+      });
       const response = await api.patch(url, data, config);
       return response;
     } catch (error) {
-      console.error(`[API PATCH Error] ${url}:`, error.response?.data || error.message);
+      console.error(`[API PATCH Error] ${url}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },
   
   delete: async (url, config = {}) => {
     try {
+      console.log(`[API DELETE] Requesting: ${url}`);
       const response = await api.delete(url, config);
       return response;
     } catch (error) {
-      console.error(`[API DELETE Error] ${url}:`, error.response?.data || error.message);
+      console.error(`[API DELETE Error] ${url}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },
@@ -227,7 +301,12 @@ const testConnection = async () => {
     console.log('[API Test] Connection successful:', response.data);
     return { success: true, data: response.data };
   } catch (error) {
-    console.error('[API Test] Connection failed:', error.response?.data || error.message);
+    console.error('[API Test] Connection failed:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     return { 
       success: false, 
       error: error.response?.data?.error || error.message,
@@ -250,5 +329,24 @@ const healthCheck = async () => {
   }
 };
 
+// Debug function to check current auth state
+const checkAuthState = () => {
+  const authData = {
+    accessToken: localStorage.getItem('access_token'),
+    authToken: localStorage.getItem('authToken'),
+    refreshToken: localStorage.getItem('refresh_token'),
+    user: localStorage.getItem('user')
+  };
+  
+  console.log('[API Auth State]:', {
+    hasAccessToken: !!authData.accessToken,
+    hasAuthToken: !!authData.authToken,
+    hasRefreshToken: !!authData.refreshToken,
+    hasUser: !!authData.user
+  });
+  
+  return authData;
+};
+
 export default apiMethods;
-export { api, testConnection, healthCheck };
+export { api, testConnection, healthCheck, checkAuthState };

@@ -1,5 +1,5 @@
-// pages/admin/MembersPage.jsx - Fixed version
-import React, { useState, useCallback, useMemo } from 'react';
+// pages/admin/MembersPage.jsx - Complete fixed version with enhanced debugging
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Plus, Search, Filter, Users, UserPlus, Download } from 'lucide-react';
 import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
 import BulkActions from '../../components/admin/Members/BulkActions';
@@ -30,6 +30,15 @@ const MembersPage = () => {
     active: true
   });
 
+  // Debug logging for component state
+  console.log('[MembersPage] Component rendered with state:', {
+    searchQuery,
+    currentPage,
+    membersPerPage,
+    filters,
+    selectedMembers: selectedMembers.length
+  });
+
   // Memoize the hook options to prevent unnecessary re-renders
   const hookOptions = useMemo(() => ({
     search: searchQuery,
@@ -38,8 +47,18 @@ const MembersPage = () => {
     limit: membersPerPage
   }), [searchQuery, filters, currentPage, membersPerPage]);
 
+  console.log('[MembersPage] Hook options:', hookOptions);
+
   // Use the members hook with proper error handling
   const membersHook = useMembers(hookOptions);
+  
+  // Debug the hook result
+  console.log('[MembersPage] Hook result:', {
+    isLoading: membersHook?.isLoading,
+    error: membersHook?.error,
+    membersLength: membersHook?.members?.length,
+    totalMembers: membersHook?.totalMembers
+  });
   
   // Safely extract values with defaults
   const {
@@ -59,9 +78,28 @@ const MembersPage = () => {
   const safeMembers = Array.isArray(members) ? members : [];
   const safeTotalMembers = typeof totalMembers === 'number' ? totalMembers : 0;
 
+  console.log('[MembersPage] Safe values:', {
+    safeMembersLength: safeMembers.length,
+    safeTotalMembers,
+    isLoading,
+    error
+  });
+
+  // Debug effect to monitor state changes
+  useEffect(() => {
+    console.log('[MembersPage] State change detected:', {
+      membersLength: safeMembers.length,
+      totalMembers: safeTotalMembers,
+      isLoading,
+      error,
+      hookOptionsChanged: JSON.stringify(hookOptions)
+    });
+  }, [safeMembers.length, safeTotalMembers, isLoading, error, hookOptions]);
+
   // Handle member registration success
   const handleRegistrationSuccess = useCallback(async (newMember) => {
     try {
+      console.log('[MembersPage] Registration success:', newMember);
       setShowRegistrationForm(false);
       showToast('Member registered successfully!', 'success');
       
@@ -70,22 +108,31 @@ const MembersPage = () => {
         await refetch();
       }
     } catch (error) {
-      console.error('Error after registration:', error);
+      console.error('[MembersPage] Error after registration:', error);
       showToast('Member registered but failed to refresh list', 'warning');
     }
   }, [showToast, refetch]);
 
   // Handle member registration cancel
   const handleRegistrationCancel = useCallback(() => {
+    console.log('[MembersPage] Registration cancelled');
     setShowRegistrationForm(false);
   }, []);
 
   // Handle bulk actions
   const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
-      console.log('Performing bulk action:', action, memberIds, actionData);
+      console.log('[MembersPage] Performing bulk action:', { action, memberIds, actionData });
+      
+      // Check if membersService.performBulkAction exists
+      if (typeof membersService.performBulkAction !== 'function') {
+        console.error('[MembersPage] performBulkAction method not found on membersService');
+        throw new Error('Bulk action method not available');
+      }
       
       const result = await membersService.performBulkAction(action, memberIds, actionData);
+      
+      console.log('[MembersPage] Bulk action result:', result);
       
       if (result?.success) {
         // Clear selection after successful action
@@ -102,7 +149,7 @@ const MembersPage = () => {
         throw new Error(result?.error || 'Bulk action failed');
       }
     } catch (error) {
-      console.error('Bulk action error:', error);
+      console.error('[MembersPage] Bulk action error:', error);
       showToast(error?.message || 'Bulk action failed', 'error');
       throw error;
     }
@@ -110,6 +157,7 @@ const MembersPage = () => {
 
   // Handle member selection
   const handleMemberSelection = useCallback((memberId, isSelected) => {
+    console.log('[MembersPage] Member selection changed:', { memberId, isSelected });
     setSelectedMembers(prev => 
       isSelected 
         ? [...prev, memberId]
@@ -119,6 +167,7 @@ const MembersPage = () => {
 
   // Handle select all members
   const handleSelectAll = useCallback((selectAll) => {
+    console.log('[MembersPage] Select all changed:', selectAll);
     if (selectAll) {
       const memberIds = safeMembers.map(member => member?.id).filter(Boolean);
       setSelectedMembers(memberIds);
@@ -129,11 +178,13 @@ const MembersPage = () => {
 
   // Handle clear selection
   const handleClearSelection = useCallback(() => {
+    console.log('[MembersPage] Clearing selection');
     setSelectedMembers([]);
   }, []);
 
   // Handle search
   const handleSearch = useCallback((query) => {
+    console.log('[MembersPage] Search changed:', query);
     setSearchQuery(query || '');
     setCurrentPage(1); // Reset to first page when searching
     setSelectedMembers([]); // Clear selection when searching
@@ -141,7 +192,7 @@ const MembersPage = () => {
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters) => {
-    console.log('Filter change:', newFilters);
+    console.log('[MembersPage] Filter change:', newFilters);
     setFilters(prev => ({ ...prev, ...newFilters }));
     setCurrentPage(1); // Reset to first page when filtering
     setSelectedMembers([]); // Clear selection when filtering
@@ -149,12 +200,14 @@ const MembersPage = () => {
 
   // Handle pagination
   const handlePageChange = useCallback((page) => {
+    console.log('[MembersPage] Page change:', page);
     setCurrentPage(page);
     setSelectedMembers([]); // Clear selection when changing pages
   }, []);
 
   // Handle per-page change
   const handlePerPageChange = useCallback((perPage) => {
+    console.log('[MembersPage] Per-page change:', perPage);
     setMembersPerPage(Number(perPage));
     setCurrentPage(1); // Reset to first page
     setSelectedMembers([]); // Clear selection
@@ -163,6 +216,7 @@ const MembersPage = () => {
   // Quick export all members
   const handleQuickExport = useCallback(async () => {
     try {
+      console.log('[MembersPage] Starting export');
       const result = await membersService.exportMembers();
       if (result?.success) {
         showToast('Export started. File will download shortly.', 'success');
@@ -170,13 +224,14 @@ const MembersPage = () => {
         throw new Error(result?.error || 'Export failed');
       }
     } catch (error) {
-      console.error('Export error:', error);
+      console.error('[MembersPage] Export error:', error);
       showToast(error?.message || 'Export failed', 'error');
     }
   }, [showToast]);
 
   // Clear filters
   const handleClearFilters = useCallback(() => {
+    console.log('[MembersPage] Clearing filters');
     setFilters({
       gender: '',
       ageRange: '',
@@ -188,6 +243,7 @@ const MembersPage = () => {
 
   // Error boundary fallback
   if (error) {
+    console.error('[MembersPage] Rendering error state:', error);
     return (
       <div className={styles.pageContainer}>
         <div className={styles.errorState}>
@@ -217,6 +273,13 @@ const MembersPage = () => {
   const hasActiveFilters = Object.values(filters).some(value => 
     value !== '' && value !== true && value !== null && value !== undefined
   );
+
+  console.log('[MembersPage] Rendering main UI:', {
+    safeMembersLength: safeMembers.length,
+    isLoading,
+    hasActiveFilters,
+    selectedCount: selectedMembers.length
+  });
 
   return (
     <div className={styles.pageContainer}>

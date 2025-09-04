@@ -1,4 +1,4 @@
-# members/urls.py - SECURE VERSION - Remove debug endpoints and separate public/private
+# members/urls.py - FIXED VERSION - Correct URL patterns
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -8,9 +8,9 @@ from .views import (
 
 app_name = 'members'
 
-# Create router for authenticated endpoints only
+# Create router for authenticated endpoints
 router = DefaultRouter()
-router.register(r'members', MemberViewSet, basename='member')
+router.register(r'', MemberViewSet, basename='member')  # FIXED: Empty prefix for /api/v1/members/
 router.register(r'tags', MemberTagViewSet, basename='member-tag')
 router.register(r'statistics', MemberStatisticsViewSet, basename='member-statistics')
 router.register(r'import-logs', BulkImportLogViewSet, basename='import-log')
@@ -19,33 +19,33 @@ urlpatterns = [
     # PUBLIC endpoint for member registration
     path('register/', public_member_registration, name='public-registration'),
     
-    # AUTHENTICATED endpoints only
+    # AUTHENTICATED endpoints - router handles the rest
     path('', include(router.urls)),
 ]
 
-# URL Structure after fixes:
+# FIXED URL Structure:
 # Public endpoints:
 # POST /api/v1/members/register/ - Public member registration
 
 # Authenticated endpoints (require Bearer token):
-# GET /api/v1/members/members/ - List members (admin/staff only)
-# POST /api/v1/members/members/ - Create member (admin only)
-# GET /api/v1/members/members/{id}/ - Get member details
-# PUT /api/v1/members/members/{id}/ - Update member
-# PATCH /api/v1/members/members/{id}/ - Partial update member
-# DELETE /api/v1/members/members/{id}/ - Delete member (admin only)
-# GET /api/v1/members/members/statistics/ - Member statistics
-# GET /api/v1/members/members/export/ - Export members (admin only)
+# GET /api/v1/members/ - List members (admin/staff only)
+# POST /api/v1/members/ - Create member (admin only)  
+# GET /api/v1/members/{id}/ - Get member details
+# PUT /api/v1/members/{id}/ - Update member
+# PATCH /api/v1/members/{id}/ - Partial update member
+# DELETE /api/v1/members/{id}/ - Delete member (admin only)
+# GET /api/v1/members/statistics/ - Member statistics (viewset action)
+# GET /api/v1/members/export/ - Export members (viewset action)
 
-# Tag management (authenticated users can view, admins can modify):
+# Tag management:
 # GET /api/v1/members/tags/ - List tags
 # POST /api/v1/members/tags/ - Create tag (admin only)
 # GET /api/v1/members/tags/{id}/ - Get tag
 # PUT /api/v1/members/tags/{id}/ - Update tag (admin only)
 # DELETE /api/v1/members/tags/{id}/ - Delete tag (admin only)
 
-# Statistics (authenticated users only):
+# Statistics:
 # GET /api/v1/members/statistics/ - Member statistics
 
-# Import logs (admin only):
+# Import logs:
 # GET /api/v1/members/import-logs/ - List import logs
