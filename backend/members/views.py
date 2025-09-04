@@ -1,4 +1,5 @@
-# members/views.py - Fixed version that resolves authentication and permission issues
+# members/views.py - SECURE VERSION - Remove debug endpoint and fix permissions
+
 import csv
 import json
 from datetime import date, datetime, timedelta
@@ -15,7 +16,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
-from .permissions import IsAuthenticatedOrCreateOnly, IsAdminUserOrReadOnly, DebugPermission
 from .serializers import (
     MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
     MemberSummarySerializer, MemberExportSerializer, MemberNoteSerializer,
@@ -23,50 +23,72 @@ from .serializers import (
     BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
 
+# SECURITY FIX: Remove the debug endpoint entirely
+# @api_view(['GET'])
+# @permission_classes([permissions.AllowAny])
+# def debug_auth(request):
+#     """DEBUG ENDPOINT REMOVED FOR SECURITY"""
+#     pass
 
-@api_view(['GET'])
+# Create separate views for public and authenticated operations
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def debug_auth(request):
-    """Debug endpoint to check authentication status"""
-    user_info = {
-        'user': str(request.user),
-        'user_type': type(request.user).__name__,
-        'is_authenticated': getattr(request.user, 'is_authenticated', False),
-        'is_anonymous': getattr(request.user, 'is_anonymous', True),
-        'is_staff': getattr(request.user, 'is_staff', False),
-        'is_superuser': getattr(request.user, 'is_superuser', False),
-        'email': getattr(request.user, 'email', 'None'),
-        'username': getattr(request.user, 'username', 'None'),
-        'role': getattr(request.user, 'role', 'None'),
-        'active': getattr(request.user, 'active', 'None'),
-    }
-    
-    headers_info = {
-        'Authorization': request.META.get('HTTP_AUTHORIZATION', 'Not present'),
-        'Content-Type': request.META.get('CONTENT_TYPE', 'Not set'),
-        'User-Agent': request.META.get('HTTP_USER_AGENT', 'Not set'),
-        'Remote-Addr': request.META.get('REMOTE_ADDR', 'Unknown'),
-    }
-    
-    return Response({
-        'message': 'Authentication debug info',
-        'user_info': user_info,
-        'headers': headers_info,
-        'request_method': request.method,
-        'request_path': request.path,
-    })
+def public_member_registration(request):
+    """Public member registration endpoint - separate from admin operations"""
+    try:
+        logger.info("Public member registration attempt")
+        
+        # Validate required fields
+        required_fields = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth']
+        for field in required_fields:
+            if not request.data.get(field):
+                return Response(
+                    {'error': f'{field.replace("_", " ").title()} is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Check for duplicate email
+        if Member.objects.filter(email=request.data['email']).exists():
+            return Response(
+                {'error': 'A member with this email already exists'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create member with public registration source
+        serializer = MemberCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            member = serializer.save(
+                registration_source='public_form',
+                privacy_policy_agreed=True,
+                privacy_policy_agreed_date=timezone.now()
+            )
+            
+            return Response({
+                'success': True,
+                'message': 'Registration successful! Thank you for joining our church family.',
+                'member_id': str(member.id)
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        logger.error(f"Public registration error: {str(e)}", exc_info=True)
+        return Response(
+            {'error': 'Registration failed. Please try again.'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class MemberViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing members with fixed permissions
+    SECURE ViewSet for managing members - AUTHENTICATION REQUIRED
     """
     queryset = Member.objects.select_related('family').prefetch_related(
         'member_notes', 'tag_assignments__tag'
     ).order_by('-registration_date')
     
-    # Use the fixed permission class
-    permission_classes = [DebugPermission, IsAuthenticatedOrCreateOnly]
+    # SECURITY FIX: Simple, clear permissions
+    permission_classes = [permissions.IsAuthenticated]
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -89,7 +111,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Return appropriate serializer based on action"""
         if self.action == 'create':
-            if self.request.user.is_authenticated and self._is_admin_user():
+            if self._is_admin_user():
                 return MemberAdminCreateSerializer
             return MemberCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -101,27 +123,19 @@ class MemberViewSet(viewsets.ModelViewSet):
         return MemberSerializer
     
     def _is_admin_user(self):
-        """Check if current user is admin"""
+        """Check if current user is admin - simplified logic"""
         user = self.request.user
-        if not user or not user.is_authenticated:
-            return False
         return (
             user.is_superuser or
             user.is_staff or
             (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])
         )
     
-    def dispatch(self, request, *args, **kwargs):
-        """Override dispatch to add logging for debugging"""
-        logger.info(f"MemberViewSet dispatch - Method: {request.method}, "
-                   f"Path: {request.path}, User: {request.user}, "
-                   f"Authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else 'Unknown'}")
-        return super().dispatch(request, *args, **kwargs)
-    
     def list(self, request, *args, **kwargs):
         """List members with proper error handling"""
         try:
-            logger.info(f"Members list request from user: {request.user} (authenticated: {request.user.is_authenticated})")
+            # SECURITY: Only log minimal information
+            logger.info(f"Members list request from user: {request.user.email}")
             
             # Get queryset and apply filters
             queryset = self.filter_queryset(self.get_queryset())
@@ -142,112 +156,78 @@ class MemberViewSet(viewsets.ModelViewSet):
             })
             
         except Exception as e:
-            logger.error(f"Error in members list view: {str(e)}", exc_info=True)
+            logger.error(f"Error in members list view: {str(e)}")
+            # SECURITY: Don't expose internal error details
             return Response(
-                {'error': 'Failed to retrieve members', 'detail': str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve a single member"""
-        try:
-            logger.info(f"Retrieving member for user: {request.user}")
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except Member.DoesNotExist:
-            return Response(
-                {'error': 'Member not found'}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            logger.error(f"Error retrieving member: {str(e)}", exc_info=True)
-            return Response(
-                {'error': 'Failed to retrieve member', 'detail': str(e)}, 
+                {'error': 'Failed to retrieve members'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     def create(self, request, *args, **kwargs):
-        """Create a new member - allows public registration"""
+        """Create a new member - ADMIN ONLY"""
         try:
-            logger.info(f"Creating member. User: {request.user}, Authenticated: {request.user.is_authenticated}")
-            logger.info(f"Request data keys: {list(request.data.keys()) if hasattr(request.data, 'keys') else 'No keys'}")
+            if not self._is_admin_user():
+                return Response(
+                    {'error': 'Admin privileges required'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            logger.info(f"Admin member creation by: {request.user.email}")
             
             serializer = self.get_serializer(data=request.data)
             
             if serializer.is_valid():
-                # Set additional fields for admin users
-                extra_fields = {}
-                if request.user.is_authenticated and self._is_admin_user():
-                    extra_fields['registered_by'] = request.user
-                    extra_fields['last_modified_by'] = request.user
-                    if not serializer.validated_data.get('registration_source'):
-                        extra_fields['registration_source'] = 'admin_portal'
-                else:
-                    extra_fields['registration_source'] = 'public_form'
+                member = serializer.save(
+                    registered_by=request.user,
+                    last_modified_by=request.user,
+                    registration_source='admin_portal'
+                )
                 
-                member = serializer.save(**extra_fields)
-                
-                # Return appropriate response
-                if request.user.is_authenticated and self._is_admin_user():
-                    response_serializer = MemberSerializer(member)
-                    return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-                else:
-                    return Response({
-                        'success': True,
-                        'message': 'Registration successful! Thank you for joining our church family.',
-                        'member_id': str(member.id)
-                    }, status=status.HTTP_201_CREATED)
+                response_serializer = MemberSerializer(member)
+                return Response(response_serializer.data, status=status.HTTP_201_CREATED)
             else:
-                logger.warning(f"Member creation validation errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
-            logger.error(f"Error creating member: {str(e)}", exc_info=True)
+            logger.error(f"Error creating member: {str(e)}")
             return Response(
-                {'error': 'Failed to create member', 'detail': str(e)}, 
+                {'error': 'Failed to create member'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     def update(self, request, *args, **kwargs):
-        """Update member - requires authentication"""
-        # Set last_modified_by if authenticated
-        if request.user.is_authenticated and hasattr(request, 'data'):
-            if isinstance(request.data, dict):
-                request.data['last_modified_by'] = request.user.id
-        
+        """Update member - set last_modified_by"""
+        if hasattr(request, 'data') and isinstance(request.data, dict):
+            request.data['last_modified_by'] = request.user.id
         return super().update(request, *args, **kwargs)
     
     def partial_update(self, request, *args, **kwargs):
-        """Partial update member - requires authentication"""
-        # Set last_modified_by if authenticated
-        if request.user.is_authenticated and hasattr(request, 'data'):
-            if isinstance(request.data, dict):
-                request.data['last_modified_by'] = request.user.id
-        
+        """Partial update member - set last_modified_by"""
+        if hasattr(request, 'data') and isinstance(request.data, dict):
+            request.data['last_modified_by'] = request.user.id
         return super().partial_update(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):
-        """Delete member - handled by permissions"""
+        """Delete member - admin only"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
         return super().destroy(request, *args, **kwargs)
     
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=['get'])
     def statistics(self, request):
-        """Get comprehensive member statistics"""
+        """Get basic member statistics"""
         try:
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             
-            # Recent registrations
+            # Recent registrations (last 30 days)
             thirty_days_ago = timezone.now() - timedelta(days=30)
             recent_registrations = Member.objects.filter(
                 registration_date__gte=thirty_days_ago
             ).count()
-            
-            # Gender distribution
-            gender_stats = list(Member.objects.values('gender').annotate(
-                count=Count('id')
-            ).order_by('gender'))
             
             stats_data = {
                 'summary': {
@@ -255,24 +235,27 @@ class MemberViewSet(viewsets.ModelViewSet):
                     'active_members': active_members,
                     'inactive_members': total_members - active_members,
                     'recent_registrations': recent_registrations,
-                },
-                'demographics': {
-                    'gender_distribution': gender_stats,
                 }
             }
             
             return Response(stats_data)
             
         except Exception as e:
-            logger.error(f"Error getting statistics: {str(e)}", exc_info=True)
+            logger.error(f"Error getting statistics: {str(e)}")
             return Response(
-                {'error': 'Failed to get statistics', 'detail': str(e)}, 
+                {'error': 'Failed to get statistics'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAdminUserOrReadOnly])
+    @action(detail=False, methods=['get'])
     def export(self, request):
-        """Export members to CSV"""
+        """Export members to CSV - Admin only"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         try:
             queryset = self.filter_queryset(self.get_queryset())
             serializer = MemberExportSerializer(queryset, many=True)
@@ -288,28 +271,65 @@ class MemberViewSet(viewsets.ModelViewSet):
             return response
             
         except Exception as e:
-            logger.error(f"Error exporting members: {str(e)}", exc_info=True)
+            logger.error(f"Error exporting members: {str(e)}")
             return Response(
-                {'error': 'Failed to export members', 'detail': str(e)}, 
+                {'error': 'Failed to export members'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
 class MemberTagViewSet(viewsets.ModelViewSet):
-    """ViewSet for managing member tags"""
+    """ViewSet for managing member tags - Admin only"""
     queryset = MemberTag.objects.all()
     serializer_class = MemberTagSerializer
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def list(self, request, *args, **kwargs):
+        # All authenticated users can view tags
+        return super().list(request, *args, **kwargs)
+    
+    def create(self, request, *args, **kwargs):
+        # Only admins can create tags
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        # Only admins can update tags
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        # Only admins can delete tags
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+    
+    def _is_admin_user(self):
+        """Check if current user is admin"""
+        user = self.request.user
+        return (
+            user.is_superuser or
+            user.is_staff or
+            (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])
+        )
     
     def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(created_by=self.request.user)
-        else:
-            serializer.save()
+        serializer.save(created_by=self.request.user)
 
 
 class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for member statistics"""
+    """ViewSet for member statistics - Authenticated users only"""
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
@@ -329,7 +349,7 @@ class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 }
             })
         except Exception as e:
-            logger.error(f"Error getting statistics: {str(e)}", exc_info=True)
+            logger.error(f"Error getting statistics: {str(e)}")
             return Response(
                 {'error': 'Failed to get statistics'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -337,13 +357,16 @@ class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for viewing bulk import logs"""
+    """ViewSet for viewing bulk import logs - Admin only"""
     serializer_class = BulkImportLogSerializer
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        if self.request.user.is_superuser or (hasattr(self.request.user, 'role') and self.request.user.role == 'super_admin'):
+        # Only admins can view import logs
+        user = self.request.user
+        if (user.is_superuser or user.is_staff or 
+            (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])):
             return BulkImportLog.objects.all().order_by('-started_at')
-        return BulkImportLog.objects.filter(
-            uploaded_by=self.request.user
-        ).order_by('-started_at')
+        else:
+            # Return empty queryset for non-admin users
+            return BulkImportLog.objects.none()

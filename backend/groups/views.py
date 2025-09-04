@@ -1,4 +1,4 @@
-# backend/churchconnect/groups/views.py
+# backend/churchconnect/groups/views.py - COMPLETE FIX
 
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
@@ -7,6 +7,7 @@ from django.db import transaction, models
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.utils import timezone
 import logging
 
 from .models import Group, MemberGroupRelationship, GroupCategory
@@ -136,15 +137,17 @@ class GroupViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 membership = MemberGroupRelationship.objects.get(
                     group=group,
-                    member_id=member_id
+                    member_id=member_id,
+                    is_active=True
                 )
                 
                 # Deactivate membership instead of deleting
-                membership.status = 'active'
-                membership.is_active = True
+                membership.is_active = False
+                membership.status = 'removed'
+                membership.end_date = timezone.now().date()
                 membership.save()
                 
-                logger.info(f"Approved membership for {membership.member.get_full_name()} in group {group.name}")
+                logger.info(f"Removed member {membership.member.get_full_name()} from group {group.name}")
                 
                 return Response(
                     MemberGroupRelationshipSerializer(membership).data
@@ -152,8 +155,58 @@ class GroupViewSet(viewsets.ModelViewSet):
             
         except MemberGroupRelationship.DoesNotExist:
             return Response(
+                {'error': 'Member not found in this group'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error removing member: {str(e)}")
+            return Response(
+                {'error': 'Failed to remove member from group'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['post'], url_path='approve-member/(?P<member_id>[^/.]+)')
+    def approve_member(self, request, pk=None, member_id=None):
+        """Approve a pending member"""
+        group = self.get_object()
+        
+        try:
+            with transaction.atomic():
+                membership = MemberGroupRelationship.objects.get(
+                    group=group,
+                    member_id=member_id,
+                    status='pending'
+                )
+                
+                # Check capacity before approving
+                if group.is_full:
+                    return Response(
+                        {'error': 'Group is at maximum capacity'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Approve the membership
+                membership.status = 'active'
+                membership.is_active = True
+                membership.start_date = timezone.now().date()
+                membership.save()
+                
+                logger.info(f"Approved membership for {membership.member.get_full_name()} in group {group.name}")
+                
+                return Response(
+                    MemberGroupRelationshipSerializer(membership).data
+                )
+                
+        except MemberGroupRelationship.DoesNotExist:
+            return Response(
                 {'error': 'Pending membership not found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error approving member: {str(e)}")
+            return Response(
+                {'error': 'Failed to approve membership'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     @action(detail=True, methods=['post'], url_path='decline-member/(?P<member_id>[^/.]+)')
@@ -182,6 +235,12 @@ class GroupViewSet(viewsets.ModelViewSet):
             return Response(
                 {'error': 'Pending membership not found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error declining member: {str(e)}")
+            return Response(
+                {'error': 'Failed to decline membership'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     @action(detail=False, methods=['get'])
@@ -235,7 +294,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             newest_groups_data = [{
                 'name': group.name,
                 'created_at': group.created_at,
-                'member_count': group.member_count
+                'member_count': group.memberships.filter(is_active=True, status='active').count()
             } for group in newest_groups]
 
             stats_data = {
@@ -301,11 +360,11 @@ class GroupViewSet(viewsets.ModelViewSet):
         for membership in memberships:
             member = membership.member
             export_data.append({
-                'name': member.get_full_name(),
+                'name': member.get_full_name() if hasattr(member, 'get_full_name') else f"{member.first_name} {member.last_name}",
                 'email': member.email,
-                'phone': member.phone,
-                'role': membership.get_role_display(),
-                'join_date': membership.join_date.strftime('%Y-%m-%d'),
+                'phone': getattr(member, 'phone', ''),
+                'role': membership.get_role_display() if hasattr(membership, 'get_role_display') else membership.role,
+                'join_date': membership.join_date.strftime('%Y-%m-%d') if membership.join_date else '',
                 'notes': membership.notes or ''
             })
         
@@ -315,6 +374,69 @@ class GroupViewSet(viewsets.ModelViewSet):
             'member_count': len(export_data),
             'members': export_data
         })
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        """Get all members of a group"""
+        group = self.get_object()
+        
+        # Filter by status if specified
+        status_filter = request.query_params.get('status', 'active')
+        
+        if status_filter == 'all':
+            memberships = group.memberships.all()
+        else:
+            memberships = group.memberships.filter(status=status_filter)
+        
+        # Apply ordering
+        ordering = request.query_params.get('ordering', '-join_date')
+        memberships = memberships.order_by(ordering)
+        
+        page = self.paginate_queryset(memberships)
+        if page is not None:
+            serializer = MemberGroupRelationshipSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = MemberGroupRelationshipSerializer(memberships, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='update-membership/(?P<member_id>[^/.]+)')
+    def update_membership(self, request, pk=None, member_id=None):
+        """Update a member's role or status in a group"""
+        group = self.get_object()
+        
+        try:
+            membership = MemberGroupRelationship.objects.get(
+                group=group,
+                member_id=member_id
+            )
+            
+            serializer = UpdateMembershipSerializer(
+                membership,
+                data=request.data,
+                partial=True
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                logger.info(f"Updated membership for {membership.member.get_full_name()} in group {group.name}")
+                return Response(
+                    MemberGroupRelationshipSerializer(membership).data
+                )
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except MemberGroupRelationship.DoesNotExist:
+            return Response(
+                {'error': 'Member is not part of this group'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error updating membership: {str(e)}")
+            return Response(
+                {'error': 'Failed to update membership'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class GroupCategoryViewSet(viewsets.ModelViewSet):
@@ -409,7 +531,10 @@ class MemberGroupRelationshipViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        membership.activate()
+        membership.status = 'active'
+        membership.is_active = True
+        membership.start_date = timezone.now().date()
+        membership.save()
         
         serializer = self.get_serializer(membership)
         return Response(serializer.data)
@@ -418,9 +543,12 @@ class MemberGroupRelationshipViewSet(viewsets.ModelViewSet):
     def deactivate(self, request, pk=None):
         """Deactivate a membership"""
         membership = self.get_object()
-        end_date = request.data.get('end_date')
+        end_date = request.data.get('end_date', timezone.now().date())
         
-        membership.deactivate(end_date)
+        membership.is_active = False
+        membership.status = 'inactive'
+        membership.end_date = end_date
+        membership.save()
         
         serializer = self.get_serializer(membership)
         return Response(serializer.data)
@@ -460,95 +588,3 @@ class MemberGroupRelationshipViewSet(viewsets.ModelViewSet):
             'pending_memberships': pending_memberships,
             'role_distribution': list(role_stats)
         })
-
-        # The following code seems misplaced and should be part of a remove/deactivate member action, not statistics.
-        # If needed, move this logic to the appropriate action method.
-
-    @action(detail=True, methods=['get'])
-    def members(self, request, pk=None):
-        """Get all members of a group"""
-        group = self.get_object()
-        
-        # Filter by status if specified
-        status_filter = request.query_params.get('status', 'active')
-        
-        if status_filter == 'all':
-            memberships = group.memberships.all()
-        else:
-            memberships = group.memberships.filter(status=status_filter)
-        
-        # Apply ordering
-        ordering = request.query_params.get('ordering', '-join_date')
-        memberships = memberships.order_by(ordering)
-        
-        page = self.paginate_queryset(memberships)
-        if page is not None:
-            serializer = MemberGroupRelationshipSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        
-        serializer = MemberGroupRelationshipSerializer(memberships, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['patch'], url_path='update-membership/(?P<member_id>[^/.]+)')
-    def update_membership(self, request, pk=None, member_id=None):
-        """Update a member's role or status in a group"""
-        group = self.get_object()
-        
-        try:
-            membership = MemberGroupRelationship.objects.get(
-                group=group,
-                member_id=member_id
-            )
-            
-            serializer = UpdateMembershipSerializer(
-                membership,
-                data=request.data,
-                partial=True
-            )
-            
-            if serializer.is_valid():
-                serializer.save()
-                logger.info(f"Updated membership for {membership.member.get_full_name()} in group {group.name}")
-                return Response(
-                    MemberGroupRelationshipSerializer(membership).data
-                )
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        except MemberGroupRelationship.DoesNotExist:
-            return Response(
-                {'error': 'Member is not part of this group'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-    @action(detail=True, methods=['post'], url_path='approve-member/(?P<member_id>[^/.]+)')
-    def approve_member(self, request, pk=None, member_id=None):
-        """Approve a pending member"""
-        group = self.get_object()
-        
-        try:
-            with transaction.atomic():
-                membership = MemberGroupRelationship.objects.get(
-                    group=group,
-                    member_id=member_id,
-                    status='pending'
-                )
-                
-                # Check capacity before approving
-                if group.is_full:
-                    return Response(
-                        {'error': 'Group is at maximum capacity'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                
-                # TODO: Complete the membership approval logic here
-                # membership.status = 'active'
-                # membership.is_active = True
-                # membership.save()
-                # logger.info(f"Approved membership for {membership.member.get_full_name()} in group {group.name}")
-                # return Response(MemberGroupRelationshipSerializer(membership).data)
-        except MemberGroupRelationship.DoesNotExist:
-            return Response(
-                {'error': 'Pending membership not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )

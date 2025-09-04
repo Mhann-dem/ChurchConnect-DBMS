@@ -1,100 +1,51 @@
-# members/urls.py - Updated with debug endpoint
+# members/urls.py - SECURE VERSION - Remove debug endpoints and separate public/private
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
 from .views import (
     MemberViewSet, MemberTagViewSet, MemberStatisticsViewSet, 
-    BulkImportLogViewSet, debug_auth
+    BulkImportLogViewSet, public_member_registration
 )
 
 app_name = 'members'
 
-# Create router and register viewsets
+# Create router for authenticated endpoints only
 router = DefaultRouter()
 router.register(r'members', MemberViewSet, basename='member')
 router.register(r'tags', MemberTagViewSet, basename='member-tag')
 router.register(r'statistics', MemberStatisticsViewSet, basename='member-statistics')
 router.register(r'import-logs', BulkImportLogViewSet, basename='import-log')
 
-@api_view(['GET', 'POST'])
-def new_member_redirect(request):
-    """
-    Handle /new/ endpoint for backward compatibility
-    """
-    if request.method == 'GET':
-        return Response({
-            'message': 'Please use POST /api/v1/members/members/ for member registration',
-            'redirect_url': '/api/v1/members/members/',
-            'deprecated': True
-        }, status=status.HTTP_301_MOVED_PERMANENTLY)
-    
-    elif request.method == 'POST':
-        # Proxy to the actual member creation logic
-        from .views import MemberViewSet
-        
-        viewset = MemberViewSet()
-        viewset.request = request
-        viewset.format_kwarg = None
-        
-        try:
-            response = viewset.create(request)
-            response['X-Deprecated'] = 'Please use POST /api/v1/members/members/ instead'
-            return response
-        except Exception as e:
-            return Response({
-                'error': 'Please use the standard endpoint: POST /api/v1/members/members/',
-                'redirect_url': '/api/v1/members/members/'
-            }, status=status.HTTP_302_FOUND)
-
 urlpatterns = [
-    # Debug endpoint for troubleshooting authentication
-    path('debug-auth/', debug_auth, name='debug-auth'),
+    # PUBLIC endpoint for member registration
+    path('register/', public_member_registration, name='public-registration'),
     
-    # Backward compatibility redirect
-    path('new/', new_member_redirect, name='member-new-redirect'),
-    
-    # Include router URLs
+    # AUTHENTICATED endpoints only
     path('', include(router.urls)),
 ]
 
-# Final URL patterns will be:
+# URL Structure after fixes:
 # Public endpoints:
-# POST /api/v1/members/members/ - Create new member (public registration)
+# POST /api/v1/members/register/ - Public member registration
 
-# Authenticated endpoints:
-# GET /api/v1/members/members/ - List members (with filtering, pagination, search)
-# GET /api/v1/members/members/{id}/ - Retrieve specific member
+# Authenticated endpoints (require Bearer token):
+# GET /api/v1/members/members/ - List members (admin/staff only)
+# POST /api/v1/members/members/ - Create member (admin only)
+# GET /api/v1/members/members/{id}/ - Get member details
 # PUT /api/v1/members/members/{id}/ - Update member
 # PATCH /api/v1/members/members/{id}/ - Partial update member
-# DELETE /api/v1/members/members/{id}/ - Delete member
+# DELETE /api/v1/members/members/{id}/ - Delete member (admin only)
+# GET /api/v1/members/members/statistics/ - Member statistics
+# GET /api/v1/members/members/export/ - Export members (admin only)
 
-# Statistics endpoints:
-# GET /api/v1/members/statistics/ - Get member statistics
-# GET /api/v1/members/statistics/gender_distribution/ - Get gender distribution
-# GET /api/v1/members/statistics/age_demographics/ - Get age demographics
-# GET /api/v1/members/statistics/registration_trends/ - Get registration trends
+# Tag management (authenticated users can view, admins can modify):
+# GET /api/v1/members/tags/ - List tags
+# POST /api/v1/members/tags/ - Create tag (admin only)
+# GET /api/v1/members/tags/{id}/ - Get tag
+# PUT /api/v1/members/tags/{id}/ - Update tag (admin only)
+# DELETE /api/v1/members/tags/{id}/ - Delete tag (admin only)
 
-# Member-specific endpoints:
-# GET /api/v1/members/members/export/ - Export members to CSV
-# POST /api/v1/members/members/{id}/add_note/ - Add note to member
-# GET /api/v1/members/members/{id}/notes/ - Get member notes
-# POST /api/v1/members/members/{id}/add_tag/ - Add tag to member
-# DELETE /api/v1/members/members/{id}/remove_tag/ - Remove tag from member
+# Statistics (authenticated users only):
+# GET /api/v1/members/statistics/ - Member statistics
 
-# Admin-only endpoints:
-# POST /api/v1/members/members/bulk_import/ - Bulk import members from file
-# GET /api/v1/members/members/import_template/ - Get import template info
-# GET /api/v1/members/members/import_logs/ - Get recent import logs
-
-# Tag management endpoints:
-# GET /api/v1/members/tags/ - List all tags
-# POST /api/v1/members/tags/ - Create new tag
-# GET /api/v1/members/tags/{id}/ - Get specific tag
-# PUT /api/v1/members/tags/{id}/ - Update tag
-# DELETE /api/v1/members/tags/{id}/ - Delete tag
-
-# Import log endpoints:
+# Import logs (admin only):
 # GET /api/v1/members/import-logs/ - List import logs
-# GET /api/v1/members/import-logs/{id}/ - Get specific import log details

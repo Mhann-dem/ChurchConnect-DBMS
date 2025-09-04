@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Breadcrumbs from './Breadcrumbs';
-import Footer from './Footer';
 import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -128,11 +127,6 @@ const AdminLayout = () => {
                 <Outlet />
               </div>
             </div>
-          </div>
-
-          {/* Enhanced Footer */}
-          <div className="footerContainer">
-            <Footer isAdmin={true} />
           </div>
         </main>
       </div>

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Filter, X, Calendar, Users, Tag, MapPin, Phone, Mail } from 'lucide-react';
-import './Members.module.css';
+import styles from './Members.module.css';
 
 const MemberFilters = ({ 
-  onFilterChange, 
-  onClearFilters, 
+  onFilterChange = () => {}, 
+  onClearFilters = () => {}, 
   activeFilters = {}, 
   groups = [],
   tags = [],
@@ -30,19 +30,41 @@ const MemberFilters = ({
     ...activeFilters
   });
 
+  const searchTimeoutRef = useRef(null);
+
   // Debounced search effect
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
       handleFilterChange('search', searchTerm);
     }, 300);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [searchTerm]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    onFilterChange(newFilters);
+    
+    if (typeof onFilterChange === 'function') {
+      onFilterChange(newFilters);
+    }
   };
 
   const handleMultiSelectChange = (key, value) => {
@@ -72,7 +94,10 @@ const MemberFilters = ({
     };
     setFilters(clearedFilters);
     setSearchTerm('');
-    onClearFilters();
+    
+    if (typeof onClearFilters === 'function') {
+      onClearFilters();
+    }
   };
 
   const getActiveFilterCount = () => {
@@ -80,8 +105,8 @@ const MemberFilters = ({
     if (filters.search) count++;
     if (filters.ageRange) count++;
     if (filters.gender) count++;
-    if (filters.groups.length > 0) count++;
-    if (filters.tags.length > 0) count++;
+    if (filters.groups && filters.groups.length > 0) count++;
+    if (filters.tags && filters.tags.length > 0) count++;
     if (filters.pledgeStatus) count++;
     if (filters.joinedAfter) count++;
     if (filters.joinedBefore) count++;
@@ -122,18 +147,20 @@ const MemberFilters = ({
     { value: 'no_contact', label: 'No Contact' }
   ];
 
+  const activeFilterCount = getActiveFilterCount();
+
   return (
-    <div className="member-filters">
-      <div className="filters-header">
-        <div className="search-container">
-          <div className="search-input-wrapper">
-            <Search className="search-icon" size={20} />
+    <div className={styles.memberFilters}>
+      <div className={styles.filtersHeader}>
+        <div className={styles.searchContainer}>
+          <div className={styles.searchInputWrapper}>
+            <Search className={styles.searchIcon} size={20} />
             <input
               type="text"
               placeholder="Search members by name, email, or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className={styles.searchInput}
             />
             {searchTerm && (
               <button
@@ -141,7 +168,7 @@ const MemberFilters = ({
                   setSearchTerm('');
                   handleFilterChange('search', '');
                 }}
-                className="clear-search-btn"
+                className={styles.clearSearchBtn}
                 aria-label="Clear search"
               >
                 <X size={16} />
@@ -150,20 +177,20 @@ const MemberFilters = ({
           </div>
         </div>
 
-        <div className="filter-actions">
+        <div className={styles.filterActions}>
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`toggle-advanced-btn ${showAdvanced ? 'active' : ''}`}
+            className={`${styles.toggleAdvancedBtn} ${showAdvanced ? styles.active : ''}`}
           >
             <Filter size={16} />
             Advanced Filters
-            {getActiveFilterCount() > 0 && (
-              <span className="filter-count">{getActiveFilterCount()}</span>
+            {activeFilterCount > 0 && (
+              <span className={styles.filterCount}>{activeFilterCount}</span>
             )}
           </button>
 
-          {getActiveFilterCount() > 0 && (
-            <button onClick={clearAllFilters} className="clear-filters-btn">
+          {activeFilterCount > 0 && (
+            <button onClick={clearAllFilters} className={styles.clearFiltersBtn}>
               <X size={16} />
               Clear All
             </button>
@@ -171,22 +198,23 @@ const MemberFilters = ({
         </div>
       </div>
 
-      <div className="results-summary">
-        <span className="results-text">
+      <div className={styles.resultsSummary}>
+        <span className={styles.resultsText}>
           Showing {filteredCount.toLocaleString()} of {totalMembers.toLocaleString()} members
         </span>
       </div>
 
       {showAdvanced && (
-        <div className="advanced-filters">
-          <div className="filter-grid">
+        <div className={styles.advancedFilters}>
+          <div className={styles.filterGrid}>
             {/* Age Range Filter */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="age-range">Age Range</label>
               <select
                 id="age-range"
                 value={filters.ageRange}
                 onChange={(e) => handleFilterChange('ageRange', e.target.value)}
+                className={styles.filterSelect}
               >
                 <option value="">All Ages</option>
                 {ageRanges.map(range => (
@@ -198,12 +226,13 @@ const MemberFilters = ({
             </div>
 
             {/* Gender Filter */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="gender">Gender</label>
               <select
                 id="gender"
                 value={filters.gender}
                 onChange={(e) => handleFilterChange('gender', e.target.value)}
+                className={styles.filterSelect}
               >
                 <option value="">All Genders</option>
                 {genderOptions.map(option => (
@@ -215,12 +244,13 @@ const MemberFilters = ({
             </div>
 
             {/* Pledge Status Filter */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="pledge-status">Pledge Status</label>
               <select
                 id="pledge-status"
                 value={filters.pledgeStatus}
                 onChange={(e) => handleFilterChange('pledgeStatus', e.target.value)}
+                className={styles.filterSelect}
               >
                 <option value="">All Status</option>
                 {pledgeStatuses.map(status => (
@@ -232,12 +262,13 @@ const MemberFilters = ({
             </div>
 
             {/* Contact Method Filter */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="contact-method">Preferred Contact</label>
               <select
                 id="contact-method"
                 value={filters.contactMethod}
                 onChange={(e) => handleFilterChange('contactMethod', e.target.value)}
+                className={styles.filterSelect}
               >
                 <option value="">All Methods</option>
                 {contactMethods.map(method => (
@@ -249,28 +280,30 @@ const MemberFilters = ({
             </div>
 
             {/* Date Range Filters */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="joined-after">Joined After</label>
               <input
                 type="date"
                 id="joined-after"
                 value={filters.joinedAfter}
                 onChange={(e) => handleFilterChange('joinedAfter', e.target.value)}
+                className={styles.filterInput}
               />
             </div>
 
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="joined-before">Joined Before</label>
               <input
                 type="date"
                 id="joined-before"
                 value={filters.joinedBefore}
                 onChange={(e) => handleFilterChange('joinedBefore', e.target.value)}
+                className={styles.filterInput}
               />
             </div>
 
             {/* Location Filter */}
-            <div className="filter-group">
+            <div className={styles.filterGroup}>
               <label htmlFor="location">Location</label>
               <input
                 type="text"
@@ -278,23 +311,25 @@ const MemberFilters = ({
                 placeholder="City, State, or ZIP"
                 value={filters.location}
                 onChange={(e) => handleFilterChange('location', e.target.value)}
+                className={styles.filterInput}
               />
             </div>
           </div>
 
           {/* Groups Filter */}
-          {groups.length > 0 && (
-            <div className="filter-section">
+          {Array.isArray(groups) && groups.length > 0 && (
+            <div className={styles.filterSection}>
               <h4>Groups & Ministries</h4>
-              <div className="checkbox-grid">
+              <div className={styles.checkboxGrid}>
                 {groups.map(group => (
-                  <label key={group.id} className="checkbox-item">
+                  <label key={group.id} className={styles.checkboxItem}>
                     <input
                       type="checkbox"
-                      checked={filters.groups.includes(group.id)}
+                      checked={(filters.groups || []).includes(group.id)}
                       onChange={() => handleMultiSelectChange('groups', group.id)}
+                      className={styles.checkbox}
                     />
-                    <span className="checkbox-label">
+                    <span className={styles.checkboxLabel}>
                       <Users size={14} />
                       {group.name}
                     </span>
@@ -305,21 +340,22 @@ const MemberFilters = ({
           )}
 
           {/* Tags Filter */}
-          {tags.length > 0 && (
-            <div className="filter-section">
+          {Array.isArray(tags) && tags.length > 0 && (
+            <div className={styles.filterSection}>
               <h4>Tags</h4>
-              <div className="checkbox-grid">
+              <div className={styles.checkboxGrid}>
                 {tags.map(tag => (
-                  <label key={tag.id} className="checkbox-item">
+                  <label key={tag.id} className={styles.checkboxItem}>
                     <input
                       type="checkbox"
-                      checked={filters.tags.includes(tag.id)}
+                      checked={(filters.tags || []).includes(tag.id)}
                       onChange={() => handleMultiSelectChange('tags', tag.id)}
+                      className={styles.checkbox}
                     />
-                    <span className="checkbox-label">
+                    <span className={styles.checkboxLabel}>
                       <Tag size={14} />
                       <span 
-                        className="tag-color" 
+                        className={styles.tagColor} 
                         style={{ backgroundColor: tag.color }}
                       ></span>
                       {tag.name}
@@ -331,40 +367,43 @@ const MemberFilters = ({
           )}
 
           {/* Quick Filters */}
-          <div className="filter-section">
+          <div className={styles.filterSection}>
             <h4>Quick Filters</h4>
-            <div className="quick-filters">
-              <label className="checkbox-item">
+            <div className={styles.quickFilters}>
+              <label className={styles.checkboxItem}>
                 <input
                   type="checkbox"
                   checked={filters.hasPhone}
                   onChange={(e) => handleFilterChange('hasPhone', e.target.checked)}
+                  className={styles.checkbox}
                 />
-                <span className="checkbox-label">
+                <span className={styles.checkboxLabel}>
                   <Phone size={14} />
                   Has Phone Number
                 </span>
               </label>
 
-              <label className="checkbox-item">
+              <label className={styles.checkboxItem}>
                 <input
                   type="checkbox"
                   checked={filters.hasEmail}
                   onChange={(e) => handleFilterChange('hasEmail', e.target.checked)}
+                  className={styles.checkbox}
                 />
-                <span className="checkbox-label">
+                <span className={styles.checkboxLabel}>
                   <Mail size={14} />
                   Has Email Address
                 </span>
               </label>
 
-              <label className="checkbox-item">
+              <label className={styles.checkboxItem}>
                 <input
                   type="checkbox"
                   checked={filters.isActive}
                   onChange={(e) => handleFilterChange('isActive', e.target.checked)}
+                  className={styles.checkbox}
                 />
-                <span className="checkbox-label">
+                <span className={styles.checkboxLabel}>
                   Active Members Only
                 </span>
               </label>
@@ -374,64 +413,96 @@ const MemberFilters = ({
       )}
 
       {/* Active Filters Display */}
-      {getActiveFilterCount() > 0 && (
-        <div className="active-filters">
-          <span className="active-filters-label">Active Filters:</span>
-          <div className="active-filter-tags">
+      {activeFilterCount > 0 && (
+        <div className={styles.activeFilters}>
+          <span className={styles.activeFiltersLabel}>Active Filters:</span>
+          <div className={styles.activeFilterTags}>
             {filters.search && (
-              <span className="filter-tag">
+              <span className={styles.filterTag}>
                 Search: "{filters.search}"
-                <button onClick={() => handleFilterChange('search', '')}>
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    handleFilterChange('search', '');
+                  }}
+                  className={styles.filterTagClose}
+                >
                   <X size={12} />
                 </button>
               </span>
             )}
             {filters.ageRange && (
-              <span className="filter-tag">
+              <span className={styles.filterTag}>
                 Age: {ageRanges.find(r => r.value === filters.ageRange)?.label}
-                <button onClick={() => handleFilterChange('ageRange', '')}>
+                <button 
+                  onClick={() => handleFilterChange('ageRange', '')}
+                  className={styles.filterTagClose}
+                >
                   <X size={12} />
                 </button>
               </span>
             )}
             {filters.gender && (
-              <span className="filter-tag">
+              <span className={styles.filterTag}>
                 Gender: {genderOptions.find(g => g.value === filters.gender)?.label}
-                <button onClick={() => handleFilterChange('gender', '')}>
+                <button 
+                  onClick={() => handleFilterChange('gender', '')}
+                  className={styles.filterTagClose}
+                >
                   <X size={12} />
                 </button>
               </span>
             )}
             {filters.pledgeStatus && (
-              <span className="filter-tag">
+              <span className={styles.filterTag}>
                 Pledge: {pledgeStatuses.find(p => p.value === filters.pledgeStatus)?.label}
-                <button onClick={() => handleFilterChange('pledgeStatus', '')}>
+                <button 
+                  onClick={() => handleFilterChange('pledgeStatus', '')}
+                  className={styles.filterTagClose}
+                >
                   <X size={12} />
                 </button>
               </span>
             )}
-            {filters.groups.length > 0 && filters.groups.map(groupId => {
+            {filters.groups && filters.groups.length > 0 && filters.groups.map(groupId => {
               const group = groups.find(g => g.id === groupId);
-              return (
-                <span key={groupId} className="filter-tag">
-                  Group: {group?.name}
-                  <button onClick={() => handleMultiSelectChange('groups', groupId)}>
+              return group ? (
+                <span key={groupId} className={styles.filterTag}>
+                  Group: {group.name}
+                  <button 
+                    onClick={() => handleMultiSelectChange('groups', groupId)}
+                    className={styles.filterTagClose}
+                  >
                     <X size={12} />
                   </button>
                 </span>
-              );
+              ) : null;
             })}
-            {filters.tags.length > 0 && filters.tags.map(tagId => {
+            {filters.tags && filters.tags.length > 0 && filters.tags.map(tagId => {
               const tag = tags.find(t => t.id === tagId);
-              return (
-                <span key={tagId} className="filter-tag">
-                  Tag: {tag?.name}
-                  <button onClick={() => handleMultiSelectChange('tags', tagId)}>
+              return tag ? (
+                <span key={tagId} className={styles.filterTag}>
+                  Tag: {tag.name}
+                  <button 
+                    onClick={() => handleMultiSelectChange('tags', tagId)}
+                    className={styles.filterTagClose}
+                  >
                     <X size={12} />
                   </button>
                 </span>
-              );
+              ) : null;
             })}
+            {filters.location && (
+              <span className={styles.filterTag}>
+                Location: {filters.location}
+                <button 
+                  onClick={() => handleFilterChange('location', '')}
+                  className={styles.filterTagClose}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
           </div>
         </div>
       )}

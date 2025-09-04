@@ -1,5 +1,5 @@
 # ==============================================================================
-# pledges/urls.py
+# pledges/urls.py - COMPLETE FIX
 # ==============================================================================
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
@@ -11,27 +11,36 @@ router.register(r'', views.PledgeViewSet, basename='pledge')
 router.register(r'payments', views.PledgePaymentViewSet, basename='pledge-payment')
 router.register(r'reminders', views.PledgeReminderViewSet, basename='pledge-reminder')
 
-# Define URL patterns
+# Define URL patterns - CRITICAL: Custom endpoints MUST come BEFORE router URLs
 urlpatterns = [
-    # Include all router URLs
-    path('', include(router.urls)),
+    # Custom endpoints that frontend expects (must be before router URLs)
+    path('stats/', views.PledgeViewSet.as_view({'get': 'statistics'}), name='pledge-stats'),
+    path('statistics/', views.PledgeViewSet.as_view({'get': 'statistics'}), name='pledge-statistics'),
+    path('export/', views.PledgeViewSet.as_view({'get': 'export_csv'}), name='pledge-export'),
+    path('summary_report/', views.PledgeViewSet.as_view({'get': 'summary_report'}), name='pledge-summary'),
+    path('overdue/', views.PledgeViewSet.as_view({'get': 'overdue'}), name='pledge-overdue'),
+    path('upcoming_payments/', views.PledgeViewSet.as_view({'get': 'upcoming_payments'}), name='pledge-upcoming'),
+    path('bulk_action/', views.PledgeViewSet.as_view({'post': 'bulk_action'}), name='pledge-bulk-action'),
     
-    # Additional custom endpoints (if needed in the future)
-    # path('custom-endpoint/', views.custom_view, name='pledge-custom'),
+    # Include all router URLs (this will create standard CRUD + other custom actions)
+    path('', include(router.urls)),
 ]
 
 # This configuration creates the following URL patterns:
 #
-# Pledges:
+# Custom endpoints (higher priority):
+# - GET /api/v1/pledges/stats/              - Pledge statistics (frontend calls this)
+# - GET /api/v1/pledges/statistics/         - Alternative stats endpoint
+# - GET /api/v1/pledges/export/             - Export pledges to CSV
+# - GET /api/v1/pledges/summary_report/     - Member summary report
+# - GET /api/v1/pledges/overdue/            - List overdue pledges
+# - GET /api/v1/pledges/upcoming_payments/  - List upcoming payments
+# - POST /api/v1/pledges/bulk_action/       - Perform bulk actions
+#
+# Router-generated endpoints:
 # - GET/POST     /api/v1/pledges/                    - List/Create pledges
 # - GET/PUT/PATCH/DELETE /api/v1/pledges/{id}/       - Retrieve/Update/Delete pledge
-# - GET          /api/v1/pledges/statistics/         - Pledge statistics
-# - GET          /api/v1/pledges/export_csv/         - Export pledges to CSV
-# - GET          /api/v1/pledges/summary_report/     - Member summary report
 # - POST         /api/v1/pledges/{id}/add_payment/   - Add payment to specific pledge
-# - GET          /api/v1/pledges/overdue/            - List overdue pledges
-# - GET          /api/v1/pledges/upcoming_payments/  - List pledges with upcoming payments
-# - POST         /api/v1/pledges/bulk_action/        - Perform bulk actions
 # - GET          /api/v1/pledges/{id}/payment_history/ - Get payment history for pledge
 #
 # Payments:

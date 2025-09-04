@@ -207,38 +207,45 @@ const useForm = (initialValues = {}, validationSchema = {}, options = {}) => {
   }, [values, validationSchema, validateForm]);
 
   const handleSubmit = useCallback(async (e) => {
-    if (e) {
+  // Handle both event and direct call scenarios
+  const isEvent = e && (typeof e.preventDefault === 'function' || e.nativeEvent);
+  
+  if (isEvent) {
+    if (typeof e.preventDefault === 'function') {
       e.preventDefault();
+    } else if (e.nativeEvent && typeof e.nativeEvent.preventDefault === 'function') {
+      e.nativeEvent.preventDefault();
+    }
+  }
+
+  setSubmitAttempted(true);
+  setIsSubmitting(true);
+
+  try {
+    // Validate all fields
+    const isValid = validate();
+    
+    if (!isValid) {
+      // Mark all fields as touched to show validation errors
+      const allFieldsTouched = Object.keys(validationSchema).reduce((acc, field) => {
+        acc[field] = true;
+        return acc;
+      }, {});
+      setTouched(allFieldsTouched);
+      return;
     }
 
-    setSubmitAttempted(true);
-    setIsSubmitting(true);
-
-    try {
-      // Validate all fields
-      const isValid = validate();
-      
-      if (!isValid) {
-        // Mark all fields as touched to show validation errors
-        const allFieldsTouched = Object.keys(validationSchema).reduce((acc, field) => {
-          acc[field] = true;
-          return acc;
-        }, {});
-        setTouched(allFieldsTouched);
-        return;
-      }
-
-      if (onSubmit) {
-        await onSubmit(values);
-        setIsDirty(false);
-      }
-    } catch (error) {
-      console.error('Form submission error:', error);
-      throw error;
-    } finally {
-      setIsSubmitting(false);
+    if (onSubmit) {
+      await onSubmit(values);
+      setIsDirty(false);
     }
-  }, [values, validate, onSubmit, validationSchema]);
+  } catch (error) {
+    console.error('Form submission error:', error);
+    throw error;
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [values, validate, onSubmit, validationSchema]);
 
   const reset = useCallback(() => {
     setValues(initialValues);

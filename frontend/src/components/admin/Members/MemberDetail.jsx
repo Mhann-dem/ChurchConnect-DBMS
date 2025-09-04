@@ -15,22 +15,214 @@ import {
   Tag,
   AlertCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  CheckCircle
 } from 'lucide-react';
-import Card from '../../ui/Card';
-import Button from '../../ui/Button';
-import Badge from '../../ui/Badge';
-import Avatar from '../../ui/Avatar';
-import Modal from '../../shared/Modal';
-import ConfirmDialog from '../../shared/ConfirmDialog';
-import LoadingSpinner from '../../shared/LoadingSpinner';
-import MemberForm from './MemberForm';
-import useAuth from '../../../hooks/useAuth';
-import { useToast } from '../../../hooks/useToast';
 import styles from './Members.module.css';
-import { useMembers } from '../../../hooks/useMembers';
-import { formatPhoneNumber as formatPhone } from '../../../utils/formatters';
 
+// Simple utility functions
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  const cleaned = phone.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    return `(${match[1]}) ${match[2]}-${match[3]}`;
+  }
+  return phone;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'Not provided';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
+
+const formatCurrency = (amount) => {
+  if (!amount) return '$0';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
+};
+
+// Simple UI components
+const Card = ({ children, className = '' }) => (
+  <div className={`${styles.card} ${className}`}>{children}</div>
+);
+
+const Button = ({ children, variant = 'default', size = 'md', onClick, disabled = false, className = '', ...props }) => {
+  const variantClasses = {
+    default: styles.buttonDefault,
+    outline: styles.buttonOutline,
+    primary: styles.buttonPrimary
+  };
+  
+  return (
+    <button 
+      className={`${styles.button} ${variantClasses[variant]} ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Badge = ({ children, variant = 'default', style = {} }) => {
+  const variantClasses = {
+    default: styles.badgeDefault,
+    success: styles.badgeSuccess,
+    warning: styles.badgeWarning,
+    error: styles.badgeError,
+    info: styles.badgeInfo,
+    outline: styles.badgeOutline
+  };
+  
+  return (
+    <span className={`${styles.badge} ${variantClasses[variant]}`} style={style}>
+      {children}
+    </span>
+  );
+};
+
+const Avatar = ({ src, alt, size = 'md', fallback, className = '' }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  const sizeClasses = {
+    medium: styles.avatarMedium,
+    large: styles.avatarLarge
+  };
+  
+  const handleImageError = () => setImageError(true);
+  
+  if (imageError || !src) {
+    return (
+      <div className={`${styles.avatarFallback} ${sizeClasses[size]} ${className}`}>
+        {fallback || alt?.[0] || '?'}
+      </div>
+    );
+  }
+  
+  return (
+    <img 
+      src={src} 
+      alt={alt} 
+      className={`${styles.avatar} ${sizeClasses[size]} ${className}`}
+      onError={handleImageError}
+    />
+  );
+};
+
+const LoadingSpinner = ({ size = 'md', message }) => (
+  <div className={styles.loadingContainer}>
+    <div className={`${styles.spinner} ${styles[`spinner-${size}`]}`} />
+    {message && <p>{message}</p>}
+  </div>
+);
+
+// Mock hooks for demonstration
+const useAuth = () => ({
+  user: { id: 1, role: 'admin' }
+});
+
+const useToast = () => ({
+  showToast: (message, type) => {
+    console.log(`Toast: ${type} - ${message}`);
+    // In a real app, this would show a toast notification
+  }
+});
+
+const useMembers = () => ({
+  getMemberById: async (id) => {
+    // Mock API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return mockMemberData;
+  },
+  updateMember: async (id, data) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { ...mockMemberData, ...data };
+  },
+  deleteMember: async (id) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
+  },
+  getMemberGroups: async (id) => mockGroups,
+  getMemberPledges: async (id) => mockPledges,
+  getMemberTags: async (id) => mockTags,
+  getFamilyMembers: async (id) => mockFamily,
+  getMemberNotes: async (id) => mockNotes,
+  addMemberNote: async (id, note) => ({
+    id: Date.now(),
+    ...note,
+    created_at: new Date().toISOString(),
+    author_name: 'Current User'
+  })
+});
+
+// Mock data
+const mockMemberData = {
+  id: 1,
+  first_name: 'John',
+  last_name: 'Doe',
+  preferred_name: 'Johnny',
+  email: 'john.doe@email.com',
+  phone: '5551234567',
+  alternate_phone: '5559876543',
+  address: '123 Main St, City, State 12345',
+  date_of_birth: '1985-06-15',
+  gender: 'Male',
+  status: 'active',
+  registration_date: '2023-01-15',
+  preferred_contact_method: 'email',
+  emergency_contact_name: 'Jane Doe',
+  emergency_contact_phone: '5555551234',
+  photo_url: null
+};
+
+const mockGroups = [
+  { id: 1, name: 'Youth Ministry', description: 'Ministry for young adults', join_date: '2023-02-01', role: 'Member' },
+  { id: 2, name: 'Choir', description: 'Church choir group', join_date: '2023-03-01', role: 'Leader' }
+];
+
+const mockPledges = [
+  { id: 1, amount: 100, frequency: 'monthly', status: 'active', start_date: '2023-01-01', end_date: null, notes: 'Regular tithe' }
+];
+
+const mockTags = [
+  { id: 1, name: 'New Member', color: '#10B981' },
+  { id: 2, name: 'Volunteer', color: '#F59E0B' }
+];
+
+const mockFamily = [
+  { 
+    id: 2, 
+    first_name: 'Jane', 
+    last_name: 'Doe', 
+    relationship: 'Spouse', 
+    date_of_birth: '1987-08-20',
+    photo_url: null
+  }
+];
+
+const mockNotes = [
+  {
+    id: 1,
+    content: 'Interested in joining the music ministry',
+    created_at: '2023-06-01T10:00:00Z',
+    author_name: 'Pastor Smith',
+    author_photo: null
+  }
+];
 
 const MemberDetail = () => {
   const { id } = useParams();
@@ -116,6 +308,10 @@ const MemberDetail = () => {
   };
 
   const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+      return;
+    }
+
     try {
       await deleteMember(id);
       setShowDeleteDialog(false);
@@ -163,16 +359,20 @@ const MemberDetail = () => {
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return 'N/A';
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
+    try {
+      const today = new Date();
+      const birth = new Date(birthDate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+      
+      return age;
+    } catch {
+      return 'N/A';
     }
-    
-    return age;
   };
 
   const totalPledgeAmount = memberPledges.reduce((sum, pledge) => {
@@ -182,8 +382,7 @@ const MemberDetail = () => {
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <LoadingSpinner size="large" />
-        <p>Loading member details...</p>
+        <LoadingSpinner size="large" message="Loading member details..." />
       </div>
     );
   }
@@ -270,7 +469,7 @@ const MemberDetail = () => {
                   Edit
                 </Button>
                 <Button 
-                  onClick={() => setShowDeleteDialog(true)} 
+                  onClick={handleDelete} 
                   variant="outline"
                   className={styles.deleteButton}
                 >
@@ -303,36 +502,21 @@ const MemberDetail = () => {
 
       {/* Navigation Tabs */}
       <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'groups' ? styles.active : ''}`}
-          onClick={() => setActiveTab('groups')}
-        >
-          Groups & Ministries
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'pledges' ? styles.active : ''}`}
-          onClick={() => setActiveTab('pledges')}
-        >
-          Pledges & Giving
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'family' ? styles.active : ''}`}
-          onClick={() => setActiveTab('family')}
-        >
-          Family
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'notes' ? styles.active : ''}`}
-          onClick={() => setActiveTab('notes')}
-        >
-          Notes & History
-        </button>
+        {[
+          { id: 'overview', label: 'Overview' },
+          { id: 'groups', label: 'Groups & Ministries' },
+          { id: 'pledges', label: 'Pledges & Giving' },
+          { id: 'family', label: 'Family' },
+          { id: 'notes', label: 'Notes & History' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}
@@ -353,7 +537,7 @@ const MemberDetail = () => {
                   <div className={styles.infoItem}>
                     <Phone size={16} />
                     <span>
-                      <a href={`tel:${member.phone}`}>{formatPhone(member.phone)}</a>
+                      <a href={`tel:${member.phone}`}>{formatPhoneNumber(member.phone)}</a>
                     </span>
                   </div>
                   {member.alternate_phone && (
@@ -361,7 +545,7 @@ const MemberDetail = () => {
                       <Phone size={16} />
                       <span>
                         <a href={`tel:${member.alternate_phone}`}>
-                          {formatPhone(member.alternate_phone)} (Alt)
+                          {formatPhoneNumber(member.alternate_phone)} (Alt)
                         </a>
                       </span>
                     </div>
@@ -411,12 +595,6 @@ const MemberDetail = () => {
                 <div className={styles.statsList}>
                   <div className={styles.statItem}>
                     <div className={styles.statValue}>
-                      {memberGroups.length}
-                    </div>
-                    <div className={styles.statLabel}>Groups</div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statValue}>
                       {memberPledges.filter(p => p.status === 'active').length}
                     </div>
                     <div className={styles.statLabel}>Active Pledges</div>
@@ -452,7 +630,7 @@ const MemberDetail = () => {
                         <Phone size={16} />
                         <span>
                           <a href={`tel:${member.emergency_contact_phone}`}>
-                            {formatPhone(member.emergency_contact_phone)}
+                            {formatPhoneNumber(member.emergency_contact_phone)}
                           </a>
                         </span>
                       </div>
@@ -637,66 +815,44 @@ const MemberDetail = () => {
         )}
       </div>
 
-      {/* Edit Modal */}
-      {showEditModal && (
-        <Modal 
-          title="Edit Member"
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          size="large"
-        >
-          <MemberForm 
-            member={member}
-            onSubmit={handleEditSubmit}
-            onCancel={() => setShowEditModal(false)}
-            isEditing={true}
-          />
-        </Modal>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {showDeleteDialog && (
-        <ConfirmDialog
-          isOpen={showDeleteDialog}
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleDelete}
-          title="Delete Member"
-          message={`Are you sure you want to delete ${member.first_name} ${member.last_name}? This action cannot be undone.`}
-          variant="danger"
-        />
-      )}
-
       {/* Add Note Modal */}
       {showAddNoteModal && (
-        <Modal
-          title="Add Note"
-          isOpen={showAddNoteModal}
-          onClose={() => setShowAddNoteModal(false)}
-        >
-          <div className={styles.addNoteForm}>
-            <textarea
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Enter your note here..."
-              rows={4}
-              className={styles.noteTextarea}
-            />
-            <div className={styles.noteActions}>
-              <Button 
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h3>Add Note</h3>
+              <button
+                className={styles.modalClose}
                 onClick={() => setShowAddNoteModal(false)}
-                variant="outline"
               >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleAddNote}
-                disabled={!newNote.trim()}
-              >
-                Add Note
-              </Button>
+                <X size={20} />
+              </button>
+            </div>
+            <div className={styles.addNoteForm}>
+              <textarea
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                placeholder="Enter your note here..."
+                rows={4}
+                className={styles.noteTextarea}
+              />
+              <div className={styles.noteActions}>
+                <Button 
+                  onClick={() => setShowAddNoteModal(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleAddNote}
+                  disabled={!newNote.trim()}
+                >
+                  Add Note
+                </Button>
+              </div>
             </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );

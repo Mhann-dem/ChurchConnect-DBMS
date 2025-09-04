@@ -1,7 +1,7 @@
 // frontend/src/components/admin/Pledges/PledgesList.jsx
 
 import React, { useState, useEffect } from 'react';
-import { usePledges } from '../../../hooks/usePledges';
+import usePledges from '../../../hooks/usePledges';
 import { useToast } from '../../../hooks/useToast';
 import { SearchBar, Pagination, LoadingSpinner, EmptyState } from '../../shared';
 import { Button, Card, Badge, Dropdown } from '../../ui';

@@ -2,21 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Card, ProgressBar, Badge } from '../../ui';
 import styles from './Pledges.module.css'; 
 import { LoadingSpinner } from '../../shared';
-import { usePledges } from '../../../hooks/usePledges';
+import usePledges from '../../../hooks/usePledges';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
 
-const PledgeStats = ({ filters = {} }) => {
-  const { pledgeStats, loading, error, fetchPledgeStats } = usePledges();
+const PledgeStats = ({ stats, filters = {} }) => {
+  // Accept stats as a prop to avoid additional hook calls
   const [selectedPeriod, setSelectedPeriod] = useState('current_year');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
 
+  // Only use the hook if stats aren't provided as props
+  const pledgesHook = !stats ? usePledges() : null;
+  
+  // Use either provided stats or hook stats
+  const pledgeStats = stats || (pledgesHook?.statistics) || {};
+  const loading = pledgesHook?.loading || false;
+  const error = pledgesHook?.error || null;
+  const fetchPledgeStats = pledgesHook?.fetchStatistics || (() => {});
+
   useEffect(() => {
-    fetchPledgeStats({
-      period: selectedPeriod,
-      frequency: selectedFrequency,
-      ...filters
-    });
-  }, [selectedPeriod, selectedFrequency, filters, fetchPledgeStats]);
+    // Only fetch if we're using the hook and don't have stats prop
+    if (!stats && fetchPledgeStats && typeof fetchPledgeStats === 'function') {
+      fetchPledgeStats({
+        period: selectedPeriod,
+        frequency: selectedFrequency,
+        ...filters
+      });
+    }
+  }, [selectedPeriod, selectedFrequency, filters, stats]); // Remove fetchPledgeStats from dependencies
 
   if (loading) {
     return (
@@ -68,46 +80,56 @@ const PledgeStats = ({ filters = {} }) => {
     { value: 'ytd', label: 'Year to Date' }
   ];
 
+  const handlePeriodChange = (value) => {
+    setSelectedPeriod(value);
+  };
+
+  const handleFrequencyChange = (value) => {
+    setSelectedFrequency(value);
+  };
+
   return (
     <div className={styles.statsContainer}>
-      {/* Filter Controls */}
-      <div className={styles.filterControls}>
-        <div className={styles.filterGroup}>
-          <label htmlFor="period-select" className={styles.filterLabel}>
-            Time Period:
-          </label>
-          <select
-            id="period-select"
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className={styles.filterSelect}
-          >
-            {periodOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Filter Controls - Only show if not using prop stats */}
+      {!stats && (
+        <div className={styles.filterControls}>
+          <div className={styles.filterGroup}>
+            <label htmlFor="period-select" className={styles.filterLabel}>
+              Time Period:
+            </label>
+            <select
+              id="period-select"
+              value={selectedPeriod}
+              onChange={(e) => handlePeriodChange(e.target.value)}
+              className={styles.filterSelect}
+            >
+              {periodOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className={styles.filterGroup}>
-          <label htmlFor="frequency-select" className={styles.filterLabel}>
-            Frequency:
-          </label>
-          <select
-            id="frequency-select"
-            value={selectedFrequency}
-            onChange={(e) => setSelectedFrequency(e.target.value)}
-            className={styles.filterSelect}
-          >
-            {frequencyOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className={styles.filterGroup}>
+            <label htmlFor="frequency-select" className={styles.filterLabel}>
+              Frequency:
+            </label>
+            <select
+              id="frequency-select"
+              value={selectedFrequency}
+              onChange={(e) => handleFrequencyChange(e.target.value)}
+              className={styles.filterSelect}
+            >
+              {frequencyOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Statistics Cards */}
       <div className={styles.statsGrid}>
@@ -199,24 +221,26 @@ const PledgeStats = ({ filters = {} }) => {
       </Card>
 
       {/* Frequency Breakdown */}
-      <Card className={styles.frequencyCard}>
-        <h3 className={styles.frequencyTitle}>Pledges by Frequency</h3>
-        <div className={styles.frequencyGrid}>
-          {Object.entries(pledgesByFrequency).map(([frequency, data]) => (
-            <div key={frequency} className={styles.frequencyItem}>
-              <div className={styles.frequencyLabel}>
-                {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+      {Object.keys(pledgesByFrequency).length > 0 && (
+        <Card className={styles.frequencyCard}>
+          <h3 className={styles.frequencyTitle}>Pledges by Frequency</h3>
+          <div className={styles.frequencyGrid}>
+            {Object.entries(pledgesByFrequency).map(([frequency, data]) => (
+              <div key={frequency} className={styles.frequencyItem}>
+                <div className={styles.frequencyLabel}>
+                  {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+                </div>
+                <div className={styles.frequencyValue}>
+                  {formatCurrency(data.amount)}
+                </div>
+                <div className={styles.frequencyCount}>
+                  {data.count} pledge{data.count !== 1 ? 's' : ''}
+                </div>
               </div>
-              <div className={styles.frequencyValue}>
-                {formatCurrency(data.amount)}
-              </div>
-              <div className={styles.frequencyCount}>
-                {data.count} pledge{data.count !== 1 ? 's' : ''}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Top Pledgers */}
       {topPledgers.length > 0 && (

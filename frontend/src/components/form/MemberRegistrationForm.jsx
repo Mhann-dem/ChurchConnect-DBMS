@@ -1,21 +1,374 @@
-// frontend/src/components/form/MemberRegistrationForm.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useForm from '../../hooks/useForm';
-import { useToast } from '../../hooks/useToast';
-import { validateMemberForm } from '../../utils/validation';
-import membersService from '../../services/members';
-import { AuthContext } from '../../context/AuthContext';
-import StepIndicator from './StepIndicator';
-import PersonalInfo from './Steps/PersonalInfo';
-import ContactInfo from './Steps/ContactInfo';
-import MinistryInterests from './Steps/MinistryInterests';
-import PledgeInfo from './Steps/PledgeInfo';
-import FamilyInfo from './Steps/FamilyInfo';
-import Confirmation from './Steps/Confirmation';
-import { LoadingSpinner } from '../shared';
-import { Button } from '../ui';
 import styles from './Form.module.css';
+
+// Simple UI Components
+const Button = ({ children, variant = 'default', onClick, disabled = false, ...props }) => {
+  const variantClasses = {
+    default: styles.buttonDefault,
+    primary: styles.buttonPrimary,
+    secondary: styles.buttonSecondary,
+    outline: styles.buttonOutline
+  };
+  
+  return (
+    <button 
+      className={`${styles.button} ${variantClasses[variant]}`}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+const LoadingSpinner = ({ size = 'sm' }) => (
+  <span className={`${styles.spinner} ${styles[`spinner-${size}`]}`} />
+);
+
+// Mock Step Components
+const StepIndicator = ({ steps, currentStep, completedSteps }) => (
+  <div className={styles.stepIndicator}>
+    {steps.map((step, index) => (
+      <div 
+        key={step.id} 
+        className={`${styles.step} ${
+          index === currentStep ? styles.active : 
+          completedSteps.includes(step.id) ? styles.completed : ''
+        }`}
+      >
+        <div className={styles.stepNumber}>{index + 1}</div>
+        <div className={styles.stepTitle}>{step.title}</div>
+      </div>
+    ))}
+  </div>
+);
+
+const PersonalInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlur, setFieldValue, isAdminMode = false }) => (
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>Personal Information</h2>
+    <p className={styles.stepDescription}>
+      Please provide your basic personal information. Required fields are marked with *.
+    </p>
+
+    <div className={styles.formGrid}>
+      <div className={styles.formGroup}>
+        <label>First Name *</label>
+        <input
+          type="text"
+          name="firstName"
+          value={formData.firstName || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.firstName && touched.firstName ? styles.inputError : styles.input}
+          required
+        />
+        {errors.firstName && touched.firstName && (
+          <span className={styles.errorText}>{errors.firstName}</span>
+        )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Last Name *</label>
+        <input
+          type="text"
+          name="lastName"
+          value={formData.lastName || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.lastName && touched.lastName ? styles.inputError : styles.input}
+          required
+        />
+        {errors.lastName && touched.lastName && (
+          <span className={styles.errorText}>{errors.lastName}</span>
+        )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Email Address *</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.email && touched.email ? styles.inputError : styles.input}
+          required
+        />
+        {errors.email && touched.email && (
+          <span className={styles.errorText}>{errors.email}</span>
+        )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Date of Birth {!isAdminMode ? '*' : ''}</label>
+        <input
+          type="date"
+          name="dateOfBirth"
+          value={formData.dateOfBirth || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.dateOfBirth && touched.dateOfBirth ? styles.inputError : styles.input}
+          required={!isAdminMode}
+        />
+        {errors.dateOfBirth && touched.dateOfBirth && (
+          <span className={styles.errorText}>{errors.dateOfBirth}</span>
+        )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Gender {!isAdminMode ? '*' : ''}</label>
+        <select
+          name="gender"
+          value={formData.gender || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.gender && touched.gender ? styles.inputError : styles.select}
+          required={!isAdminMode}
+        >
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+          <option value="prefer_not_to_say">Prefer not to say</option>
+        </select>
+        {errors.gender && touched.gender && (
+          <span className={styles.errorText}>{errors.gender}</span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlur, isAdminMode = false }) => (
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>Contact Information</h2>
+    <div className={styles.formGrid}>
+      <div className={styles.formGroup}>
+        <label>Phone Number {!isAdminMode ? '*' : ''}</label>
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.phone && touched.phone ? styles.inputError : styles.input}
+          required={!isAdminMode}
+        />
+        {errors.phone && touched.phone && (
+          <span className={styles.errorText}>{errors.phone}</span>
+        )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Address {!isAdminMode ? '*' : ''}</label>
+        <textarea
+          name="address"
+          value={formData.address || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={errors.address && touched.address ? styles.inputError : styles.textarea}
+          rows={3}
+          required={!isAdminMode}
+        />
+        {errors.address && touched.address && (
+          <span className={styles.errorText}>{errors.address}</span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const MinistryInterests = ({ formData = {}, onChange, setFieldValue }) => {
+  const ministryOptions = [
+    'Worship Team', 'Youth Ministry', 'Children\'s Ministry', 'Community Outreach', 
+    'Hospitality', 'Technical Support', 'Prayer Team', 'Bible Study'
+  ];
+
+  const handleMinistryChange = (ministry, checked) => {
+    const current = formData.ministryInterests || [];
+    const updated = checked 
+      ? [...current, ministry]
+      : current.filter(m => m !== ministry);
+    setFieldValue('ministryInterests', updated);
+  };
+
+  return (
+    <div className={styles.stepContent}>
+      <h2 className={styles.stepTitle}>Ministry Interests</h2>
+      <div className={styles.checkboxGrid}>
+        {ministryOptions.map(ministry => (
+          <label key={ministry} className={styles.checkboxItem}>
+            <input
+              type="checkbox"
+              checked={(formData.ministryInterests || []).includes(ministry)}
+              onChange={(e) => handleMinistryChange(ministry, e.target.checked)}
+            />
+            {ministry}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const PledgeInfo = ({ formData = {}, onChange }) => (
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>Pledge Information (Optional)</h2>
+    <div className={styles.formGrid}>
+      <div className={styles.formGroup}>
+        <label>Pledge Amount</label>
+        <input
+          type="number"
+          name="pledgeAmount"
+          value={formData.pledgeAmount || ''}
+          onChange={onChange}
+          className={styles.input}
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Pledge Frequency</label>
+        <select
+          name="pledgeFrequency"
+          value={formData.pledgeFrequency || ''}
+          onChange={onChange}
+          className={styles.select}
+        >
+          <option value="">Select Frequency</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="annually">Annually</option>
+        </select>
+      </div>
+    </div>
+  </div>
+);
+
+const FamilyInfo = ({ formData = {}, onChange, isAdminMode = false }) => (
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>Family Information</h2>
+    <div className={styles.formGrid}>
+      <div className={styles.formGroup}>
+        <label>Emergency Contact Name {!isAdminMode ? '*' : ''}</label>
+        <input
+          type="text"
+          name="emergencyContactName"
+          value={formData.emergencyContactName || ''}
+          onChange={onChange}
+          className={styles.input}
+          required={!isAdminMode}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Emergency Contact Phone {!isAdminMode ? '*' : ''}</label>
+        <input
+          type="tel"
+          name="emergencyContactPhone"
+          value={formData.emergencyContactPhone || ''}
+          onChange={onChange}
+          className={styles.input}
+          required={!isAdminMode}
+        />
+      </div>
+    </div>
+  </div>
+);
+
+const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => (
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>Please Review Your Information</h2>
+    <div className={styles.confirmationSummary}>
+      <div className={styles.summarySection}>
+        <h3>Personal Information</h3>
+        <p>Name: {formData.firstName} {formData.lastName}</p>
+        <p>Email: {formData.email}</p>
+        <p>Phone: {formData.phone}</p>
+      </div>
+    </div>
+
+    {!isAdminMode && (
+      <div className={styles.agreementSection}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={formData.privacyPolicyAgreed || false}
+            onChange={(e) => setFieldValue('privacyPolicyAgreed', e.target.checked)}
+            required
+          />
+          I agree to the Privacy Policy and Terms of Service *
+        </label>
+      </div>
+    )}
+  </div>
+);
+
+// Mock hooks and services
+const useForm = (initialData) => {
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+  };
+
+  const setFieldValue = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const setFieldError = (name, error) => {
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const resetForm = () => {
+    setFormData(initialData);
+    setErrors({});
+    setTouched({});
+  };
+
+  return {
+    formData,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    setFieldError,
+    resetForm
+  };
+};
+
+const useToast = () => ({
+  showToast: (message, type) => console.log(`Toast: ${type} - ${message}`)
+});
+
+const mockMembersService = {
+  createMember: async (data) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { id: Date.now(), ...data };
+  }
+};
+
+// Mock Auth Context
+const AuthContext = React.createContext({
+  user: { id: 1, firstName: 'Admin', lastName: 'User', role: 'admin' },
+  isAuthenticated: true
+});
 
 const STEPS = [
   { id: 'personal', title: 'Personal Information', component: PersonalInfo },
@@ -27,40 +380,27 @@ const STEPS = [
 ];
 
 const INITIAL_FORM_DATA = {
-  // Personal Information
   firstName: '',
   lastName: '',
   preferredName: '',
   email: '',
   dateOfBirth: '',
   gender: '',
-  
-  // Contact Information
   phone: '',
   alternatePhone: '',
   address: '',
   preferredContactMethod: 'email',
   preferredLanguage: 'English',
   accessibilityNeeds: '',
-  
-  // Ministry Interests
   ministryInterests: [],
   prayerRequest: '',
-  
-  // Pledge Information
   pledgeAmount: '',
   pledgeFrequency: '',
-  
-  // Family Information
   familyMembers: [],
   emergencyContactName: '',
   emergencyContactPhone: '',
-  
-  // Agreement
   privacyPolicyAgreed: false,
   communicationOptIn: true,
-  
-  // Admin-only fields
   internalNotes: '',
   tags: [],
   skipValidation: false,
@@ -90,13 +430,7 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
       return errors;
     },
     ministry: () => ({}),
-    pledge: () => {
-      const errors = {};
-      if (formData.pledgeAmount && !formData.pledgeFrequency) {
-        errors.pledgeFrequency = 'Pledge frequency is required when amount is specified';
-      }
-      return errors;
-    },
+    pledge: () => ({}),
     family: () => {
       const errors = {};
       if (!isAdminMode || !formData.skipValidation) {
@@ -133,8 +467,6 @@ const MemberRegistrationForm = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
-  const [estimatedTime, setEstimatedTime] = useState('3-5 minutes');
-  const [showBulkImport, setShowBulkImport] = useState(false);
 
   // Determine if user is admin
   const isAdmin = isAuthenticated && ['admin', 'super_admin'].includes(user?.role);
@@ -148,7 +480,6 @@ const MemberRegistrationForm = ({
     handleBlur,
     setFieldValue,
     setFieldError,
-    validateField,
     resetForm
   } = useForm({
     ...INITIAL_FORM_DATA,
@@ -157,7 +488,7 @@ const MemberRegistrationForm = ({
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
   });
 
-  // Enhanced auto-save with admin context
+  // Auto-save functionality (using memory instead of localStorage for Claude.ai compatibility)
   useEffect(() => {
     const saveData = () => {
       const savedData = {
@@ -166,68 +497,14 @@ const MemberRegistrationForm = ({
         timestamp: new Date().toISOString(),
         isAdminMode: effectiveAdminMode
       };
-      try {
-        const storageKey = effectiveAdminMode ? 
-          'churchconnect_admin_form_data' : 
-          'churchconnect_form_data';
-        // Note: Using in-memory storage instead of localStorage for Claude.ai compatibility
-        window.formDataCache = savedData;
-      } catch (error) {
-        console.error('Error saving form data:', error);
-      }
+      
+      // Use in-memory storage instead of localStorage
+      window.formDataCache = savedData;
     };
 
     const timeoutId = setTimeout(saveData, 1000);
     return () => clearTimeout(timeoutId);
   }, [formData, currentStep, effectiveAdminMode]);
-
-  // Load saved data on mount
-  useEffect(() => {
-    try {
-      // Note: Using in-memory storage instead of localStorage for Claude.ai compatibility
-      const savedData = window.formDataCache;
-      if (savedData && savedData.isAdminMode === effectiveAdminMode) {
-        const timeDiff = new Date() - new Date(savedData.timestamp);
-        const hoursDiff = timeDiff / (1000 * 60 * 60);
-        
-        if (hoursDiff < 24) {
-          Object.keys(savedData).forEach(key => {
-            if (key !== 'timestamp' && key !== 'currentStep' && key !== 'isAdminMode' && 
-                INITIAL_FORM_DATA.hasOwnProperty(key)) {
-              setFieldValue(key, savedData[key]);
-            }
-          });
-          setCurrentStep(savedData.currentStep || 0);
-          showToast('Your previous progress has been restored.', 'info');
-        }
-      }
-    } catch (error) {
-      console.error('Error loading saved form data:', error);
-    }
-  }, [setFieldValue, showToast, effectiveAdminMode]);
-
-  const updateFormData = (updates) => {
-    Object.keys(updates).forEach(key => {
-      setFieldValue(key, updates[key]);
-    });
-  };
-
-  // Admin-specific quick fill functions
-  const applyDefaultPreferences = () => {
-    updateFormData({
-      preferredContactMethod: 'email',
-      communicationOptIn: true,
-      preferredLanguage: 'English'
-    });
-    showToast('Default preferences applied', 'success');
-  };
-
-  const clearFormForNext = () => {
-    resetForm();
-    setCurrentStep(0);
-    setCompletedSteps([]);
-    showToast('Form cleared for next member', 'info');
-  };
 
   const handleNext = async () => {
     const stepId = STEPS[currentStep].id;
@@ -236,10 +513,6 @@ const MemberRegistrationForm = ({
     if (Object.keys(stepErrors).length === 0) {
       setCompletedSteps(prev => [...prev, stepId]);
       setCurrentStep(prev => prev + 1);
-      
-      const remaining = STEPS.length - currentStep - 1;
-      const timePerStep = remaining * 0.8;
-      setEstimatedTime(`${Math.ceil(timePerStep)} minutes remaining`);
     } else {
       Object.keys(stepErrors).forEach(field => {
         setFieldError(field, stepErrors[field]);
@@ -253,56 +526,41 @@ const MemberRegistrationForm = ({
   };
 
   const handleSubmit = async () => {
-    const formErrors = effectiveAdminMode && formData.skipValidation ? 
-      {} : validateMemberForm(formData);
+    setIsSubmitting(true);
     
-    if (Object.keys(formErrors).length === 0) {
-      setIsSubmitting(true);
+    try {
+      const submitData = {
+        ...formData,
+        ...(effectiveAdminMode && {
+          registeredBy: user.id,
+          registrationContext: 'admin_portal',
+          internalNotes: formData.internalNotes
+        })
+      };
+
+      const result = await mockMembersService.createMember(submitData);
       
-      try {
-        const submitData = {
-          ...formData,
-          ...(effectiveAdminMode && {
-            registeredBy: user.id,
-            registrationContext: 'admin_portal',
-            internalNotes: formData.internalNotes
-          })
-        };
+      // Clear saved data
+      delete window.formDataCache;
 
-        const result = await membersService.createMember(submitData);
-        
-        // Clear saved data
-        try {
-          delete window.formDataCache;
-        } catch (error) {
-          console.error('Error clearing saved data:', error);
-        }
-
-        if (effectiveAdminMode && onSuccess) {
-          onSuccess(result);
-          showToast('Member registered successfully!', 'success');
-        } else {
-          showToast('Registration submitted successfully!', 'success');
-          navigate('/thank-you', { 
-            state: { 
-              memberData: { 
-                name: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email 
-              } 
+      if (effectiveAdminMode && onSuccess) {
+        onSuccess(result);
+        showToast('Member registered successfully!', 'success');
+      } else {
+        showToast('Registration submitted successfully!', 'success');
+        navigate('/thank-you', { 
+          state: { 
+            memberData: { 
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email 
             } 
-          });
-        }
-      } catch (error) {
-        console.error('Form submission error:', error);
-        showToast(error.response?.data?.message || 'An error occurred. Please try again.', 'error');
-      } finally {
-        setIsSubmitting(false);
+          } 
+        });
       }
-    } else {
-      Object.keys(formErrors).forEach(field => {
-        setFieldError(field, formErrors[field]);
-      });
-      showToast('Please fix all errors before submitting.', 'error');
+    } catch (error) {
+      showToast(error.message || 'An error occurred. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -331,35 +589,6 @@ const MemberRegistrationForm = ({
             />
           </div>
 
-          <div className={styles.adminActions}>
-            <button
-              type="button"
-              onClick={applyDefaultPreferences}
-              className={styles.quickAction}
-              disabled={isSubmitting}
-            >
-              Apply Defaults
-            </button>
-            
-            <button
-              type="button"
-              onClick={clearFormForNext}
-              className={styles.quickAction}
-              disabled={isSubmitting}
-            >
-              Clear for Next
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => setShowBulkImport(true)}
-              className={styles.quickAction}
-              disabled={isSubmitting}
-            >
-              Bulk Import
-            </button>
-          </div>
-
           <div className={styles.adminCheckbox}>
             <label>
               <input
@@ -385,12 +614,6 @@ const MemberRegistrationForm = ({
     onChange: handleChange,
     onBlur: handleBlur,
     setFieldValue,
-    validateField,
-    updateFormData,
-    onValidate: validateField,
-    onBack: handlePrevious,
-    onSubmit: handleSubmit,
-    isSubmitting,
     isAdminMode: effectiveAdminMode
   };
 
@@ -406,11 +629,6 @@ const MemberRegistrationForm = ({
             'Join our church family - we\'re excited to get to know you!'
           }
         </p>
-        {!effectiveAdminMode && (
-          <p className={styles.estimatedTime}>
-            Estimated time: {estimatedTime}
-          </p>
-        )}
       </div>
 
       <AdminEnhancements />

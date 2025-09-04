@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import useForm from '../../../hooks/useForm';
 import { useMembers } from '../../../hooks/useMembers';
-import { usePledges } from '../../../hooks/usePledges';
+import usePledges from '../../../hooks/usePledges';
 import { useToast } from '../../../hooks/useToast';
 import { Button, Card } from '../../ui';
 import Input from '../../form/FormControls/Input';
