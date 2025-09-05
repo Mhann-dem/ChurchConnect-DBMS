@@ -59,7 +59,7 @@ class MemberSummarySerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'full_name', 'display_name',
             'email', 'phone', 'age', 'age_group', 'gender', 'is_active',
-            'registration_date', 'registration_source'
+            'registration_date',
         ]
     
     def get_age(self, obj):

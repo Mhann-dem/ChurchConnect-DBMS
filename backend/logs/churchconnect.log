@@ -2341,3 +2341,130 @@ LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
 
 ERROR 2025-09-04 20:05:28,515 log Internal Server Error: /api/v1/members/export/
 ERROR 2025-09-04 20:05:28,517 basehttp "GET /api/v1/members/export/ HTTP/1.1" 500 36
+INFO 2025-09-05 11:00:22,471 autoreload Watching for file changes with StatReloader
+INFO 2025-09-05 11:12:40,482 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-05 11:12:42,504 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-05 11:12:42,540 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-05 11:13:14,275 basehttp "OPTIONS /api/v1/members/export/ HTTP/1.1" 200 0
+INFO 2025-09-05 11:13:14,357 views [MemberViewSet] Export request from: robbddzaka1@gmail.com
+ERROR 2025-09-05 11:13:14,397 views [MemberViewSet] Error exporting members: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedColumn: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py", line 291, in export
+    if serializer.data:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+
+ERROR 2025-09-05 11:13:14,593 log Internal Server Error: /api/v1/members/export/
+ERROR 2025-09-05 11:13:14,593 basehttp "GET /api/v1/members/export/ HTTP/1.1" 500 36
+INFO 2025-09-05 11:13:15,346 views [MemberViewSet] Export request from: robbddzaka1@gmail.com
+ERROR 2025-09-05 11:13:15,351 views [MemberViewSet] Error exporting members: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedColumn: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py", line 291, in export
+    if serializer.data:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: column members_member.registration_source does not exist
+LINE 1: ...", "members_member"."privacy_policy_agreed_date", "members_m...
+                                                             ^
+
+ERROR 2025-09-05 11:13:15,354 log Internal Server Error: /api/v1/members/export/
+ERROR 2025-09-05 11:13:15,355 basehttp "GET /api/v1/members/export/ HTTP/1.1" 500 36
+INFO 2025-09-05 11:14:47,677 basehttp "OPTIONS /api/v1/groups/?page=1&limit=25 HTTP/1.1" 200 0
+INFO 2025-09-05 11:14:47,805 basehttp "GET /api/v1/groups/?page=1&limit=25 HTTP/1.1" 200 110
+INFO 2025-09-05 11:15:13,107 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,108 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,108 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,108 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,112 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,114 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,133 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-05 11:15:13,245 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-05 11:15:13,459 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-05 11:15:13,502 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-05 11:15:13,654 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-05 11:15:13,686 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-05 11:15:13,747 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-05 11:15:13,871 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-05 12:24:17,537 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-05 12:24:17,586 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-05 13:11:51,639 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\serializers.py changed, reloading.
+INFO 2025-09-05 13:11:54,480 autoreload Watching for file changes with StatReloader
+INFO 2025-09-05 13:22:52,801 autoreload Watching for file changes with StatReloader
+INFO 2025-09-05 13:25:57,129 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-05 13:25:58,577 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-05 13:25:58,592 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
