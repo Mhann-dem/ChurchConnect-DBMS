@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   UsersIcon, 
   UserGroupIcon, 
@@ -19,7 +19,15 @@ import {
   ArrowPathIcon,
   Cog6ToothIcon,
   HeartIcon,
-  BuildingLibraryIcon
+  BuildingLibraryIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  UserPlusIcon,
+  CalendarIcon,
+  CurrencyDollarIcon as DonationIcon,
+  DocumentTextIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
@@ -27,15 +35,16 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('30');
+  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // API service functions
-  const apiService = {
-    baseURL: '/api/v1',
-    
+  // API service for dashboard data
+  const dashboardService = {
     async request(endpoint, options = {}) {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
       const config = {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
@@ -45,9 +54,16 @@ const Dashboard = () => {
       };
 
       try {
-        const response = await fetch(`${this.baseURL}${endpoint}`, config);
+        const response = await fetch(`/api/v1${endpoint}`, config);
         
         if (!response.ok) {
+          if (response.status === 401) {
+            // Token expired, redirect to login
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('authToken');
+            window.location.href = '/admin/login';
+            return null;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -58,203 +74,134 @@ const Dashboard = () => {
       }
     },
 
-    async getDashboardStats(period = '30') {
-      return await this.request(`/core/dashboard-stats/?period=${period}`);
+    async getStats() {
+      return await this.request('/reports/stats/');
     },
 
-    async getRecentMembers(limit = 5) {
-      return await this.request(`/members/?ordering=-created_at&limit=${limit}`);
+    async getMemberStats(period = '30d') {
+      return await this.request(`/members/stats/?range=${period}`);
     },
 
-    async getNotifications() {
-      return await this.request('/core/notifications/');
+    async getPledgeStats(period = '30d') {
+      return await this.request(`/pledges/stats/?range=${period}`);
     },
 
-    async getUpcomingEvents() {
-      return await this.request('/core/events/upcoming/');
+    async getGroupStats() {
+      return await this.request('/groups/statistics/');
+    },
+
+    async getRecentMembers(limit = 6) {
+      return await this.request(`/members/?ordering=-registration_date&limit=${limit}`);
+    },
+
+    async getRecentPledges(limit = 5) {
+      return await this.request(`/pledges/?ordering=-created_at&limit=${limit}`);
+    },
+
+    async getUpcomingBirthdays(days = 7) {
+      const today = new Date();
+      const futureDate = new Date();
+      futureDate.setDate(today.getDate() + days);
+      return await this.request(`/members/?upcoming_birthdays=${days}`);
     }
   };
 
-  // Fetch dashboard data
-  const fetchDashboardData = async (period = selectedPeriod) => {
+  useEffect(() => {
+    // Get current user info
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+      }
+    }
+  }, []);
+
+  // Fetch comprehensive dashboard data
+  const fetchDashboardData = useCallback(async (period = selectedPeriod, showLoader = true) => {
     try {
-      setLoading(true);
+      if (showLoader) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
 
-      // Simulate API calls - replace with actual API endpoints
-      const [stats, recentMembers, notifications, events] = await Promise.all([
-        // Replace with actual API calls
-        simulateAPICall('stats', period),
-        simulateAPICall('members'),
-        simulateAPICall('notifications'),
-        simulateAPICall('events')
+      // Parallel fetch of all dashboard data with error handling
+      const [
+        generalStats,
+        memberStats,
+        pledgeStats,
+        groupStats,
+        recentMembers,
+        recentPledges,
+        upcomingBirthdays
+      ] = await Promise.allSettled([
+        dashboardService.getStats(),
+        dashboardService.getMemberStats(period),
+        dashboardService.getPledgeStats(period),
+        dashboardService.getGroupStats(),
+        dashboardService.getRecentMembers(6),
+        dashboardService.getRecentPledges(5),
+        dashboardService.getUpcomingBirthdays(7)
       ]);
 
+      // Process results and handle any failures gracefully
+      const processResult = (result, fallback = null) => {
+        return result.status === 'fulfilled' ? result.value : fallback;
+      };
+
       setDashboardData({
-        stats,
-        recentMembers,
-        notifications,
-        upcomingEvents: events,
-        lastUpdated: new Date()
+        stats: processResult(generalStats, {}),
+        memberStats: processResult(memberStats, {}),
+        pledgeStats: processResult(pledgeStats, {}),
+        groupStats: processResult(groupStats, {}),
+        recentMembers: processResult(recentMembers, { results: [] }),
+        recentPledges: processResult(recentPledges, { results: [] }),
+        upcomingBirthdays: processResult(upcomingBirthdays, { results: [] })
       });
+
+      setLastUpdated(new Date());
+
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again.');
+      setError('Failed to load dashboard data. Please try refreshing the page.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  // Simulate API calls (replace with actual API service calls)
-  const simulateAPICall = async (type, period) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        switch (type) {
-          case 'stats':
-            resolve({
-              totalMembers: 1247,
-              newMembersThisMonth: 23,
-              activePledges: 89600,
-              totalPledgeAmount: 267800,
-              activeGroups: 18,
-              upcomingEvents: 6,
-              memberGrowthRate: 8.5,
-              pledgeGrowthRate: 12.3,
-              averageAge: 42,
-              femalePercentage: 58,
-              malePercentage: 42
-            });
-          case 'members':
-            resolve([
-              {
-                id: 1,
-                first_name: 'Sarah',
-                last_name: 'Johnson',
-                email: 'sarah.johnson@email.com',
-                phone: '+233 244 567 890',
-                created_at: '2024-09-02T10:30:00Z',
-                groups: ['Worship Team', 'Bible Study'],
-                has_pledge: true,
-                photo_url: null
-              },
-              {
-                id: 2,
-                first_name: 'Michael',
-                last_name: 'Asante',
-                email: 'michael.asante@email.com',
-                phone: '+233 555 123 456',
-                created_at: '2024-09-01T14:15:00Z',
-                groups: ['Youth Ministry'],
-                has_pledge: false,
-                photo_url: null
-              },
-              {
-                id: 3,
-                first_name: 'Grace',
-                last_name: 'Osei',
-                email: 'grace.osei@email.com',
-                phone: '+233 202 345 678',
-                created_at: '2024-08-30T09:45:00Z',
-                groups: ['Children\'s Ministry', 'Choir'],
-                has_pledge: true,
-                photo_url: null
-              },
-              {
-                id: 4,
-                first_name: 'Emmanuel',
-                last_name: 'Boateng',
-                email: 'emmanuel.boateng@email.com',
-                phone: '+233 249 876 543',
-                created_at: '2024-08-28T16:20:00Z',
-                groups: ['Men\'s Fellowship'],
-                has_pledge: true,
-                photo_url: null
-              }
-            ]);
-          case 'notifications':
-            resolve([
-              {
-                id: 1,
-                type: 'member_registration',
-                title: 'New Member Registration',
-                message: 'Sarah Johnson has submitted a membership application and requires approval.',
-                created_at: '2024-09-05T08:30:00Z',
-                is_read: false,
-                priority: 'high'
-              },
-              {
-                id: 2,
-                type: 'pledge_received',
-                title: 'New Pledge Commitment',
-                message: 'Michael Asante committed to a monthly pledge of GH₵500.',
-                created_at: '2024-09-05T07:15:00Z',
-                is_read: false,
-                priority: 'medium'
-              },
-              {
-                id: 3,
-                type: 'event_reminder',
-                title: 'Event Reminder',
-                message: 'Youth Fellowship meeting tomorrow at 6:00 PM - 45 members confirmed.',
-                created_at: '2024-09-04T18:00:00Z',
-                is_read: true,
-                priority: 'low'
-              }
-            ]);
-          case 'events':
-            resolve([
-              {
-                id: 1,
-                title: 'Sunday Worship Service',
-                date: '2024-09-08',
-                time: '10:00',
-                expected_attendance: 450,
-                confirmed_attendance: 387,
-                location: 'Main Sanctuary'
-              },
-              {
-                id: 2,
-                title: 'Bible Study (Midweek)',
-                date: '2024-09-11',
-                time: '19:00',
-                expected_attendance: 85,
-                confirmed_attendance: 72,
-                location: 'Fellowship Hall'
-              },
-              {
-                id: 3,
-                title: 'Youth Fellowship',
-                date: '2024-09-06',
-                time: '18:00',
-                expected_attendance: 45,
-                confirmed_attendance: 38,
-                location: 'Youth Center'
-              }
-            ]);
-          default:
-            resolve([]);
-        }
-      }, Math.random() * 800 + 200); // Simulate network delay
-    });
-  };
+  }, [selectedPeriod]);
 
   // Handle refresh
   const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchDashboardData();
-    setRefreshing(false);
+    await fetchDashboardData(selectedPeriod, false);
   };
 
   // Handle period change
   const handlePeriodChange = async (newPeriod) => {
     setSelectedPeriod(newPeriod);
-    await fetchDashboardData(newPeriod);
+    await fetchDashboardData(newPeriod, false);
+  };
+
+  // Handle navigation
+  const navigateTo = (path) => {
+    window.location.href = path;
   };
 
   // Initial load
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchDashboardData(selectedPeriod, false);
+    }, 300000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [fetchDashboardData, selectedPeriod]);
 
   // Format numbers
   const formatNumber = (num) => {
@@ -263,37 +210,78 @@ const Dashboard = () => {
     return num?.toString() || '0';
   };
 
-  // Format currency
+  // Format currency (Ghana Cedis)
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   // Format date
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Recently';
+    }
   };
 
-  // Get initials for avatar
+  // Format relative time
+  const formatRelativeTime = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      return `${Math.floor(diffDays / 30)} months ago`;
+    } catch {
+      return 'Recently';
+    }
+  };
+
+  // Get member initials for avatar
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  // Get trend indicator
+  const getTrendIcon = (changeType) => {
+    switch (changeType) {
+      case 'positive': return TrendingUpIcon;
+      case 'negative': return TrendingDownIcon;
+      default: return null;
+    }
+  };
+
+  // Get trend color
+  const getTrendColor = (changeType) => {
+    switch (changeType) {
+      case 'positive': return 'text-green-600';
+      case 'negative': return 'text-red-600';
+      default: return 'text-gray-500';
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+            <HeartIcon className="w-6 h-6 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+          </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Dashboard</h2>
-          <p className="text-gray-600">Gathering your church data...</p>
+          <p className="text-gray-600">Gathering your church community data...</p>
         </div>
       </div>
     );
@@ -302,13 +290,13 @@ const Dashboard = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
+        <div className="text-center max-w-md mx-auto">
+          <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Dashboard</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={handleRefresh}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             Try Again
           </button>
@@ -317,58 +305,82 @@ const Dashboard = () => {
     );
   }
 
+  // Calculate key statistics from API data
   const stats = [
     {
       name: 'Total Members',
-      value: dashboardData?.stats?.totalMembers || 0,
+      value: dashboardData?.stats?.total_members || dashboardData?.memberStats?.total_members || 0,
       icon: UsersIcon,
-      change: dashboardData?.stats?.memberGrowthRate || 0,
-      changeType: 'positive',
-      color: 'blue'
+      change: dashboardData?.memberStats?.growth_rate || 0,
+      changeType: dashboardData?.memberStats?.growth_rate > 0 ? 'positive' : dashboardData?.memberStats?.growth_rate < 0 ? 'negative' : 'neutral',
+      description: `from last ${selectedPeriod}`,
+      color: 'blue',
+      href: '/admin/members'
     },
     {
-      name: 'New This Month',
-      value: dashboardData?.stats?.newMembersThisMonth || 0,
-      icon: PlusIcon,
-      change: 15,
-      changeType: 'positive',
-      color: 'green'
+      name: 'New Members',
+      value: dashboardData?.memberStats?.new_members || 0,
+      icon: UserPlusIcon,
+      change: dashboardData?.memberStats?.new_members_change || 0,
+      changeType: dashboardData?.memberStats?.new_members_change > 0 ? 'positive' : 'neutral',
+      description: `this ${selectedPeriod === '7d' ? 'week' : selectedPeriod === '30d' ? 'month' : 'period'}`,
+      color: 'green',
+      href: '/admin/members?filter=recent'
     },
     {
       name: 'Active Pledges',
-      value: formatCurrency(dashboardData?.stats?.activePledges || 0),
+      value: formatCurrency(dashboardData?.pledgeStats?.total_amount || 0),
       icon: CurrencyDollarIcon,
-      change: dashboardData?.stats?.pledgeGrowthRate || 0,
-      changeType: 'positive',
+      change: dashboardData?.pledgeStats?.growth_rate || 0,
+      changeType: dashboardData?.pledgeStats?.growth_rate > 0 ? 'positive' : dashboardData?.pledgeStats?.growth_rate < 0 ? 'negative' : 'neutral',
+      description: `from last ${selectedPeriod}`,
       color: 'yellow',
+      href: '/admin/pledges',
       showCurrency: true
     },
     {
       name: 'Ministry Groups',
-      value: dashboardData?.stats?.activeGroups || 0,
+      value: dashboardData?.groupStats?.total_groups || dashboardData?.stats?.total_groups || 0,
       icon: UserGroupIcon,
-      change: 2,
-      changeType: 'positive',
-      color: 'purple'
+      change: dashboardData?.groupStats?.growth_rate || 0,
+      changeType: dashboardData?.groupStats?.growth_rate > 0 ? 'positive' : 'neutral',
+      description: 'active groups',
+      color: 'purple',
+      href: '/admin/groups'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 rounded-2xl shadow-lg overflow-hidden">
-          <div className="px-8 py-6 text-white">
+    <div className="min-h-screen bg-gray-50">
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="mb-4 lg:mb-0">
-                <h1 className="text-3xl font-bold mb-2">Church Dashboard</h1>
-                <p className="text-blue-100 text-lg">
-                  Welcome back! Here's what's happening in your church community.
-                </p>
-                <div className="flex items-center mt-3 text-sm text-blue-200">
-                  <ClockIcon className="w-4 h-4 mr-2" />
-                  Last updated: {dashboardData?.lastUpdated?.toLocaleString()}
+              <div className="mb-6 lg:mb-0">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4">
+                    <BuildingLibraryIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-white">
+                      Welcome back, {currentUser?.first_name || 'Admin'}!
+                    </h1>
+                    <p className="text-blue-100 text-lg">
+                      Here's what's happening in your church community
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4 text-sm text-blue-200">
+                  <div className="flex items-center">
+                    <ClockIcon className="w-4 h-4 mr-2" />
+                    Last updated: {lastUpdated?.toLocaleTimeString() || 'Never'}
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircleIcon className="w-4 h-4 mr-2" />
+                    System Online
+                  </div>
                 </div>
               </div>
               
@@ -376,18 +388,18 @@ const Dashboard = () => {
                 <select
                   value={selectedPeriod}
                   onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="bg-white bg-opacity-20 text-white rounded-lg px-4 py-2 text-sm border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                  className="bg-white bg-opacity-20 text-white rounded-lg px-4 py-2.5 text-sm border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 backdrop-blur-sm"
                 >
-                  <option value="7">Last 7 days</option>
-                  <option value="30">Last 30 days</option>
-                  <option value="90">Last 3 months</option>
-                  <option value="365">This year</option>
+                  <option value="7d" className="text-gray-900">Last 7 days</option>
+                  <option value="30d" className="text-gray-900">Last 30 days</option>
+                  <option value="90d" className="text-gray-900">Last 3 months</option>
+                  <option value="365d" className="text-gray-900">This year</option>
                 </select>
                 
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 text-sm border border-white border-opacity-30 transition-all flex items-center space-x-2 disabled:opacity-50"
+                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2.5 text-sm border border-white border-opacity-30 transition-all flex items-center space-x-2 disabled:opacity-50 backdrop-blur-sm font-medium"
                 >
                   <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                   <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
@@ -396,244 +408,310 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat) => {
+          {stats.map((stat, index) => {
             const Icon = stat.icon;
+            const TrendIcon = getTrendIcon(stat.changeType);
             const colorClasses = {
-              blue: 'bg-blue-50 text-blue-700 border-blue-200',
-              green: 'bg-green-50 text-green-700 border-green-200',
-              yellow: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-              purple: 'bg-purple-50 text-purple-700 border-purple-200'
+              blue: 'from-blue-500 to-blue-600 shadow-blue-500/25',
+              green: 'from-green-500 to-green-600 shadow-green-500/25',
+              yellow: 'from-yellow-500 to-yellow-600 shadow-yellow-500/25',
+              purple: 'from-purple-500 to-purple-600 shadow-purple-500/25'
             };
 
             return (
               <div
                 key={stat.name}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="group cursor-pointer"
+                onClick={() => navigateTo(stat.href)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-lg border ${colorClasses[stat.color]}`}>
-                    <Icon className="w-6 h-6" />
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[stat.color]} shadow-lg`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    {TrendIcon && (
+                      <div className={`flex items-center space-x-1 ${getTrendColor(stat.changeType)}`}>
+                        <TrendIcon className="w-4 h-4" />
+                        <span className="text-sm font-semibold">
+                          {Math.abs(stat.change)}%
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-1 text-green-600">
-                    <TrendingUpIcon className="w-4 h-4" />
-                    <span className="text-sm font-medium">+{stat.change}%</span>
-                  </div>
+                  
+                  <h3 className="text-sm font-medium text-gray-600 mb-2">{stat.name}</h3>
+                  <p className="text-3xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-gray-500">{stat.description}</p>
                 </div>
-                
-                <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.name}</h3>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-500 mt-1">from last period</p>
               </div>
             );
           })}
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Recent Members */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="px-6 py-5 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <UsersIcon className="w-5 h-5 mr-2" />
+                  <UsersIcon className="w-5 h-5 mr-3 text-blue-600" />
                   Recent Members
                 </h3>
-                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                  View all
+                <button 
+                  onClick={() => navigateTo('/admin/members')}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline transition-colors"
+                >
+                  View all ({dashboardData?.stats?.total_members || 0})
                 </button>
               </div>
             </div>
             
             <div className="p-6">
-              <div className="space-y-4">
-                {dashboardData?.recentMembers?.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex-shrink-0">
-                      {member.photo_url ? (
-                        <img
-                          src={member.photo_url}
-                          alt={`${member.first_name} ${member.last_name}`}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                          {getInitials(member.first_name, member.last_name)}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {member.first_name} {member.last_name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Joined {formatDate(member.created_at)}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {member.has_pledge && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Pledged
-                            </span>
-                          )}
-                          {member.groups?.length > 0 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              {member.groups.length} group{member.groups.length > 1 ? 's' : ''}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Notifications */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <BellIcon className="w-5 h-5 mr-2" />
-                  Notifications
-                </h3>
-                <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
-                  {dashboardData?.notifications?.filter(n => !n.is_read).length || 0}
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                {dashboardData?.notifications?.slice(0, 5).map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 rounded-lg border-l-4 ${
-                      notification.priority === 'high' 
-                        ? 'border-red-500 bg-red-50' 
-                        : notification.priority === 'medium'
-                        ? 'border-yellow-500 bg-yellow-50'
-                        : 'border-green-500 bg-green-50'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {notification.title}
-                      </h4>
-                      <span className="text-xs text-gray-500">
-                        {formatDate(notification.created_at)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-                    {!notification.is_read && (
-                      <div className="flex items-center justify-end">
-                        <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                          Mark as read
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <CalendarDaysIcon className="w-5 h-5 mr-2" />
-              Upcoming Events
-            </h3>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {dashboardData?.upcomingEvents?.map((event) => (
-                <div
-                  key={event.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {event.date}
-                    </span>
-                  </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <ClockIcon className="w-4 h-4 mr-2" />
-                      {event.time}
-                    </div>
-                    <div className="flex items-center">
-                      <BuildingLibraryIcon className="w-4 h-4 mr-2" />
-                      {event.location}
-                    </div>
-                    <div className="flex items-center">
-                      <UsersIcon className="w-4 h-4 mr-2" />
-                      {event.confirmed_attendance}/{event.expected_attendance} confirmed
-                    </div>
-                  </div>
-                  <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+              {dashboardData?.recentMembers?.results?.length > 0 ? (
+                <div className="space-y-4">
+                  {dashboardData.recentMembers.results.slice(0, 5).map((member) => (
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{
-                        width: `${(event.confirmed_attendance / event.expected_attendance) * 100}%`
-                      }}
-                    ></div>
+                      key={member.id}
+                      className="group cursor-pointer"
+                      onClick={() => navigateTo(`/admin/members/${member.id}`)}
+                    >
+                      <div className="flex items-center space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
+                        <div className="flex-shrink-0">
+                          {member.photo_url ? (
+                            <img
+                              src={member.photo_url}
+                              alt={`${member.first_name} ${member.last_name}`}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                              {getInitials(member.first_name, member.last_name)}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {member.first_name} {member.last_name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Joined {formatRelativeTime(member.registration_date || member.created_at)}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {member.email && (
+                                <EnvelopeIcon className="w-4 h-4 text-gray-400" />
+                              )}
+                              {member.phone && (
+                                <PhoneIcon className="w-4 h-4 text-gray-400" />
+                              )}
+                              <EyeIcon className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <UsersIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">No recent members</h3>
+                  <p className="text-sm text-gray-500 mb-4">New members will appear here when they join</p>
+                  <button
+                    onClick={() => navigateTo('/admin/members/new')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  >
+                    <UserPlusIcon className="w-4 h-4 mr-2" />
+                    Add Member
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Items & Alerts */}
+          <div className="space-y-6">
+            
+            {/* Upcoming Birthdays */}
+            {dashboardData?.upcomingBirthdays?.results?.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+                <div className="px-6 py-5 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <CalendarDaysIcon className="w-5 h-5 mr-3 text-pink-600" />
+                    Upcoming Birthdays
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-3">
+                    {dashboardData.upcomingBirthdays.results.slice(0, 3).map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-3 bg-pink-50 rounded-lg border border-pink-200">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                            {getInitials(member.first_name, member.last_name)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {member.first_name} {member.last_name}
+                            </p>
+                            <p className="text-xs text-pink-600">
+                              {formatDate(member.date_of_birth)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* Recent Pledges */}
+            {dashboardData?.recentPledges?.results?.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+                <div className="px-6 py-5 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <CurrencyDollarIcon className="w-5 h-5 mr-3 text-green-600" />
+                      Recent Pledges
+                    </h3>
+                    <button 
+                      onClick={() => navigateTo('/admin/pledges')}
+                      className="text-green-600 hover:text-green-800 text-sm font-medium hover:underline transition-colors"
+                    >
+                      View all
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-3">
+                    {dashboardData.recentPledges.results.slice(0, 3).map((pledge) => (
+                      <div key={pledge.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {pledge.member_name || 'Anonymous'}
+                          </p>
+                          <p className="text-xs text-green-600">
+                            {formatCurrency(pledge.amount)} - {pledge.frequency}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {formatRelativeTime(pledge.created_at)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* System Status */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="px-6 py-5 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <CheckCircleIcon className="w-5 h-5 mr-3 text-green-600" />
+                  System Status
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900">Database</span>
+                    </div>
+                    <span className="text-xs text-green-600">Online</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900">API Services</span>
+                    </div>
+                    <span className="text-xs text-green-600">Online</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
           </div>
           
           <div className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: 'Add Member', icon: PlusIcon, href: '/admin/members/new', color: 'blue' },
-                { name: 'View Reports', icon: ChartBarIcon, href: '/admin/reports', color: 'green' },
-                { name: 'Manage Groups', icon: UserGroupIcon, href: '/admin/groups', color: 'purple' },
-                { name: 'Settings', icon: Cog6ToothIcon, href: '/admin/settings', color: 'gray' }
+                { 
+                  name: 'Add Member', 
+                  icon: UserPlusIcon, 
+                  href: '/admin/members/new', 
+                  color: 'blue',
+                  description: 'Register new member'
+                },
+                { 
+                  name: 'Create Event', 
+                  icon: CalendarIcon, 
+                  href: '/admin/events/new', 
+                  color: 'green',
+                  description: 'Schedule church event'
+                },
+                { 
+                  name: 'Record Donation', 
+                  icon: DonationIcon, 
+                  href: '/admin/pledges/new', 
+                  color: 'yellow',
+                  description: 'Log contribution'
+                },
+                { 
+                  name: 'View Reports', 
+                  icon: DocumentTextIcon, 
+                  href: '/admin/reports', 
+                  color: 'purple',
+                  description: 'Analytics & insights'
+                }
               ].map((action) => {
                 const Icon = action.icon;
                 const colorClasses = {
-                  blue: 'bg-blue-50 hover:bg-blue-100 text-blue-700',
-                  green: 'bg-green-50 hover:bg-green-100 text-green-700',
-                  purple: 'bg-purple-50 hover:bg-purple-100 text-purple-700',
-                  gray: 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                  blue: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200',
+                  green: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200',
+                  yellow: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200',
+                  purple: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'
                 };
 
                 return (
                   <button
                     key={action.name}
-                    onClick={() => window.location.href = action.href}
-                    className={`${colorClasses[action.color]} p-4 rounded-lg transition-colors text-center`}
+                    onClick={() => navigateTo(action.href)}
+                    className={`${colorClasses[action.color]} p-6 rounded-xl transition-all duration-200 text-center border hover:shadow-md group`}
                   >
-                    <Icon className="w-8 h-8 mx-auto mb-2" />
-                    <span className="text-sm font-medium">{action.name}</span>
+                    <Icon className="w-8 h-8 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                    <h4 className="text-sm font-semibold mb-1">{action.name}</h4>
+                    <p className="text-xs opacity-75">{action.description}</p>
                   </button>
                 );
               })}
             </div>
           </div>
+        </div>
+
+        {/* Footer Info */}
+        <div className="text-center text-sm text-gray-500 py-4">
+          <p>Church Community Manager • Data updated every 5 minutes</p>
         </div>
       </div>
     </div>

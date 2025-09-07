@@ -1,218 +1,192 @@
-import { api } from './api';
+// services/dashboardService.js - Enhanced version with proper error handling and caching
+import apiMethods from './api';
 
-export const dashboardService = {
+class DashboardService {
+  constructor() {
+    this.cache = new Map();
+    this.cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
+  }
+
+  // Cache helper methods
+  getCacheKey(endpoint, params = {}) {
+    return `${endpoint}_${JSON.stringify(params)}`;
+  }
+
+  getCachedData(key) {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.data;
+    }
+    return null;
+  }
+
+  setCachedData(key, data) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  clearCache() {
+    this.cache.clear();
+  }
+
+  // Enhanced API request with caching and error handling
+  async makeRequest(endpoint, params = {}, useCache = true) {
+    const cacheKey = this.getCacheKey(endpoint, params);
+    
+    if (useCache) {
+      const cached = this.getCachedData(cacheKey);
+      if (cached) {
+        console.log(`[DashboardService] Using cached data for ${endpoint}`);
+        return cached;
+      }
+    }
+
+    try {
+      const response = await apiMethods.get(endpoint, { params });
+      const data = response.data;
+      
+      if (useCache) {
+        this.setCachedData(cacheKey, data);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error(`[DashboardService] Error fetching ${endpoint}:`, error);
+      
+      // Return cached data if available, even if expired
+      const cached = this.cache.get(cacheKey);
+      if (cached) {
+        console.warn(`[DashboardService] Returning stale cached data for ${endpoint}`);
+        return cached.data;
+      }
+      
+      // Return empty data structure to prevent UI crashes
+      return this.getEmptyResponse(endpoint);
+    }
+  }
+
+  // Get empty response structure based on endpoint
+  getEmptyResponse(endpoint) {
+    const emptyResponses = {
+      '/reports/stats/': { total_members: 0, total_groups: 0, total_pledges: 0 },
+      '/members/stats/': { total_members: 0, new_members: 0, growth_rate: 0 },
+      '/pledges/stats/': { total_amount: 0, active_pledges: 0, growth_rate: 0 },
+      '/groups/statistics/': { total_groups: 0, active_groups: 0, growth_rate: 0 },
+      '/members/': { results: [], count: 0 },
+      '/pledges/': { results: [], count: 0 }
+    };
+
+    return emptyResponses[endpoint] || { results: [], count: 0 };
+  }
+
   // Get overall system statistics
-  getStats: async () => {
-    try {
-      const response = await api.get('/api/reports/stats/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      throw error;
-    }
-  },
+  async getStats() {
+    return await this.makeRequest('/reports/stats/');
+  }
 
-  // Get member statistics
-  getMemberStats: async (timeRange = '30d') => {
-    try {
-      const response = await api.get(`/api/members/stats/?range=${timeRange}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching member stats:', error);
-      throw error;
-    }
-  },
+  // Get member statistics with time range
+  async getMemberStats(timeRange = '30d') {
+    return await this.makeRequest('/members/stats/', { range: timeRange });
+  }
 
-  // Get pledge statistics
-  getPledgeStats: async (timeRange = '30d') => {
-    try {
-      const response = await api.get(`/api/pledges/stats/?range=${timeRange}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching pledge stats:', error);
-      throw error;
-    }
-  },
+  // Get pledge statistics with time range
+  async getPledgeStats(timeRange = '30d') {
+    return await this.makeRequest('/pledges/stats/', { range: timeRange });
+  }
 
   // Get group/ministry statistics
-  getGroupStats: async () => {
-    try {
-      const response = await api.get('/api/groups/stats/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching group stats:', error);
-      throw error;
-    }
-  },
+  async getGroupStats() {
+    return await this.makeRequest('/groups/statistics/');
+  }
 
   // Get recent member registrations
-  getRecentMembers: async (limit = 10) => {
-    try {
-      const response = await api.get(`/api/members/?ordering=-registration_date&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching recent members:', error);
-      throw error;
-    }
-  },
+  async getRecentMembers(limit = 10) {
+    return await this.makeRequest('/members/', { 
+      ordering: '-registration_date', 
+      limit 
+    });
+  }
 
   // Get recent pledges
-  getRecentPledges: async (limit = 10) => {
-    try {
-      const response = await api.get(`/api/pledges/?ordering=-created_at&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching recent pledges:', error);
-      throw error;
-    }
-  },
+  async getRecentPledges(limit = 10) {
+    return await this.makeRequest('/pledges/', { 
+      ordering: '-created_at', 
+      limit 
+    });
+  }
 
   // Get member growth data for charts
-  getMemberGrowthData: async (timeRange = '12m') => {
-    try {
-      const response = await api.get(`/api/members/growth/?range=${timeRange}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching member growth data:', error);
-      throw error;
-    }
-  },
+  async getMemberGrowthData(timeRange = '12m') {
+    return await this.makeRequest('/members/growth/', { range: timeRange });
+  }
 
   // Get pledge trends data for charts
-  getPledgeTrends: async (timeRange = '12m') => {
-    try {
-      const response = await api.get(`/api/pledges/trends/?range=${timeRange}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching pledge trends:', error);
-      throw error;
-    }
-  },
+  async getPledgeTrends(timeRange = '12m') {
+    return await this.makeRequest('/pledges/trends/', { range: timeRange });
+  }
 
   // Get age demographics data
-  getAgeDemo: async () => {
-    try {
-      const response = await api.get('/api/members/demographics/age/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching age demographics:', error);
-      throw error;
-    }
-  },
+  async getAgeDemo() {
+    return await this.makeRequest('/members/demographics/age/');
+  }
 
   // Get gender demographics data
-  getGenderDemo: async () => {
-    try {
-      const response = await api.get('/api/members/demographics/gender/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching gender demographics:', error);
-      throw error;
-    }
-  },
+  async getGenderDemo() {
+    return await this.makeRequest('/members/demographics/gender/');
+  }
 
   // Get ministry distribution data
-  getMinistryDistribution: async () => {
-    try {
-      const response = await api.get('/api/groups/distribution/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching ministry distribution:', error);
-      throw error;
-    }
-  },
+  async getMinistryDistribution() {
+    return await this.makeRequest('/groups/distribution/');
+  }
 
   // Get members requiring follow-up
-  getFollowUpMembers: async () => {
-    try {
-      const response = await api.get('/api/members/follow-up/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching follow-up members:', error);
-      throw error;
-    }
-  },
+  async getFollowUpMembers() {
+    return await this.makeRequest('/members/follow-up/');
+  }
 
   // Get upcoming birthdays
-  getUpcomingBirthdays: async (days = 30) => {
-    try {
-      const response = await api.get(`/api/members/birthdays/?days=${days}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching upcoming birthdays:', error);
-      throw error;
-    }
-  },
+  async getUpcomingBirthdays(days = 30) {
+    return await this.makeRequest('/members/birthdays/', { days });
+  }
 
   // Get system activity summary
-  getActivitySummary: async (timeRange = '7d') => {
-    try {
-      const response = await api.get(`/api/reports/activity/?range=${timeRange}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching activity summary:', error);
-      throw error;
-    }
-  },
+  async getActivitySummary(timeRange = '7d') {
+    return await this.makeRequest('/reports/activity/', { range: timeRange });
+  }
 
   // Get geographic distribution of members
-  getGeographicData: async () => {
-    try {
-      const response = await api.get('/api/members/geographic/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching geographic data:', error);
-      throw error;
-    }
-  },
+  async getGeographicData() {
+    return await this.makeRequest('/members/geographic/');
+  }
 
   // Get member retention data
-  getRetentionData: async () => {
-    try {
-      const response = await api.get('/api/members/retention/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching retention data:', error);
-      throw error;
-    }
-  },
+  async getRetentionData() {
+    return await this.makeRequest('/members/retention/');
+  }
 
   // Get communication preferences summary
-  getCommunicationPrefs: async () => {
-    try {
-      const response = await api.get('/api/members/communication-preferences/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching communication preferences:', error);
-      throw error;
-    }
-  },
+  async getCommunicationPrefs() {
+    return await this.makeRequest('/members/communication-preferences/');
+  }
 
   // Get pledge fulfillment rates
-  getPledgeFulfillment: async () => {
-    try {
-      const response = await api.get('/api/pledges/fulfillment/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching pledge fulfillment:', error);
-      throw error;
-    }
-  },
+  async getPledgeFulfillment() {
+    return await this.makeRequest('/pledges/fulfillment/');
+  }
 
   // Get family statistics
-  getFamilyStats: async () => {
-    try {
-      const response = await api.get('/api/families/stats/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching family stats:', error);
-      throw error;
-    }
-  },
+  async getFamilyStats() {
+    return await this.makeRequest('/families/stats/');
+  }
 
   // Get comprehensive dashboard data (all key metrics)
-  getDashboardData: async () => {
+  async getDashboardData(timeRange = '30d') {
     try {
+      console.log('[DashboardService] Fetching comprehensive dashboard data...');
+      
       const [
         stats,
         memberStats,
@@ -220,102 +194,149 @@ export const dashboardService = {
         groupStats,
         recentMembers,
         recentPledges,
-        upcomingBirthdays,
-        followUpMembers
-      ] = await Promise.all([
-        dashboardService.getStats(),
-        dashboardService.getMemberStats(),
-        dashboardService.getPledgeStats(),
-        dashboardService.getGroupStats(),
-        dashboardService.getRecentMembers(5),
-        dashboardService.getRecentPledges(5),
-        dashboardService.getUpcomingBirthdays(7),
-        dashboardService.getFollowUpMembers()
+        upcomingBirthdays
+      ] = await Promise.allSettled([
+        this.getStats(),
+        this.getMemberStats(timeRange),
+        this.getPledgeStats(timeRange),
+        this.getGroupStats(),
+        this.getRecentMembers(5),
+        this.getRecentPledges(5),
+        this.getUpcomingBirthdays(7)
       ]);
 
+      // Process results, handling failures gracefully
+      const processResult = (result, fallback = {}) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          console.warn('[DashboardService] Promise rejected:', result.reason);
+          return fallback;
+        }
+      };
+
       return {
-        stats,
-        memberStats,
-        pledgeStats,
-        groupStats,
-        recentMembers,
-        recentPledges,
-        upcomingBirthdays,
-        followUpMembers
+        stats: processResult(stats),
+        memberStats: processResult(memberStats),
+        pledgeStats: processResult(pledgeStats),
+        groupStats: processResult(groupStats),
+        recentMembers: processResult(recentMembers, { results: [] }),
+        recentPledges: processResult(recentPledges, { results: [] }),
+        upcomingBirthdays: processResult(upcomingBirthdays, { results: [] }),
+        lastUpdated: new Date()
       };
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('[DashboardService] Error fetching dashboard data:', error);
       throw error;
     }
-  },
+  }
 
   // Export dashboard data
-  exportDashboardData: async (format = 'csv') => {
+  async exportDashboardData(format = 'csv') {
     try {
-      const response = await api.get(`/api/reports/dashboard/export/?format=${format}`, {
+      const response = await apiMethods.get('/reports/dashboard/export/', {
+        params: { format },
         responseType: 'blob'
       });
       return response.data;
     } catch (error) {
-      console.error('Error exporting dashboard data:', error);
+      console.error('[DashboardService] Error exporting dashboard data:', error);
       throw error;
     }
-  },
+  }
 
   // Get user-specific dashboard configuration
-  getDashboardConfig: async (userId) => {
-    try {
-      const response = await api.get(`/api/dashboard/config/${userId}/`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching dashboard config:', error);
-      throw error;
-    }
-  },
+  async getDashboardConfig(userId) {
+    return await this.makeRequest(`/dashboard/config/${userId}/`);
+  }
 
   // Save user dashboard configuration
-  saveDashboardConfig: async (userId, config) => {
+  async saveDashboardConfig(userId, config) {
     try {
-      const response = await api.post(`/api/dashboard/config/${userId}/`, config);
+      const response = await apiMethods.post(`/dashboard/config/${userId}/`, config);
       return response.data;
     } catch (error) {
-      console.error('Error saving dashboard config:', error);
+      console.error('[DashboardService] Error saving dashboard config:', error);
       throw error;
     }
-  },
+  }
 
   // Get alerts and notifications
-  getAlerts: async () => {
-    try {
-      const response = await api.get('/api/dashboard/alerts/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      throw error;
-    }
-  },
+  async getAlerts() {
+    return await this.makeRequest('/dashboard/alerts/');
+  }
 
   // Mark alert as read
-  markAlertRead: async (alertId) => {
+  async markAlertRead(alertId) {
     try {
-      const response = await api.patch(`/api/dashboard/alerts/${alertId}/`, {
+      const response = await apiMethods.patch(`/dashboard/alerts/${alertId}/`, {
         read: true
       });
       return response.data;
     } catch (error) {
-      console.error('Error marking alert as read:', error);
-      throw error;
-    }
-  },
-
-  // Get system health status
-  getSystemHealth: async () => {
-    try {
-      const response = await api.get('/api/dashboard/health/');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching system health:', error);
+      console.error('[DashboardService] Error marking alert as read:', error);
       throw error;
     }
   }
-};
+
+  // Get system health status
+  async getSystemHealth() {
+    return await this.makeRequest('/dashboard/health/', {}, false); // Don't cache health data
+  }
+
+  // Refresh all cached data
+  async refreshAll(timeRange = '30d') {
+    console.log('[DashboardService] Refreshing all dashboard data...');
+    this.clearCache();
+    return await this.getDashboardData(timeRange);
+  }
+
+  // Get real-time statistics (no caching)
+  async getRealTimeStats() {
+    return await this.makeRequest('/reports/stats/', {}, false);
+  }
+
+  // Validate API connectivity
+  async testConnection() {
+    try {
+      const response = await apiMethods.get('/core/health/');
+      return { 
+        success: true, 
+        message: 'API connection successful',
+        data: response.data 
+      };
+    } catch (error) {
+      return { 
+        success: false, 
+        message: 'API connection failed',
+        error: error.message 
+      };
+    }
+  }
+
+  // Get member activity trends
+  async getMemberActivity(timeRange = '30d') {
+    return await this.makeRequest('/members/activity/', { range: timeRange });
+  }
+
+  // Get financial summary
+  async getFinancialSummary(timeRange = '30d') {
+    return await this.makeRequest('/pledges/financial-summary/', { range: timeRange });
+  }
+
+  // Get group membership trends
+  async getGroupMembershipTrends(timeRange = '30d') {
+    return await this.makeRequest('/groups/membership-trends/', { range: timeRange });
+  }
+
+  // Get event attendance data
+  async getEventAttendance(timeRange = '30d') {
+    return await this.makeRequest('/events/attendance/', { range: timeRange });
+  }
+}
+
+// Create and export singleton instance
+const dashboardService = new DashboardService();
+
+export { dashboardService };
+export default dashboardService;
