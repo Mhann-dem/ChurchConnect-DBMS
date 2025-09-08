@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   UsersIcon, 
@@ -16,40 +16,44 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
-  MapPinIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowPathIcon,
+  UserIcon,
   PhoneIcon,
   EnvelopeIcon,
-  GlobeAltIcon,
+  MapPinIcon,
   HeartIcon,
-  BuildingLibraryIcon,
-  Bars3Icon,
-  XMarkIcon,
   SparklesIcon,
   TrophyIcon,
   FireIcon,
-  StarIcon,
-  Cog6ToothIcon,
-  ArrowTopRightOnSquareIcon
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
+import useAuth from '../../hooks/useAuth';
+import dashboardService from '../../services/dashboardService';
+import { useToast } from '../../context/ToastContext';
 import styles from './AdminPages.module.css';
 
 const DashboardPage = () => {
-  const [dashboardData, setDashboardData] = useState(null);
+  const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
+  
+  // State management
+  const [dashboardData, setDashboardData] = useState({
+    stats: null,
+    memberStats: null,
+    pledgeStats: null,
+    groupStats: null,
+    recentMembers: [],
+    recentPledges: [],
+    systemHealth: null,
+    alerts: []
+  });
+  
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [selectedTimeframe, setSelectedTimeframe] = useState('month');
-  const [hoveredStat, setHoveredStat] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-
-  // Mock user data
-  const user = {
-    first_name: 'John',
-    last_name: 'Admin',
-    role: 'Administrator',
-    avatar: 'JA'
-  };
+  const [lastRefresh, setLastRefresh] = useState(null);
 
   // Update time every minute
   useEffect(() => {
@@ -60,200 +64,108 @@ const DashboardPage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Mock dashboard data with enhanced metrics
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
+  // Fetch dashboard data from backend
+  const fetchDashboardData = useCallback(async (showLoadingSpinner = true) => {
+    try {
+      if (showLoadingSpinner) {
         setLoading(true);
-        setTimeout(() => {
-          setDashboardData({
-            stats: {
-              totalMembers: 1248,
-              activeGroups: 23,
-              monthlyPledges: 45600,
-              recentRegistrations: 12,
-              weeklyAttendance: 892,
-              activeEvents: 8,
-              totalDonations: 128340,
-              monthlyGrowth: 15,
-              memberSatisfaction: 96,
-              volunteersActive: 156
-            },
-            trends: {
-              members: { value: 12, type: 'positive' },
-              pledges: { value: 8, type: 'positive' },
-              attendance: { value: 3, type: 'negative' },
-              groups: { value: 15, type: 'positive' }
-            },
-            recentMembers: [
-              { 
-                id: 1, 
-                name: 'Sarah Johnson', 
-                joinDate: '2024-01-15', 
-                status: 'active', 
-                avatar: 'SJ',
-                email: 'sarah.j@email.com',
-                phone: '+233 123 456 789',
-                ministry: 'Worship Team'
-              },
-              { 
-                id: 2, 
-                name: 'Michael Brown', 
-                joinDate: '2024-01-14', 
-                status: 'pending', 
-                avatar: 'MB',
-                email: 'michael.b@email.com',
-                phone: '+233 987 654 321',
-                ministry: 'Youth Ministry'
-              },
-              { 
-                id: 3, 
-                name: 'Emily Davis', 
-                joinDate: '2024-01-13', 
-                status: 'active', 
-                avatar: 'ED',
-                email: 'emily.d@email.com',
-                phone: '+233 555 123 456',
-                ministry: 'Children\'s Ministry'
-              },
-              { 
-                id: 4, 
-                name: 'David Wilson', 
-                joinDate: '2024-01-12', 
-                status: 'active', 
-                avatar: 'DW',
-                email: 'david.w@email.com',
-                phone: '+233 777 888 999',
-                ministry: 'Prayer Ministry'
-              },
-              { 
-                id: 5, 
-                name: 'Grace Miller', 
-                joinDate: '2024-01-11', 
-                status: 'pending', 
-                avatar: 'GM',
-                email: 'grace.m@email.com',
-                phone: '+233 444 555 666',
-                ministry: 'Outreach Team'
-              },
-            ],
-            upcomingEvents: [
-              { 
-                id: 1, 
-                title: 'Sunday Worship Service', 
-                date: '2024-01-21', 
-                time: '10:00 AM', 
-                attendees: 450,
-                location: 'Main Sanctuary',
-                type: 'worship',
-                priority: 'high'
-              },
-              { 
-                id: 2, 
-                title: 'Midweek Bible Study', 
-                date: '2024-01-23', 
-                time: '7:00 PM', 
-                attendees: 85,
-                location: 'Fellowship Hall',
-                type: 'study',
-                priority: 'medium'
-              },
-              { 
-                id: 3, 
-                title: 'Youth Connect Night', 
-                date: '2024-01-25', 
-                time: '6:00 PM', 
-                attendees: 32,
-                location: 'Youth Center',
-                type: 'ministry',
-                priority: 'medium'
-              },
-              { 
-                id: 4, 
-                title: 'Prayer & Fasting', 
-                date: '2024-01-26', 
-                time: '7:30 PM', 
-                attendees: 67,
-                location: 'Prayer Chapel',
-                type: 'prayer',
-                priority: 'high'
-              },
-            ],
-            notifications: [
-              { 
-                id: 1, 
-                title: 'New Member Alert', 
-                message: 'Sarah Johnson completed registration and needs approval', 
-                time: '2 hours ago', 
-                type: 'member',
-                priority: 'high',
-                action: 'Approve'
-              },
-              { 
-                id: 2, 
-                title: 'Pledge Milestone', 
-                message: '$500 monthly commitment received from the Thompson family', 
-                time: '4 hours ago', 
-                type: 'pledge',
-                priority: 'medium',
-                action: 'View'
-              },
-              { 
-                id: 3, 
-                title: 'Event Reminder', 
-                message: 'Bible Study tonight - 85 members confirmed attendance', 
-                time: '6 hours ago', 
-                type: 'event',
-                priority: 'low',
-                action: 'Details'
-              },
-              { 
-                id: 4, 
-                title: 'System Update', 
-                message: 'Database backup completed successfully - all data secure', 
-                time: '8 hours ago', 
-                type: 'system',
-                priority: 'low',
-                action: 'View Log'
-              },
-            ],
-            achievements: [
-              {
-                title: '1000+ Members',
-                description: 'Reached milestone of 1000+ active members',
-                icon: TrophyIcon,
-                color: 'from-yellow-400 to-orange-500',
-                achieved: true
-              },
-              {
-                title: '100% Attendance',
-                description: 'Perfect attendance at last Sunday service',
-                icon: FireIcon,
-                color: 'from-red-400 to-pink-500',
-                achieved: true
-              },
-              {
-                title: '50 New Groups',
-                description: 'Growing towards 50 active ministry groups',
-                icon: SparklesIcon,
-                color: 'from-purple-400 to-indigo-500',
-                achieved: false,
-                progress: 76
-              }
-            ]
-          });
-          setLoading(false);
-        }, 1500);
-      } catch (err) {
-        setError('Failed to load dashboard data');
-        setLoading(false);
+      } else {
+        setRefreshing(true);
       }
-    };
+      
+      setError(null);
 
-    fetchDashboardData();
-  }, []);
+      // Fetch all dashboard data concurrently
+      const [
+        systemStats,
+        memberStats,
+        pledgeStats,
+        groupStats,
+        recentMembers,
+        recentPledges,
+        systemHealth,
+        alerts
+      ] = await Promise.allSettled([
+        dashboardService.getStats(),
+        dashboardService.getMemberStats('30d'),
+        dashboardService.getPledgeStats('30d'),
+        dashboardService.getGroupStats(),
+        dashboardService.getRecentMembers(5),
+        dashboardService.getRecentPledges(5),
+        dashboardService.getSystemHealth(),
+        dashboardService.getAlerts()
+      ]);
 
-  // Reusable Card Component
+      // Process results safely
+      const processResult = (result, fallback = null) => {
+        if (result.status === 'fulfilled') {
+          return result.value?.data || result.value || fallback;
+        } else {
+          console.warn('Dashboard API call failed:', result.reason);
+          return fallback;
+        }
+      };
+
+      const newDashboardData = {
+        stats: processResult(systemStats, { 
+          total_members: 0, 
+          total_groups: 0, 
+          total_pledges: 0,
+          monthly_revenue: 0 
+        }),
+        memberStats: processResult(memberStats, { 
+          total_members: 0, 
+          new_members: 0, 
+          growth_rate: 0,
+          active_members: 0 
+        }),
+        pledgeStats: processResult(pledgeStats, { 
+          total_amount: 0, 
+          active_pledges: 0, 
+          growth_rate: 0,
+          monthly_total: 0 
+        }),
+        groupStats: processResult(groupStats, { 
+          total_groups: 0, 
+          active_groups: 0, 
+          growth_rate: 0 
+        }),
+        recentMembers: processResult(recentMembers, { results: [] }).results || [],
+        recentPledges: processResult(recentPledges, { results: [] }).results || [],
+        systemHealth: processResult(systemHealth, { status: 'unknown' }),
+        alerts: processResult(alerts, { results: [] }).results || []
+      };
+
+      setDashboardData(newDashboardData);
+      setLastRefresh(new Date());
+      
+      if (!showLoadingSpinner) {
+        showToast('Dashboard data refreshed successfully', 'success');
+      }
+
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      setError(error.message || 'Failed to load dashboard data');
+      showToast('Failed to load dashboard data', 'error');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [showToast]);
+
+  // Initial data fetch
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDashboardData();
+    }
+  }, [isAuthenticated, fetchDashboardData]);
+
+  // Manual refresh handler
+  const handleRefresh = () => {
+    fetchDashboardData(false);
+  };
+
+  // Reusable components
   const Card = ({ children, className = '', hover = true, ...props }) => (
     <div 
       className={`${styles.cardBase} ${hover ? styles.cardHover : ''} ${className}`}
@@ -263,7 +175,6 @@ const DashboardPage = () => {
     </div>
   );
 
-  // Reusable Button Component
   const Button = ({ 
     children, 
     variant = 'primary', 
@@ -273,9 +184,10 @@ const DashboardPage = () => {
     className = '', 
     icon: Icon,
     iconPosition = 'left',
+    disabled = false,
     ...props 
   }) => {
-    const baseClasses = `${styles.buttonBase} ${styles[`button-${variant}`]} ${styles[`button-${size}`]} ${className}`;
+    const baseClasses = `${styles.buttonBase} ${styles[`button-${variant}`]} ${styles[`button-${size}`]} ${className} ${disabled ? styles.buttonDisabled : ''}`;
     
     const content = (
       <>
@@ -285,7 +197,7 @@ const DashboardPage = () => {
       </>
     );
 
-    if (to) {
+    if (to && !disabled) {
       return (
         <Link to={to} className={baseClasses} {...props}>
           {content}
@@ -294,27 +206,33 @@ const DashboardPage = () => {
     }
 
     return (
-      <button className={baseClasses} onClick={onClick} {...props}>
+      <button className={baseClasses} onClick={onClick} disabled={disabled} {...props}>
         {content}
       </button>
     );
   };
 
-  // Reusable Badge Component
   const Badge = ({ children, variant = 'default', className = '' }) => (
     <span className={`${styles.badgeBase} ${styles[`badge-${variant}`]} ${className}`}>
       {children}
     </span>
   );
 
-  // Reusable Avatar Component
-  const Avatar = ({ name, size = 'md', status, className = '' }) => (
-    <div className={`${styles.avatarBase} ${styles[`avatar-${size}`]} ${className}`}>
-      <span className={styles.avatarText}>{name}</span>
-      {status && <div className={`${styles.avatarStatus} ${styles[`status-${status}`]}`}></div>}
-    </div>
-  );
+  const Avatar = ({ name, size = 'md', status, className = '' }) => {
+    const getInitials = (fullName) => {
+      if (!fullName) return 'U';
+      return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
 
+    return (
+      <div className={`${styles.avatarBase} ${styles[`avatar-${size}`]} ${className}`}>
+        <span className={styles.avatarText}>{getInitials(name)}</span>
+        {status && <div className={`${styles.avatarStatus} ${styles[`status-${status}`]}`}></div>}
+      </div>
+    );
+  };
+
+  // Loading state
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -334,31 +252,28 @@ const DashboardPage = () => {
           </div>
           <div className={styles.loadingText}>
             <h1>Loading Dashboard</h1>
-            <p>Gathering your church community data...</p>
-          </div>
-          <div className={styles.loadingDots}>
-            <div className={`${styles.dot} ${styles.dot1}`}></div>
-            <div className={`${styles.dot} ${styles.dot2}`}></div>
-            <div className={`${styles.dot} ${styles.dot3}`}></div>
+            <p>Fetching real-time church community data...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  // Error state
+  if (error && !dashboardData.stats) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center">
         <Card className="text-center space-y-6 max-w-md mx-auto p-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl animate-pulse">
+          <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl">
             <ExclamationTriangleIcon className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-red-900 mb-4">Something went wrong</h2>
+            <h2 className="text-3xl font-bold text-red-900 mb-4">Connection Error</h2>
             <p className="text-red-700 mb-6 text-lg">{error}</p>
             <Button 
               variant="danger"
-              onClick={() => window.location.reload()}
+              onClick={() => fetchDashboardData()}
+              icon={ArrowPathIcon}
             >
               Try Again
             </Button>
@@ -368,14 +283,15 @@ const DashboardPage = () => {
     );
   }
 
+  // Generate stats with real data
   const stats = [
     {
       name: 'Total Members',
-      value: dashboardData?.stats?.totalMembers?.toLocaleString() || 0,
+      value: dashboardData?.memberStats?.total_members?.toLocaleString() || '0',
       icon: UsersIcon,
-      change: dashboardData?.trends?.members?.value || 0,
-      changeType: dashboardData?.trends?.members?.type || 'neutral',
-      description: 'Active members',
+      change: dashboardData?.memberStats?.growth_rate || 0,
+      changeType: (dashboardData?.memberStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
+      description: `${dashboardData?.memberStats?.new_members || 0} new this month`,
       color: 'from-blue-500 to-cyan-500',
       bgPattern: 'bg-blue-50',
       iconBg: 'bg-blue-500',
@@ -383,11 +299,11 @@ const DashboardPage = () => {
     },
     {
       name: 'Active Groups',
-      value: dashboardData?.stats?.activeGroups || 0,
+      value: dashboardData?.groupStats?.active_groups?.toLocaleString() || '0',
       icon: UserGroupIcon,
-      change: 3,
-      changeType: 'positive',
-      description: 'Ministry groups',
+      change: dashboardData?.groupStats?.growth_rate || 0,
+      changeType: (dashboardData?.groupStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
+      description: `${dashboardData?.groupStats?.total_groups || 0} total groups`,
       color: 'from-emerald-500 to-green-500',
       bgPattern: 'bg-emerald-50',
       iconBg: 'bg-emerald-500',
@@ -395,26 +311,26 @@ const DashboardPage = () => {
     },
     {
       name: 'Monthly Pledges',
-      value: `$${dashboardData?.stats?.monthlyPledges?.toLocaleString() || 0}`,
+      value: `$${dashboardData?.pledgeStats?.monthly_total?.toLocaleString() || '0'}`,
       icon: CurrencyDollarIcon,
-      change: dashboardData?.trends?.pledges?.value || 0,
-      changeType: dashboardData?.trends?.pledges?.type || 'neutral',
-      description: 'This month',
+      change: dashboardData?.pledgeStats?.growth_rate || 0,
+      changeType: (dashboardData?.pledgeStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
+      description: `${dashboardData?.pledgeStats?.active_pledges || 0} active pledges`,
       color: 'from-yellow-500 to-orange-500',
       bgPattern: 'bg-yellow-50',
       iconBg: 'bg-yellow-500',
       route: '/admin/pledges'
     },
     {
-      name: 'Weekly Attendance',
-      value: dashboardData?.stats?.weeklyAttendance?.toLocaleString() || 0,
+      name: 'System Health',
+      value: dashboardData?.systemHealth?.status === 'healthy' ? 'Excellent' : 'Attention',
       icon: ChartBarIcon,
-      change: dashboardData?.trends?.attendance?.value || 0,
-      changeType: dashboardData?.trends?.attendance?.type || 'neutral',
-      description: 'This week',
+      change: 0,
+      changeType: 'neutral',
+      description: dashboardData?.systemHealth?.uptime || 'System monitoring',
       color: 'from-purple-500 to-indigo-500',
       bgPattern: 'bg-purple-50',
-      iconBg: 'bg-purple-500',
+      iconBg: dashboardData?.systemHealth?.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500',
       route: '/admin/reports'
     }
   ];
@@ -435,33 +351,18 @@ const DashboardPage = () => {
     });
   };
 
-  const getEventTypeStyles = (type, priority) => {
-    const typeStyles = {
-      worship: 'blue',
-      study: 'emerald',
-      ministry: 'purple',
-      prayer: 'orange'
-    };
-    return typeStyles[type] || 'gray';
-  };
+  const getRelativeTime = (date) => {
+    if (!date) return '';
+    const now = new Date();
+    const diffMs = now - new Date(date);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'member': return UsersIcon;
-      case 'pledge': return CurrencyDollarIcon;
-      case 'event': return CalendarDaysIcon;
-      case 'system': return ChartBarIcon;
-      default: return BellIcon;
-    }
-  };
-
-  const getPriorityStyles = (priority) => {
-    switch (priority) {
-      case 'high': return 'border-l-red-500 bg-red-50';
-      case 'medium': return 'border-l-yellow-500 bg-yellow-50';
-      case 'low': return 'border-l-green-500 bg-green-50';
-      default: return 'border-l-gray-500 bg-gray-50';
-    }
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDays} days ago`;
   };
 
   return (
@@ -474,13 +375,17 @@ const DashboardPage = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <Avatar name={user.first_name.charAt(0) + user.last_name.charAt(0)} size="lg" status="online" />
+                  <Avatar 
+                    name={user ? `${user.first_name} ${user.last_name}` : 'Admin'} 
+                    size="lg" 
+                    status="online" 
+                  />
                   <div>
                     <h1 className={styles.welcomeTitle}>
-                      Welcome back, {user?.first_name}!
+                      Welcome back, {user?.first_name || 'Admin'}!
                     </h1>
                     <p className={styles.welcomeSubtitle}>
-                      Your church community is thriving today ✨
+                      Your church community dashboard - Real-time data
                     </p>
                   </div>
                 </div>
@@ -494,14 +399,34 @@ const DashboardPage = () => {
                     <ClockIcon className="w-4 h-4" />
                     <span>{formatTime(currentTime)}</span>
                   </Badge>
-                  <Badge variant="success" className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span>All Systems Online</span>
+                  <Badge variant={dashboardData?.systemHealth?.status === 'healthy' ? 'success' : 'warning'} 
+                        className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                      dashboardData?.systemHealth?.status === 'healthy' ? 'bg-emerald-400' : 'bg-orange-400'
+                    }`}></div>
+                    <span>
+                      {dashboardData?.systemHealth?.status === 'healthy' ? 'All Systems Online' : 'System Status: Checking'}
+                    </span>
                   </Badge>
+                  {lastRefresh && (
+                    <Badge variant="light" className="flex items-center space-x-2">
+                      <ArrowPathIcon className="w-4 h-4" />
+                      <span>Updated {getRelativeTime(lastRefresh)}</span>
+                    </Badge>
+                  )}
                 </div>
               </div>
               
               <div className="flex flex-wrap gap-3">
+                <Button 
+                  variant="secondary"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  icon={ArrowPathIcon}
+                  className={refreshing ? 'animate-spin' : ''}
+                >
+                  {refreshing ? 'Refreshing...' : 'Refresh Data'}
+                </Button>
                 <Button 
                   variant="secondary"
                   to="/admin/members/new"
@@ -524,7 +449,7 @@ const DashboardPage = () => {
           </div>
         </Card>
 
-        {/* Stats Grid */}
+        {/* Stats Grid with Real Data */}
         <div className={styles.statsGrid}>
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -535,8 +460,6 @@ const DashboardPage = () => {
                 style={{ 
                   animationDelay: `${index * 0.1}s`,
                 }}
-                onMouseEnter={() => setHoveredStat(stat.name)}
-                onMouseLeave={() => setHoveredStat(null)}
               >
                 <div className="relative p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -571,75 +494,16 @@ const DashboardPage = () => {
                         ) : stat.changeType === 'negative' ? (
                           <ArrowDownIcon className="w-3 h-3" />
                         ) : null}
-                        <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change)}%` : '—'}</span>
+                        <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change).toFixed(1)}%` : '—'}</span>
                       </Badge>
                       <span className="text-xs text-gray-500 font-medium">{stat.description}</span>
                     </div>
                   </div>
                 </div>
-                
-                {/* Hover indicator */}
-                {hoveredStat === stat.name && (
-                  <div className={styles.hoverIndicator}></div>
-                )}
               </Card>
             );
           })}
         </div>
-
-        {/* Achievements Section */}
-        <Card className={styles.achievementsCard} hover={false}>
-          <div className={styles.sectionHeader}>
-            <div className="flex items-center space-x-3">
-              <div className={`${styles.iconContainer} bg-gradient-to-r from-amber-500 to-orange-500`}>
-                <TrophyIcon className="w-5 h-5 text-white" />
-              </div>
-              <h3 className={styles.sectionTitle}>Church Achievements</h3>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {dashboardData?.achievements?.map((achievement, index) => {
-                const Icon = achievement.icon;
-                return (
-                  <Card 
-                    key={achievement.title}
-                    className={`${styles.achievementCard} ${achievement.achieved ? styles.achievementCompleted : ''}`}
-                  >
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className={`${styles.iconContainer} bg-gradient-to-r ${achievement.color}`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900">{achievement.title}</h4>
-                        <p className="text-sm text-gray-600">{achievement.description}</p>
-                      </div>
-                      {achievement.achieved && (
-                        <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                      )}
-                    </div>
-                    
-                    {!achievement.achieved && achievement.progress && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Progress</span>
-                          <span className="font-semibold text-gray-900">{achievement.progress}%</span>
-                        </div>
-                        <div className={styles.progressBar}>
-                          <div 
-                            className={styles.progressFill}
-                            style={{ width: `${achievement.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </Card>
 
         {/* Main Content Grid */}
         <div className={styles.contentGrid}>
@@ -661,69 +525,85 @@ const DashboardPage = () => {
                   icon={ArrowTopRightOnSquareIcon}
                   iconPosition="right"
                 >
-                  View all
+                  View all ({dashboardData?.memberStats?.total_members || 0})
                 </Button>
               </div>
             </div>
             
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.recentMembers?.slice(0, 4).map((member, index) => (
-                  <Card 
-                    key={member.id} 
-                    className={`${styles.memberItem} group`}
-                  >
-                    <div className="flex items-center space-x-4 p-4">
-                      <Avatar 
-                        name={member.avatar}
-                        status={member.status === 'active' ? 'active' : 'pending'}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <p className="text-sm font-bold text-gray-900 truncate">{member.name}</p>
-                          <Badge variant={member.status === 'active' ? 'success' : 'warning'}>
-                            {member.status}
-                          </Badge>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <div className="flex items-center space-x-1">
-                              <CalendarDaysIcon className="w-3 h-3" />
-                              <span>Joined {new Date(member.joinDate).toLocaleDateString()}</span>
+                {dashboardData?.recentMembers?.length > 0 ? (
+                  dashboardData.recentMembers.slice(0, 4).map((member, index) => (
+                    <Card 
+                      key={member.id} 
+                      className={`${styles.memberItem} group`}
+                    >
+                      <div className="flex items-center space-x-4 p-4">
+                        <Avatar 
+                          name={`${member.first_name} ${member.last_name}`}
+                          status={member.is_active ? 'active' : 'inactive'}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <p className="text-sm font-bold text-gray-900 truncate">
+                              {member.first_name} {member.last_name}
+                            </p>
+                            <Badge variant={member.is_active ? 'success' : 'warning'}>
+                              {member.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <div className="flex items-center space-x-1">
+                                <CalendarDaysIcon className="w-3 h-3" />
+                                <span>Joined {new Date(member.registration_date).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4 text-xs text-gray-600">
+                              {member.email && (
+                                <div className="flex items-center space-x-1">
+                                  <EnvelopeIcon className="w-3 h-3" />
+                                  <span className="truncate">{member.email}</span>
+                                </div>
+                              )}
+                              {member.phone && (
+                                <div className="flex items-center space-x-1">
+                                  <PhoneIcon className="w-3 h-3" />
+                                  <span>{member.phone}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center space-x-1 text-xs text-gray-600">
-                            <span className="font-medium">{member.ministry}</span>
-                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          to={`/admin/members/${member.id}`}
+                          icon={EyeIcon}
+                          className="opacity-0 group-hover:opacity-100"
+                        />
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        to={`/admin/members/${member.id}`}
-                        icon={EyeIcon}
-                        className="opacity-0 group-hover:opacity-100"
-                      />
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <UserIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No recent member registrations</p>
+                    <Button 
+                      variant="ghost"
+                      to="/admin/members/new"
+                      icon={PlusIcon}
+                      className="mt-2"
+                    >
+                      Add First Member
+                    </Button>
+                  </div>
+                )}
               </div>
-              
-              {dashboardData?.recentMembers?.length > 4 && (
-                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                  <Button 
-                    variant="ghost"
-                    to="/admin/events/new"
-                    icon={PlusIcon}
-                  >
-                    Create New Event
-                  </Button>
-                </div>
-              )}
             </div>
           </Card>
 
-          {/* Notifications Card */}
+          {/* Alerts/Notifications Card */}
           <Card className={styles.notificationsCard}>
             <div className={styles.sectionHeader}>
               <div className="flex items-center justify-between">
@@ -731,7 +611,7 @@ const DashboardPage = () => {
                   <div className={`${styles.iconContainer} bg-gradient-to-r from-purple-500 to-pink-500`}>
                     <BellIcon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className={styles.sectionTitle}>Notifications</h3>
+                  <h3 className={styles.sectionTitle}>System Alerts</h3>
                 </div>
                 <Button
                   variant="ghost"
@@ -747,45 +627,35 @@ const DashboardPage = () => {
             
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.notifications?.slice(0, 5).map((notification) => {
-                  const Icon = getNotificationIcon(notification.type);
-                  return (
+                {dashboardData?.alerts?.length > 0 ? (
+                  dashboardData.alerts.slice(0, 5).map((alert) => (
                     <Card 
-                      key={notification.id} 
-                      className={`${styles.notificationItem} border-l-4 ${getPriorityStyles(notification.priority)}`}
+                      key={alert.id} 
+                      className={`${styles.notificationItem} border-l-4 border-l-blue-500 bg-blue-50`}
                     >
                       <div className="flex items-start space-x-3 p-4">
                         <div className="flex-shrink-0">
                           <div className={`${styles.iconContainer} bg-white shadow-sm border border-gray-100`}>
-                            <Icon className="w-4 h-4 text-gray-600" />
+                            <BellIcon className="w-4 h-4 text-gray-600" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
-                            <span className="text-xs text-gray-500">{notification.time}</span>
+                            <p className="text-sm font-semibold text-gray-900">{alert.title}</p>
+                            <span className="text-xs text-gray-500">{getRelativeTime(alert.created_at)}</span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                          >
-                            {notification.action}
-                          </Button>
+                          <p className="text-sm text-gray-600 mb-2">{alert.message}</p>
                         </div>
                       </div>
                     </Card>
-                  );
-                })}
-              </div>
-              
-              <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                <Button
-                  variant="ghost"
-                  icon={BellIcon}
-                >
-                  Mark all as read
-                </Button>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <CheckCircleIcon className="w-12 h-12 mx-auto mb-4 text-green-300" />
+                    <p>All systems running smoothly</p>
+                    <p className="text-xs">No alerts or notifications</p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -819,27 +689,27 @@ const DashboardPage = () => {
               
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/admin/events/new"
+                  to="/admin/groups/new"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-emerald-100 group-hover:bg-emerald-200 mb-3`}>
-                    <CalendarDaysIcon className="w-6 h-6 text-emerald-600" />
+                    <UserGroupIcon className="w-6 h-6 text-emerald-600" />
                   </div>
-                  <span className="text-sm font-semibold text-gray-900">Create Event</span>
-                  <span className="text-xs text-gray-500 mt-1">Schedule activity</span>
+                  <span className="text-sm font-semibold text-gray-900">Create Group</span>
+                  <span className="text-xs text-gray-500 mt-1">Ministry/small group</span>
                 </Link>
               </Card>
               
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/admin/donations"
+                  to="/admin/pledges/new"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-amber-100 group-hover:bg-amber-200 mb-3`}>
                     <CurrencyDollarIcon className="w-6 h-6 text-amber-600" />
                   </div>
-                  <span className="text-sm font-semibold text-gray-900">Record Donation</span>
-                  <span className="text-xs text-gray-500 mt-1">Financial contribution</span>
+                  <span className="text-sm font-semibold text-gray-900">Record Pledge</span>
+                  <span className="text-xs text-gray-500 mt-1">Financial commitment</span>
                 </Link>
               </Card>
               
@@ -862,16 +732,16 @@ const DashboardPage = () => {
         {/* Footer */}
         <div className={styles.footer}>
           <div className="text-sm text-gray-600 mb-4 md:mb-0">
-            © 2024 Church Community Manager. All rights reserved.
+            © 2024 ChurchConnect DBMS. Serving your community with real-time data.
           </div>
           <div className="flex items-center space-x-6">
-            <Link to="/privacy" className={styles.footerLink}>
+            <Link to="/admin/privacy" className={styles.footerLink}>
               Privacy Policy
             </Link>
-            <Link to="/terms" className={styles.footerLink}>
+            <Link to="/admin/terms" className={styles.footerLink}>
               Terms of Service
             </Link>
-            <Link to="/support" className={styles.footerLink}>
+            <Link to="/admin/support" className={styles.footerLink}>
               Support
             </Link>
             <Button
@@ -882,16 +752,8 @@ const DashboardPage = () => {
             >
               Settings
             </Button>
-            <div className="flex items-center space-x-4">
-              <a href="#" className={styles.socialLink}>
-                <GlobeAltIcon className="w-4 h-4" />
-              </a>
-              <a href="#" className={styles.socialLink}>
-                <HeartIcon className="w-4 h-4" />
-              </a>
-              <a href="#" className={styles.socialLink}>
-                <BuildingLibraryIcon className="w-4 h-4" />
-              </a>
+            <div className="text-xs text-gray-500">
+              v1.2.0 | {user?.role || 'Admin'} Access
             </div>
           </div>
         </div>
@@ -900,4 +762,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage; 
+export default DashboardPage;

@@ -1,136 +1,156 @@
-// services/api.js - Updated version with proper endpoint mapping and error handling
+// services/api.js - Enhanced version with proper Django REST Framework integration
 import axios from 'axios';
 
+// Configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const API_VERSION = 'v1';
 
 console.log('[API] Base URL configured as:', `${API_BASE_URL}/api/${API_VERSION}/`);
 
-// Create axios instance with default configuration
+// Create axios instance with enhanced configuration
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/${API_VERSION}/`,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
-// API endpoint mappings based on your Django URLs
+// Enhanced API endpoint mappings
 const ENDPOINTS = {
   // Authentication endpoints
   auth: {
-    login: '/auth/login/',
-    logout: '/auth/logout/',
-    verify: '/auth/verify/',
-    test: '/auth/test/',
-    refresh: '/auth/token/refresh/',
-    profile: '/auth/profile/',
-    changePassword: '/auth/change-password/'
+    login: 'auth/login/',
+    logout: 'auth/logout/',
+    verify: 'auth/verify/',
+    test: 'auth/test/',
+    refresh: 'auth/token/refresh/',
+    profile: 'auth/profile/',
+    changePassword: 'auth/change-password/'
   },
   
   // Member endpoints
   members: {
-    list: '/members/',
-    create: '/members/',
-    detail: (id) => `/members/${id}/`,
-    update: (id) => `/members/${id}/`,
-    delete: (id) => `/members/${id}/`,
-    stats: '/members/statistics/',
-    export: '/members/export/',
-    tags: '/members/tags/',
-    importLogs: '/members/import-logs/',
-    publicRegister: '/members/register/'
+    list: 'members/',
+    create: 'members/',
+    detail: (id) => `members/${id}/`,
+    update: (id) => `members/${id}/`,
+    delete: (id) => `members/${id}/`,
+    stats: 'members/statistics/',
+    export: 'members/export/',
+    tags: 'members/tags/',
+    importLogs: 'members/import-logs/',
+    publicRegister: 'members/register/',
+    search: 'members/search/',
+    recent: 'members/recent/',
+    birthdays: 'members/birthdays/',
+    demographics: {
+      age: 'members/demographics/age/',
+      gender: 'members/demographics/gender/'
+    }
   },
   
   // Family endpoints
   families: {
-    list: '/families/',
-    create: '/families/',
-    detail: (id) => `/families/${id}/`,
-    update: (id) => `/families/${id}/`,
-    delete: (id) => `/families/${id}/`,
-    addMember: (id) => `/families/${id}/add-member/`,
-    removeMember: (id, memberId) => `/families/${id}/remove-member/${memberId}/`,
-    members: (id) => `/families/${id}/members/`,
-    statistics: '/families/statistics/',
-    relationships: '/families/relationships/'
+    list: 'families/',
+    create: 'families/',
+    detail: (id) => `families/${id}/`,
+    update: (id) => `families/${id}/`,
+    delete: (id) => `families/${id}/`,
+    addMember: (id) => `families/${id}/add-member/`,
+    removeMember: (id, memberId) => `families/${id}/remove-member/${memberId}/`,
+    members: (id) => `families/${id}/members/`,
+    statistics: 'families/statistics/'
   },
   
   // Group endpoints
   groups: {
-    list: '/groups/',
-    create: '/groups/',
-    detail: (id) => `/groups/${id}/`,
-    update: (id) => `/groups/${id}/`,
-    delete: (id) => `/groups/${id}/`,
-    join: (id) => `/groups/${id}/join/`,
-    removeMember: (id, memberId) => `/groups/${id}/remove-member/${memberId}/`,
-    members: (id) => `/groups/${id}/members/`,
-    statistics: '/groups/statistics/',
-    categories: '/groups/categories/',
-    memberships: '/groups/memberships/'
+    list: 'groups/',
+    create: 'groups/',
+    detail: (id) => `groups/${id}/`,
+    update: (id) => `groups/${id}/`,
+    delete: (id) => `groups/${id}/`,
+    join: (id) => `groups/${id}/join/`,
+    leave: (id) => `groups/${id}/leave/`,
+    removeMember: (id, memberId) => `groups/${id}/remove-member/${memberId}/`,
+    members: (id) => `groups/${id}/members/`,
+    statistics: 'groups/statistics/',
+    categories: 'groups/categories/',
+    memberships: 'groups/memberships/'
   },
   
   // Pledge endpoints
   pledges: {
-    list: '/pledges/',
-    create: '/pledges/',
-    detail: (id) => `/pledges/${id}/`,
-    update: (id) => `/pledges/${id}/`,
-    delete: (id) => `/pledges/${id}/`,
-    stats: '/pledges/stats/',
-    statistics: '/pledges/statistics/',
-    export: '/pledges/export/',
-    overdue: '/pledges/overdue/',
-    upcomingPayments: '/pledges/upcoming_payments/',
-    bulkAction: '/pledges/bulk_action/',
-    payments: '/pledges/payments/',
-    reminders: '/pledges/reminders/'
+    list: 'pledges/',
+    create: 'pledges/',
+    detail: (id) => `pledges/${id}/`,
+    update: (id) => `pledges/${id}/`,
+    delete: (id) => `pledges/${id}/`,
+    stats: 'pledges/statistics/',
+    export: 'pledges/export/',
+    overdue: 'pledges/overdue/',
+    upcomingPayments: 'pledges/upcoming-payments/',
+    bulkAction: 'pledges/bulk-action/',
+    payments: 'pledges/payments/',
+    reminders: 'pledges/reminders/',
+    recent: 'pledges/recent/',
+    trends: 'pledges/trends/'
   },
   
   // Report endpoints
   reports: {
-    list: '/reports/',
-    create: '/reports/',
-    detail: (id) => `/reports/${id}/`,
-    generate: (id) => `/reports/${id}/generate/`,
-    stats: '/reports/stats/',
-    runs: '/reports/runs/',
-    templates: '/reports/templates/',
-    download: (runId) => `/reports/download/${runId}/`,
-    membersCsv: '/reports/members/csv/',
-    pledgesCsv: '/reports/pledges/csv/'
+    list: 'reports/',
+    create: 'reports/',
+    detail: (id) => `reports/${id}/`,
+    generate: (id) => `reports/${id}/generate/`,
+    stats: 'reports/stats/',
+    runs: 'reports/runs/',
+    templates: 'reports/templates/',
+    download: (runId) => `reports/download/${runId}/`,
+    membersCsv: 'reports/members/csv/',
+    pledgesCsv: 'reports/pledges/csv/',
+    dashboard: 'reports/dashboard/',
+    activity: 'reports/activity/'
   },
   
   // Core endpoints
   core: {
-    health: '/core/health/',
-    status: '/core/status/',
-    version: '/core/version/'
+    health: 'core/health/',
+    status: 'core/status/',
+    version: 'core/version/'
+  },
+
+  // Dashboard specific endpoints
+  dashboard: {
+    overview: 'dashboard/overview/',
+    stats: 'dashboard/stats/',
+    alerts: 'dashboard/alerts/',
+    config: (userId) => `dashboard/config/${userId}/`,
+    health: 'dashboard/health/'
   }
 };
 
-// Request interceptor
+// Request interceptor with enhanced auth handling
 api.interceptors.request.use(
   (config) => {
     config.metadata = { startTime: new Date() };
     
     console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-      headers: Object.keys(config.headers || {}),
       hasData: !!config.data,
       params: config.params
     });
     
-    // Get token from multiple possible locations
+    // Get token from storage
     const token = localStorage.getItem('access_token') || 
                   localStorage.getItem('authToken') ||
                   sessionStorage.getItem('access_token');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[API Request] Added auth token to request');
-    } else {
-      console.warn('[API Request] No auth token found - request may fail');
+      console.log('[API Request] Auth token added');
+    } else if (!config.url.includes('auth/login') && !config.url.includes('core/health')) {
+      console.warn('[API Request] No auth token found for protected endpoint:', config.url);
     }
     
     return config;
@@ -141,19 +161,23 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor with enhanced error handling
+// Response interceptor with enhanced error handling and retry logic
 api.interceptors.response.use(
   (response) => {
     const duration = new Date() - response.config.metadata?.startTime;
     console.log(`[API Response] ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`);
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('[API Response Data]:', {
-        hasResults: !!response.data?.results,
-        isArray: Array.isArray(response.data),
-        dataKeys: response.data ? Object.keys(response.data) : [],
-        dataLength: Array.isArray(response.data) ? response.data.length : 
-                   response.data?.results ? response.data.results.length : 'N/A'
+      console.log('[API Response]:', {
+        status: response.status,
+        hasData: !!response.data,
+        dataType: Array.isArray(response.data) ? 'array' : typeof response.data,
+        pagination: response.data?.count ? {
+          count: response.data.count,
+          next: !!response.data.next,
+          previous: !!response.data.previous,
+          results: response.data.results?.length
+        } : null
       });
     }
     
@@ -161,77 +185,96 @@ api.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
     
     console.error('[API Response Error]:', {
-      message: error.message,
-      status: error.response?.status,
+      status,
       statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.response?.data
+      url: originalRequest?.url,
+      method: originalRequest?.method?.toUpperCase(),
+      message: error.message,
+      responseData: error.response?.data
     });
     
-    // Handle 401 errors (Unauthorized)
-    if (error.response?.status === 401) {
-      console.log('[API] Unauthorized - attempting token refresh');
-      
-      if (originalRequest._retry) {
-        console.log('[API] Token refresh already attempted, clearing auth data');
-        clearAuthData();
-        redirectToLogin();
-        return Promise.reject(error);
-      }
-      
+    // Handle 401 Unauthorized
+    if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
+      console.log('[API] Unauthorized response - attempting token refresh...');
+      
       const refreshToken = localStorage.getItem('refresh_token');
-      if (refreshToken && !originalRequest.url.includes('/auth/token/refresh/')) {
+      if (refreshToken && !originalRequest.url.includes('auth/token/refresh')) {
         try {
           console.log('[API] Attempting token refresh...');
-          const refreshResponse = await api.post('/auth/token/refresh/', {
+          const refreshResponse = await api.post(ENDPOINTS.auth.refresh, {
             refresh: refreshToken
           });
           
           if (refreshResponse.data?.access) {
-            console.log('[API] Token refreshed successfully');
-            localStorage.setItem('access_token', refreshResponse.data.access);
-            localStorage.setItem('authToken', refreshResponse.data.access);
+            const newToken = refreshResponse.data.access;
+            localStorage.setItem('access_token', newToken);
+            localStorage.setItem('authToken', newToken);
             
-            originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
+            // Update refresh token if provided
+            if (refreshResponse.data.refresh) {
+              localStorage.setItem('refresh_token', refreshResponse.data.refresh);
+            }
+            
+            // Retry original request with new token
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            console.log('[API] Token refreshed, retrying original request...');
             return api(originalRequest);
           }
         } catch (refreshError) {
           console.error('[API] Token refresh failed:', refreshError);
+          clearAuthData();
+          redirectToLogin();
+          return Promise.reject(new Error('Session expired. Please login again.'));
         }
+      } else {
+        clearAuthData();
+        redirectToLogin();
+        return Promise.reject(new Error('Authentication required'));
       }
-      
-      clearAuthData();
-      redirectToLogin();
     }
     
     // Handle other HTTP errors
-    if (error.response?.status === 403) {
-      console.warn('[API] Access forbidden - insufficient permissions');
-      throw new Error('You do not have permission to perform this action');
+    let errorMessage = 'An error occurred';
+    
+    switch (status) {
+      case 400:
+        errorMessage = error.response?.data?.detail || 
+                      error.response?.data?.error || 
+                      'Bad request. Please check your input.';
+        break;
+      case 403:
+        errorMessage = 'Access forbidden. You do not have permission to perform this action.';
+        break;
+      case 404:
+        errorMessage = 'The requested resource was not found.';
+        break;
+      case 429:
+        errorMessage = 'Too many requests. Please try again later.';
+        break;
+      case 500:
+        errorMessage = 'Internal server error. Please try again later.';
+        break;
+      case 503:
+        errorMessage = 'Service temporarily unavailable. Please try again later.';
+        break;
+      default:
+        if (!error.response) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
     }
     
-    if (error.response?.status === 404) {
-      console.warn('[API] Endpoint not found:', originalRequest.url);
-      throw new Error('The requested resource was not found');
-    }
+    // Create enhanced error object
+    const enhancedError = new Error(errorMessage);
+    enhancedError.status = status;
+    enhancedError.response = error.response;
+    enhancedError.originalError = error;
     
-    if (error.response?.status >= 500) {
-      console.error('[API] Server error:', error.response?.status);
-      throw new Error('Server error occurred. Please try again later');
-    }
-    
-    // Handle network errors
-    if (!error.response) {
-      console.error('[API] Network error - no response received');
-      throw new Error('Network error. Please check your connection');
-    }
-    
-    return Promise.reject(error);
+    return Promise.reject(enhancedError);
   }
 );
 
@@ -242,7 +285,7 @@ const clearAuthData = () => {
     localStorage.removeItem(key);
     sessionStorage.removeItem(key);
   });
-  console.log('[API] Cleared all auth data');
+  console.log('[API] Auth data cleared');
 };
 
 const redirectToLogin = () => {
@@ -252,157 +295,504 @@ const redirectToLogin = () => {
   }
 };
 
-// Enhanced API methods with endpoint helpers
+// Enhanced API methods with proper error handling and data formatting
 const apiMethods = {
-  // Generic HTTP methods
-  get: async (url, config = {}) => {
+  // Generic HTTP methods with enhanced error handling
+  get: async (endpoint, config = {}) => {
     try {
-      console.log(`[API GET] Requesting: ${url}`, config.params || {});
-      const response = await api.get(url, config);
+      console.log(`[API GET] ${endpoint}`, config.params || {});
+      const response = await api.get(endpoint, config);
       return response;
     } catch (error) {
-      console.error(`[API GET Error] ${url}:`, error.message);
+      console.error(`[API GET Error] ${endpoint}:`, error.message);
       throw error;
     }
   },
   
-  post: async (url, data, config = {}) => {
+  post: async (endpoint, data = null, config = {}) => {
     try {
-      console.log(`[API POST] Requesting: ${url}`, { hasData: !!data });
-      const response = await api.post(url, data, config);
+      console.log(`[API POST] ${endpoint}`, { hasData: !!data, dataSize: data ? JSON.stringify(data).length : 0 });
+      const response = await api.post(endpoint, data, config);
       return response;
     } catch (error) {
-      console.error(`[API POST Error] ${url}:`, error.message);
+      console.error(`[API POST Error] ${endpoint}:`, error.message);
       throw error;
     }
   },
   
-  put: async (url, data, config = {}) => {
+  put: async (endpoint, data = null, config = {}) => {
     try {
-      const response = await api.put(url, data, config);
+      console.log(`[API PUT] ${endpoint}`, { hasData: !!data });
+      const response = await api.put(endpoint, data, config);
       return response;
     } catch (error) {
-      console.error(`[API PUT Error] ${url}:`, error.message);
+      console.error(`[API PUT Error] ${endpoint}:`, error.message);
       throw error;
     }
   },
   
-  patch: async (url, data, config = {}) => {
+  patch: async (endpoint, data = null, config = {}) => {
     try {
-      const response = await api.patch(url, data, config);
+      console.log(`[API PATCH] ${endpoint}`, { hasData: !!data });
+      const response = await api.patch(endpoint, data, config);
       return response;
     } catch (error) {
-      console.error(`[API PATCH Error] ${url}:`, error.message);
+      console.error(`[API PATCH Error] ${endpoint}:`, error.message);
       throw error;
     }
   },
   
-  delete: async (url, config = {}) => {
+  delete: async (endpoint, config = {}) => {
     try {
-      const response = await api.delete(url, config);
+      console.log(`[API DELETE] ${endpoint}`);
+      const response = await api.delete(endpoint, config);
       return response;
     } catch (error) {
-      console.error(`[API DELETE Error] ${url}:`, error.message);
+      console.error(`[API DELETE Error] ${endpoint}:`, error.message);
       throw error;
     }
   },
 
-  // Specific API methods for dashboard
+  // Dashboard API methods with real backend integration
   dashboard: {
-    getStats: () => apiMethods.get(ENDPOINTS.reports.stats),
-    getMemberStats: (range = '30d') => apiMethods.get(ENDPOINTS.members.stats, { params: { range } }),
-    getPledgeStats: (range = '30d') => apiMethods.get(ENDPOINTS.pledges.stats, { params: { range } }),
-    getGroupStats: () => apiMethods.get(ENDPOINTS.groups.statistics),
-    getRecentMembers: (limit = 10) => apiMethods.get(ENDPOINTS.members.list, { 
-      params: { ordering: '-registration_date', limit } 
-    }),
-    getRecentPledges: (limit = 10) => apiMethods.get(ENDPOINTS.pledges.list, { 
-      params: { ordering: '-created_at', limit } 
-    })
+    getOverview: async () => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.dashboard.overview);
+        return response.data;
+      } catch (error) {
+        console.warn('[Dashboard API] Overview failed, using stats endpoint');
+        return await apiMethods.dashboard.getStats();
+      }
+    },
+
+    getStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.reports.stats);
+      return response.data;
+    },
+
+    getMemberStats: async (range = '30d') => {
+      const response = await apiMethods.get(ENDPOINTS.members.stats, { 
+        params: { range } 
+      });
+      return response.data;
+    },
+
+    getPledgeStats: async (range = '30d') => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.stats, { 
+        params: { range } 
+      });
+      return response.data;
+    },
+
+    getGroupStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.groups.statistics);
+      return response.data;
+    },
+
+    getRecentMembers: async (limit = 10) => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.members.recent, { 
+          params: { limit } 
+        });
+        return response.data;
+      } catch (error) {
+        console.warn('[Dashboard API] Recent members endpoint failed, using list with ordering');
+        const response = await apiMethods.get(ENDPOINTS.members.list, { 
+          params: { ordering: '-registration_date', limit } 
+        });
+        return response.data;
+      }
+    },
+
+    getRecentPledges: async (limit = 10) => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.pledges.recent, { 
+          params: { limit } 
+        });
+        return response.data;
+      } catch (error) {
+        console.warn('[Dashboard API] Recent pledges endpoint failed, using list with ordering');
+        const response = await apiMethods.get(ENDPOINTS.pledges.list, { 
+          params: { ordering: '-created_at', limit } 
+        });
+        return response.data;
+      }
+    },
+
+    getSystemHealth: async () => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.dashboard.health);
+        return response.data;
+      } catch (error) {
+        console.warn('[Dashboard API] Health endpoint failed, using core health');
+        const response = await apiMethods.get(ENDPOINTS.core.health);
+        return { status: 'healthy', ...response.data };
+      }
+    },
+
+    getAlerts: async () => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.dashboard.alerts);
+        return response.data;
+      } catch (error) {
+        console.warn('[Dashboard API] Alerts endpoint failed, returning empty');
+        return { results: [] };
+      }
+    },
+
+    markAlertRead: async (alertId) => {
+      const response = await apiMethods.patch(`${ENDPOINTS.dashboard.alerts}${alertId}/`, {
+        is_read: true,
+        read_at: new Date().toISOString()
+      });
+      return response.data;
+    },
+
+    getDashboardConfig: async (userId) => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.dashboard.config(userId));
+        return response.data;
+      } catch (error) {
+        if (error.status === 404) {
+          return null; // No config found
+        }
+        throw error;
+      }
+    },
+
+    saveDashboardConfig: async (userId, config) => {
+      const response = await apiMethods.post(ENDPOINTS.dashboard.config(userId), config);
+      return response.data;
+    }
   },
 
   // Member API methods
   members: {
-    list: (params = {}) => apiMethods.get(ENDPOINTS.members.list, { params }),
-    create: (data) => apiMethods.post(ENDPOINTS.members.create, data),
-    get: (id) => apiMethods.get(ENDPOINTS.members.detail(id)),
-    update: (id, data) => apiMethods.put(ENDPOINTS.members.update(id), data),
-    patch: (id, data) => apiMethods.patch(ENDPOINTS.members.update(id), data),
-    delete: (id) => apiMethods.delete(ENDPOINTS.members.delete(id)),
-    stats: () => apiMethods.get(ENDPOINTS.members.stats),
-    export: () => apiMethods.get(ENDPOINTS.members.export),
-    publicRegister: (data) => apiMethods.post(ENDPOINTS.members.publicRegister, data)
-  },
+    list: async (params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.members.list, { params });
+      return response.data;
+    },
 
-  // Pledge API methods
-  pledges: {
-    list: (params = {}) => apiMethods.get(ENDPOINTS.pledges.list, { params }),
-    create: (data) => apiMethods.post(ENDPOINTS.pledges.create, data),
-    get: (id) => apiMethods.get(ENDPOINTS.pledges.detail(id)),
-    update: (id, data) => apiMethods.put(ENDPOINTS.pledges.update(id), data),
-    delete: (id) => apiMethods.delete(ENDPOINTS.pledges.delete(id)),
-    stats: () => apiMethods.get(ENDPOINTS.pledges.stats),
-    export: () => apiMethods.get(ENDPOINTS.pledges.export),
-    overdue: () => apiMethods.get(ENDPOINTS.pledges.overdue),
-    upcomingPayments: () => apiMethods.get(ENDPOINTS.pledges.upcomingPayments)
+    create: async (memberData) => {
+      const response = await apiMethods.post(ENDPOINTS.members.create, memberData);
+      return response.data;
+    },
+
+    get: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.members.detail(id));
+      return response.data;
+    },
+
+    update: async (id, memberData) => {
+      const response = await apiMethods.put(ENDPOINTS.members.update(id), memberData);
+      return response.data;
+    },
+
+    patch: async (id, memberData) => {
+      const response = await apiMethods.patch(ENDPOINTS.members.update(id), memberData);
+      return response.data;
+    },
+
+    delete: async (id) => {
+      const response = await apiMethods.delete(ENDPOINTS.members.delete(id));
+      return response.data;
+    },
+
+    search: async (query, params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.members.search, {
+        params: { q: query, ...params }
+      });
+      return response.data;
+    },
+
+    getStats: async (range = '30d') => {
+      const response = await apiMethods.get(ENDPOINTS.members.stats, {
+        params: { range }
+      });
+      return response.data;
+    },
+
+    export: async (format = 'csv') => {
+      const response = await apiMethods.get(ENDPOINTS.members.export, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    },
+
+    publicRegister: async (memberData) => {
+      const response = await apiMethods.post(ENDPOINTS.members.publicRegister, memberData);
+      return response.data;
+    },
+
+    getBirthdays: async (days = 30) => {
+      const response = await apiMethods.get(ENDPOINTS.members.birthdays, {
+        params: { days }
+      });
+      return response.data;
+    },
+
+    getDemographics: async (type = 'age') => {
+      const endpoint = type === 'age' ? 
+        ENDPOINTS.members.demographics.age : 
+        ENDPOINTS.members.demographics.gender;
+      const response = await apiMethods.get(endpoint);
+      return response.data;
+    }
   },
 
   // Group API methods
   groups: {
-    list: (params = {}) => apiMethods.get(ENDPOINTS.groups.list, { params }),
-    create: (data) => apiMethods.post(ENDPOINTS.groups.create, data),
-    get: (id) => apiMethods.get(ENDPOINTS.groups.detail(id)),
-    update: (id, data) => apiMethods.put(ENDPOINTS.groups.update(id), data),
-    delete: (id) => apiMethods.delete(ENDPOINTS.groups.delete(id)),
-    stats: () => apiMethods.get(ENDPOINTS.groups.statistics),
-    categories: () => apiMethods.get(ENDPOINTS.groups.categories),
-    memberships: () => apiMethods.get(ENDPOINTS.groups.memberships)
+    list: async (params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.groups.list, { params });
+      return response.data;
+    },
+
+    create: async (groupData) => {
+      const response = await apiMethods.post(ENDPOINTS.groups.create, groupData);
+      return response.data;
+    },
+
+    get: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.groups.detail(id));
+      return response.data;
+    },
+
+    update: async (id, groupData) => {
+      const response = await apiMethods.put(ENDPOINTS.groups.update(id), groupData);
+      return response.data;
+    },
+
+    delete: async (id) => {
+      const response = await apiMethods.delete(ENDPOINTS.groups.delete(id));
+      return response.data;
+    },
+
+    getMembers: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.groups.members(id));
+      return response.data;
+    },
+
+    addMember: async (groupId, memberId) => {
+      const response = await apiMethods.post(ENDPOINTS.groups.join(groupId), {
+        member_id: memberId
+      });
+      return response.data;
+    },
+
+    removeMember: async (groupId, memberId) => {
+      const response = await apiMethods.delete(ENDPOINTS.groups.removeMember(groupId, memberId));
+      return response.data;
+    },
+
+    getStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.groups.statistics);
+      return response.data;
+    },
+
+    getCategories: async () => {
+      const response = await apiMethods.get(ENDPOINTS.groups.categories);
+      return response.data;
+    }
+  },
+
+  // Pledge API methods
+  pledges: {
+    list: async (params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.list, { params });
+      return response.data;
+    },
+
+    create: async (pledgeData) => {
+      const response = await apiMethods.post(ENDPOINTS.pledges.create, pledgeData);
+      return response.data;
+    },
+
+    get: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.detail(id));
+      return response.data;
+    },
+
+    update: async (id, pledgeData) => {
+      const response = await apiMethods.put(ENDPOINTS.pledges.update(id), pledgeData);
+      return response.data;
+    },
+
+    delete: async (id) => {
+      const response = await apiMethods.delete(ENDPOINTS.pledges.delete(id));
+      return response.data;
+    },
+
+    getStats: async (range = '30d') => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.stats, {
+        params: { range }
+      });
+      return response.data;
+    },
+
+    export: async (format = 'csv') => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.export, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    },
+
+    getOverdue: async () => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.overdue);
+      return response.data;
+    },
+
+    getUpcomingPayments: async (days = 7) => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.upcomingPayments, {
+        params: { days }
+      });
+      return response.data;
+    },
+
+    getTrends: async (range = '12m') => {
+      const response = await apiMethods.get(ENDPOINTS.pledges.trends, {
+        params: { range }
+      });
+      return response.data;
+    }
   },
 
   // Report API methods
   reports: {
-    list: (params = {}) => apiMethods.get(ENDPOINTS.reports.list, { params }),
-    create: (data) => apiMethods.post(ENDPOINTS.reports.create, data),
-    get: (id) => apiMethods.get(ENDPOINTS.reports.detail(id)),
-    generate: (id) => apiMethods.post(ENDPOINTS.reports.generate(id)),
-    stats: () => apiMethods.get(ENDPOINTS.reports.stats),
-    membersCsv: () => apiMethods.get(ENDPOINTS.reports.membersCsv),
-    pledgesCsv: () => apiMethods.get(ENDPOINTS.reports.pledgesCsv)
+    list: async (params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.reports.list, { params });
+      return response.data;
+    },
+
+    create: async (reportData) => {
+      const response = await apiMethods.post(ENDPOINTS.reports.create, reportData);
+      return response.data;
+    },
+
+    get: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.reports.detail(id));
+      return response.data;
+    },
+
+    generate: async (id, params = {}) => {
+      const response = await apiMethods.post(ENDPOINTS.reports.generate(id), params);
+      return response.data;
+    },
+
+    getStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.reports.stats);
+      return response.data;
+    },
+
+    exportMembers: async (format = 'csv') => {
+      const response = await apiMethods.get(ENDPOINTS.reports.membersCsv, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    },
+
+    exportPledges: async (format = 'csv') => {
+      const response = await apiMethods.get(ENDPOINTS.reports.pledgesCsv, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    },
+
+    getActivity: async (range = '7d') => {
+      const response = await apiMethods.get(ENDPOINTS.reports.activity, {
+        params: { range }
+      });
+      return response.data;
+    }
+  },
+
+  // Core API methods
+  core: {
+    health: async () => {
+      const response = await apiMethods.get(ENDPOINTS.core.health);
+      return response.data;
+    },
+
+    status: async () => {
+      const response = await apiMethods.get(ENDPOINTS.core.status);
+      return response.data;
+    },
+
+    version: async () => {
+      const response = await apiMethods.get(ENDPOINTS.core.version);
+      return response.data;
+    }
   }
 };
 
-// Test connection
+// Test connection with comprehensive checks
 const testConnection = async () => {
   try {
-    console.log('[API Test] Testing connection...');
-    const response = await api.get('/core/health/', {
+    console.log('[API Test] Testing connection to:', API_BASE_URL);
+    
+    // Test core health endpoint first
+    const healthResponse = await api.get(ENDPOINTS.core.health, {
       timeout: 10000,
       _retryCount: 0
     });
-    console.log('[API Test] Connection successful:', response.data);
-    return { success: true, data: response.data };
+    
+    console.log('[API Test] Health check successful:', healthResponse.data);
+    
+    // Test authentication endpoint
+    try {
+      const authTestResponse = await api.get(ENDPOINTS.auth.test, {
+        timeout: 5000
+      });
+      console.log('[API Test] Auth endpoint accessible:', authTestResponse.status === 200);
+    } catch (authError) {
+      console.warn('[API Test] Auth endpoint test failed (this may be normal):', authError.message);
+    }
+    
+    return { 
+      success: true, 
+      data: healthResponse.data,
+      timestamp: new Date().toISOString(),
+      baseUrl: API_BASE_URL
+    };
   } catch (error) {
-    console.error('[API Test] Connection failed:', error.message);
+    console.error('[API Test] Connection failed:', error);
     return { 
       success: false, 
       error: error.message,
-      status: error.response?.status
+      status: error.response?.status,
+      baseUrl: API_BASE_URL,
+      timestamp: new Date().toISOString()
     };
   }
 };
 
-// Health check
+// Enhanced health check with detailed metrics
 const healthCheck = async () => {
   try {
-    const response = await api.get('/core/health/', { timeout: 5000 });
-    return response.data;
+    const startTime = Date.now();
+    const response = await api.get(ENDPOINTS.core.health, { timeout: 5000 });
+    const responseTime = Date.now() - startTime;
+    
+    return {
+      status: 'healthy',
+      responseTime,
+      data: response.data,
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
     console.warn('[API Health Check] Failed:', error.message);
-    return null;
+    return {
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
   }
 };
 
-// Debug function to check auth state
+// Enhanced auth state debugging
 const checkAuthState = () => {
   const authData = {
     accessToken: localStorage.getItem('access_token'),
@@ -415,11 +805,70 @@ const checkAuthState = () => {
     hasAccessToken: !!authData.accessToken,
     hasAuthToken: !!authData.authToken,
     hasRefreshToken: !!authData.refreshToken,
-    hasUser: !!authData.user
+    hasUser: !!authData.user,
+    tokenLength: authData.accessToken?.length || 0,
+    userParsed: authData.user ? JSON.parse(authData.user) : null
   });
   
   return authData;
 };
+
+// Batch request utility
+const batchRequests = async (requests) => {
+  try {
+    console.log(`[API Batch] Executing ${requests.length} requests...`);
+    const results = await Promise.allSettled(requests);
+    
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+    
+    console.log(`[API Batch] Completed: ${successful} successful, ${failed} failed`);
+    
+    return results;
+  } catch (error) {
+    console.error('[API Batch] Batch request failed:', error);
+    throw error;
+  }
+};
+
+// Request queue for handling rate limits
+class RequestQueue {
+  constructor(maxConcurrent = 5, delayMs = 100) {
+    this.maxConcurrent = maxConcurrent;
+    this.delayMs = delayMs;
+    this.queue = [];
+    this.running = 0;
+  }
+
+  async add(requestFn) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ requestFn, resolve, reject });
+      this.process();
+    });
+  }
+
+  async process() {
+    if (this.running >= this.maxConcurrent || this.queue.length === 0) {
+      return;
+    }
+
+    this.running++;
+    const { requestFn, resolve, reject } = this.queue.shift();
+
+    try {
+      const result = await requestFn();
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      this.running--;
+      // Add delay to prevent overwhelming the server
+      setTimeout(() => this.process(), this.delayMs);
+    }
+  }
+}
+
+const requestQueue = new RequestQueue();
 
 export default apiMethods;
 export { 
@@ -429,5 +878,7 @@ export {
   checkAuthState, 
   ENDPOINTS,
   clearAuthData,
-  redirectToLogin
-}
+  redirectToLogin,
+  batchRequests,
+  requestQueue
+};

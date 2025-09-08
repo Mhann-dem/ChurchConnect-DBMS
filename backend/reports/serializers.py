@@ -74,7 +74,7 @@ class ReportRunSerializer(serializers.ModelSerializer):
     
     report_name = serializers.CharField(source='report.name', read_only=True)
     report_type = serializers.CharField(source='report.report_type', read_only=True)
-    executed_by_name = serializers.CharField(source='executed_by.get_full_name', read_only=True)
+    executed_by_name = serializers.CharField(source='triggered_by.get_full_name', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     
     # File information
@@ -87,7 +87,7 @@ class ReportRunSerializer(serializers.ModelSerializer):
             'id', 'report', 'report_name', 'report_type', 'started_at',
             'completed_at', 'status', 'status_display', 'file_path',
             'file_size', 'file_size_mb', 'record_count', 'error_message',
-            'executed_by', 'executed_by_name', 'execution_time', 'download_url'
+            'triggered_by', 'executed_by_name', 'execution_time', 'download_url'  # Changed executed_by to triggered_by
         ]
         read_only_fields = [
             'id', 'started_at', 'completed_at', 'file_path', 'file_size',

@@ -189,7 +189,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         stats['reports_by_type'] = reports_by_type
         
         # Recent runs (last 10)
-        recent_runs = ReportRun.objects.select_related('report', 'executed_by')[:10]
+        recent_runs = ReportRun.objects.select_related('report', 'triggered_by')[:10]
         stats['recent_runs'] = ReportRunSerializer(recent_runs, many=True).data
         
         # Most used templates
@@ -278,7 +278,7 @@ class ReportViewSet(viewsets.ModelViewSet):
 class ReportRunViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for viewing report runs"""
     
-    queryset = ReportRun.objects.select_related('report', 'executed_by')
+    queryset = ReportRun.objects.select_related('report', 'triggered_by')
     serializer_class = ReportRunSerializer
     permission_classes = [IsAuthenticated]
     
