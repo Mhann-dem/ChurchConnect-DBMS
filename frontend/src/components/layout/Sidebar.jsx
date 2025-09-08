@@ -557,7 +557,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
             <h3 style={sectionTitleStyle}>Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Link 
-                to="/admin/members/new" 
+                to="/register" 
                 style={{...quickActionStyle, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'}}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';

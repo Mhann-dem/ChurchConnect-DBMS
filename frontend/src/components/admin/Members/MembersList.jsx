@@ -514,7 +514,7 @@ const MembersList = () => {
             Export
           </Button>
           <Button
-            onClick={() => navigate('/admin/members/new')}
+            onClick={() => navigate('/register')}
             className={styles.addButton}
           >
             <Plus size={16} />
@@ -565,7 +565,7 @@ const MembersList = () => {
             icon={Users}
             actions={
               !searchQuery && !Object.values(filters).some(f => f) ? (
-                <Button onClick={() => navigate('/admin/members/new')}>
+                <Button onClick={() => navigate('/register')}>
                   <Plus size={16} />
                   Add Your First Member
                 </Button>

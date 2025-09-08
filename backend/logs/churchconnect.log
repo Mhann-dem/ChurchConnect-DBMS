@@ -4338,3 +4338,310 @@ INFO 2025-09-08 13:50:33,775 views [MemberViewSet] Query params: <QueryDict: {}>
 INFO 2025-09-08 13:50:33,783 views [MemberViewSet] Filtered queryset count: 0
 INFO 2025-09-08 13:50:33,790 views [MemberViewSet] Returning paginated response with 0 items
 INFO 2025-09-08 13:50:33,792 basehttp "GET /api/v1/members/ HTTP/1.1" 200 52
+INFO 2025-09-08 15:45:10,895 autoreload Watching for file changes with StatReloader
+INFO 2025-09-08 15:45:34,227 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:45:34,228 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-09-08 15:45:34,521 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-08 15:45:34,522 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-08 15:45:34,528 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-08 15:45:34,529 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-08 15:45:34,532 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:45:34,920 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-08 15:45:34,931 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-08 15:45:34,999 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:45:35,008 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:45:35,087 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:45:35,092 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
+INFO 2025-09-08 15:45:35,179 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
+INFO 2025-09-08 15:45:56,945 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+WARNING 2025-09-08 15:45:57,870 log Unauthorized: /api/v1/auth/login/
+WARNING 2025-09-08 15:45:57,872 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 401 31
+WARNING 2025-09-08 15:46:06,749 log Unauthorized: /api/v1/auth/login/
+WARNING 2025-09-08 15:46:06,750 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 401 31
+INFO 2025-09-08 15:46:14,840 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:46:14,852 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-08 15:46:15,085 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,095 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,098 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,103 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,110 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,115 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,119 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,126 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,126 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,130 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,141 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,141 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,281 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-08 15:46:15,314 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+INFO 2025-09-08 15:46:15,316 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-08 15:46:15,318 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+INFO 2025-09-08 15:46:15,330 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,331 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,339 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:15,345 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+WARNING 2025-09-08 15:46:15,459 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:46:15,494 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 15:46:15,502 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 15:46:15,510 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:46:15,511 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 15:46:15,532 log Not Found: /api/v1/pledges/recent/
+WARNING 2025-09-08 15:46:15,539 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:46:15,557 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+WARNING 2025-09-08 15:46:15,557 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:46:15,583 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-08 15:46:15,600 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 15:46:15,621 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:46:15,626 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:46:15,626 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:46:15,681 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-08 15:46:15,710 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+INFO 2025-09-08 15:46:15,736 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+INFO 2025-09-08 15:46:15,736 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-08 15:46:15,745 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 15:46:15,823 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 15:46:15,836 log Not Found: /api/v1/pledges/recent/
+WARNING 2025-09-08 15:46:15,840 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:46:15,878 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 15:46:15,914 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+INFO 2025-09-08 15:46:16,707 basehttp "OPTIONS /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:16,707 basehttp "OPTIONS /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 0
+INFO 2025-09-08 15:46:16,824 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:46:16,845 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:46:16,857 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:46:16,874 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:46:16,887 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:46:16,892 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:46:16,897 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:46:16,931 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:46:17,005 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:46:17,022 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:46:17,026 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:46:17,043 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:46:17,048 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:46:17,053 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+WARNING 2025-09-08 15:46:29,584 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:46:29,585 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:46:29,611 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:46:29,615 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:46:29,693 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:46:29,798 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 15:47:05,210 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:47:05,210 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:47:05,234 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:47:05,236 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:47:05,332 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:47:05,427 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 15:47:13,066 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:47:13,067 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:47:13,081 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:47:13,086 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:47:13,178 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:47:13,281 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:47:16,757 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,772 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,774 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,774 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,774 basehttp "OPTIONS /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,774 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,776 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:16,921 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:17,030 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:17,092 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-08 15:47:17,165 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:17,265 basehttp "GET /api/v1/pledges/?search=&page=1 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:17,310 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-08 15:47:17,472 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 1879
+INFO 2025-09-08 15:47:30,147 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-08 15:47:30,245 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-08 15:47:30,545 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-08 15:47:30,557 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 15:47:30,597 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:47:30,598 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+WARNING 2025-09-08 15:47:30,606 log Not Found: /api/v1/pledges/recent/
+INFO 2025-09-08 15:47:30,627 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-08 15:47:30,641 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-08 15:47:30,643 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 15:47:30,645 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+WARNING 2025-09-08 15:47:30,648 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 15:47:30,662 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 15:47:30,664 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:47:30,714 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:47:30,844 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+WARNING 2025-09-08 15:47:30,879 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:47:30,885 log Not Found: /api/v1/members/recent/
+INFO 2025-09-08 15:47:30,885 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-08 15:47:30,887 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-08 15:47:30,892 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:47:30,892 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 15:47:30,943 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-08 15:47:30,945 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+WARNING 2025-09-08 15:47:30,952 log Not Found: /api/v1/pledges/recent/
+WARNING 2025-09-08 15:47:30,957 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:47:30,963 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+WARNING 2025-09-08 15:47:30,966 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:47:30,981 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 15:47:31,103 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+INFO 2025-09-08 15:47:31,360 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:47:31,361 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:47:31,380 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:47:31,385 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:47:31,397 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:31,401 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:47:31,431 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:31,535 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:47:31,564 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:47:31,565 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:47:31,580 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:47:31,590 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:47:31,592 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:47:31,594 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+WARNING 2025-09-08 15:48:27,184 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:48:27,185 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:48:27,197 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:48:27,199 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:48:27,394 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:48:27,489 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:49:52,817 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-08 15:49:57,308 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-08 15:49:57,343 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+INFO 2025-09-08 15:49:57,343 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+INFO 2025-09-08 15:49:57,455 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-08 15:49:57,561 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:49:57,583 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 15:49:57,589 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:49:57,611 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:49:57,666 log Not Found: /api/v1/pledges/recent/
+WARNING 2025-09-08 15:49:57,679 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 15:49:57,698 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:49:57,719 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-08 15:49:57,733 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:49:57,739 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 15:49:57,758 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:49:57,778 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-08 15:49:57,809 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-08 15:49:57,827 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+WARNING 2025-09-08 15:49:57,833 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:49:57,860 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+INFO 2025-09-08 15:49:57,867 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+INFO 2025-09-08 15:49:57,894 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-08 15:49:57,896 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 15:49:57,924 log Not Found: /api/v1/pledges/recent/
+WARNING 2025-09-08 15:49:57,927 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:49:58,026 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+WARNING 2025-09-08 15:49:58,037 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 15:49:58,054 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 15:49:58,056 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:49:58,079 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:49:58,082 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:49:58,099 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 15:49:58,105 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:49:58,127 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:49:58,134 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:49:58,190 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 15:49:58,245 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 15:49:58,248 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 15:49:58,248 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+INFO 2025-09-08 15:49:58,260 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 15:49:58,272 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 15:49:58,275 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+WARNING 2025-09-08 15:50:20,032 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:50:20,034 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+WARNING 2025-09-08 15:50:20,058 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 15:50:20,060 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 5146
+INFO 2025-09-08 15:50:20,132 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 15:50:20,214 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:30:47,839 autoreload Watching for file changes with StatReloader
+INFO 2025-09-08 16:31:54,071 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-08 16:31:54,074 log Not Found: /api/v1/members/recent/
+WARNING 2025-09-08 16:31:54,090 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 16:31:54,099 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+WARNING 2025-09-08 16:31:54,111 log Not Found: /api/v1/pledges/recent/
+INFO 2025-09-08 16:31:54,148 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+WARNING 2025-09-08 16:31:54,163 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:31:54,168 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 16:31:54,174 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 16:31:54,175 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-08 16:31:54,196 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 16:31:54,200 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:31:54,223 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:31:54,345 log Not Found: /api/v1/members/recent/
+INFO 2025-09-08 16:31:54,345 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 16:31:54,351 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-08 16:31:54,356 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+WARNING 2025-09-08 16:31:54,358 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 404 23
+WARNING 2025-09-08 16:31:54,409 log Not Found: /api/v1/pledges/recent/
+INFO 2025-09-08 16:31:54,409 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 16:31:54,416 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}}
+WARNING 2025-09-08 16:31:54,424 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 404 23
+INFO 2025-09-08 16:31:54,443 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 16:31:54,455 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 96
+INFO 2025-09-08 16:31:54,455 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+INFO 2025-09-08 16:31:54,469 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-08 16:31:54,473 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+WARNING 2025-09-08 16:31:54,524 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:31:54,542 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-08 16:31:54,543 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:31:54,545 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:31:54,634 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 16:31:54,642 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-08 16:31:54,707 views [MemberViewSet] Members list request from user: robbddzaka1@gmail.com
+INFO 2025-09-08 16:31:54,714 views [MemberViewSet] Query params: <QueryDict: {'ordering': ['-registration_date'], 'limit': ['5']}>
+INFO 2025-09-08 16:31:54,717 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:31:54,741 views [MemberViewSet] Filtered queryset count: 0
+INFO 2025-09-08 16:31:54,757 views [MemberViewSet] Returning paginated response with 0 items
+INFO 2025-09-08 16:31:54,767 basehttp "GET /api/v1/members/?ordering=-registration_date&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 16:31:54,793 basehttp "GET /api/v1/pledges/?ordering=-created_at&limit=5 HTTP/1.1" 200 52
+INFO 2025-09-08 16:31:54,841 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:31:54,847 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 1879
+WARNING 2025-09-08 16:32:02,241 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:02,243 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:32:02,266 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:02,272 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:32:02,386 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:32:02,487 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:32:11,649 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:11,651 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:32:11,674 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:11,682 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:32:11,777 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:32:11,904 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:32:49,736 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:49,737 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:32:49,753 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:32:49,756 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:32:49,833 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:32:49,921 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:33:08,690 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:33:08,693 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:33:08,716 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:33:08,722 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:33:08,933 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:33:09,048 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:33:32,925 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:33:32,927 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:33:33,029 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:33:39,622 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:33:39,625 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:33:39,658 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:33:39,661 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:33:39,778 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:33:39,887 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:34:09,952 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:34:09,954 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:34:09,987 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:34:09,990 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:34:10,066 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:34:10,263 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:35:24,189 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:35:24,190 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:35:24,205 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:35:24,207 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:35:24,334 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:35:24,462 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-08 16:36:40,389 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:36:40,392 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+WARNING 2025-09-08 16:36:40,410 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-08 16:36:40,412 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 17226
+INFO 2025-09-08 16:36:40,650 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-08 16:36:40,753 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109

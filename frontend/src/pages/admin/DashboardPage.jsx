@@ -429,7 +429,7 @@ const DashboardPage = () => {
                 </Button>
                 <Button 
                   variant="secondary"
-                  to="/admin/members/new"
+                  to="/register"
                   icon={PlusIcon}
                 >
                   Add Member
@@ -591,7 +591,7 @@ const DashboardPage = () => {
                     <p>No recent member registrations</p>
                     <Button 
                       variant="ghost"
-                      to="/admin/members/new"
+                      to="/register"
                       icon={PlusIcon}
                       className="mt-2"
                     >
@@ -676,7 +676,7 @@ const DashboardPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/admin/members/new"
+                  to="/register"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-blue-100 group-hover:bg-blue-200 mb-3`}>

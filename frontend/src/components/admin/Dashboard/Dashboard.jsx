@@ -531,7 +531,7 @@ const Dashboard = () => {
                   <h3 className="text-sm font-medium text-gray-900 mb-2">No recent members</h3>
                   <p className="text-sm text-gray-500 mb-4">New members will appear here when they join</p>
                   <button
-                    onClick={() => navigateTo('/admin/members/new')}
+                    onClick={() => navigateTo('/register')}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
                     <UserPlusIcon className="w-4 h-4 mr-2" />
@@ -659,7 +659,7 @@ const Dashboard = () => {
                 { 
                   name: 'Add Member', 
                   icon: UserPlusIcon, 
-                  href: '/admin/members/new', 
+                  href: '/register', 
                   color: 'blue',
                   description: 'Register new member'
                 },
