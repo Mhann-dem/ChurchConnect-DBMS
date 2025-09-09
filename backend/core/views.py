@@ -429,3 +429,63 @@ def custom_500(request):
         'message': 'An unexpected error occurred. Please try again later.',
         'status_code': 500
     }, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    """
+    Dashboard statistics endpoint - alternative to overview
+    """
+    try:
+        logger.info(f"[Dashboard] Stats request from: {request.user.email}")
+        
+        # Get basic counts (same as overview but simplified)
+        stats = {
+            'total_members': 0,
+            'active_members': 0,
+            'total_pledges': 0,
+            'total_groups': 0,
+            'total_pledged_amount': 0,
+            'total_received_amount': 0
+        }
+        
+        try:
+            from members.models import Member
+            stats['total_members'] = Member.objects.count()
+            stats['active_members'] = Member.objects.filter(is_active=True).count()
+        except Exception as e:
+            logger.warning(f"[Dashboard] Error getting member stats: {e}")
+        
+        try:
+            from pledges.models import Pledge
+            from django.db.models import Sum
+            
+            stats['total_pledges'] = Pledge.objects.count()
+            
+            pledge_amounts = Pledge.objects.aggregate(
+                total_pledged=Sum('total_pledged'),
+                total_received=Sum('total_received')
+            )
+            stats['total_pledged_amount'] = float(pledge_amounts['total_pledged'] or 0)
+            stats['total_received_amount'] = float(pledge_amounts['total_received'] or 0)
+            
+        except Exception as e:
+            logger.warning(f"[Dashboard] Error getting pledge stats: {e}")
+        
+        try:
+            from groups.models import Group
+            stats['total_groups'] = Group.objects.count()
+        except Exception as e:
+            logger.warning(f"[Dashboard] Error getting group stats: {e}")
+        
+        logger.info(f"[Dashboard] Stats generated successfully: {stats}")
+        
+        return Response(stats)
+        
+    except Exception as e:
+        logger.error(f"[Dashboard] Stats error: {str(e)}", exc_info=True)
+        return Response(
+            {'error': 'Failed to generate dashboard stats'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

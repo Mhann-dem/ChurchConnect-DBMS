@@ -1,4 +1,6 @@
-# core/urls.py - COMPLETE FIX with dashboard endpoints
+# Step 2: Update core/urls.py with complete endpoints
+# File: backend/churchconnect/core/urls.py
+
 from django.urls import path
 from . import views
 
@@ -10,11 +12,12 @@ urlpatterns = [
     path('status/', views.system_status, name='system-status'),
     path('version/', views.api_version, name='api-version'),
     
-    # FIXED: Added missing dashboard endpoints
+    # Dashboard endpoints (FIXED)
     path('dashboard/overview/', views.dashboard_overview, name='dashboard-overview'),
     path('dashboard/health/', views.dashboard_health, name='dashboard-health'),
     path('dashboard/alerts/', views.dashboard_alerts, name='dashboard-alerts'),
     path('dashboard/config/<str:user_id>/', views.dashboard_config, name='dashboard-config'),
+    path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
 ]
 
 # URL Structure created:
