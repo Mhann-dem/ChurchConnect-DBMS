@@ -1,4 +1,4 @@
-# members/views.py - FIXED VERSION - Added bulk_actions and better logging
+# members/views.py - UPDATED VERSION - Added missing recent endpoint
 
 import csv
 import json
@@ -235,6 +235,122 @@ class MemberViewSet(viewsets.ModelViewSet):
         logger.info(f"[MemberViewSet] Member delete request by: {request.user.email}")
         return super().destroy(request, *args, **kwargs)
     
+    # FIXED: Added missing recent endpoint
+    @action(detail=False, methods=['get'])
+    def recent(self, request):
+        """Get recently registered members"""
+        try:
+            limit = int(request.query_params.get('limit', 10))
+            logger.info(f"[MemberViewSet] Recent members request from: {request.user.email}, limit: {limit}")
+            
+            recent_members = Member.objects.order_by('-registration_date')[:limit]
+            serializer = MemberSummarySerializer(recent_members, many=True)
+            
+            logger.info(f"[MemberViewSet] Returning {len(serializer.data)} recent members")
+            
+            return Response({
+                'results': serializer.data,
+                'count': len(serializer.data)
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error getting recent members: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Failed to get recent members'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    # FIXED: Added missing search endpoint
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """Search members by query"""
+        try:
+            query = request.query_params.get('q', '').strip()
+            logger.info(f"[MemberViewSet] Search request: '{query}' from: {request.user.email}")
+            
+            if not query:
+                return Response({
+                    'results': [],
+                    'count': 0,
+                    'message': 'Please provide a search query'
+                })
+            
+            # Search across multiple fields
+            members = Member.objects.filter(
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query) |
+                Q(email__icontains=query) |
+                Q(phone__icontains=query) |
+                Q(preferred_name__icontains=query)
+            ).distinct()[:50]  # Limit to 50 results
+            
+            serializer = MemberSummarySerializer(members, many=True)
+            
+            logger.info(f"[MemberViewSet] Search returned {len(serializer.data)} results")
+            
+            return Response({
+                'results': serializer.data,
+                'count': len(serializer.data),
+                'query': query
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error in search: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Search failed'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    # FIXED: Added missing birthdays endpoint
+    @action(detail=False, methods=['get'])
+    def birthdays(self, request):
+        """Get members with upcoming birthdays"""
+        try:
+            days = int(request.query_params.get('days', 30))
+            logger.info(f"[MemberViewSet] Birthdays request for next {days} days from: {request.user.email}")
+            
+            today = timezone.now().date()
+            upcoming_birthdays = []
+            
+            # Get all members with birthdates
+            members = Member.objects.filter(date_of_birth__isnull=False)
+            
+            for member in members:
+                # Calculate this year's birthday
+                birthday_this_year = member.date_of_birth.replace(year=today.year)
+                
+                # If birthday already passed this year, check next year
+                if birthday_this_year < today:
+                    birthday_this_year = member.date_of_birth.replace(year=today.year + 1)
+                
+                # Check if birthday is within the specified days
+                days_until = (birthday_this_year - today).days
+                if 0 <= days_until <= days:
+                    upcoming_birthdays.append({
+                        'member': MemberSummarySerializer(member).data,
+                        'birthday': birthday_this_year,
+                        'days_until': days_until,
+                        'age_turning': today.year - member.date_of_birth.year
+                    })
+            
+            # Sort by days until birthday
+            upcoming_birthdays.sort(key=lambda x: x['days_until'])
+            
+            logger.info(f"[MemberViewSet] Found {len(upcoming_birthdays)} upcoming birthdays")
+            
+            return Response({
+                'results': upcoming_birthdays,
+                'count': len(upcoming_birthdays),
+                'days_ahead': days
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error getting birthdays: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Failed to get upcoming birthdays'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
     @action(detail=False, methods=['get'])
     def statistics(self, request):
         """Get basic member statistics"""
@@ -250,12 +366,48 @@ class MemberViewSet(viewsets.ModelViewSet):
                 registration_date__gte=thirty_days_ago
             ).count()
             
+            # Gender breakdown
+            gender_stats = Member.objects.values('gender').annotate(count=Count('id'))
+            gender_breakdown = {item['gender']: item['count'] for item in gender_stats}
+            
+            # Age demographics (if date_of_birth exists)
+            age_groups = {
+                'under_18': 0,
+                '18_35': 0,
+                '36_55': 0,
+                '56_plus': 0,
+                'unknown': 0
+            }
+            
+            today = timezone.now().date()
+            members_with_birthdate = Member.objects.filter(date_of_birth__isnull=False)
+            
+            for member in members_with_birthdate:
+                age = today.year - member.date_of_birth.year
+                if member.date_of_birth.replace(year=today.year) > today:
+                    age -= 1
+                
+                if age < 18:
+                    age_groups['under_18'] += 1
+                elif age <= 35:
+                    age_groups['18_35'] += 1
+                elif age <= 55:
+                    age_groups['36_55'] += 1
+                else:
+                    age_groups['56_plus'] += 1
+            
+            age_groups['unknown'] = total_members - members_with_birthdate.count()
+            
             stats_data = {
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
                     'inactive_members': total_members - active_members,
                     'recent_registrations': recent_registrations,
+                },
+                'demographics': {
+                    'gender': gender_breakdown,
+                    'age_groups': age_groups
                 }
             }
             
@@ -304,7 +456,6 @@ class MemberViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-    # FIXED: Added missing bulk_actions endpoint
     @action(detail=False, methods=['post'])
     def bulk_actions(self, request):
         """Handle bulk actions on members - Admin only"""

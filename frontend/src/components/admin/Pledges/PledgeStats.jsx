@@ -1,3 +1,4 @@
+// frontend/src/components/admin/Pledges/PledgeStats.jsx
 import React, { useState, useEffect } from 'react';
 import { Card, ProgressBar, Badge } from '../../ui';
 import styles from './Pledges.module.css'; 
@@ -6,29 +7,48 @@ import usePledges from '../../../hooks/usePledges';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
 
 const PledgeStats = ({ stats, filters = {} }) => {
-  // Accept stats as a prop to avoid additional hook calls
   const [selectedPeriod, setSelectedPeriod] = useState('current_year');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Only use the hook if stats aren't provided as props
   const pledgesHook = !stats ? usePledges() : null;
   
   // Use either provided stats or hook stats
-  const pledgeStats = stats || (pledgesHook?.statistics) || {};
-  const loading = pledgesHook?.loading || false;
+  const pledgeStats = stats || pledgesHook?.statistics || {};
+  const loading = pledgesHook?.loading || isLoading;
   const error = pledgesHook?.error || null;
-  const fetchPledgeStats = pledgesHook?.fetchStatistics || (() => {});
+  const fetchPledgeStats = pledgesHook?.fetchStatistics;
 
+  // Fetch stats when filters change (only if using hook)
   useEffect(() => {
-    // Only fetch if we're using the hook and don't have stats prop
     if (!stats && fetchPledgeStats && typeof fetchPledgeStats === 'function') {
+      setIsLoading(true);
       fetchPledgeStats({
         period: selectedPeriod,
         frequency: selectedFrequency,
         ...filters
+      }).finally(() => {
+        setIsLoading(false);
       });
     }
-  }, [selectedPeriod, selectedFrequency, filters, stats]); // Remove fetchPledgeStats from dependencies
+  }, [selectedPeriod, selectedFrequency, filters, stats, fetchPledgeStats]);
+
+  // Helper function to safely get numeric values
+  const safeNumber = (value, fallback = 0) => {
+    const num = Number(value);
+    return isNaN(num) ? fallback : num;
+  };
+
+  // Helper function to safely format currency
+  const safeCurrency = (value) => {
+    return formatCurrency(safeNumber(value));
+  };
+
+  // Helper function to safely format percentage
+  const safePercentage = (value) => {
+    return formatPercentage(safeNumber(value) / 100);
+  };
 
   if (loading) {
     return (
@@ -41,26 +61,58 @@ const PledgeStats = ({ stats, filters = {} }) => {
   if (error) {
     return (
       <div className={styles.errorContainer}>
-        <p className={styles.errorText}>Error loading pledge statistics: {error}</p>
+        <div className={styles.errorCard}>
+          <p className={styles.errorText}>Error loading pledge statistics: {error}</p>
+          {fetchPledgeStats && (
+            <button 
+              onClick={() => fetchPledgeStats()} 
+              className={styles.retryButton}
+            >
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     );
   }
 
+  // Extract and validate data from stats
   const {
-    totalPledged = 0,
-    totalReceived = 0,
-    activePledges = 0,
-    completedPledges = 0,
-    averagePledge = 0,
-    pledgesByFrequency = {},
-    monthlyTrends = [],
-    topPledgers = [],
-    fulfillmentRate = 0,
-    projectedAnnual = 0
-  } = pledgeStats || {};
+    total_pledged = 0,
+    total_received = 0,
+    active_pledges = 0,
+    completed_pledges = 0,
+    cancelled_pledges = 0,
+    average_pledge = 0,
+    pledges_by_frequency = {},
+    monthly_trends = [],
+    top_pledgers = [],
+    fulfillment_rate = 0,
+    projected_annual = 0,
+    overdue_amount = 0,
+    upcoming_pledges = 0,
+    this_month_received = 0,
+    this_month_target = 0
+  } = pledgeStats;
+
+  // Calculate derived statistics
+  const totalPledged = safeNumber(total_pledged);
+  const totalReceived = safeNumber(total_received);
+  const activePledges = safeNumber(active_pledges);
+  const completedPledges = safeNumber(completed_pledges);
+  const cancelledPledges = safeNumber(cancelled_pledges);
+  const averagePledge = safeNumber(average_pledge);
+  const fulfillmentRatePercent = safeNumber(fulfillment_rate);
+  const projectedAnnualAmount = safeNumber(projected_annual);
+  const overdueAmount = safeNumber(overdue_amount);
+  const upcomingPledges = safeNumber(upcoming_pledges);
+  const thisMonthReceived = safeNumber(this_month_received);
+  const thisMonthTarget = safeNumber(this_month_target);
 
   const completionPercentage = totalPledged > 0 ? (totalReceived / totalPledged) * 100 : 0;
   const remainingAmount = totalPledged - totalReceived;
+  const totalPledgeCount = activePledges + completedPledges + cancelledPledges;
+  const thisMonthProgress = thisMonthTarget > 0 ? (thisMonthReceived / thisMonthTarget) * 100 : 0;
 
   const frequencyOptions = [
     { value: 'all', label: 'All Frequencies' },
@@ -141,10 +193,15 @@ const PledgeStats = ({ stats, filters = {} }) => {
             </Badge>
           </div>
           <div className={styles.statValue}>
-            {formatCurrency(totalPledged)}
+            {safeCurrency(totalPledged)}
           </div>
           <div className={styles.statSubtext}>
-            Average: {formatCurrency(averagePledge)} per pledge
+            Average: {safeCurrency(averagePledge)} per pledge
+          </div>
+          <div className={styles.statDetails}>
+            <span className={styles.statDetail}>
+              {totalPledgeCount} total pledges
+            </span>
           </div>
         </Card>
 
@@ -155,60 +212,79 @@ const PledgeStats = ({ stats, filters = {} }) => {
               variant={completionPercentage >= 80 ? "success" : completionPercentage >= 60 ? "warning" : "danger"}
               className={styles.statBadge}
             >
-              {formatPercentage(completionPercentage)}
+              {Math.round(completionPercentage)}%
             </Badge>
           </div>
           <div className={styles.statValue}>
-            {formatCurrency(totalReceived)}
+            {safeCurrency(totalReceived)}
           </div>
           <div className={styles.statSubtext}>
-            Remaining: {formatCurrency(remainingAmount)}
+            Remaining: {safeCurrency(remainingAmount)}
           </div>
+          {overdueAmount > 0 && (
+            <div className={styles.statWarning}>
+              Overdue: {safeCurrency(overdueAmount)}
+            </div>
+          )}
         </Card>
 
         <Card className={styles.statCard}>
           <div className={styles.statHeader}>
             <h3 className={styles.statTitle}>Fulfillment Rate</h3>
             <Badge 
-              variant={fulfillmentRate >= 90 ? "success" : fulfillmentRate >= 70 ? "warning" : "danger"}
+              variant={fulfillmentRatePercent >= 90 ? "success" : fulfillmentRatePercent >= 70 ? "warning" : "danger"}
               className={styles.statBadge}
             >
               {completedPledges} Complete
             </Badge>
           </div>
           <div className={styles.statValue}>
-            {formatPercentage(fulfillmentRate)}
+            {Math.round(fulfillmentRatePercent)}%
           </div>
           <div className={styles.statSubtext}>
             On-time completion rate
           </div>
+          {cancelledPledges > 0 && (
+            <div className={styles.statDetails}>
+              <span className={styles.statDetail}>
+                {cancelledPledges} cancelled
+              </span>
+            </div>
+          )}
         </Card>
 
         <Card className={styles.statCard}>
           <div className={styles.statHeader}>
-            <h3 className={styles.statTitle}>Projected Annual</h3>
+            <h3 className={styles.statTitle}>This Month</h3>
             <Badge variant="info" className={styles.statBadge}>
-              Forecast
+              {Math.round(thisMonthProgress)}%
             </Badge>
           </div>
           <div className={styles.statValue}>
-            {formatCurrency(projectedAnnual)}
+            {safeCurrency(thisMonthReceived)}
           </div>
           <div className={styles.statSubtext}>
-            Based on current trends
+            Target: {safeCurrency(thisMonthTarget)}
           </div>
+          {upcomingPledges > 0 && (
+            <div className={styles.statDetails}>
+              <span className={styles.statDetail}>
+                {upcomingPledges} upcoming
+              </span>
+            </div>
+          )}
         </Card>
       </div>
 
       {/* Progress Bar */}
       <Card className={styles.progressCard}>
-        <h3 className={styles.progressTitle}>Pledge Completion Progress</h3>
+        <h3 className={styles.progressTitle}>Overall Pledge Completion Progress</h3>
         <ProgressBar
           value={completionPercentage}
           max={100}
           className={styles.progressBar}
           showLabel={true}
-          label={`${formatCurrency(totalReceived)} of ${formatCurrency(totalPledged)}`}
+          label={`${safeCurrency(totalReceived)} of ${safeCurrency(totalPledged)}`}
         />
         <div className={styles.progressStats}>
           <span className={styles.progressStat}>
@@ -217,25 +293,55 @@ const PledgeStats = ({ stats, filters = {} }) => {
           <span className={styles.progressStat}>
             <strong>Active:</strong> {activePledges} pledges
           </span>
+          <span className={styles.progressStat}>
+            <strong>Progress:</strong> {Math.round(completionPercentage)}%
+          </span>
         </div>
       </Card>
 
+      {/* This Month Progress */}
+      {thisMonthTarget > 0 && (
+        <Card className={styles.progressCard}>
+          <h3 className={styles.progressTitle}>This Month's Target Progress</h3>
+          <ProgressBar
+            value={thisMonthProgress}
+            max={100}
+            className={styles.progressBar}
+            showLabel={true}
+            label={`${safeCurrency(thisMonthReceived)} of ${safeCurrency(thisMonthTarget)}`}
+          />
+          <div className={styles.progressStats}>
+            <span className={styles.progressStat}>
+              <strong>Remaining:</strong> {safeCurrency(thisMonthTarget - thisMonthReceived)}
+            </span>
+            <span className={styles.progressStat}>
+              <strong>Progress:</strong> {Math.round(thisMonthProgress)}%
+            </span>
+          </div>
+        </Card>
+      )}
+
       {/* Frequency Breakdown */}
-      {Object.keys(pledgesByFrequency).length > 0 && (
+      {Object.keys(pledges_by_frequency).length > 0 && (
         <Card className={styles.frequencyCard}>
           <h3 className={styles.frequencyTitle}>Pledges by Frequency</h3>
           <div className={styles.frequencyGrid}>
-            {Object.entries(pledgesByFrequency).map(([frequency, data]) => (
+            {Object.entries(pledges_by_frequency).map(([frequency, data]) => (
               <div key={frequency} className={styles.frequencyItem}>
                 <div className={styles.frequencyLabel}>
-                  {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+                  {frequency.charAt(0).toUpperCase() + frequency.slice(1).replace('-', ' ')}
                 </div>
                 <div className={styles.frequencyValue}>
-                  {formatCurrency(data.amount)}
+                  {safeCurrency(data.amount || data.total_amount || 0)}
                 </div>
                 <div className={styles.frequencyCount}>
-                  {data.count} pledge{data.count !== 1 ? 's' : ''}
+                  {data.count || 0} pledge{(data.count || 0) !== 1 ? 's' : ''}
                 </div>
+                {data.avg_amount && (
+                  <div className={styles.frequencyAvg}>
+                    Avg: {safeCurrency(data.avg_amount)}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -243,30 +349,30 @@ const PledgeStats = ({ stats, filters = {} }) => {
       )}
 
       {/* Top Pledgers */}
-      {topPledgers.length > 0 && (
+      {Array.isArray(top_pledgers) && top_pledgers.length > 0 && (
         <Card className={styles.topPledgersCard}>
-          <h3 className={styles.topPledgersTitle}>Top Pledgers</h3>
+          <h3 className={styles.topPledgersTitle}>Top Contributors</h3>
           <div className={styles.topPledgersList}>
-            {topPledgers.map((pledger, index) => (
-              <div key={pledger.id} className={styles.topPledgerItem}>
+            {top_pledgers.slice(0, 10).map((pledger, index) => (
+              <div key={pledger.id || index} className={styles.topPledgerItem}>
                 <div className={styles.pledgerRank}>
                   #{index + 1}
                 </div>
                 <div className={styles.pledgerInfo}>
                   <div className={styles.pledgerName}>
-                    {pledger.name}
+                    {pledger.name || pledger.member_name || 'Unknown'}
                   </div>
                   <div className={styles.pledgerDetails}>
-                    {formatCurrency(pledger.totalPledged)} pledged
-                    {pledger.fulfillmentRate && (
+                    {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)} pledged
+                    {pledger.fulfillment_rate && (
                       <span className={styles.pledgerFulfillment}>
-                        • {formatPercentage(pledger.fulfillmentRate)} fulfilled
+                        • {Math.round(pledger.fulfillment_rate)}% fulfilled
                       </span>
                     )}
                   </div>
                 </div>
                 <div className={styles.pledgerAmount}>
-                  {formatCurrency(pledger.totalPledged)}
+                  {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)}
                 </div>
               </div>
             ))}
@@ -275,31 +381,80 @@ const PledgeStats = ({ stats, filters = {} }) => {
       )}
 
       {/* Monthly Trends */}
-      {monthlyTrends.length > 0 && (
+      {Array.isArray(monthly_trends) && monthly_trends.length > 0 && (
         <Card className={styles.trendsCard}>
           <h3 className={styles.trendsTitle}>Monthly Trends</h3>
           <div className={styles.trendsChart}>
-            {monthlyTrends.map((trend, index) => (
-              <div key={trend.month} className={styles.trendItem}>
-                <div className={styles.trendMonth}>
-                  {trend.month}
+            {monthly_trends.map((trend, index) => {
+              const maxAmount = Math.max(...monthly_trends.map(t => safeNumber(t.amount || t.total_amount || 0)));
+              const trendAmount = safeNumber(trend.amount || trend.total_amount || 0);
+              const percentage = maxAmount > 0 ? (trendAmount / maxAmount) * 100 : 0;
+              
+              return (
+                <div key={trend.month || index} className={styles.trendItem}>
+                  <div className={styles.trendMonth}>
+                    {trend.month || trend.period || `Month ${index + 1}`}
+                  </div>
+                  <div className={styles.trendBar}>
+                    <div
+                      className={styles.trendBarFill}
+                      style={{ height: `${percentage}%` }}
+                      title={`${safeCurrency(trendAmount)} in ${trend.month}`}
+                    />
+                  </div>
+                  <div className={styles.trendAmount}>
+                    {safeCurrency(trendAmount)}
+                  </div>
+                  {trend.count && (
+                    <div className={styles.trendCount}>
+                      {trend.count} pledges
+                    </div>
+                  )}
                 </div>
-                <div className={styles.trendBar}>
-                  <div
-                    className={styles.trendBarFill}
-                    style={{
-                      height: `${(trend.amount / Math.max(...monthlyTrends.map(t => t.amount))) * 100}%`
-                    }}
-                  />
-                </div>
-                <div className={styles.trendAmount}>
-                  {formatCurrency(trend.amount)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       )}
+
+      {/* Summary Cards */}
+      <div className={styles.summaryCards}>
+        {projectedAnnualAmount > 0 && (
+          <Card className={styles.summaryCard}>
+            <h4 className={styles.summaryTitle}>Annual Projection</h4>
+            <div className={styles.summaryValue}>
+              {safeCurrency(projectedAnnualAmount)}
+            </div>
+            <div className={styles.summarySubtext}>
+              Based on current trends
+            </div>
+          </Card>
+        )}
+
+        {overdueAmount > 0 && (
+          <Card className={`${styles.summaryCard} ${styles.warningCard}`}>
+            <h4 className={styles.summaryTitle}>Overdue Amount</h4>
+            <div className={styles.summaryValue}>
+              {safeCurrency(overdueAmount)}
+            </div>
+            <div className={styles.summarySubtext}>
+              Requires follow-up
+            </div>
+          </Card>
+        )}
+
+        {upcomingPledges > 0 && (
+          <Card className={styles.summaryCard}>
+            <h4 className={styles.summaryTitle}>Upcoming Payments</h4>
+            <div className={styles.summaryValue}>
+              {upcomingPledges}
+            </div>
+            <div className={styles.summarySubtext}>
+              Due this month
+            </div>
+          </Card>
+        )}
+      </div>
 
       {/* Export Actions */}
       <Card className={styles.exportCard}>
@@ -308,34 +463,81 @@ const PledgeStats = ({ stats, filters = {} }) => {
           <button
             className={styles.exportButton}
             onClick={() => window.print()}
-            aria-label="Print statistics"
+            aria-label="Print statistics report"
           >
+            <svg className={styles.exportIcon} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zM5 14H4v-3h1v3zm6 0H9v2H7v-2H5v-2h6v2z" clipRule="evenodd" />
+            </svg>
             Print Report
           </button>
           <button
             className={styles.exportButton}
-            onClick={() => {
-              // Export logic would be implemented here
-              console.log('Export to CSV');
-            }}
-            aria-label="Export to CSV"
+            onClick={() => handleExportCSV()}
+            aria-label="Export statistics to CSV"
           >
+            <svg className={styles.exportIcon} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
             Export to CSV
           </button>
           <button
             className={styles.exportButton}
-            onClick={() => {
-              // Export logic would be implemented here
-              console.log('Export to PDF');
-            }}
-            aria-label="Export to PDF"
+            onClick={() => handleExportPDF()}
+            aria-label="Export statistics to PDF"
           >
+            <svg className={styles.exportIcon} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 3a1 1 0 000 2h8a1 1 0 100-2H6zm0 3a1 1 0 100 2h8a1 1 0 100-2H6zm0 3a1 1 0 100 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+            </svg>
             Export to PDF
           </button>
         </div>
       </Card>
     </div>
   );
+
+  // Export handlers
+  function handleExportCSV() {
+    try {
+      const csvData = [
+        ['Metric', 'Value'],
+        ['Total Pledged', totalPledged],
+        ['Total Received', totalReceived],
+        ['Completion Rate', `${Math.round(completionPercentage)}%`],
+        ['Active Pledges', activePledges],
+        ['Completed Pledges', completedPledges],
+        ['Cancelled Pledges', cancelledPledges],
+        ['Average Pledge', averagePledge],
+        ['Fulfillment Rate', `${Math.round(fulfillmentRatePercent)}%`],
+        ['Projected Annual', projectedAnnualAmount],
+        ['This Month Received', thisMonthReceived],
+        ['This Month Target', thisMonthTarget],
+        ['Overdue Amount', overdueAmount],
+        ['Upcoming Pledges', upcomingPledges]
+      ];
+
+      const csvContent = csvData.map(row => 
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pledge_statistics_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+    }
+  }
+
+  function handleExportPDF() {
+    // This would integrate with a PDF library like jsPDF
+    console.log('PDF export functionality would be implemented here');
+    alert('PDF export feature coming soon!');
+  }
 };
 
 export default PledgeStats;

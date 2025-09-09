@@ -1,16 +1,27 @@
-# File: backend/core/urls.py
+# core/urls.py - COMPLETE FIX with dashboard endpoints
 from django.urls import path
 from . import views
 
 app_name = 'core'
 
 urlpatterns = [
-    # Health check endpoint
-    path('health/', views.health_check, name='health_check'),
+    # Core system endpoints
+    path('health/', views.health_check, name='health-check'),
+    path('status/', views.system_status, name='system-status'),
+    path('version/', views.api_version, name='api-version'),
     
-    # System status
-    path('status/', views.system_status, name='system_status'),
-    
-    # API version info
-    path('version/', views.api_version, name='api_version'),
+    # FIXED: Added missing dashboard endpoints
+    path('dashboard/overview/', views.dashboard_overview, name='dashboard-overview'),
+    path('dashboard/health/', views.dashboard_health, name='dashboard-health'),
+    path('dashboard/alerts/', views.dashboard_alerts, name='dashboard-alerts'),
+    path('dashboard/config/<str:user_id>/', views.dashboard_config, name='dashboard-config'),
 ]
+
+# URL Structure created:
+# GET /api/v1/core/health/ - Basic health check (public)
+# GET /api/v1/core/status/ - Detailed system status (public)
+# GET /api/v1/core/version/ - API version info (public)
+# GET /api/v1/core/dashboard/overview/ - Dashboard overview stats (authenticated)
+# GET /api/v1/core/dashboard/health/ - Dashboard health status (authenticated)
+# GET /api/v1/core/dashboard/alerts/ - Dashboard alerts/notifications (authenticated)
+# GET/POST /api/v1/core/dashboard/config/<user_id>/ - Dashboard configuration (authenticated)

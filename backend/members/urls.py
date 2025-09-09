@@ -1,4 +1,4 @@
-# members/urls.py - FIXED VERSION - Correct URL patterns
+# members/urls.py - FIXED VERSION - Added missing endpoints
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -10,7 +10,7 @@ app_name = 'members'
 
 # Create router for authenticated endpoints
 router = DefaultRouter()
-router.register(r'', MemberViewSet, basename='member')  # FIXED: Empty prefix for /api/v1/members/
+router.register(r'', MemberViewSet, basename='member')  # Empty prefix for /api/v1/members/
 router.register(r'tags', MemberTagViewSet, basename='member-tag')
 router.register(r'statistics', MemberStatisticsViewSet, basename='member-statistics')
 router.register(r'import-logs', BulkImportLogViewSet, basename='import-log')
@@ -23,7 +23,7 @@ urlpatterns = [
     path('', include(router.urls)),
 ]
 
-# FIXED URL Structure:
+# URL Structure created by this configuration:
 # Public endpoints:
 # POST /api/v1/members/register/ - Public member registration
 
@@ -34,8 +34,14 @@ urlpatterns = [
 # PUT /api/v1/members/{id}/ - Update member
 # PATCH /api/v1/members/{id}/ - Partial update member
 # DELETE /api/v1/members/{id}/ - Delete member (admin only)
-# GET /api/v1/members/statistics/ - Member statistics (viewset action)
-# GET /api/v1/members/export/ - Export members (viewset action)
+
+# Custom member endpoints:
+# GET /api/v1/members/recent/ - Get recently registered members
+# GET /api/v1/members/search/ - Search members by query  
+# GET /api/v1/members/birthdays/ - Get upcoming birthdays
+# GET /api/v1/members/statistics/ - Member statistics
+# GET /api/v1/members/export/ - Export members (admin only)
+# POST /api/v1/members/bulk_actions/ - Bulk actions on members (admin only)
 
 # Tag management:
 # GET /api/v1/members/tags/ - List tags
@@ -48,4 +54,4 @@ urlpatterns = [
 # GET /api/v1/members/statistics/ - Member statistics
 
 # Import logs:
-# GET /api/v1/members/import-logs/ - List import logs
+# GET /api/v1/members/import-logs/ - List import logs (admin only)

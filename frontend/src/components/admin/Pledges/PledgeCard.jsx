@@ -1,29 +1,62 @@
 // frontend/src/components/admin/Pledges/PledgeCard.jsx
-
 import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
-import { formatCurrency, formatDate } from '../../../utils/formatters';
+import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
 import styles from './Pledges.module.css';
 
-const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
+const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, showPaymentHistory }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // Safely extract pledge data with fallbacks
+  const {
+    id,
+    member,
+    member_name,
+    member_id,
+    amount = 0,
+    frequency = 'monthly',
+    start_date,
+    end_date,
+    status = 'active',
+    notes = '',
+    created_at,
+    updated_at,
+    total_pledged = 0,
+    total_received = 0,
+    last_payment_date,
+    next_payment_date,
+    payments_count = 0,
+    is_overdue = false,
+    days_until_next_payment = null,
+    payment_history = []
+  } = pledge || {};
+
+  // Calculate derived values
+  const totalPledgedAmount = total_pledged || (frequency === 'one-time' ? amount : calculateTotalPledged());
+  const totalReceivedAmount = total_received || 0;
+  const remainingAmount = totalPledgedAmount - totalReceivedAmount;
+  const completionPercentage = totalPledgedAmount > 0 ? (totalReceivedAmount / totalPledgedAmount) * 100 : 0;
+  
+  // Status and frequency display functions
   const getStatusBadgeColor = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'active':
         return 'success';
       case 'completed':
         return 'info';
       case 'cancelled':
         return 'warning';
+      case 'overdue':
+        return 'danger';
       default:
         return 'default';
     }
   };
 
   const getFrequencyBadgeColor = (frequency) => {
-    switch (frequency) {
+    switch (frequency?.toLowerCase()) {
       case 'one-time':
         return 'secondary';
       case 'weekly':
@@ -40,23 +73,39 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'active':
         return '✓';
       case 'completed':
         return '✓✓';
       case 'cancelled':
         return '✗';
+      case 'overdue':
+        return '⚠';
       default:
         return '?';
     }
   };
 
+  const getFrequencyDisplayText = (frequency) => {
+    const frequencyMap = {
+      'one-time': 'One-time',
+      'weekly': 'Weekly',
+      'monthly': 'Monthly',
+      'quarterly': 'Quarterly',
+      'annually': 'Annually'
+    };
+    return frequencyMap[frequency?.toLowerCase()] || frequency;
+  };
+
+  // Calculate progress for recurring pledges
   const calculateProgress = () => {
-    if (!pledge.start_date || !pledge.end_date) return 0;
+    if (!start_date || !end_date || frequency === 'one-time') {
+      return completionPercentage;
+    }
     
-    const start = new Date(pledge.start_date);
-    const end = new Date(pledge.end_date);
+    const start = new Date(start_date);
+    const end = new Date(end_date);
     const now = new Date();
     
     if (now < start) return 0;
@@ -67,31 +116,44 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
     return Math.round((elapsed / total) * 100);
   };
 
-  const calculateTotalPledged = () => {
-    if (pledge.frequency === 'one-time') {
-      return pledge.amount;
+  // Calculate total pledged amount for recurring pledges
+  function calculateTotalPledged() {
+    if (frequency === 'one-time' || !start_date || !end_date) {
+      return amount;
     }
     
-    if (!pledge.start_date || !pledge.end_date) {
-      return pledge.amount;
-    }
-    
-    const start = new Date(pledge.start_date);
-    const end = new Date(pledge.end_date);
+    const start = new Date(start_date);
+    const end = new Date(end_date);
     const monthsDiff = ((end.getFullYear() - start.getFullYear()) * 12) + (end.getMonth() - start.getMonth());
     
-    switch (pledge.frequency) {
+    switch (frequency?.toLowerCase()) {
       case 'weekly':
-        return pledge.amount * Math.ceil(monthsDiff * 4.33);
+        return amount * Math.ceil(monthsDiff * 4.33);
       case 'monthly':
-        return pledge.amount * monthsDiff;
+        return amount * monthsDiff;
       case 'quarterly':
-        return pledge.amount * Math.ceil(monthsDiff / 3);
+        return amount * Math.ceil(monthsDiff / 3);
       case 'annually':
-        return pledge.amount * Math.ceil(monthsDiff / 12);
+        return amount * Math.ceil(monthsDiff / 12);
       default:
-        return pledge.amount;
+        return amount;
     }
+  }
+
+  // Payment status helpers
+  const getNextPaymentInfo = () => {
+    if (frequency === 'one-time' || status !== 'active') return null;
+    
+    if (next_payment_date) {
+      const daysUntil = differenceInDays(new Date(next_payment_date), new Date());
+      return {
+        date: next_payment_date,
+        daysUntil,
+        isOverdue: daysUntil < 0
+      };
+    }
+    
+    return null;
   };
 
   const statusOptions = [
@@ -100,36 +162,59 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
     { value: 'cancelled', label: 'Cancelled' }
   ];
 
+  const nextPayment = getNextPaymentInfo();
+  const timeProgress = calculateProgress();
+  const memberDisplayName = member?.name || member_name || 'Unknown Member';
+  const memberEmail = member?.email || '';
+  const memberPhoto = member?.photo_url || '';
+
   return (
-    <Card className={`${styles.pledgeCard} ${pledge.status === 'cancelled' ? styles.cancelled : ''}`}>
+    <Card className={`${styles.pledgeCard} ${status === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}>
+      {/* Header Section */}
       <div className={styles.pledgeHeader}>
         <div className={styles.memberInfo}>
           <Avatar 
-            src={pledge.member?.photo_url} 
-            name={pledge.member?.name || pledge.member_name}
+            src={memberPhoto} 
+            name={memberDisplayName}
             size="md"
+            className={styles.memberAvatar}
           />
           <div className={styles.memberDetails}>
             <h3 className={styles.memberName}>
-              {pledge.member?.name || pledge.member_name}
+              {memberDisplayName}
             </h3>
-            <p className={styles.memberEmail}>
-              {pledge.member?.email}
-            </p>
+            {memberEmail && (
+              <p className={styles.memberEmail}>
+                {memberEmail}
+              </p>
+            )}
+            {payments_count > 0 && (
+              <p className={styles.paymentCount}>
+                {payments_count} payment{payments_count !== 1 ? 's' : ''} made
+              </p>
+            )}
           </div>
         </div>
         
         <div className={styles.statusSection}>
-          <Badge 
-            color={getStatusBadgeColor(pledge.status)}
-            className={styles.statusBadge}
-          >
-            {getStatusIcon(pledge.status)} {pledge.status}
-          </Badge>
+          <div className={styles.badgeContainer}>
+            <Badge 
+              color={getStatusBadgeColor(status)}
+              className={styles.statusBadge}
+            >
+              {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
+            </Badge>
+            
+            {is_overdue && (
+              <Badge color="danger" className={styles.overdueBadge}>
+                Overdue
+              </Badge>
+            )}
+          </div>
           
           <Dropdown
-            value={pledge.status}
-            onChange={(newStatus) => onUpdateStatus(pledge.id, newStatus)}
+            value={status}
+            onChange={(newStatus) => onUpdateStatus && onUpdateStatus(id, newStatus)}
             options={statusOptions}
             variant="minimal"
             className={styles.statusDropdown}
@@ -137,71 +222,130 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
         </div>
       </div>
 
+      {/* Amount and Frequency Section */}
       <div className={styles.pledgeDetails}>
         <div className={styles.amountSection}>
           <div className={styles.amountInfo}>
             <span className={styles.amount}>
-              {formatCurrency(pledge.amount)}
+              {formatCurrency(amount)}
             </span>
             <Badge 
-              color={getFrequencyBadgeColor(pledge.frequency)}
+              color={getFrequencyBadgeColor(frequency)}
               className={styles.frequencyBadge}
             >
-              {pledge.frequency}
+              {getFrequencyDisplayText(frequency)}
             </Badge>
           </div>
           
-          {pledge.frequency !== 'one-time' && (
+          {frequency !== 'one-time' && totalPledgedAmount !== amount && (
             <div className={styles.totalPledged}>
               <Tooltip content="Total pledged amount over the entire period">
                 <span className={styles.totalAmount}>
-                  Total: {formatCurrency(calculateTotalPledged())}
+                  Total: {formatCurrency(totalPledgedAmount)}
                 </span>
               </Tooltip>
             </div>
           )}
         </div>
 
+        {/* Payment Progress Section */}
+        <div className={styles.paymentProgress}>
+          <div className={styles.progressHeader}>
+            <span className={styles.progressLabel}>Payment Progress</span>
+            <span className={styles.progressPercentage}>
+              {Math.round(completionPercentage)}%
+            </span>
+          </div>
+          <div className={styles.progressBar}>
+            <div 
+              className={styles.progressFill}
+              style={{ width: `${Math.min(completionPercentage, 100)}%` }}
+            />
+          </div>
+          <div className={styles.progressDetails}>
+            <span className={styles.progressDetail}>
+              Received: {formatCurrency(totalReceivedAmount)}
+            </span>
+            {remainingAmount > 0 && (
+              <span className={styles.progressDetail}>
+                Remaining: {formatCurrency(remainingAmount)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Date Information */}
         <div className={styles.dateSection}>
           <div className={styles.dateInfo}>
             <span className={styles.dateLabel}>Start:</span>
             <span className={styles.dateValue}>
-              {formatDate(pledge.start_date)}
+              {start_date ? formatDate(start_date) : 'Not set'}
             </span>
           </div>
           
-          {pledge.end_date && (
+          {end_date && frequency !== 'one-time' && (
             <div className={styles.dateInfo}>
               <span className={styles.dateLabel}>End:</span>
               <span className={styles.dateValue}>
-                {formatDate(pledge.end_date)}
+                {formatDate(end_date)}
+              </span>
+            </div>
+          )}
+
+          {last_payment_date && (
+            <div className={styles.dateInfo}>
+              <span className={styles.dateLabel}>Last Payment:</span>
+              <span className={styles.dateValue}>
+                {formatDate(last_payment_date)}
               </span>
             </div>
           )}
         </div>
 
-        {pledge.frequency !== 'one-time' && pledge.end_date && (
-          <div className={styles.progressSection}>
-            <div className={styles.progressLabel}>
-              <span>Progress</span>
-              <span>{calculateProgress()}%</span>
+        {/* Next Payment Information */}
+        {nextPayment && (
+          <div className={`${styles.nextPaymentSection} ${nextPayment.isOverdue ? styles.overdue : ''}`}>
+            <div className={styles.nextPaymentInfo}>
+              <span className={styles.nextPaymentLabel}>
+                {nextPayment.isOverdue ? 'Overdue Payment:' : 'Next Payment:'}
+              </span>
+              <span className={styles.nextPaymentDate}>
+                {formatDate(nextPayment.date)}
+              </span>
             </div>
-            <div className={styles.progressBar}>
+            <div className={styles.nextPaymentDays}>
+              {nextPayment.isOverdue 
+                ? `${Math.abs(nextPayment.daysUntil)} days overdue`
+                : `${nextPayment.daysUntil} days remaining`
+              }
+            </div>
+          </div>
+        )}
+
+        {/* Time Progress for Recurring Pledges */}
+        {frequency !== 'one-time' && start_date && end_date && (
+          <div className={styles.timeProgressSection}>
+            <div className={styles.timeProgressLabel}>
+              <span>Time Progress</span>
+              <span>{timeProgress}%</span>
+            </div>
+            <div className={styles.timeProgressBar}>
               <div 
-                className={styles.progressFill}
-                style={{ width: `${calculateProgress()}%` }}
+                className={styles.timeProgressFill}
+                style={{ width: `${timeProgress}%` }}
               />
             </div>
           </div>
         )}
       </div>
 
-      {pledge.notes && (
+      {/* Notes Section */}
+      {notes && (
         <div className={styles.notesSection}>
           <p className={styles.notes}>
-            {isExpanded ? pledge.notes : `${pledge.notes.substring(0, 100)}${pledge.notes.length > 100 ? '...' : ''}`}
+            {isExpanded ? notes : `${notes.substring(0, 100)}${notes.length > 100 ? '...' : ''}`}
           </p>
-          {pledge.notes.length > 100 && (
+          {notes.length > 100 && (
             <Button
               variant="link"
               size="sm"
@@ -214,18 +358,66 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
         </div>
       )}
 
+      {/* Payment History Preview */}
+      {Array.isArray(payment_history) && payment_history.length > 0 && (
+        <div className={styles.paymentHistoryPreview}>
+          <div className={styles.paymentHistoryHeader}>
+            <span className={styles.paymentHistoryTitle}>Recent Payments</span>
+            {showPaymentHistory && (
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() => showPaymentHistory(id)}
+                className={styles.viewAllButton}
+              >
+                View All
+              </Button>
+            )}
+          </div>
+          <div className={styles.recentPayments}>
+            {payment_history.slice(0, 3).map((payment, index) => (
+              <div key={payment.id || index} className={styles.recentPayment}>
+                <span className={styles.paymentAmount}>
+                  {formatCurrency(payment.amount)}
+                </span>
+                <span className={styles.paymentDate}>
+                  {payment.date ? format(new Date(payment.date), 'MMM dd') : 'Unknown date'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Footer with Actions */}
       <div className={styles.pledgeFooter}>
         <div className={styles.timestampInfo}>
           <span className={styles.timestamp}>
-            Created {formatDistanceToNow(new Date(pledge.created_at), { addSuffix: true })}
+            Created {created_at ? formatDistanceToNow(new Date(created_at), { addSuffix: true }) : 'Unknown'}
           </span>
+          {updated_at && updated_at !== created_at && (
+            <span className={styles.timestamp}>
+              Updated {formatDistanceToNow(new Date(updated_at), { addSuffix: true })}
+            </span>
+          )}
         </div>
         
         <div className={styles.actions}>
+          {status === 'active' && onAddPayment && (
+            <Button
+              variant="success"
+              size="sm"
+              onClick={() => onAddPayment(pledge)}
+              className={styles.addPaymentButton}
+            >
+              Add Payment
+            </Button>
+          )}
+          
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onEdit(pledge)}
+            onClick={() => onEdit && onEdit(pledge)}
           >
             Edit
           </Button>
@@ -233,12 +425,38 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus }) => {
           <Button
             variant="danger"
             size="sm"
-            onClick={() => onDelete(pledge.id)}
+            onClick={() => onDelete && onDelete(id)}
           >
             Delete
           </Button>
         </div>
       </div>
+
+      {/* Quick Actions for Overdue Pledges */}
+      {is_overdue && status === 'active' && (
+        <div className={styles.overdueActions}>
+          <div className={styles.overdueWarning}>
+            <span className={styles.overdueIcon}>⚠️</span>
+            <span className={styles.overdueText}>This pledge is overdue</span>
+          </div>
+          <div className={styles.overdueButtons}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => onAddPayment && onAddPayment(pledge)}
+            >
+              Record Payment
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {/* Send reminder functionality */}}
+            >
+              Send Reminder
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

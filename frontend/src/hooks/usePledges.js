@@ -1,8 +1,9 @@
-// hooks/usePledges.js - FIXED VERSION
+// hooks/usePledges.js - FIXED VERSION with proper state management
 import { useState, useEffect, useCallback, useRef } from 'react';
 import pledgesService from '../services/pledges';
 
 const usePledges = (initialFilters = {}) => {
+  // Core state
   const [pledges, setPledges] = useState([]);
   const [statistics, setStatistics] = useState({});
   const [loading, setLoading] = useState(false);
@@ -12,298 +13,363 @@ const usePledges = (initialFilters = {}) => {
     next: null,
     previous: null,
     totalPages: 1,
-    currentPage: 1
+    currentPage: 1,
+    itemsPerPage: 25
   });
+
+  // Filter and search state
   const [filters, setFilters] = useState(initialFilters);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Use ref to track if initial fetch has been done
-  const initialFetchDone = useRef(false);
+  // Refs to prevent infinite loops
+  const isInitialized = useRef(false);
+  const lastFetchParams = useRef(null);
 
-  // Fetch pledges with error handling
+  // Helper to serialize params for comparison
+  const serializeParams = (params) => JSON.stringify(params);
+
+  // Stable fetch function that doesn't change unless absolutely necessary
   const fetchPledges = useCallback(async (params = {}) => {
+    // Merge current state with provided params
+    const mergedParams = {
+      ...filters,
+      search: searchQuery,
+      page: 1,
+      ...params
+    };
+
+    // Skip if params haven't changed
+    const currentParamsStr = serializeParams(mergedParams);
+    if (lastFetchParams.current === currentParamsStr && isInitialized.current) {
+      return;
+    }
+    lastFetchParams.current = currentParamsStr;
+
     try {
       setLoading(true);
       setError(null);
 
-      const queryParams = {
-        ...filters,
-        ...params,
-        search: searchQuery,
-        page: params.page || 1
-      };
-
-      console.log('Fetching pledges with params:', queryParams);
-      
-      const response = await pledgesService.getPledges(queryParams);
+      console.log('usePledges: Fetching with params:', mergedParams);
+      const response = await pledgesService.getPledges(mergedParams);
       
       if (response.success) {
+        const data = response.data;
+        
         // Handle both paginated and non-paginated responses
-        if (response.data.results) {
+        if (data.results) {
           // Paginated response
-          setPledges(response.data.results || []);
+          setPledges(Array.isArray(data.results) ? data.results : []);
           setPagination({
-            count: response.data.count || 0,
-            next: response.data.next,
-            previous: response.data.previous,
-            totalPages: Math.ceil((response.data.count || 0) / 25),
-            currentPage: params.page || 1
+            count: data.count || 0,
+            next: data.next,
+            previous: data.previous,
+            totalPages: Math.ceil((data.count || 0) / (mergedParams.page_size || 25)),
+            currentPage: mergedParams.page || 1,
+            itemsPerPage: mergedParams.page_size || 25
           });
         } else {
           // Non-paginated response
-          setPledges(Array.isArray(response.data) ? response.data : []);
+          const pledgesArray = Array.isArray(data) ? data : [];
+          setPledges(pledgesArray);
           setPagination({
-            count: Array.isArray(response.data) ? response.data.length : 0,
+            count: pledgesArray.length,
             next: null,
             previous: null,
             totalPages: 1,
-            currentPage: 1
+            currentPage: 1,
+            itemsPerPage: pledgesArray.length
           });
         }
+
+        console.log('usePledges: Successfully fetched', Array.isArray(data.results) ? data.results.length : (Array.isArray(data) ? data.length : 0), 'pledges');
       } else {
-        console.error('Failed to fetch pledges:', response.error);
+        console.error('usePledges: Failed to fetch pledges:', response.error);
         setError(response.error || 'Failed to fetch pledges');
         setPledges([]);
       }
     } catch (err) {
-      console.error('Error in fetchPledges:', err);
+      console.error('usePledges: Exception in fetchPledges:', err);
       setError('An unexpected error occurred while fetching pledges');
       setPledges([]);
     } finally {
       setLoading(false);
     }
-  }, []); // Remove dependencies to prevent infinite loop
+  }, []); // Empty dependency array - function is stable
 
-  // Fetch statistics with error handling
-  const fetchStatistics = useCallback(async () => {
+  // Stable statistics fetch function
+  const fetchStatistics = useCallback(async (params = {}) => {
     try {
-      console.log('Fetching pledge statistics...');
-      const response = await pledgesService.getStatistics();
+      console.log('usePledges: Fetching statistics');
+      const response = await pledgesService.getStatistics(params);
       
       if (response.success) {
-        console.log('Statistics fetched successfully:', response.data);
         setStatistics(response.data || {});
+        console.log('usePledges: Successfully fetched statistics');
       } else {
-        console.error('Failed to fetch statistics:', response.error);
-        // Don't set error for statistics failure, just log it
+        console.error('usePledges: Failed to fetch statistics:', response.error);
+        // Don't set error state for statistics failure
         setStatistics({});
       }
     } catch (err) {
-      console.error('Error fetching statistics:', err);
+      console.error('usePledges: Exception in fetchStatistics:', err);
       setStatistics({});
     }
-  }, []); // Remove dependencies to prevent infinite loop
+  }, []);
 
-  // Create a stable fetch function that uses current values
-  const stableFetchPledges = useCallback(async (params = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Get current values directly from state
-      const currentFilters = filters;
-      const currentSearchQuery = searchQuery;
-
-      const queryParams = {
-        ...currentFilters,
-        ...params,
-        search: currentSearchQuery,
-        page: params.page || 1
-      };
-
-      console.log('Fetching pledges with params:', queryParams);
-      
-      const response = await pledgesService.getPledges(queryParams);
-      
-      if (response.success) {
-        // Handle both paginated and non-paginated responses
-        if (response.data.results) {
-          // Paginated response
-          setPledges(response.data.results || []);
-          setPagination({
-            count: response.data.count || 0,
-            next: response.data.next,
-            previous: response.data.previous,
-            totalPages: Math.ceil((response.data.count || 0) / 25),
-            currentPage: params.page || 1
-          });
-        } else {
-          // Non-paginated response
-          setPledges(Array.isArray(response.data) ? response.data : []);
-          setPagination({
-            count: Array.isArray(response.data) ? response.data.length : 0,
-            next: null,
-            previous: null,
-            totalPages: 1,
-            currentPage: 1
-          });
-        }
-      } else {
-        console.error('Failed to fetch pledges:', response.error);
-        setError(response.error || 'Failed to fetch pledges');
-        setPledges([]);
-      }
-    } catch (err) {
-      console.error('Error in fetchPledges:', err);
-      setError('An unexpected error occurred while fetching pledges');
-      setPledges([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, searchQuery]); // These dependencies are needed for filtering
-
-  // Create pledge
+  // CRUD Operations
   const createPledge = useCallback(async (pledgeData) => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Creating pledge with data:', pledgeData);
+      console.log('usePledges: Creating pledge');
       const response = await pledgesService.createPledge(pledgeData);
       
       if (response.success) {
-        console.log('Pledge created successfully');
-        // Refresh pledges list and statistics
+        console.log('usePledges: Pledge created successfully');
+        // Refresh both pledges and statistics
         await Promise.all([
-          stableFetchPledges(),
+          fetchPledges(),
           fetchStatistics()
         ]);
         return response.data;
       } else {
-        console.error('Failed to create pledge:', response.error);
-        setError(response.error || 'Failed to create pledge');
-        throw new Error(response.error || 'Failed to create pledge');
+        const errorMessage = response.error || 'Failed to create pledge';
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err) {
-      console.error('Error creating pledge:', err);
       const errorMessage = err.message || 'An unexpected error occurred while creating pledge';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [stableFetchPledges, fetchStatistics]);
+  }, [fetchPledges, fetchStatistics]);
 
-  // Update pledge
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Updating pledge:', pledgeId, pledgeData);
+      console.log('usePledges: Updating pledge:', pledgeId);
       const response = await pledgesService.updatePledge(pledgeId, pledgeData);
       
       if (response.success) {
-        console.log('Pledge updated successfully');
-        // Refresh pledges list and statistics
+        console.log('usePledges: Pledge updated successfully');
+        // Refresh both pledges and statistics
         await Promise.all([
-          stableFetchPledges(),
+          fetchPledges(),
           fetchStatistics()
         ]);
         return response.data;
       } else {
-        console.error('Failed to update pledge:', response.error);
-        setError(response.error || 'Failed to update pledge');
-        throw new Error(response.error || 'Failed to update pledge');
+        const errorMessage = response.error || 'Failed to update pledge';
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err) {
-      console.error('Error updating pledge:', err);
       const errorMessage = err.message || 'An unexpected error occurred while updating pledge';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [stableFetchPledges, fetchStatistics]);
+  }, [fetchPledges, fetchStatistics]);
 
-  // Delete pledge
   const deletePledge = useCallback(async (pledgeId) => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Deleting pledge:', pledgeId);
+      console.log('usePledges: Deleting pledge:', pledgeId);
       const response = await pledgesService.deletePledge(pledgeId);
       
       if (response.success) {
-        console.log('Pledge deleted successfully');
-        // Refresh pledges list and statistics
+        console.log('usePledges: Pledge deleted successfully');
+        // Refresh both pledges and statistics
         await Promise.all([
-          stableFetchPledges(),
+          fetchPledges(),
           fetchStatistics()
         ]);
       } else {
-        console.error('Failed to delete pledge:', response.error);
-        setError(response.error || 'Failed to delete pledge');
-        throw new Error(response.error || 'Failed to delete pledge');
+        const errorMessage = response.error || 'Failed to delete pledge';
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err) {
-      console.error('Error deleting pledge:', err);
       const errorMessage = err.message || 'An unexpected error occurred while deleting pledge';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [stableFetchPledges, fetchStatistics]);
+  }, [fetchPledges, fetchStatistics]);
 
-  // Export pledges
-  const exportPledges = useCallback(async (format = 'csv', params = {}) => {
+  // Bulk operations
+  const bulkUpdatePledges = useCallback(async (pledgeIds, updates) => {
     try {
-      console.log('Exporting pledges as:', format);
-      const response = await pledgesService.exportPledges({
-        ...filters,
-        search: searchQuery,
-        ...params
-      }, format);
+      setLoading(true);
+      setError(null);
+
+      console.log('usePledges: Bulk updating pledges:', pledgeIds.length);
+      const response = await pledgesService.bulkUpdatePledges(pledgeIds, updates);
       
       if (response.success) {
-        console.log('Export completed successfully');
+        console.log('usePledges: Bulk update successful');
+        await Promise.all([
+          fetchPledges(),
+          fetchStatistics()
+        ]);
+        return response.data;
+      } else {
+        const errorMessage = response.error || 'Failed to bulk update pledges';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'An unexpected error occurred during bulk update';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPledges, fetchStatistics]);
+
+  const bulkDeletePledges = useCallback(async (pledgeIds) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log('usePledges: Bulk deleting pledges:', pledgeIds.length);
+      const response = await pledgesService.bulkDeletePledges(pledgeIds);
+      
+      if (response.success) {
+        console.log('usePledges: Bulk delete successful');
+        await Promise.all([
+          fetchPledges(),
+          fetchStatistics()
+        ]);
+        return response.data;
+      } else {
+        const errorMessage = response.error || 'Failed to bulk delete pledges';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'An unexpected error occurred during bulk delete';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPledges, fetchStatistics]);
+
+  // Payment operations
+  const addPayment = useCallback(async (pledgeId, paymentData) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log('usePledges: Adding payment to pledge:', pledgeId);
+      const response = await pledgesService.addPayment(pledgeId, paymentData);
+      
+      if (response.success) {
+        console.log('usePledges: Payment added successfully');
+        await Promise.all([
+          fetchPledges(),
+          fetchStatistics()
+        ]);
+        return response.data;
+      } else {
+        const errorMessage = response.error || 'Failed to add payment';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'An unexpected error occurred while adding payment';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPledges, fetchStatistics]);
+
+  // Export function
+  const exportPledges = useCallback(async (format = 'csv', params = {}) => {
+    try {
+      console.log('usePledges: Exporting pledges as', format);
+      const exportParams = { ...filters, search: searchQuery, ...params };
+      const response = await pledgesService.exportPledges(exportParams, format);
+      
+      if (response.success) {
+        console.log('usePledges: Export completed successfully');
         return true;
       } else {
-        console.error('Failed to export pledges:', response.error);
         throw new Error(response.error || 'Failed to export pledges');
       }
     } catch (err) {
-      console.error('Error exporting pledges:', err);
+      console.error('usePledges: Export failed:', err);
       throw new Error(err.message || 'An unexpected error occurred while exporting pledges');
     }
   }, [filters, searchQuery]);
 
-  // Update filters
+  // Filter and search management
   const updateFilters = useCallback((newFilters) => {
-    console.log('Updating filters:', newFilters);
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    console.log('usePledges: Updating filters:', newFilters);
+    setFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters, ...newFilters };
+      console.log('usePledges: New filters:', updatedFilters);
+      return updatedFilters;
+    });
+    // Reset last fetch params to force refresh
+    lastFetchParams.current = null;
   }, []);
 
-  // Clear error
+  const updateSearchQuery = useCallback((query) => {
+    console.log('usePledges: Updating search query:', query);
+    setSearchQuery(query);
+    // Reset last fetch params to force refresh
+    lastFetchParams.current = null;
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Initial fetch on mount only - PROPERLY FIXED
+  // Initialize on mount
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      console.log('usePledges initial effect triggered - fetching pledges and statistics');
-      initialFetchDone.current = true;
+    if (!isInitialized.current) {
+      console.log('usePledges: Initializing - fetching pledges and statistics');
+      isInitialized.current = true;
       
-      // Use the stable versions for initial fetch
-      fetchPledges();
-      fetchStatistics();
+      // Initial fetch
+      Promise.all([
+        fetchPledges(),
+        fetchStatistics()
+      ]).catch(err => {
+        console.error('usePledges: Initialization failed:', err);
+      });
     }
-  }, []); // Empty dependency array is now safe
+  }, [fetchPledges, fetchStatistics]);
 
-  // Effect to refetch when filters or search change - FIXED
+  // Effect for filter/search changes
   useEffect(() => {
-    if (initialFetchDone.current) {
-      console.log('Filters or search changed, refetching pledges');
-      stableFetchPledges();
+    if (isInitialized.current) {
+      console.log('usePledges: Filters or search changed, refetching pledges');
+      fetchPledges().catch(err => {
+        console.error('usePledges: Filter/search refetch failed:', err);
+      });
     }
-  }, [filters, searchQuery]); // Use direct dependencies instead of function reference
+  }, [filters, searchQuery, fetchPledges]);
 
-  // Utility functions
+  // Utility functions using service methods
   const getTotalPledgeAmount = useCallback(() => {
     return pledgesService.calculateTotalPledgeAmount(pledges);
+  }, [pledges]);
+
+  const getTotalReceivedAmount = useCallback(() => {
+    return pledgesService.calculateTotalReceivedAmount(pledges);
   }, [pledges]);
 
   const getFrequencyDisplayText = useCallback((frequency) => {
@@ -322,12 +388,7 @@ const usePledges = (initialFilters = {}) => {
     return pledgesService.formatDate(dateString);
   }, []);
 
-  // Add this alias function
-  const fetchPledgeStats = useCallback(async () => {
-    console.log('fetchPledgeStats called - aliasing to fetchStatistics');
-    return fetchStatistics();
-  }, [fetchStatistics]);
-
+  // Return the hook interface
   return {
     // Data
     pledges,
@@ -340,20 +401,30 @@ const usePledges = (initialFilters = {}) => {
     filters,
     searchQuery,
     
-    // Actions
-    fetchPledges: stableFetchPledges, // Return the stable version
+    // Core Actions
+    fetchPledges,
     fetchStatistics,
-    fetchPledgeStats,
+    fetchPledgeStats: fetchStatistics, // Alias for compatibility
     createPledge,
     updatePledge,
     deletePledge,
+    
+    // Bulk Actions
+    bulkUpdatePledges,
+    bulkDeletePledges,
+    
+    // Payment Actions
+    addPayment,
+    
+    // Utility Actions
     exportPledges,
     updateFilters,
-    setSearchQuery,
+    setSearchQuery: updateSearchQuery,
     clearError,
     
-    // Utilities
+    // Computed Values
     getTotalPledgeAmount,
+    getTotalReceivedAmount,
     getFrequencyDisplayText,
     getStatusDisplayText,
     formatAmount,

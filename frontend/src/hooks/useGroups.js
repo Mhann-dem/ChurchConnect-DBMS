@@ -2,65 +2,89 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import groupsService from '../services/groups';
 
 export const useGroups = (options = {}) => {
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [state, setState] = useState({
+    groups: [],
+    loading: true,
+    error: null,
+    initialized: false
+  });
+  
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 25,
+    limit: options.pageSize || 25,
     total: 0,
-    totalPages: 0
+    totalPages: 0,
+    hasNext: false,
+    hasPrevious: false
   });
+  
   const [filters, setFilters] = useState({
-    active: null,
-    search: '',
-    hasLeader: null,
-    memberCount: null
+    active: options.initialFilters?.active || null,
+    search: options.initialFilters?.search || '',
+    category: options.initialFilters?.category || null,
+    hasLeader: options.initialFilters?.hasLeader || null,
+    ...options.initialFilters
   });
 
-  // Use refs to track if we're already fetching to prevent duplicate requests
-  const isFetchingRef = useRef(false);
+  // Refs to prevent memory leaks and duplicate requests
   const mountedRef = useRef(true);
+  const fetchingRef = useRef(false);
+  const lastRequestRef = useRef(null);
 
-  // Helper function to transform filters for API
+  // Helper to create request signature for deduplication
+  const createRequestSignature = useCallback((requestFilters, requestPage) => {
+    return JSON.stringify({ 
+      filters: requestFilters, 
+      page: requestPage, 
+      limit: pagination.limit 
+    });
+  }, [pagination.limit]);
+
+  // Transform filters for API
   const transformFiltersForAPI = useCallback((currentFilters) => {
     const apiFilters = {};
     
-    if (currentFilters.search) {
-      apiFilters.search = currentFilters.search;
+    if (currentFilters.search?.trim()) {
+      apiFilters.search = currentFilters.search.trim();
     }
     
     if (currentFilters.active !== null && currentFilters.active !== 'all') {
-      apiFilters.active = currentFilters.active === 'active';
+      apiFilters.active = currentFilters.active === 'active' || currentFilters.active === true;
+    }
+    
+    if (currentFilters.category && currentFilters.category !== 'all') {
+      apiFilters.category = currentFilters.category;
     }
     
     if (currentFilters.hasLeader && currentFilters.hasLeader !== 'all') {
-      if (currentFilters.hasLeader === 'yes') {
-        apiFilters.has_leader = true;
-      } else if (currentFilters.hasLeader === 'no') {
-        apiFilters.has_leader = false;
-      }
+      apiFilters.has_leader = currentFilters.hasLeader === 'yes' || currentFilters.hasLeader === true;
     }
     
     return apiFilters;
   }, []);
 
-  // FIXED: Stable fetchGroups function with proper dependency management
-  const fetchGroups = useCallback(async (currentFilters = null, page = null) => {
-    // Prevent duplicate requests
-    if (isFetchingRef.current) {
-      console.log('[useGroups] Already fetching, skipping...');
+  // Main fetch function with deduplication and error handling
+  const fetchGroups = useCallback(async (requestFilters = null, requestPage = null, forceRefresh = false) => {
+    const filtersToUse = requestFilters || filters;
+    const pageToUse = requestPage || pagination.page;
+    
+    // Create request signature for deduplication
+    const requestSignature = createRequestSignature(filtersToUse, pageToUse);
+    
+    // Skip if already fetching the same request
+    if (!forceRefresh && fetchingRef.current && lastRequestRef.current === requestSignature) {
+      console.log('[useGroups] Skipping duplicate request');
       return;
     }
 
     try {
-      isFetchingRef.current = true;
-      setLoading(true);
-      setError(null);
+      fetchingRef.current = true;
+      lastRequestRef.current = requestSignature;
       
-      // Use current state if no parameters provided
-      const filtersToUse = currentFilters || filters;
-      const pageToUse = page || pagination.page;
+      // Only show loading on initial load or when forced
+      if (!state.initialized || forceRefresh) {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+      }
       
       const apiParams = {
         page: pageToUse,
@@ -68,63 +92,88 @@ export const useGroups = (options = {}) => {
         ...transformFiltersForAPI(filtersToUse)
       };
       
-      console.log('[useGroups] Fetching groups with params:', apiParams);
+      console.log('[useGroups] Fetching groups:', apiParams);
       
       const result = await groupsService.getGroups(apiParams);
       
       // Only update state if component is still mounted
-      if (!mountedRef.current) {
-        return;
-      }
+      if (!mountedRef.current) return;
       
       if (result.success) {
-        setGroups(result.data.results || result.data || []);
-        setPagination({
-          page: result.data.page || pageToUse,
-          limit: result.data.limit || 25,
-          total: result.data.count || result.data.total || 0,
-          totalPages: Math.ceil((result.data.count || result.data.total || 0) / (result.data.limit || 25))
-        });
-        console.log('[useGroups] Groups fetched successfully:', result.data);
-      } else {
-        setError(result.error);
-        console.error('[useGroups] Failed to fetch groups:', result.error);
-      }
-    } catch (error) {
-      console.error('[useGroups] Error fetching groups:', error);
-      if (mountedRef.current) {
-        setError('Failed to load groups. Please try again.');
-      }
-    } finally {
-      isFetchingRef.current = false;
-      if (mountedRef.current) {
-        setLoading(false);
-      }
-    }
-  }, []); // FIXED: Empty dependency array since we use refs and current state
-
-  // FIXED: Separate stable function for refreshing
-  const refreshGroups = useCallback(() => {
-    return fetchGroups();
-  }, [fetchGroups]);
-
-  // Create new group/ministry
-  const createGroup = useCallback(async (groupData) => {
-    try {
-      const result = await groupsService.createGroup(groupData);
-      
-      if (result.success && mountedRef.current) {
-        // Add to current groups if on first page
-        if (pagination.page === 1) {
-          setGroups(prev => [result.data, ...prev]);
-        }
+        const responseData = result.data;
+        const groups = responseData.results || responseData || [];
         
-        // Update pagination
+        setState(prev => ({
+          ...prev,
+          groups,
+          loading: false,
+          error: null,
+          initialized: true
+        }));
+        
         setPagination(prev => ({
           ...prev,
-          total: prev.total + 1,
-          totalPages: Math.ceil((prev.total + 1) / prev.limit)
+          page: responseData.page || pageToUse,
+          total: responseData.count || groups.length,
+          totalPages: Math.ceil((responseData.count || groups.length) / pagination.limit),
+          hasNext: !!responseData.next,
+          hasPrevious: !!responseData.previous
         }));
+        
+        console.log('[useGroups] Groups fetched successfully:', groups.length);
+      } else {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: result.error,
+          initialized: true
+        }));
+        console.error('[useGroups] Error fetching groups:', result.error);
+      }
+    } catch (error) {
+      console.error('[useGroups] Unexpected error:', error);
+      if (mountedRef.current) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: 'An unexpected error occurred while fetching groups',
+          initialized: true
+        }));
+      }
+    } finally {
+      fetchingRef.current = false;
+    }
+  }, [filters, pagination.page, pagination.limit, transformFiltersForAPI, createRequestSignature, state.initialized]);
+
+  // Refresh groups - force a fresh fetch
+  const refreshGroups = useCallback(() => {
+    console.log('[useGroups] Refreshing groups...');
+    return fetchGroups(null, null, true);
+  }, [fetchGroups]);
+
+  // Create new group
+  const createGroup = useCallback(async (groupData) => {
+    try {
+      console.log('[useGroups] Creating group:', groupData);
+      const result = await groupsService.createGroup(groupData);
+      
+      if (result.success) {
+        // If on first page, add to current groups for immediate feedback
+        if (pagination.page === 1) {
+          setState(prev => ({
+            ...prev,
+            groups: [result.data, ...prev.groups]
+          }));
+          
+          setPagination(prev => ({
+            ...prev,
+            total: prev.total + 1,
+            totalPages: Math.ceil((prev.total + 1) / prev.limit)
+          }));
+        }
+        
+        // Refresh to ensure consistency with backend
+        setTimeout(() => refreshGroups(), 100);
         
         return result.data;
       } else {
@@ -134,17 +183,23 @@ export const useGroups = (options = {}) => {
       console.error('[useGroups] Error creating group:', error);
       throw error;
     }
-  }, [pagination.page]);
+  }, [pagination.page, pagination.limit, refreshGroups]);
 
-  // Update group/ministry
+  // Update group
   const updateGroup = useCallback(async (groupId, updateData) => {
     try {
+      console.log('[useGroups] Updating group:', groupId, updateData);
       const result = await groupsService.updateGroup(groupId, updateData);
       
-      if (result.success && mountedRef.current) {
-        setGroups(prev => prev.map(group => 
-          group.id === groupId ? result.data : group
-        ));
+      if (result.success) {
+        // Update in current state for immediate feedback
+        setState(prev => ({
+          ...prev,
+          groups: prev.groups.map(group => 
+            group.id === groupId ? { ...group, ...result.data } : group
+          )
+        }));
+        
         return result.data;
       } else {
         throw new Error(result.error);
@@ -155,18 +210,50 @@ export const useGroups = (options = {}) => {
     }
   }, []);
 
-  // Delete group/ministry
+  // Partial update group
+  const patchGroup = useCallback(async (groupId, updateData) => {
+    try {
+      console.log('[useGroups] Patching group:', groupId, updateData);
+      const result = await groupsService.patchGroup(groupId, updateData);
+      
+      if (result.success) {
+        setState(prev => ({
+          ...prev,
+          groups: prev.groups.map(group => 
+            group.id === groupId ? { ...group, ...result.data } : group
+          )
+        }));
+        
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('[useGroups] Error patching group:', error);
+      throw error;
+    }
+  }, []);
+
+  // Delete group
   const deleteGroup = useCallback(async (groupId) => {
     try {
+      console.log('[useGroups] Deleting group:', groupId);
       const result = await groupsService.deleteGroup(groupId);
       
-      if (result.success && mountedRef.current) {
-        setGroups(prev => prev.filter(group => group.id !== groupId));
+      if (result.success) {
+        // Remove from current state for immediate feedback
+        setState(prev => ({
+          ...prev,
+          groups: prev.groups.filter(group => group.id !== groupId)
+        }));
+        
         setPagination(prev => ({
           ...prev,
           total: Math.max(0, prev.total - 1),
           totalPages: Math.ceil(Math.max(0, prev.total - 1) / prev.limit)
         }));
+        
+        return true;
       } else {
         throw new Error(result.error);
       }
@@ -176,168 +263,248 @@ export const useGroups = (options = {}) => {
     }
   }, []);
 
-  // FIXED: Search function with stable dependencies
-  const searchGroups = useCallback(async (searchTerm, currentFilters = null) => {
-    const newFilters = { 
-      ...(currentFilters || filters), 
-      search: searchTerm 
-    };
+  // Search groups with debouncing
+  const searchGroups = useCallback(async (searchTerm) => {
+    console.log('[useGroups] Searching groups:', searchTerm);
     
+    const newFilters = { ...filters, search: searchTerm };
     setFilters(newFilters);
     
-    // Use setTimeout to batch the state update and fetch
-    setTimeout(() => {
-      fetchGroups(newFilters, 1);
-    }, 0);
-  }, []); // FIXED: Empty dependencies, use current state via closure
+    // Reset to first page for new search
+    await fetchGroups(newFilters, 1);
+  }, [filters, fetchGroups]);
 
-  // FIXED: Filter function with stable dependencies
+  // Apply filters
   const filterGroups = useCallback(async (filterUpdates) => {
-    setFilters(prevFilters => {
-      const newFilters = { ...prevFilters, ...filterUpdates };
-      
-      // Use setTimeout to batch the state update and fetch
-      setTimeout(() => {
-        fetchGroups(newFilters, 1);
-      }, 0);
-      
-      return newFilters;
-    });
-  }, []); // FIXED: Empty dependencies
+    console.log('[useGroups] Applying filters:', filterUpdates);
+    
+    const newFilters = { ...filters, ...filterUpdates };
+    setFilters(newFilters);
+    
+    // Reset to first page for new filters
+    await fetchGroups(newFilters, 1);
+  }, [filters, fetchGroups]);
 
-  // Clear filters
+  // Clear all filters
   const clearFilters = useCallback(async () => {
+    console.log('[useGroups] Clearing filters');
+    
     const clearedFilters = {
       active: null,
       search: '',
-      hasLeader: null,
-      memberCount: null
+      category: null,
+      hasLeader: null
     };
-    setFilters(clearedFilters);
     
-    setTimeout(() => {
-      fetchGroups(clearedFilters, 1);
-    }, 0);
-  }, []);
+    setFilters(clearedFilters);
+    await fetchGroups(clearedFilters, 1);
+  }, [fetchGroups]);
 
-  // Pagination functions with stable dependencies
-  const goToPage = useCallback((page) => {
-    if (page >= 1 && page <= pagination.totalPages) {
-      fetchGroups(filters, page);
+  // Pagination functions
+  const goToPage = useCallback(async (page) => {
+    if (page >= 1 && page <= pagination.totalPages && page !== pagination.page) {
+      console.log('[useGroups] Going to page:', page);
+      await fetchGroups(null, page);
     }
-  }, []); // FIXED: Use current state via closure
+  }, [pagination.totalPages, pagination.page, fetchGroups]);
 
-  const nextPage = useCallback(() => {
-    setPagination(currentPagination => {
-      if (currentPagination.page < currentPagination.totalPages) {
-        setTimeout(() => {
-          fetchGroups(filters, currentPagination.page + 1);
-        }, 0);
+  const nextPage = useCallback(async () => {
+    if (pagination.hasNext) {
+      await goToPage(pagination.page + 1);
+    }
+  }, [pagination.hasNext, pagination.page, goToPage]);
+
+  const prevPage = useCallback(async () => {
+    if (pagination.hasPrevious) {
+      await goToPage(pagination.page - 1);
+    }
+  }, [pagination.hasPrevious, pagination.page, goToPage]);
+
+  // Group member management
+  const getGroupMembers = useCallback(async (groupId) => {
+    try {
+      console.log('[useGroups] Fetching group members:', groupId);
+      const result = await groupsService.getGroupMembers(groupId);
+      
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
       }
-      return currentPagination;
-    });
+    } catch (error) {
+      console.error('[useGroups] Error fetching group members:', error);
+      throw error;
+    }
   }, []);
 
-  const prevPage = useCallback(() => {
-    setPagination(currentPagination => {
-      if (currentPagination.page > 1) {
-        setTimeout(() => {
-          fetchGroups(filters, currentPagination.page - 1);
-        }, 0);
+  const addMemberToGroup = useCallback(async (groupId, memberData) => {
+    try {
+      console.log('[useGroups] Adding member to group:', groupId, memberData);
+      const result = await groupsService.addMemberToGroup(groupId, memberData);
+      
+      if (result.success) {
+        // Update the group's member count in state
+        setState(prev => ({
+          ...prev,
+          groups: prev.groups.map(group => 
+            group.id === groupId 
+              ? { ...group, member_count: (group.member_count || 0) + 1 }
+              : group
+          )
+        }));
+        
+        return result.data;
+      } else {
+        throw new Error(result.error);
       }
-      return currentPagination;
-    });
+    } catch (error) {
+      console.error('[useGroups] Error adding member to group:', error);
+      throw error;
+    }
+  }, []);
+
+  const removeMemberFromGroup = useCallback(async (groupId, memberId) => {
+    try {
+      console.log('[useGroups] Removing member from group:', groupId, memberId);
+      const result = await groupsService.removeMemberFromGroup(groupId, memberId);
+      
+      if (result.success) {
+        // Update the group's member count in state
+        setState(prev => ({
+          ...prev,
+          groups: prev.groups.map(group => 
+            group.id === groupId 
+              ? { ...group, member_count: Math.max(0, (group.member_count || 1) - 1) }
+              : group
+          )
+        }));
+        
+        return true;
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('[useGroups] Error removing member from group:', error);
+      throw error;
+    }
   }, []);
 
   // Utility functions
   const getGroupById = useCallback((groupId) => {
-    return groups.find(group => group.id === groupId);
-  }, [groups]);
+    return state.groups.find(group => group.id === groupId);
+  }, [state.groups]);
 
   const getGroupByName = useCallback((groupName) => {
-    return groups.find(group => 
+    return state.groups.find(group => 
       group.name.toLowerCase().includes(groupName.toLowerCase())
     );
-  }, [groups]);
+  }, [state.groups]);
 
   const getActiveGroups = useCallback(() => {
-    return groups.filter(group => group.active);
-  }, [groups]);
+    return state.groups.filter(group => group.active);
+  }, [state.groups]);
 
   const getGroupsWithLeader = useCallback(() => {
-    return groups.filter(group => group.leader_name);
-  }, [groups]);
+    return state.groups.filter(group => group.leader_name);
+  }, [state.groups]);
 
   const getGroupStats = useCallback(() => {
+    const groups = state.groups;
     return {
       total: groups.length,
       active: groups.filter(g => g.active).length,
+      inactive: groups.filter(g => !g.active).length,
       withLeader: groups.filter(g => g.leader_name).length,
+      withoutLeader: groups.filter(g => !g.leader_name).length,
       totalMembers: groups.reduce((sum, g) => sum + (g.member_count || 0), 0),
       averageMembers: groups.length > 0 
-        ? (groups.reduce((sum, g) => sum + (g.member_count || 0), 0) / groups.length).toFixed(1)
+        ? Math.round((groups.reduce((sum, g) => sum + (g.member_count || 0), 0) / groups.length) * 10) / 10
+        : 0,
+      largestGroup: groups.length > 0 
+        ? Math.max(...groups.map(g => g.member_count || 0))
         : 0
     };
-  }, [groups]);
+  }, [state.groups]);
 
-  // FIXED: Single effect for initial fetch only
+  // Get groups by category
+  const getGroupsByCategory = useCallback((categoryId) => {
+    return state.groups.filter(group => group.category === categoryId);
+  }, [state.groups]);
+
+  // Check if group exists
+  const groupExists = useCallback((name) => {
+    return state.groups.some(group => 
+      group.name.toLowerCase() === name.toLowerCase()
+    );
+  }, [state.groups]);
+
+  // Initial fetch effect - only runs once on mount
   useEffect(() => {
-    let timeoutId;
+    console.log('[useGroups] Component mounted, initializing...');
     
-    console.log('[useGroups] Initial mount effect');
-    
-    // Delay initial fetch slightly to prevent race conditions
-    timeoutId = setTimeout(() => {
-      if (mountedRef.current) {
-        fetchGroups();
-      }
-    }, 100);
-    
-    // Cleanup function
-    return () => {
+    // Set up cleanup
+    const cleanup = () => {
       mountedRef.current = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (fetchingRef.current) {
+        console.log('[useGroups] Component unmounting, canceling fetch...');
       }
     };
-  }, []); // Only run on mount
+    
+    // Initial fetch with slight delay to prevent race conditions
+    const timeoutId = setTimeout(() => {
+      if (mountedRef.current && !state.initialized) {
+        fetchGroups();
+      }
+    }, 50);
+    
+    return () => {
+      cleanup();
+      clearTimeout(timeoutId);
+    };
+  }, []); // Empty dependency array - only run on mount
 
-  // FIXED: Separate effect for options changes
+  // Effect for handling options changes
   useEffect(() => {
-    if (options.initialFilters) {
-      setFilters(prev => ({ ...prev, ...options.initialFilters }));
+    if (options.autoRefresh && state.initialized) {
+      const intervalId = setInterval(() => {
+        if (mountedRef.current && !fetchingRef.current) {
+          console.log('[useGroups] Auto-refreshing...');
+          refreshGroups();
+        }
+      }, options.refreshInterval || 30000); // Default 30 seconds
+      
+      return () => clearInterval(intervalId);
     }
-    if (options.initialPage) {
-      setPagination(prev => ({ ...prev, page: options.initialPage }));
-    }
-  }, [options.initialFilters, options.initialPage]);
+  }, [options.autoRefresh, options.refreshInterval, state.initialized, refreshGroups]);
 
   return {
     // Data
-    groups,
-    loading,
-    error,
+    groups: state.groups,
+    loading: state.loading,
+    error: state.error,
+    initialized: state.initialized,
     pagination,
     filters,
     
-    // CRUD operations - all stable references
+    // CRUD operations
     createGroup,
     updateGroup,
+    patchGroup,
     deleteGroup,
     fetchGroups,
     refreshGroups,
     
     // Member management
-    // getGroupMembers, - implement if needed
-    // addMemberToGroup, - implement if needed
-    // removeMemberFromGroup, - implement if needed
+    getGroupMembers,
+    addMemberToGroup,
+    removeMemberFromGroup,
     
-    // Search and filter - all stable references
+    // Search and filter
     searchGroups,
     filterGroups,
     clearFilters,
     
-    // Pagination - all stable references
+    // Pagination
     goToPage,
     nextPage,
     prevPage,
@@ -347,6 +514,12 @@ export const useGroups = (options = {}) => {
     getGroupByName,
     getActiveGroups,
     getGroupsWithLeader,
-    getGroupStats
+    getGroupStats,
+    getGroupsByCategory,
+    groupExists,
+    
+    // State setters for advanced usage
+    setFilters,
+    setPagination
   };
 };

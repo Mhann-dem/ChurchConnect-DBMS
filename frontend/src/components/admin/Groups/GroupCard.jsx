@@ -1,97 +1,124 @@
-import React, { useState } from 'react';
-import { Users, Calendar, MapPin, Edit, Trash2, MoreHorizontal, Eye, Clock } from 'lucide-react';
+import React from 'react';
+import { Users, Calendar, MapPin, Edit, Trash2, Eye, MoreHorizontal } from 'lucide-react';
 import styles from './Groups.module.css';
 
 const GroupCard = ({ group, onView, onEdit, onDelete, viewMode = 'cards' }) => {
-  const [showActions, setShowActions] = useState(false);
-
-  const handleActionClick = (action, e) => {
-    e.stopPropagation();
-    setShowActions(false);
-    
-    switch (action) {
-      case 'view':
-        onView(group);
-        break;
-      case 'edit':
-        onEdit(group);
-        break;
-      case 'delete':
-        onDelete(group);
-        break;
-      default:
-        break;
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not set';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      return 'Invalid date';
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'No date set';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
+  // Get status color
   const getStatusColor = (active) => {
-    return active ? styles.statusActive : styles.statusInactive;
+    return active ? '#10b981' : '#ef4444';
   };
 
-  const getStatusText = (active) => {
-    return active ? 'Active' : 'Inactive';
+  // Get member count display
+  const getMemberCountDisplay = (count) => {
+    if (count === 0) return '0 members';
+    if (count === 1) return '1 member';
+    return `${count || 0} members`;
+  };
+
+  // Handle action clicks
+  const handleView = (e) => {
+    e.stopPropagation();
+    onView?.(group);
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    onEdit?.(group);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    onDelete?.(group);
+  };
+
+  const handleCardClick = () => {
+    onView?.(group);
   };
 
   if (viewMode === 'list') {
     return (
-      <div className={styles.groupListItem} onClick={() => onView(group)}>
-        <div className={styles.groupMainInfo}>
+      <div 
+        className={`${styles.groupListItem} ${!group.active ? styles.inactive : ''}`}
+        onClick={handleCardClick}
+      >
+        <div className={styles.groupInfo}>
           <div className={styles.groupHeader}>
             <h3 className={styles.groupName}>{group.name}</h3>
-            <span className={`${styles.status} ${getStatusColor(group.active)}`}>
-              {getStatusText(group.active)}
-            </span>
-          </div>
-          <p className={styles.groupDescription}>{group.description}</p>
-        </div>
-        
-        <div className={styles.groupDetails}>
-          <div className={styles.groupDetail}>
-            <Users size={14} />
-            <span>{group.member_count || 0} members</span>
-          </div>
-          {group.leader_name && (
-            <div className={styles.groupDetail}>
-              <span className={styles.leader}>Leader: {group.leader_name}</span>
+            <div 
+              className={styles.statusBadge}
+              style={{ backgroundColor: getStatusColor(group.active) }}
+            >
+              {group.active ? 'Active' : 'Inactive'}
             </div>
-          )}
-          {group.meeting_schedule && (
-            <div className={styles.groupDetail}>
-              <Calendar size={14} />
-              <span>{group.meeting_schedule}</span>
+          </div>
+          
+          <div className={styles.groupMeta}>
+            {group.description && (
+              <p className={styles.groupDescription}>
+                {group.description.length > 150 
+                  ? `${group.description.substring(0, 150)}...`
+                  : group.description
+                }
+              </p>
+            )}
+            
+            <div className={styles.groupDetails}>
+              <div className={styles.detailItem}>
+                <Users size={14} />
+                <span>{getMemberCountDisplay(group.member_count)}</span>
+              </div>
+              
+              {group.leader_name && (
+                <div className={styles.detailItem}>
+                  <span className={styles.leader}>Leader: {group.leader_name}</span>
+                </div>
+              )}
+              
+              {group.meeting_schedule && (
+                <div className={styles.detailItem}>
+                  <Calendar size={14} />
+                  <span>{group.meeting_schedule}</span>
+                </div>
+              )}
+              
+              <div className={styles.detailItem}>
+                <span className={styles.created}>
+                  Created: {formatDate(group.created_at)}
+                </span>
+              </div>
             </div>
-          )}
+          </div>
         </div>
         
         <div className={styles.groupActions}>
           <button
             className={styles.actionButton}
-            onClick={(e) => handleActionClick('view', e)}
-            title="View Details"
+            onClick={handleView}
+            title="View details"
           >
             <Eye size={16} />
           </button>
           <button
             className={styles.actionButton}
-            onClick={(e) => handleActionClick('edit', e)}
-            title="Edit Group"
+            onClick={handleEdit}
+            title="Edit group"
           >
             <Edit size={16} />
           </button>
           <button
             className={`${styles.actionButton} ${styles.deleteButton}`}
-            onClick={(e) => handleActionClick('delete', e)}
-            title="Delete Group"
+            onClick={handleDelete}
+            title="Delete group"
           >
             <Trash2 size={16} />
           </button>
@@ -100,111 +127,83 @@ const GroupCard = ({ group, onView, onEdit, onDelete, viewMode = 'cards' }) => {
     );
   }
 
+  // Card view (default)
   return (
-    <div className={styles.groupCard} onClick={() => onView(group)}>
+    <div 
+      className={`${styles.groupCard} ${!group.active ? styles.inactive : ''}`}
+      onClick={handleCardClick}
+    >
       <div className={styles.cardHeader}>
         <div className={styles.cardTitle}>
-          <h3 className={styles.groupName}>{group.name}</h3>
-          <span className={`${styles.status} ${getStatusColor(group.active)}`}>
-            {getStatusText(group.active)}
-          </span>
+          <h3>{group.name}</h3>
+          <div 
+            className={styles.statusBadge}
+            style={{ backgroundColor: getStatusColor(group.active) }}
+          >
+            {group.active ? 'Active' : 'Inactive'}
+          </div>
         </div>
         
         <div className={styles.cardActions}>
           <button
-            className={styles.moreButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowActions(!showActions);
-            }}
+            className={styles.actionButton}
+            onClick={handleEdit}
+            title="Edit group"
           >
-            <MoreHorizontal size={16} />
+            <Edit size={16} />
           </button>
-          
-          {showActions && (
-            <div className={styles.actionsDropdown}>
-              <button
-                className={styles.dropdownItem}
-                onClick={(e) => handleActionClick('view', e)}
-              >
-                <Eye size={14} />
-                View Details
-              </button>
-              <button
-                className={styles.dropdownItem}
-                onClick={(e) => handleActionClick('edit', e)}
-              >
-                <Edit size={14} />
-                Edit Group
-              </button>
-              <button
-                className={`${styles.dropdownItem} ${styles.deleteItem}`}
-                onClick={(e) => handleActionClick('delete', e)}
-              >
-                <Trash2 size={14} />
-                Delete Group
-              </button>
-            </div>
-          )}
+          <button
+            className={`${styles.actionButton} ${styles.deleteButton}`}
+            onClick={handleDelete}
+            title="Delete group"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
       
-      <div className={styles.cardContent}>
-        <p className={styles.groupDescription}>
-          {group.description || 'No description available'}
-        </p>
+      <div className={styles.cardBody}>
+        {group.description && (
+          <p className={styles.description}>
+            {group.description.length > 100 
+              ? `${group.description.substring(0, 100)}...`
+              : group.description
+            }
+          </p>
+        )}
         
-        <div className={styles.groupMeta}>
-          <div className={styles.metaItem}>
+        <div className={styles.cardStats}>
+          <div className={styles.statItem}>
             <Users size={16} />
-            <span>{group.member_count || 0} members</span>
+            <span>{getMemberCountDisplay(group.member_count)}</span>
           </div>
           
           {group.leader_name && (
-            <div className={styles.metaItem}>
+            <div className={styles.statItem}>
               <span className={styles.leader}>
-                Leader: {group.leader_name}
+                <strong>Leader:</strong> {group.leader_name}
               </span>
             </div>
           )}
-          
-          {group.meeting_schedule && (
-            <div className={styles.metaItem}>
-              <Calendar size={16} />
-              <span>{group.meeting_schedule}</span>
-            </div>
-          )}
-          
-          <div className={styles.metaItem}>
-            <Clock size={16} />
-            <span>Created {formatDate(group.created_at)}</span>
-          </div>
         </div>
-      </div>
-      
-      <div className={styles.cardFooter}>
-        <button
-          className={styles.viewButton}
-          onClick={(e) => handleActionClick('view', e)}
-        >
-          View Details
-        </button>
         
-        <div className={styles.quickActions}>
-          <button
-            className={styles.quickAction}
-            onClick={(e) => handleActionClick('edit', e)}
-            title="Edit Group"
-          >
-            <Edit size={14} />
-          </button>
-          <button
-            className={`${styles.quickAction} ${styles.deleteAction}`}
-            onClick={(e) => handleActionClick('delete', e)}
-            title="Delete Group"
-          >
-            <Trash2 size={14} />
-          </button>
+        {group.meeting_schedule && (
+          <div className={styles.cardDetail}>
+            <Calendar size={14} />
+            <span>{group.meeting_schedule}</span>
+          </div>
+        )}
+        
+        <div className={styles.cardFooter}>
+          <span className={styles.createdDate}>
+            Created: {formatDate(group.created_at)}
+          </span>
+          
+          {group.category && (
+            <span className={styles.category}>
+              {group.category}
+            </span>
+          )}
         </div>
       </div>
     </div>

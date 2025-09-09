@@ -1,495 +1,481 @@
-import React, { useState, useEffect } from 'react';
-import useForm from '../../../hooks/useForm';
-import { useToast } from '../../../hooks/useToast';
-import groupsService from '../../../services/groups';
-import membersService from '../../../services/members';
-import Button from '../../ui/Button';
-import Card from '../../ui/Card';
-import LoadingSpinner from '../../shared/LoadingSpinner';
-import Modal from '../../shared/Modal';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Save, X, AlertCircle, Users } from 'lucide-react';
 import styles from './Groups.module.css';
 
-const GroupForm = ({ 
-  group = null, 
-  isOpen, 
-  onClose, 
-  onSave, 
-  mode = 'create' // 'create' or 'edit'
-}) => {
-  const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
-  const { showToast } = useToast();
+const GroupForm = ({ group, onSuccess, onCancel, isLoading = false }) => {
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    leader_name: '',
+    meeting_schedule: '',
+    category: '',
+    active: true,
+    max_members: '',
+    is_public: true,
+    meeting_location: '',
+    contact_email: '',
+    contact_phone: ''
+  });
+  
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
-  const initialValues = {
-    name: group?.name || '',
-    description: group?.description || '',
-    leader_name: group?.leader_name || '',
-    meeting_schedule: group?.meeting_schedule || '',
-    meeting_location: group?.meeting_location || '',
-    capacity: group?.capacity || '',
-    active: group?.active ?? true,
-    category: group?.category || 'ministry',
-    contact_email: group?.contact_email || '',
-    contact_phone: group?.contact_phone || '',
-    requirements: group?.requirements || '',
-    age_group: group?.age_group || 'all',
-    start_date: group?.start_date || '',
-    end_date: group?.end_date || '',
-    tags: group?.tags || []
-  };
+  // Categories - in a real app, these would come from the API
+  const groupCategories = [
+    { value: '', label: 'Select Category' },
+    { value: 'ministry', label: 'Ministry' },
+    { value: 'small-group', label: 'Small Group' },
+    { value: 'committee', label: 'Committee' },
+    { value: 'service', label: 'Service Team' },
+    { value: 'youth', label: 'Youth Group' },
+    { value: 'seniors', label: 'Seniors Group' },
+    { value: 'worship', label: 'Worship Team' },
+    { value: 'outreach', label: 'Outreach' },
+    { value: 'prayer', label: 'Prayer Group' },
+    { value: 'study', label: 'Bible Study' },
+    { value: 'support', label: 'Support Group' },
+    { value: 'other', label: 'Other' }
+  ];
 
-  const validate = (values) => {
-    const errors = {};
-    
-    if (!values.name.trim()) {
-      errors.name = 'Group name is required';
-    } else if (values.name.length < 3) {
-      errors.name = 'Group name must be at least 3 characters long';
-    }
-    
-    if (!values.description.trim()) {
-      errors.description = 'Description is required';
-    } else if (values.description.length < 10) {
-      errors.description = 'Description must be at least 10 characters long';
-    }
-    
-    if (values.contact_email && !/\S+@\S+\.\S+/.test(values.contact_email)) {
-      errors.contact_email = 'Please enter a valid email address';
-    }
-    
-    if (values.contact_phone && !/^\+?[\d\s\-\(\)]+$/.test(values.contact_phone)) {
-      errors.contact_phone = 'Please enter a valid phone number';
-    }
-    
-    if (values.capacity && (isNaN(values.capacity) || parseInt(values.capacity) < 1)) {
-      errors.capacity = 'Capacity must be a positive number';
-    }
-    
-    if (values.end_date && values.start_date && new Date(values.end_date) < new Date(values.start_date)) {
-      errors.end_date = 'End date must be after start date';
-    }
-    
-    return errors;
-  };
-
-  const { values, errors, handleChange, handleSubmit, setFieldValue } = useForm(
-    initialValues,
-    validate
-  );
-
+  // Initialize form data when group prop changes
   useEffect(() => {
-    if (isOpen) {
-      fetchMembers();
-      if (group && mode === 'edit') {
-        fetchGroupMembers();
+    if (group) {
+      console.log('[GroupForm] Editing group:', group);
+      setFormData({
+        name: group.name || '',
+        description: group.description || '',
+        leader_name: group.leader_name || '',
+        meeting_schedule: group.meeting_schedule || '',
+        category: group.category || '',
+        active: group.active !== undefined ? group.active : true,
+        max_members: group.max_members || '',
+        is_public: group.is_public !== undefined ? group.is_public : true,
+        meeting_location: group.meeting_location || '',
+        contact_email: group.contact_email || '',
+        contact_phone: group.contact_phone || ''
+      });
+    } else {
+      console.log('[GroupForm] Creating new group');
+      // Reset form for new group
+      setFormData({
+        name: '',
+        description: '',
+        leader_name: '',
+        meeting_schedule: '',
+        category: '',
+        active: true,
+        max_members: '',
+        is_public: true,
+        meeting_location: '',
+        contact_email: '',
+        contact_phone: ''
+      });
+    }
+    
+    setErrors({});
+    setIsDirty(false);
+  }, [group]);
+
+  // Handle input changes
+  const handleChange = useCallback((e) => {
+    const { name, value, type, checked } = e.target;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    
+    setIsDirty(true);
+  }, [errors]);
+
+  // Validate form
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+    
+    // Required fields
+    if (!formData.name.trim()) {
+      newErrors.name = 'Group name is required';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Group name must be at least 3 characters';
+    } else if (formData.name.trim().length > 100) {
+      newErrors.name = 'Group name must be less than 100 characters';
+    }
+    
+    if (formData.description && formData.description.length > 1000) {
+      newErrors.description = 'Description must be less than 1000 characters';
+    }
+    
+    if (formData.leader_name && formData.leader_name.length > 100) {
+      newErrors.leader_name = 'Leader name must be less than 100 characters';
+    }
+    
+    if (formData.meeting_schedule && formData.meeting_schedule.length > 200) {
+      newErrors.meeting_schedule = 'Meeting schedule must be less than 200 characters';
+    }
+    
+    if (formData.max_members) {
+      const maxMembers = parseInt(formData.max_members);
+      if (isNaN(maxMembers) || maxMembers < 1) {
+        newErrors.max_members = 'Max members must be a positive number';
+      } else if (maxMembers > 1000) {
+        newErrors.max_members = 'Max members cannot exceed 1000';
       }
     }
-  }, [isOpen, group, mode]);
-
-  const fetchMembers = async () => {
-    setLoadingMembers(true);
-    try {
-      const response = await membersService.getMembers({ limit: 1000 });
-      setMembers(response.data.results || []);
-    } catch (error) {
-      showToast('Failed to load members', 'error');
-    } finally {
-      setLoadingMembers(false);
+    
+    if (formData.contact_email && formData.contact_email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.contact_email.trim())) {
+        newErrors.contact_email = 'Please enter a valid email address';
+      }
     }
-  };
+    
+    if (formData.contact_phone && formData.contact_phone.trim()) {
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      const cleanPhone = formData.contact_phone.replace(/[\s\-\(\)]/g, '');
+      if (cleanPhone && !phoneRegex.test(cleanPhone)) {
+        newErrors.contact_phone = 'Please enter a valid phone number';
+      }
+    }
+    
+    return newErrors;
+  }, [formData]);
 
-  const fetchGroupMembers = async () => {
-    if (!group?.id) return;
+  // Handle form submission
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    
+    // Validate form
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      console.log('[GroupForm] Validation errors:', validationErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setErrors({});
     
     try {
-      const response = await groupsService.getGroupMembers(group.id);
-      setSelectedMembers(response.data.map(member => member.id));
-    } catch (error) {
-      showToast('Failed to load group members', 'error');
-    }
-  };
-
-  const handleMemberToggle = (memberId) => {
-    setSelectedMembers(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId)
-        : [...prev, memberId]
-    );
-  };
-
-  const handleFormSubmit = async (formData) => {
-    setLoading(true);
-    try {
-      const groupData = {
+      // Prepare data for submission
+      const submitData = {
         ...formData,
-        member_ids: selectedMembers
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        leader_name: formData.leader_name.trim(),
+        meeting_schedule: formData.meeting_schedule.trim(),
+        meeting_location: formData.meeting_location.trim(),
+        contact_email: formData.contact_email.trim(),
+        contact_phone: formData.contact_phone.trim(),
+        max_members: formData.max_members ? parseInt(formData.max_members) : null
       };
-
-      let response;
-      if (mode === 'edit' && group?.id) {
-        response = await groupsService.updateGroup(group.id, groupData);
-        showToast('Group updated successfully', 'success');
-      } else {
-        response = await groupsService.createGroup(groupData);
-        showToast('Group created successfully', 'success');
-      }
-
-      onSave(response.data);
-      onClose();
+      
+      console.log('[GroupForm] Submitting data:', submitData);
+      
+      // Call success handler
+      await onSuccess(submitData);
+      
+      // Reset form state
+      setIsDirty(false);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to save group';
-      showToast(errorMessage, 'error');
+      console.error('[GroupForm] Submission error:', error);
+      
+      // Handle validation errors from API
+      if (error.validationErrors) {
+        setErrors(error.validationErrors);
+      } else {
+        setErrors({ 
+          submit: error.message || 'An error occurred while saving the group' 
+        });
+      }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
-  };
+  }, [formData, validateForm, onSuccess]);
 
-  const handleTagChange = (tagValue) => {
-    const currentTags = values.tags || [];
-    const newTags = currentTags.includes(tagValue)
-      ? currentTags.filter(tag => tag !== tagValue)
-      : [...currentTags, tagValue];
-    setFieldValue('tags', newTags);
-  };
-
-  if (!isOpen) return null;
+  // Handle cancel
+  const handleCancel = useCallback(() => {
+    if (isDirty) {
+      const confirmDiscard = window.confirm(
+        'You have unsaved changes. Are you sure you want to cancel?'
+      );
+      if (!confirmDiscard) return;
+    }
+    
+    onCancel?.();
+  }, [isDirty, onCancel]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
-      <div className={styles.formContainer}>
-        <div className={styles.formHeader}>
-          <h2>{mode === 'edit' ? 'Edit Group' : 'Create New Group'}</h2>
-          <Button variant="ghost" onClick={onClose} className={styles.closeButton}>
-            ×
-          </Button>
+    <form onSubmit={handleSubmit} className={styles.groupForm}>
+      {/* General Error */}
+      {errors.submit && (
+        <div className={styles.errorBanner}>
+          <AlertCircle size={16} />
+          <span>{errors.submit}</span>
         </div>
-
-        <form onSubmit={handleSubmit(handleFormSubmit)} className={styles.form}>
-          <div className={styles.formGrid}>
-            {/* Basic Information */}
-            <Card className={styles.formSection}>
-              <h3>Basic Information</h3>
-              
-              <div className={styles.fieldGroup}>
-                <label htmlFor="name" className={styles.label}>
-                  Group Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={values.name}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.name ? styles.error : ''}`}
-                  placeholder="Enter group name"
-                />
-                {errors.name && <span className={styles.errorText}>{errors.name}</span>}
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label htmlFor="description" className={styles.label}>
-                  Description *
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={values.description}
-                  onChange={handleChange}
-                  className={`${styles.textarea} ${errors.description ? styles.error : ''}`}
-                  placeholder="Describe the group's purpose and activities"
-                  rows="4"
-                />
-                {errors.description && <span className={styles.errorText}>{errors.description}</span>}
-              </div>
-
-              <div className={styles.fieldRow}>
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="category" className={styles.label}>
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={values.category}
-                    onChange={handleChange}
-                    className={styles.select}
-                  >
-                    <option value="ministry">Ministry</option>
-                    <option value="small_group">Small Group</option>
-                    <option value="bible_study">Bible Study</option>
-                    <option value="youth">Youth</option>
-                    <option value="women">Women's Group</option>
-                    <option value="men">Men's Group</option>
-                    <option value="seniors">Seniors</option>
-                    <option value="children">Children</option>
-                    <option value="worship">Worship Team</option>
-                    <option value="service">Service Team</option>
-                    <option value="outreach">Outreach</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="age_group" className={styles.label}>
-                    Age Group
-                  </label>
-                  <select
-                    id="age_group"
-                    name="age_group"
-                    value={values.age_group}
-                    onChange={handleChange}
-                    className={styles.select}
-                  >
-                    <option value="all">All Ages</option>
-                    <option value="children">Children (0-12)</option>
-                    <option value="youth">Youth (13-18)</option>
-                    <option value="young_adults">Young Adults (19-30)</option>
-                    <option value="adults">Adults (31-55)</option>
-                    <option value="seniors">Seniors (55+)</option>
-                  </select>
-                </div>
-              </div>
-            </Card>
-
-            {/* Leadership & Contact */}
-            <Card className={styles.formSection}>
-              <h3>Leadership & Contact</h3>
-              
-              <div className={styles.fieldGroup}>
-                <label htmlFor="leader_name" className={styles.label}>
-                  Leader Name
-                </label>
-                <input
-                  type="text"
-                  id="leader_name"
-                  name="leader_name"
-                  value={values.leader_name}
-                  onChange={handleChange}
-                  className={styles.input}
-                  placeholder="Enter leader's name"
-                />
-              </div>
-
-              <div className={styles.fieldRow}>
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="contact_email" className={styles.label}>
-                    Contact Email
-                  </label>
-                  <input
-                    type="email"
-                    id="contact_email"
-                    name="contact_email"
-                    value={values.contact_email}
-                    onChange={handleChange}
-                    className={`${styles.input} ${errors.contact_email ? styles.error : ''}`}
-                    placeholder="contact@example.com"
-                  />
-                  {errors.contact_email && <span className={styles.errorText}>{errors.contact_email}</span>}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="contact_phone" className={styles.label}>
-                    Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    id="contact_phone"
-                    name="contact_phone"
-                    value={values.contact_phone}
-                    onChange={handleChange}
-                    className={`${styles.input} ${errors.contact_phone ? styles.error : ''}`}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                  {errors.contact_phone && <span className={styles.errorText}>{errors.contact_phone}</span>}
-                </div>
-              </div>
-            </Card>
-
-            {/* Meeting Details */}
-            <Card className={styles.formSection}>
-              <h3>Meeting Details</h3>
-              
-              <div className={styles.fieldGroup}>
-                <label htmlFor="meeting_schedule" className={styles.label}>
-                  Meeting Schedule
-                </label>
-                <input
-                  type="text"
-                  id="meeting_schedule"
-                  name="meeting_schedule"
-                  value={values.meeting_schedule}
-                  onChange={handleChange}
-                  className={styles.input}
-                  placeholder="e.g., Sundays at 10:00 AM"
-                />
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label htmlFor="meeting_location" className={styles.label}>
-                  Meeting Location
-                </label>
-                <input
-                  type="text"
-                  id="meeting_location"
-                  name="meeting_location"
-                  value={values.meeting_location}
-                  onChange={handleChange}
-                  className={styles.input}
-                  placeholder="e.g., Fellowship Hall, Room 101"
-                />
-              </div>
-
-              <div className={styles.fieldRow}>
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="start_date" className={styles.label}>
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    id="start_date"
-                    name="start_date"
-                    value={values.start_date}
-                    onChange={handleChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label htmlFor="end_date" className={styles.label}>
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    id="end_date"
-                    name="end_date"
-                    value={values.end_date}
-                    onChange={handleChange}
-                    className={`${styles.input} ${errors.end_date ? styles.error : ''}`}
-                  />
-                  {errors.end_date && <span className={styles.errorText}>{errors.end_date}</span>}
-                </div>
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label htmlFor="capacity" className={styles.label}>
-                  Capacity
-                </label>
-                <input
-                  type="number"
-                  id="capacity"
-                  name="capacity"
-                  value={values.capacity}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.capacity ? styles.error : ''}`}
-                  placeholder="Maximum number of members"
-                  min="1"
-                />
-                {errors.capacity && <span className={styles.errorText}>{errors.capacity}</span>}
-              </div>
-            </Card>
-
-            {/* Additional Information */}
-            <Card className={styles.formSection}>
-              <h3>Additional Information</h3>
-              
-              <div className={styles.fieldGroup}>
-                <label htmlFor="requirements" className={styles.label}>
-                  Requirements
-                </label>
-                <textarea
-                  id="requirements"
-                  name="requirements"
-                  value={values.requirements}
-                  onChange={handleChange}
-                  className={styles.textarea}
-                  placeholder="Any requirements or prerequisites for joining"
-                  rows="3"
-                />
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>Tags</label>
-                <div className={styles.tagContainer}>
-                  {['beginner', 'intermediate', 'advanced', 'weekly', 'monthly', 'seasonal', 'ongoing', 'new_member_friendly'].map(tag => (
-                    <label key={tag} className={styles.tagLabel}>
-                      <input
-                        type="checkbox"
-                        checked={values.tags?.includes(tag) || false}
-                        onChange={() => handleTagChange(tag)}
-                        className={styles.checkbox}
-                      />
-                      <span className={styles.tagText}>{tag.replace('_', ' ')}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="active"
-                    checked={values.active}
-                    onChange={handleChange}
-                    className={styles.checkbox}
-                  />
-                  <span>Active Group</span>
-                </label>
-              </div>
-            </Card>
-
-            {/* Member Assignment */}
-            <Card className={styles.formSection}>
-              <h3>Members ({selectedMembers.length} selected)</h3>
-              
-              {loadingMembers ? (
-                <div className={styles.loadingContainer}>
-                  <LoadingSpinner />
-                  <span>Loading members...</span>
-                </div>
-              ) : (
-                <div className={styles.membersList}>
-                  {members.map(member => (
-                    <label key={member.id} className={styles.memberItem}>
-                      <input
-                        type="checkbox"
-                        checked={selectedMembers.includes(member.id)}
-                        onChange={() => handleMemberToggle(member.id)}
-                        className={styles.checkbox}
-                      />
-                      <div className={styles.memberInfo}>
-                        <span className={styles.memberName}>
-                          {member.first_name} {member.last_name}
-                        </span>
-                        <span className={styles.memberEmail}>{member.email}</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </Card>
+      )}
+      
+      {/* Basic Information */}
+      <div className={styles.formSection}>
+        <h3 className={styles.sectionTitle}>Basic Information</h3>
+        
+        <div className={styles.formGrid}>
+          <div className={styles.formField}>
+            <label htmlFor="name" className={styles.label}>
+              Group Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
+              placeholder="Enter group name"
+              required
+              maxLength="100"
+            />
+            {errors.name && (
+              <span className={styles.errorText}>{errors.name}</span>
+            )}
           </div>
-
-          <div className={styles.formActions}>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <LoadingSpinner size="small" />
-                  {mode === 'edit' ? 'Updating...' : 'Creating...'}
-                </>
-              ) : (
-                mode === 'edit' ? 'Update Group' : 'Create Group'
-              )}
-            </Button>
+          
+          <div className={styles.formField}>
+            <label htmlFor="category" className={styles.label}>
+              Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className={styles.select}
+            >
+              {groupCategories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </form>
+        </div>
+        
+        <div className={styles.formField}>
+          <label htmlFor="description" className={styles.label}>
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+            placeholder="Describe the group's purpose and activities"
+            rows="4"
+            maxLength="1000"
+          />
+          {errors.description && (
+            <span className={styles.errorText}>{errors.description}</span>
+          )}
+          <span className={styles.charCount}>
+            {formData.description.length}/1000
+          </span>
+        </div>
       </div>
-    </Modal>
+      
+      {/* Leadership & Contact */}
+      <div className={styles.formSection}>
+        <h3 className={styles.sectionTitle}>Leadership & Contact</h3>
+        
+        <div className={styles.formGrid}>
+          <div className={styles.formField}>
+            <label htmlFor="leader_name" className={styles.label}>
+              Group Leader
+            </label>
+            <input
+              type="text"
+              id="leader_name"
+              name="leader_name"
+              value={formData.leader_name}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.leader_name ? styles.inputError : ''}`}
+              placeholder="Leader's full name"
+              maxLength="100"
+            />
+            {errors.leader_name && (
+              <span className={styles.errorText}>{errors.leader_name}</span>
+            )}
+          </div>
+          
+          <div className={styles.formField}>
+            <label htmlFor="contact_email" className={styles.label}>
+              Contact Email
+            </label>
+            <input
+              type="email"
+              id="contact_email"
+              name="contact_email"
+              value={formData.contact_email}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.contact_email ? styles.inputError : ''}`}
+              placeholder="group@church.com"
+            />
+            {errors.contact_email && (
+              <span className={styles.errorText}>{errors.contact_email}</span>
+            )}
+          </div>
+          
+          <div className={styles.formField}>
+            <label htmlFor="contact_phone" className={styles.label}>
+              Contact Phone
+            </label>
+            <input
+              type="tel"
+              id="contact_phone"
+              name="contact_phone"
+              value={formData.contact_phone}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.contact_phone ? styles.inputError : ''}`}
+              placeholder="(555) 123-4567"
+            />
+            {errors.contact_phone && (
+              <span className={styles.errorText}>{errors.contact_phone}</span>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Meeting Information */}
+      <div className={styles.formSection}>
+        <h3 className={styles.sectionTitle}>Meeting Information</h3>
+        
+        <div className={styles.formField}>
+          <label htmlFor="meeting_schedule" className={styles.label}>
+            Meeting Schedule
+          </label>
+          <input
+            type="text"
+            id="meeting_schedule"
+            name="meeting_schedule"
+            value={formData.meeting_schedule}
+            onChange={handleChange}
+            className={`${styles.input} ${errors.meeting_schedule ? styles.inputError : ''}`}
+            placeholder="e.g., Sundays at 10:00 AM, First Friday of each month"
+            maxLength="200"
+          />
+          {errors.meeting_schedule && (
+            <span className={styles.errorText}>{errors.meeting_schedule}</span>
+          )}
+        </div>
+        
+        <div className={styles.formField}>
+          <label htmlFor="meeting_location" className={styles.label}>
+            Meeting Location
+          </label>
+          <input
+            type="text"
+            id="meeting_location"
+            name="meeting_location"
+            value={formData.meeting_location}
+            onChange={handleChange}
+            className={styles.input}
+            placeholder="e.g., Fellowship Hall, Room 205"
+            maxLength="200"
+          />
+        </div>
+      </div>
+      
+      {/* Settings */}
+      <div className={styles.formSection}>
+        <h3 className={styles.sectionTitle}>Settings</h3>
+        
+        <div className={styles.formGrid}>
+          <div className={styles.formField}>
+            <label htmlFor="max_members" className={styles.label}>
+              Maximum Members
+            </label>
+            <input
+              type="number"
+              id="max_members"
+              name="max_members"
+              value={formData.max_members}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.max_members ? styles.inputError : ''}`}
+              placeholder="Leave empty for no limit"
+              min="1"
+              max="1000"
+            />
+            {errors.max_members && (
+              <span className={styles.errorText}>{errors.max_members}</span>
+            )}
+          </div>
+        </div>
+        
+        <div className={styles.checkboxGroup}>
+          <div className={styles.checkboxField}>
+            <input
+              type="checkbox"
+              id="active"
+              name="active"
+              checked={formData.active}
+              onChange={handleChange}
+              className={styles.checkbox}
+            />
+            <label htmlFor="active" className={styles.checkboxLabel}>
+              Active Group
+              <span className={styles.checkboxDescription}>
+                Active groups appear in member registration and are available for new members
+              </span>
+            </label>
+          </div>
+          
+          <div className={styles.checkboxField}>
+            <input
+              type="checkbox"
+              id="is_public"
+              name="is_public"
+              checked={formData.is_public}
+              onChange={handleChange}
+              className={styles.checkbox}
+            />
+            <label htmlFor="is_public" className={styles.checkboxLabel}>
+              Public Group
+              <span className={styles.checkboxDescription}>
+                Public groups are visible to all members and can accept new member requests
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      {/* Form Actions */}
+      <div className={styles.formActions}>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className={styles.cancelButton}
+          disabled={isSubmitting}
+        >
+          <X size={16} />
+          Cancel
+        </button>
+        
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={isSubmitting || isLoading}
+        >
+          <Save size={16} />
+          {isSubmitting ? 'Saving...' : (group ? 'Update Group' : 'Create Group')}
+        </button>
+      </div>
+    </form>
   );
 };
 

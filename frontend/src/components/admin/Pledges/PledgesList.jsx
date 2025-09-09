@@ -1,5 +1,4 @@
 // frontend/src/components/admin/Pledges/PledgesList.jsx
-
 import React, { useState, useEffect } from 'react';
 import usePledges from '../../../hooks/usePledges';
 import { useToast } from '../../../hooks/useToast';
@@ -11,7 +10,14 @@ import PledgeStats from './PledgeStats';
 import { formatCurrency, formatDate } from '../../../utils/formatters';
 import styles from './Pledges.module.css';
 
-const PledgesList = () => {
+const PledgesList = ({ 
+  pledges: externalPledges, 
+  onEdit: externalOnEdit, 
+  onDelete: externalOnDelete, 
+  loading: externalLoading,
+  pagination: externalPagination,
+  onPageChange: externalOnPageChange 
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
@@ -21,30 +27,42 @@ const PledgesList = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedPledge, setSelectedPledge] = useState(null);
   const [showStats, setShowStats] = useState(true);
+  const [bulkSelectedIds, setBulkSelectedIds] = useState([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+
+  // Only use the hook if pledges aren't provided as props
+  const pledgesHook = !externalPledges ? usePledges() : null;
+
+  // Use either external props or hook data
+  const pledges = externalPledges || pledgesHook?.pledges || [];
+  const loading = externalLoading !== undefined ? externalLoading : pledgesHook?.loading || false;
+  const error = pledgesHook?.error || null;
+  const pagination = externalPagination || pledgesHook?.pagination || {};
+  const pledgeStats = pledgesHook?.statistics || {};
 
   const { 
-    pledges, 
-    loading, 
-    error, 
-    pagination,
     fetchPledges,
     updatePledge,
     deletePledge,
-    pledgeStats
-  } = usePledges();
+    bulkUpdatePledges,
+    bulkDeletePledges
+  } = pledgesHook || {};
 
   const { showToast } = useToast();
 
+  // Fetch pledges only if using internal hook
   useEffect(() => {
-    fetchPledges({
-      search: searchTerm,
-      status: selectedStatus === 'all' ? null : selectedStatus,
-      frequency: selectedFrequency === 'all' ? null : selectedFrequency,
-      sort_by: sortBy,
-      sort_order: sortOrder,
-      page
-    });
-  }, [searchTerm, selectedStatus, selectedFrequency, sortBy, sortOrder, page]);
+    if (!externalPledges && fetchPledges) {
+      fetchPledges({
+        search: searchTerm,
+        status: selectedStatus === 'all' ? null : selectedStatus,
+        frequency: selectedFrequency === 'all' ? null : selectedFrequency,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+        page
+      });
+    }
+  }, [searchTerm, selectedStatus, selectedFrequency, sortBy, sortOrder, page, externalPledges, fetchPledges]);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -72,25 +90,35 @@ const PledgesList = () => {
   };
 
   const handleEditPledge = (pledge) => {
-    setSelectedPledge(pledge);
-    setShowForm(true);
+    if (externalOnEdit) {
+      externalOnEdit(pledge);
+    } else {
+      setSelectedPledge(pledge);
+      setShowForm(true);
+    }
   };
 
   const handleDeletePledge = async (pledgeId) => {
-    if (window.confirm('Are you sure you want to delete this pledge?')) {
-      try {
-        await deletePledge(pledgeId);
-        showToast('Pledge deleted successfully', 'success');
-      } catch (error) {
-        showToast('Failed to delete pledge', 'error');
+    if (externalOnDelete) {
+      await externalOnDelete(pledgeId);
+    } else if (deletePledge) {
+      if (window.confirm('Are you sure you want to delete this pledge?')) {
+        try {
+          await deletePledge(pledgeId);
+          showToast('Pledge deleted successfully', 'success');
+        } catch (error) {
+          showToast('Failed to delete pledge', 'error');
+        }
       }
     }
   };
 
   const handleUpdateStatus = async (pledgeId, newStatus) => {
     try {
-      await updatePledge(pledgeId, { status: newStatus });
-      showToast('Pledge status updated successfully', 'success');
+      if (updatePledge) {
+        await updatePledge(pledgeId, { status: newStatus });
+        showToast('Pledge status updated successfully', 'success');
+      }
     } catch (error) {
       showToast('Failed to update pledge status', 'error');
     }
@@ -99,12 +127,73 @@ const PledgesList = () => {
   const handleFormSubmit = () => {
     setShowForm(false);
     setSelectedPledge(null);
-    fetchPledges();
+    if (fetchPledges) {
+      fetchPledges();
+    }
   };
 
   const handleFormCancel = () => {
     setShowForm(false);
     setSelectedPledge(null);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (externalOnPageChange) {
+      externalOnPageChange(newPage);
+    } else {
+      setPage(newPage);
+    }
+  };
+
+  // Bulk selection handlers
+  const handleBulkSelect = (pledgeId, isSelected) => {
+    setBulkSelectedIds(prev => 
+      isSelected 
+        ? [...prev, pledgeId]
+        : prev.filter(id => id !== pledgeId)
+    );
+  };
+
+  const handleSelectAll = () => {
+    setBulkSelectedIds(
+      bulkSelectedIds.length === pledges.length 
+        ? [] 
+        : pledges.map(p => p.id)
+    );
+  };
+
+  const handleBulkStatusUpdate = async (newStatus) => {
+    if (bulkSelectedIds.length === 0) return;
+    
+    try {
+      if (bulkUpdatePledges) {
+        await bulkUpdatePledges(bulkSelectedIds, { status: newStatus });
+        showToast(`${bulkSelectedIds.length} pledges updated successfully`, 'success');
+        setBulkSelectedIds([]);
+        setShowBulkActions(false);
+      }
+    } catch (error) {
+      showToast('Failed to bulk update pledges', 'error');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelectedIds.length === 0) return;
+    
+    if (!window.confirm(`Are you sure you want to delete ${bulkSelectedIds.length} pledges?`)) {
+      return;
+    }
+    
+    try {
+      if (bulkDeletePledges) {
+        await bulkDeletePledges(bulkSelectedIds);
+        showToast(`${bulkSelectedIds.length} pledges deleted successfully`, 'success');
+        setBulkSelectedIds([]);
+        setShowBulkActions(false);
+      }
+    } catch (error) {
+      showToast('Failed to bulk delete pledges', 'error');
+    }
   };
 
   const getStatusBadgeColor = (status) => {
@@ -145,7 +234,7 @@ const PledgesList = () => {
     return (
       <div className={styles.errorContainer}>
         <p className={styles.errorMessage}>Error loading pledges: {error}</p>
-        <Button onClick={() => fetchPledges()}>Retry</Button>
+        <Button onClick={() => fetchPledges && fetchPledges()}>Retry</Button>
       </div>
     );
   }
@@ -163,18 +252,20 @@ const PledgesList = () => {
             >
               {showStats ? 'Hide Stats' : 'Show Stats'}
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => setShowForm(true)}
-            >
-              Add New Pledge
-            </Button>
+            {!externalPledges && (
+              <Button
+                variant="primary"
+                onClick={() => setShowForm(true)}
+              >
+                Add New Pledge
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Stats Section */}
-      {showStats && (
+      {showStats && Object.keys(pledgeStats).length > 0 && (
         <div className={styles.statsSection}>
           <PledgeStats stats={pledgeStats} />
         </div>
@@ -239,6 +330,37 @@ const PledgesList = () => {
             </Button>
           </div>
         </div>
+
+        {/* Bulk Actions */}
+        {bulkSelectedIds.length > 0 && (
+          <div className={styles.bulkActionsContainer}>
+            <div className={styles.bulkInfo}>
+              <span>{bulkSelectedIds.length} pledge{bulkSelectedIds.length !== 1 ? 's' : ''} selected</span>
+              <Button variant="link" onClick={() => setBulkSelectedIds([])}>
+                Clear selection
+              </Button>
+            </div>
+            <div className={styles.bulkActions}>
+              <Dropdown
+                label="Update Status"
+                placeholder="Choose status"
+                onChange={handleBulkStatusUpdate}
+                options={[
+                  { value: 'active', label: 'Mark as Active' },
+                  { value: 'completed', label: 'Mark as Completed' },
+                  { value: 'cancelled', label: 'Mark as Cancelled' }
+                ]}
+              />
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleBulkDelete}
+              >
+                Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Pledges List */}
@@ -248,18 +370,41 @@ const PledgesList = () => {
             title="No pledges found"
             description="No pledges match your current filters."
             actionText="Add New Pledge"
-            onAction={() => setShowForm(true)}
+            onAction={() => !externalPledges && setShowForm(true)}
           />
         ) : (
-          pledges.map((pledge) => (
-            <PledgeCard
-              key={pledge.id}
-              pledge={pledge}
-              onEdit={handleEditPledge}
-              onDelete={handleDeletePledge}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          ))
+          <>
+            {/* Select All Header */}
+            <div className={styles.selectAllHeader}>
+              <label className={styles.selectAllLabel}>
+                <input
+                  type="checkbox"
+                  checked={bulkSelectedIds.length === pledges.length && pledges.length > 0}
+                  onChange={handleSelectAll}
+                  className={styles.selectAllCheckbox}
+                />
+                Select All ({pledges.length})
+              </label>
+            </div>
+
+            {pledges.map((pledge) => (
+              <div key={pledge.id} className={styles.pledgeCardWrapper}>
+                <label className={styles.selectCheckbox}>
+                  <input
+                    type="checkbox"
+                    checked={bulkSelectedIds.includes(pledge.id)}
+                    onChange={(e) => handleBulkSelect(pledge.id, e.target.checked)}
+                  />
+                </label>
+                <PledgeCard
+                  pledge={pledge}
+                  onEdit={handleEditPledge}
+                  onDelete={handleDeletePledge}
+                  onUpdateStatus={handleUpdateStatus}
+                />
+              </div>
+            ))}
+          </>
         )}
       </div>
 
@@ -267,18 +412,18 @@ const PledgesList = () => {
       {pagination && pagination.totalPages > 1 && (
         <div className={styles.paginationContainer}>
           <Pagination
-            currentPage={page}
+            currentPage={pagination.currentPage || page}
             totalPages={pagination.totalPages}
-            onPageChange={setPage}
+            onPageChange={handlePageChange}
             showInfo={true}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+            totalItems={pagination.count}
+            itemsPerPage={pagination.itemsPerPage || 25}
           />
         </div>
       )}
 
       {/* Pledge Form Modal */}
-      {showForm && (
+      {showForm && !externalPledges && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <PledgeForm
