@@ -87,13 +87,15 @@ const Header = ({ isAdmin = false }) => {
     setIsMobileMenuOpen(false);
   }, []);
 
-  // Navigation links for different user types
+  // Updated navigation links for different user types - FIXED URLs
   const getNavigationLinks = () => {
     if (isAdmin) {
       return [
         { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
         { name: 'Members', path: '/admin/members', icon: '👥' },
+        { name: 'Families', path: '/admin/families', icon: '🏠' },
         { name: 'Groups', path: '/admin/groups', icon: '🏢' },
+        { name: 'Events', path: '/admin/events', icon: '📅' },
         { name: 'Pledges', path: '/admin/pledges', icon: '💰' },
         { name: 'Reports', path: '/admin/reports', icon: '📈' },
         { name: 'Settings', path: '/admin/settings', icon: '⚙️' }
@@ -351,7 +353,7 @@ const Header = ({ isAdmin = false }) => {
         />
       )}
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - UPDATED WITH CORRECT LINKS */}
       <nav 
         id="mobile-menu"
         className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.open : ''}`}

@@ -14,7 +14,10 @@ import {
   XMarkIcon,
   GlobeAltIcon,
   PlusIcon,
-  BellIcon
+  BellIcon,
+  UserPlusIcon,
+  ClipboardDocumentListIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
@@ -37,6 +40,14 @@ const navigationItems = [
     description: 'Church Member Management'
   },
   {
+    name: 'Families',
+    href: '/admin/families',
+    icon: UserGroupIcon,
+    permission: 'view_families',
+    badge: '312',
+    description: 'Family Management'
+  },
+  {
     name: 'Groups',
     href: '/admin/groups',
     icon: UserGroupIcon,
@@ -47,7 +58,7 @@ const navigationItems = [
   {
     name: 'Events',
     href: '/admin/events',
-    icon: BellIcon,
+    icon: CalendarDaysIcon,
     permission: 'view_events',
     badge: '8',
     description: 'Church Events & Activities'
@@ -551,13 +562,13 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
 
       {/* Navigation */}
       <nav style={navStyle}>
-        {/* Quick Actions Section */}
+        {/* Quick Actions Section - UPDATED WITH CORRECT URLS */}
         {(!isCollapsed || isMobile) && (
           <div style={sectionStyle}>
             <h3 style={sectionTitleStyle}>Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Link 
-                to="/register" 
+                to="/admin/members?action=create" 
                 style={{...quickActionStyle, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'}}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
@@ -568,12 +579,12 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                   e.target.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.3)';
                 }}
               >
-                <PlusIcon style={iconStyle} />
+                <UserPlusIcon style={iconStyle} />
                 {!isCollapsed && 'Add New Member'}
               </Link>
               
               <Link 
-                to="/admin/groups/new" 
+                to="/admin/groups?action=create" 
                 style={{...quickActionStyle, background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'}}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
@@ -589,7 +600,23 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
               </Link>
 
               <Link 
-                to="/admin/pledges/new" 
+                to="/admin/events?action=create" 
+                style={{...quickActionStyle, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'}}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(245, 158, 11, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(245, 158, 11, 0.3)';
+                }}
+              >
+                <CalendarDaysIcon style={iconStyle} />
+                {!isCollapsed && 'Create Event'}
+              </Link>
+
+              <Link 
+                to="/admin/pledges?action=create" 
                 style={{...quickActionStyle, background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'}}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
