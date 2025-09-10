@@ -1,525 +1,610 @@
+// Enhanced useGroups.js Hook
 import { useState, useEffect, useCallback, useRef } from 'react';
 import groupsService from '../services/groups';
+import useAuth from './useAuth';
+import { useToast } from './useToast';
 
-export const useGroups = (options = {}) => {
-  const [state, setState] = useState({
-    groups: [],
-    loading: true,
-    error: null,
-    initialized: false
-  });
-  
+export const useGroups = () => {
+  const [groups, setGroups] = useState([]);
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [availableMembers, setAvailableMembers] = useState([]);
+  const [group, setGroup] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
     page: 1,
-    limit: options.pageSize || 25,
-    total: 0,
-    totalPages: 0,
-    hasNext: false,
-    hasPrevious: false
+    pageSize: 20,
+    totalPages: 1
   });
   
-  const [filters, setFilters] = useState({
-    active: options.initialFilters?.active || null,
-    search: options.initialFilters?.search || '',
-    category: options.initialFilters?.category || null,
-    hasLeader: options.initialFilters?.hasLeader || null,
-    ...options.initialFilters
-  });
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const wsRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
-  // Refs to prevent memory leaks and duplicate requests
-  const mountedRef = useRef(true);
-  const fetchingRef = useRef(false);
-  const lastRequestRef = useRef(null);
-
-  // Helper to create request signature for deduplication
-  const createRequestSignature = useCallback((requestFilters, requestPage) => {
-    return JSON.stringify({ 
-      filters: requestFilters, 
-      page: requestPage, 
-      limit: pagination.limit 
-    });
-  }, [pagination.limit]);
-
-  // Transform filters for API
-  const transformFiltersForAPI = useCallback((currentFilters) => {
-    const apiFilters = {};
-    
-    if (currentFilters.search?.trim()) {
-      apiFilters.search = currentFilters.search.trim();
+  // Initialize WebSocket connection for real-time updates
+  useEffect(() => {
+    if (user?.token) {
+      initializeWebSocket();
     }
     
-    if (currentFilters.active !== null && currentFilters.active !== 'all') {
-      apiFilters.active = currentFilters.active === 'active' || currentFilters.active === true;
-    }
-    
-    if (currentFilters.category && currentFilters.category !== 'all') {
-      apiFilters.category = currentFilters.category;
-    }
-    
-    if (currentFilters.hasLeader && currentFilters.hasLeader !== 'all') {
-      apiFilters.has_leader = currentFilters.hasLeader === 'yes' || currentFilters.hasLeader === true;
-    }
-    
-    return apiFilters;
-  }, []);
-
-  // Main fetch function with deduplication and error handling
-  const fetchGroups = useCallback(async (requestFilters = null, requestPage = null, forceRefresh = false) => {
-    const filtersToUse = requestFilters || filters;
-    const pageToUse = requestPage || pagination.page;
-    
-    // Create request signature for deduplication
-    const requestSignature = createRequestSignature(filtersToUse, pageToUse);
-    
-    // Skip if already fetching the same request
-    if (!forceRefresh && fetchingRef.current && lastRequestRef.current === requestSignature) {
-      console.log('[useGroups] Skipping duplicate request');
-      return;
-    }
-
-    try {
-      fetchingRef.current = true;
-      lastRequestRef.current = requestSignature;
-      
-      // Only show loading on initial load or when forced
-      if (!state.initialized || forceRefresh) {
-        setState(prev => ({ ...prev, loading: true, error: null }));
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [user]);
+
+  const initializeWebSocket = () => {
+    const wsUrl = `${process.env.REACT_APP_WS_URL}/ws/groups/?token=${user.token}`;
+    
+    try {
+      wsRef.current = new WebSocket(wsUrl);
       
-      const apiParams = {
-        page: pageToUse,
-        limit: pagination.limit,
-        ...transformFiltersForAPI(filtersToUse)
+      wsRef.current.onopen = () => {
+        console.log('[useGroups] WebSocket connected');
       };
       
-      console.log('[useGroups] Fetching groups:', apiParams);
+      wsRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleWebSocketMessage(data);
+        } catch (error) {
+          console.error('[useGroups] WebSocket message error:', error);
+        }
+      };
       
-      const result = await groupsService.getGroups(apiParams);
+      wsRef.current.onclose = (event) => {
+        console.log('[useGroups] WebSocket closed:', event.code);
+        // Reconnect after delay if not intentionally closed
+        if (event.code !== 1000 && user?.token) {
+          setTimeout(() => initializeWebSocket(), 5000);
+        }
+      };
       
-      // Only update state if component is still mounted
-      if (!mountedRef.current) return;
-      
-      if (result.success) {
-        const responseData = result.data;
-        const groups = responseData.results || responseData || [];
+      wsRef.current.onerror = (error) => {
+        console.error('[useGroups] WebSocket error:', error);
+      };
+    } catch (error) {
+      console.error('[useGroups] WebSocket initialization error:', error);
+    }
+  };
+
+  const handleWebSocketMessage = (data) => {
+    switch (data.type) {
+      case 'group_created':
+        setGroups(prev => [data.group, ...prev]);
+        setPagination(prev => ({ ...prev, count: prev.count + 1 }));
+        break;
         
-        setState(prev => ({
-          ...prev,
-          groups,
-          loading: false,
-          error: null,
-          initialized: true
-        }));
+      case 'group_updated':
+        setGroups(prev => 
+          prev.map(group => 
+            group.id === data.group.id ? { ...group, ...data.group } : group
+          )
+        );
+        if (group && group.id === data.group.id) {
+          setGroup(prev => ({ ...prev, ...data.group }));
+        }
+        break;
         
-        setPagination(prev => ({
-          ...prev,
-          page: responseData.page || pageToUse,
-          total: responseData.count || groups.length,
-          totalPages: Math.ceil((responseData.count || groups.length) / pagination.limit),
-          hasNext: !!responseData.next,
-          hasPrevious: !!responseData.previous
-        }));
+      case 'group_deleted':
+        setGroups(prev => prev.filter(group => group.id !== data.group_id));
+        setPagination(prev => ({ ...prev, count: prev.count - 1 }));
+        if (group && group.id === data.group_id) {
+          setGroup(null);
+        }
+        break;
         
-        console.log('[useGroups] Groups fetched successfully:', groups.length);
+      case 'member_added':
+        updateGroupMemberCount(data.group_id, 1);
+        if (data.group_id === group?.id) {
+          refreshGroupMembers(data.group_id);
+        }
+        break;
+        
+      case 'member_removed':
+        updateGroupMemberCount(data.group_id, -1);
+        if (data.group_id === group?.id) {
+          setGroupMembers(prev => 
+            prev.filter(member => member.member_id !== data.member_id)
+          );
+        }
+        break;
+        
+      case 'member_role_updated':
+        if (data.group_id === group?.id) {
+          setGroupMembers(prev =>
+            prev.map(member =>
+              member.member_id === data.member_id
+                ? { ...member, role: data.role }
+                : member
+            )
+          );
+        }
+        break;
+        
+      default:
+        console.log('[useGroups] Unknown WebSocket message type:', data.type);
+    }
+  };
+
+  const updateGroupMemberCount = (groupId, change) => {
+    setGroups(prev =>
+      prev.map(g =>
+        g.id === groupId
+          ? { ...g, member_count: (g.member_count || 0) + change }
+          : g
+      )
+    );
+  };
+
+  // Cancel any ongoing requests
+  const cancelRequests = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+    return abortControllerRef.current.signal;
+  };
+
+  // Get groups with enhanced filtering and sorting
+  const getGroups = useCallback(async (filters = {}, page = 1, pageSize = 20) => {
+    setLoading(true);
+    setError(null);
+    const signal = cancelRequests();
+
+    try {
+      const response = await groupsService.getGroups({
+        ...filters,
+        page,
+        page_size: pageSize
+      }, { signal });
+
+      if (response.success) {
+        setGroups(response.data.results || []);
+        setPagination({
+          count: response.data.count || 0,
+          next: response.data.next,
+          previous: response.data.previous,
+          page,
+          pageSize,
+          totalPages: Math.ceil((response.data.count || 0) / pageSize)
+        });
       } else {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: result.error,
-          initialized: true
-        }));
-        console.error('[useGroups] Error fetching groups:', result.error);
+        throw new Error(response.error || 'Failed to fetch groups');
       }
     } catch (error) {
-      console.error('[useGroups] Unexpected error:', error);
-      if (mountedRef.current) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'An unexpected error occurred while fetching groups',
-          initialized: true
-        }));
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching groups:', error);
+        setError(error.message);
+        showToast?.(error.message || 'Failed to load groups', 'error');
       }
     } finally {
-      fetchingRef.current = false;
+      setLoading(false);
     }
-  }, [filters, pagination.page, pagination.limit, transformFiltersForAPI, createRequestSignature, state.initialized]);
+  }, [showToast, getGroups]);
 
-  // Refresh groups - force a fresh fetch
-  const refreshGroups = useCallback(() => {
-    console.log('[useGroups] Refreshing groups...');
-    return fetchGroups(null, null, true);
-  }, [fetchGroups]);
+  // Get group by ID
+  const getGroupById = useCallback(async (groupId) => {
+    if (!groupId) return;
+
+    setLoading(true);
+    setError(null);
+    const signal = cancelRequests();
+
+    try {
+      const response = await groupsService.getGroup(groupId, { signal });
+
+      if (response.success) {
+        setGroup(response.data);
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to fetch group');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching group:', error);
+        setError(error.message);
+        showToast?.(error.message || 'Failed to load group', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
 
   // Create new group
   const createGroup = useCallback(async (groupData) => {
+    setLoading(true);
+    setError(null);
+
     try {
-      console.log('[useGroups] Creating group:', groupData);
-      const result = await groupsService.createGroup(groupData);
-      
-      if (result.success) {
-        // If on first page, add to current groups for immediate feedback
-        if (pagination.page === 1) {
-          setState(prev => ({
-            ...prev,
-            groups: [result.data, ...prev.groups]
-          }));
-          
-          setPagination(prev => ({
-            ...prev,
-            total: prev.total + 1,
-            totalPages: Math.ceil((prev.total + 1) / prev.limit)
-          }));
-        }
-        
-        // Refresh to ensure consistency with backend
-        setTimeout(() => refreshGroups(), 100);
-        
-        return result.data;
+      const response = await groupsService.createGroup(groupData);
+
+      if (response.success) {
+        // WebSocket will handle adding to list
+        return response.data;
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to create group');
       }
     } catch (error) {
       console.error('[useGroups] Error creating group:', error);
-      throw error;
-    }
-  }, [pagination.page, pagination.limit, refreshGroups]);
-
-  // Update group
-  const updateGroup = useCallback(async (groupId, updateData) => {
-    try {
-      console.log('[useGroups] Updating group:', groupId, updateData);
-      const result = await groupsService.updateGroup(groupId, updateData);
-      
-      if (result.success) {
-        // Update in current state for immediate feedback
-        setState(prev => ({
-          ...prev,
-          groups: prev.groups.map(group => 
-            group.id === groupId ? { ...group, ...result.data } : group
-          )
-        }));
-        
-        return result.data;
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error('[useGroups] Error updating group:', error);
-      throw error;
+      setError(error.message);
+      throw error; // Re-throw for form handling
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // Partial update group
-  const patchGroup = useCallback(async (groupId, updateData) => {
+  // Update group
+  const updateGroup = useCallback(async (groupId, groupData) => {
+    if (!groupId) return;
+
+    setLoading(true);
+    setError(null);
+
     try {
-      console.log('[useGroups] Patching group:', groupId, updateData);
-      const result = await groupsService.patchGroup(groupId, updateData);
-      
-      if (result.success) {
-        setState(prev => ({
-          ...prev,
-          groups: prev.groups.map(group => 
-            group.id === groupId ? { ...group, ...result.data } : group
-          )
-        }));
-        
-        return result.data;
+      const response = await groupsService.updateGroup(groupId, groupData);
+
+      if (response.success) {
+        // WebSocket will handle updating in list
+        return response.data;
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to update group');
       }
     } catch (error) {
-      console.error('[useGroups] Error patching group:', error);
-      throw error;
+      console.error('[useGroups] Error updating group:', error);
+      setError(error.message);
+      throw error; // Re-throw for form handling
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   // Delete group
   const deleteGroup = useCallback(async (groupId) => {
+    if (!groupId) return;
+
+    setLoading(true);
+    setError(null);
+
     try {
-      console.log('[useGroups] Deleting group:', groupId);
-      const result = await groupsService.deleteGroup(groupId);
-      
-      if (result.success) {
-        // Remove from current state for immediate feedback
-        setState(prev => ({
-          ...prev,
-          groups: prev.groups.filter(group => group.id !== groupId)
-        }));
-        
-        setPagination(prev => ({
-          ...prev,
-          total: Math.max(0, prev.total - 1),
-          totalPages: Math.ceil(Math.max(0, prev.total - 1) / prev.limit)
-        }));
-        
+      const response = await groupsService.deleteGroup(groupId);
+
+      if (response.success) {
+        // WebSocket will handle removing from list
         return true;
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to delete group');
       }
     } catch (error) {
       console.error('[useGroups] Error deleting group:', error);
+      setError(error.message);
       throw error;
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // Search groups with debouncing
-  const searchGroups = useCallback(async (searchTerm) => {
-    console.log('[useGroups] Searching groups:', searchTerm);
-    
-    const newFilters = { ...filters, search: searchTerm };
-    setFilters(newFilters);
-    
-    // Reset to first page for new search
-    await fetchGroups(newFilters, 1);
-  }, [filters, fetchGroups]);
+  // Get group members
+  const fetchGroupMembers = useCallback(async (groupId) => {
+    if (!groupId) return;
 
-  // Apply filters
-  const filterGroups = useCallback(async (filterUpdates) => {
-    console.log('[useGroups] Applying filters:', filterUpdates);
-    
-    const newFilters = { ...filters, ...filterUpdates };
-    setFilters(newFilters);
-    
-    // Reset to first page for new filters
-    await fetchGroups(newFilters, 1);
-  }, [filters, fetchGroups]);
+    setLoading(true);
+    setError(null);
+    const signal = cancelRequests();
 
-  // Clear all filters
-  const clearFilters = useCallback(async () => {
-    console.log('[useGroups] Clearing filters');
-    
-    const clearedFilters = {
-      active: null,
-      search: '',
-      category: null,
-      hasLeader: null
-    };
-    
-    setFilters(clearedFilters);
-    await fetchGroups(clearedFilters, 1);
-  }, [fetchGroups]);
-
-  // Pagination functions
-  const goToPage = useCallback(async (page) => {
-    if (page >= 1 && page <= pagination.totalPages && page !== pagination.page) {
-      console.log('[useGroups] Going to page:', page);
-      await fetchGroups(null, page);
-    }
-  }, [pagination.totalPages, pagination.page, fetchGroups]);
-
-  const nextPage = useCallback(async () => {
-    if (pagination.hasNext) {
-      await goToPage(pagination.page + 1);
-    }
-  }, [pagination.hasNext, pagination.page, goToPage]);
-
-  const prevPage = useCallback(async () => {
-    if (pagination.hasPrevious) {
-      await goToPage(pagination.page - 1);
-    }
-  }, [pagination.hasPrevious, pagination.page, goToPage]);
-
-  // Group member management
-  const getGroupMembers = useCallback(async (groupId) => {
     try {
-      console.log('[useGroups] Fetching group members:', groupId);
-      const result = await groupsService.getGroupMembers(groupId);
-      
-      if (result.success) {
-        return result.data;
+      const response = await groupsService.getGroupMembers(groupId, { signal });
+
+      if (response.success) {
+        setGroupMembers(response.data.results || []);
+        return response.data.results || [];
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to fetch group members');
       }
     } catch (error) {
-      console.error('[useGroups] Error fetching group members:', error);
-      throw error;
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching group members:', error);
+        setError(error.message);
+        showToast?.(error.message || 'Failed to load group members', 'error');
+      }
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
-  const addMemberToGroup = useCallback(async (groupId, memberData) => {
+  // Get available members (not in the group)
+  const fetchAvailableMembers = useCallback(async (groupId) => {
+    if (!groupId) return;
+
+    const signal = cancelRequests();
+
     try {
-      console.log('[useGroups] Adding member to group:', groupId, memberData);
-      const result = await groupsService.addMemberToGroup(groupId, memberData);
-      
-      if (result.success) {
-        // Update the group's member count in state
-        setState(prev => ({
-          ...prev,
-          groups: prev.groups.map(group => 
-            group.id === groupId 
-              ? { ...group, member_count: (group.member_count || 0) + 1 }
-              : group
-          )
-        }));
-        
-        return result.data;
+      const response = await groupsService.getAvailableMembers(groupId, { signal });
+
+      if (response.success) {
+        setAvailableMembers(response.data.results || []);
+        return response.data.results || [];
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to fetch available members');
       }
     } catch (error) {
-      console.error('[useGroups] Error adding member to group:', error);
-      throw error;
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching available members:', error);
+        showToast?.(error.message || 'Failed to load available members', 'error');
+      }
     }
-  }, []);
+  }, [showToast]);
 
+  // Add members to group
+  const addMembersToGroup = useCallback(async (groupId, memberIds) => {
+    if (!groupId || !memberIds?.length) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await groupsService.addMembersToGroup(groupId, memberIds);
+
+      if (response.success) {
+        // WebSocket will handle updating member count
+        await fetchGroupMembers(groupId); // Refresh members list
+        await fetchAvailableMembers(groupId); // Refresh available members
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to add members to group');
+      }
+    } catch (error) {
+      console.error('[useGroups] Error adding members:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchGroupMembers, fetchAvailableMembers]);
+
+  // Remove member from group
   const removeMemberFromGroup = useCallback(async (groupId, memberId) => {
+    if (!groupId || !memberId) return;
+
+    setLoading(true);
+    setError(null);
+
     try {
-      console.log('[useGroups] Removing member from group:', groupId, memberId);
-      const result = await groupsService.removeMemberFromGroup(groupId, memberId);
-      
-      if (result.success) {
-        // Update the group's member count in state
-        setState(prev => ({
-          ...prev,
-          groups: prev.groups.map(group => 
-            group.id === groupId 
-              ? { ...group, member_count: Math.max(0, (group.member_count || 1) - 1) }
-              : group
-          )
-        }));
-        
+      const response = await groupsService.removeMemberFromGroup(groupId, memberId);
+
+      if (response.success) {
+        // WebSocket will handle updating member count and list
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to remove member from group');
+      }
+    } catch (error) {
+      console.error('[useGroups] Error removing member:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Update member role in group
+  const updateMemberRole = useCallback(async (groupId, memberId, role) => {
+    if (!groupId || !memberId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await groupsService.updateMemberRole(groupId, memberId, { role });
+
+      if (response.success) {
+        // WebSocket will handle updating member role
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to update member role');
+      }
+    } catch (error) {
+      console.error('[useGroups] Error updating member role:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Get group statistics
+  const getGroupStats = useCallback(async () => {
+    const signal = cancelRequests();
+
+    try {
+      const response = await groupsService.getGroupStatistics({ signal });
+
+      if (response.success) {
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to fetch group statistics');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching group stats:', error);
+        showToast?.(error.message || 'Failed to load group statistics', 'error');
+      }
+    }
+  }, [showToast]);
+
+  // Export group data
+  const exportGroupData = useCallback(async (groupIds = [], format = 'csv') => {
+    try {
+      const response = await groupsService.exportGroups(groupIds, format);
+
+      if (response.success) {
+        // Trigger download
+        const blob = new Blob([response.data], {
+          type: format === 'csv' ? 'text/csv' : 'application/json'
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `groups_export_${new Date().toISOString().split('T')[0]}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
         return true;
       } else {
-        throw new Error(result.error);
+        throw new Error(response.error || 'Failed to export group data');
       }
     } catch (error) {
-      console.error('[useGroups] Error removing member from group:', error);
+      console.error('[useGroups] Error exporting groups:', error);
       throw error;
     }
   }, []);
 
-  // Utility functions
-  const getGroupById = useCallback((groupId) => {
-    return state.groups.find(group => group.id === groupId);
-  }, [state.groups]);
+  // Refresh groups (alias for getGroups)
+  const refreshGroups = useCallback((filters = {}, page = 1) => {
+    return getGroups(filters, page);
+  }, [getGroups]);
 
-  const getGroupByName = useCallback((groupName) => {
-    return state.groups.find(group => 
-      group.name.toLowerCase().includes(groupName.toLowerCase())
-    );
-  }, [state.groups]);
+  // Refresh group members
+  const refreshGroupMembers = useCallback((groupId) => {
+    return fetchGroupMembers(groupId);
+  }, [fetchGroupMembers]);
 
-  const getActiveGroups = useCallback(() => {
-    return state.groups.filter(group => group.active);
-  }, [state.groups]);
+  // Join group (for members)
+  const joinGroup = useCallback(async (groupId, memberData = {}) => {
+    if (!groupId) return;
 
-  const getGroupsWithLeader = useCallback(() => {
-    return state.groups.filter(group => group.leader_name);
-  }, [state.groups]);
+    setLoading(true);
+    setError(null);
 
-  const getGroupStats = useCallback(() => {
-    const groups = state.groups;
-    return {
-      total: groups.length,
-      active: groups.filter(g => g.active).length,
-      inactive: groups.filter(g => !g.active).length,
-      withLeader: groups.filter(g => g.leader_name).length,
-      withoutLeader: groups.filter(g => !g.leader_name).length,
-      totalMembers: groups.reduce((sum, g) => sum + (g.member_count || 0), 0),
-      averageMembers: groups.length > 0 
-        ? Math.round((groups.reduce((sum, g) => sum + (g.member_count || 0), 0) / groups.length) * 10) / 10
-        : 0,
-      largestGroup: groups.length > 0 
-        ? Math.max(...groups.map(g => g.member_count || 0))
-        : 0
-    };
-  }, [state.groups]);
+    try {
+      const response = await groupsService.joinGroup(groupId, memberData);
 
-  // Get groups by category
-  const getGroupsByCategory = useCallback((categoryId) => {
-    return state.groups.filter(group => group.category === categoryId);
-  }, [state.groups]);
-
-  // Check if group exists
-  const groupExists = useCallback((name) => {
-    return state.groups.some(group => 
-      group.name.toLowerCase() === name.toLowerCase()
-    );
-  }, [state.groups]);
-
-  // Initial fetch effect - only runs once on mount
-  useEffect(() => {
-    console.log('[useGroups] Component mounted, initializing...');
-    
-    // Set up cleanup
-    const cleanup = () => {
-      mountedRef.current = false;
-      if (fetchingRef.current) {
-        console.log('[useGroups] Component unmounting, canceling fetch...');
+      if (response.success) {
+        showToast?.('Successfully joined group', 'success');
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to join group');
       }
-    };
-    
-    // Initial fetch with slight delay to prevent race conditions
-    const timeoutId = setTimeout(() => {
-      if (mountedRef.current && !state.initialized) {
-        fetchGroups();
-      }
-    }, 50);
-    
-    return () => {
-      cleanup();
-      clearTimeout(timeoutId);
-    };
-  }, []); // Empty dependency array - only run on mount
-
-  // Effect for handling options changes
-  useEffect(() => {
-    if (options.autoRefresh && state.initialized) {
-      const intervalId = setInterval(() => {
-        if (mountedRef.current && !fetchingRef.current) {
-          console.log('[useGroups] Auto-refreshing...');
-          refreshGroups();
-        }
-      }, options.refreshInterval || 30000); // Default 30 seconds
-      
-      return () => clearInterval(intervalId);
+    } catch (error) {
+      console.error('[useGroups] Error joining group:', error);
+      setError(error.message);
+      showToast?.(error.message || 'Failed to join group', 'error');
+      throw error;
+    } finally {
+      setLoading(false);
     }
-  }, [options.autoRefresh, options.refreshInterval, state.initialized, refreshGroups]);
+  }, [showToast]);
+
+  // Leave group (for members)
+  const leaveGroup = useCallback(async (groupId) => {
+    if (!groupId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await groupsService.leaveGroup(groupId);
+
+      if (response.success) {
+        showToast?.('Successfully left group', 'success');
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to leave group');
+      }
+    } catch (error) {
+      console.error('[useGroups] Error leaving group:', error);
+      setError(error.message);
+      showToast?.(error.message || 'Failed to leave group', 'error');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  // Get public groups (for registration)
+  const getPublicGroups = useCallback(async (filters = {}) => {
+    const signal = cancelRequests();
+
+    try {
+      const response = await groupsService.getPublicGroups(filters, { signal });
+
+      if (response.success) {
+        return response.data.results || [];
+      } else {
+        throw new Error(response.error || 'Failed to fetch public groups');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error fetching public groups:', error);
+        showToast?.(error.message || 'Failed to load public groups', 'error');
+      }
+    }
+  }, [showToast]);
+
+  // Clear all state
+  const clearState = useCallback(() => {
+    setGroups([]);
+    setGroupMembers([]);
+    setAvailableMembers([]);
+    setGroup(null);
+    setError(null);
+    setPagination({
+      count: 0,
+      next: null,
+      previous: null,
+      page: 1,
+      pageSize: 20,
+      totalPages: 1
+    });
+  }, []);
 
   return {
-    // Data
-    groups: state.groups,
-    loading: state.loading,
-    error: state.error,
-    initialized: state.initialized,
+    // State
+    groups,
+    groupMembers,
+    availableMembers,
+    group,
+    loading,
+    error,
     pagination,
-    filters,
     
-    // CRUD operations
+    // Group management
+    getGroups,
+    searchGroups,
+    getGroupById,
     createGroup,
     updateGroup,
-    patchGroup,
     deleteGroup,
-    fetchGroups,
     refreshGroups,
     
     // Member management
-    getGroupMembers,
-    addMemberToGroup,
+    fetchGroupMembers,
+    fetchAvailableMembers,
+    addMembersToGroup,
     removeMemberFromGroup,
+    updateMemberRole,
+    refreshGroupMembers,
     
-    // Search and filter
-    searchGroups,
-    filterGroups,
-    clearFilters,
+    // Public API
+    joinGroup,
+    leaveGroup,
+    getPublicGroups,
     
-    // Pagination
-    goToPage,
-    nextPage,
-    prevPage,
-    
-    // Utility functions
-    getGroupById,
-    getGroupByName,
-    getActiveGroups,
-    getGroupsWithLeader,
+    // Utility
     getGroupStats,
-    getGroupsByCategory,
-    groupExists,
+    exportGroupData,
+    clearState,
     
-    // State setters for advanced usage
-    setFilters,
-    setPagination
+    // WebSocket connection status
+    isConnected: wsRef.current?.readyState === WebSocket.OPEN
   };
 };
