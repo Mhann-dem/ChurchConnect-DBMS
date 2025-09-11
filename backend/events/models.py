@@ -3,10 +3,33 @@ from django.db import models
 import uuid
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
+from decimal import Decimal
 
 # Import Member and Group models
 from members.models import Member
 from groups.models import Group
+
+
+class EventCategory(models.Model):
+    """Categories for organizing events"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=7, default="#3498db", help_text="Hex color code")
+    is_active = models.BooleanField(default=True)
+    
+    # Metadata
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Event Categories"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 
 class Event(models.Model):
     EVENT_TYPES = [
@@ -41,8 +64,15 @@ class Event(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, help_text="Full event description")
     event_type = models.CharField(max_length=20, choices=EVENT_TYPES, default='other')
+    category = models.ForeignKey(
+        EventCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Event category for organization"
+    )
     location = models.CharField(max_length=255, blank=True, help_text="Event location")
-    location_details = models.TextField(blank=True, help_text="Additional location information (directions, room number, etc.)")
+    location_details = models.TextField(blank=True, help_text="Additional location information")
     
     # Date and time fields
     start_datetime = models.DateTimeField(help_text="Event start date and time")
@@ -57,6 +87,7 @@ class Event(models.Model):
     max_capacity = models.PositiveIntegerField(
         blank=True, 
         null=True, 
+        validators=[MinValueValidator(1)],
         help_text="Maximum number of attendees (leave blank for unlimited)"
     )
     requires_registration = models.BooleanField(
@@ -66,7 +97,8 @@ class Event(models.Model):
     registration_fee = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
-        default=0.00,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
         help_text="Registration fee amount (0 for free events)"
     )
     
@@ -84,11 +116,13 @@ class Event(models.Model):
     age_min = models.PositiveIntegerField(
         blank=True, 
         null=True, 
+        validators=[MinValueValidator(0), MaxValueValidator(120)],
         help_text="Minimum age requirement"
     )
     age_max = models.PositiveIntegerField(
         blank=True, 
         null=True, 
+        validators=[MinValueValidator(0), MaxValueValidator(120)],
         help_text="Maximum age requirement"
     )
     
@@ -197,14 +231,15 @@ class Event(models.Model):
         if not self.max_capacity:
             return False
             
-        return self.available_spots == 0
+        available = self.available_spots
+        return available is not None and available == 0
 
     @property
     def duration_hours(self):
         """Calculate event duration in hours"""
         if self.start_datetime and self.end_datetime:
             duration = self.end_datetime - self.start_datetime
-            return duration.total_seconds() / 3600
+            return round(duration.total_seconds() / 3600, 2)
         return 0
 
     def clean(self):
@@ -213,11 +248,11 @@ class Event(models.Model):
             if self.start_datetime >= self.end_datetime:
                 raise ValidationError('Start time must be before end time.')
                 
-        if self.age_min and self.age_max:
+        if self.age_min is not None and self.age_max is not None:
             if self.age_min > self.age_max:
                 raise ValidationError('Minimum age cannot be greater than maximum age.')
                 
-        if self.registration_deadline:
+        if self.registration_deadline and self.start_datetime:
             if self.registration_deadline > self.start_datetime:
                 raise ValidationError('Registration deadline cannot be after event start time.')
 
@@ -228,6 +263,10 @@ class Event(models.Model):
     def get_waitlist_count(self):
         """Get count of waitlisted registrations"""
         return self.registrations.filter(status='waitlist').count()
+
+    def get_volunteer_count(self):
+        """Get count of confirmed volunteers"""
+        return self.volunteers.filter(status='confirmed').count()
 
 
 class EventRegistration(models.Model):
@@ -277,7 +316,12 @@ class EventRegistration(models.Model):
         choices=PAYMENT_STATUS_CHOICES, 
         default='not_required'
     )
-    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    payment_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
     payment_reference = models.CharField(
         max_length=100, 
         blank=True,
@@ -297,7 +341,7 @@ class EventRegistration(models.Model):
 
     class Meta:
         unique_together = ['event', 'member']
-        ordering = ['registration_date']
+        ordering = ['-registration_date']
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['registration_date']),
@@ -318,18 +362,18 @@ class EventRegistration(models.Model):
         self.status = 'confirmed'
         self.approved_by = confirmed_by or ''
         self.approval_date = timezone.now()
-        self.save()
+        self.save(update_fields=['status', 'approved_by', 'approval_date'])
 
     def cancel_registration(self):
         """Cancel the registration"""
         self.status = 'cancelled'
-        self.save()
+        self.save(update_fields=['status'])
 
     def mark_attended(self):
         """Mark as attended"""
         self.status = 'attended'
         self.check_in_time = timezone.now()
-        self.save()
+        self.save(update_fields=['status', 'check_in_time'])
 
 
 class EventReminder(models.Model):
@@ -356,6 +400,7 @@ class EventReminder(models.Model):
     days_before = models.PositiveIntegerField(
         blank=True, 
         null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(365)],
         help_text="Days before event to send (for automatic reminders)"
     )
     
@@ -395,26 +440,6 @@ class EventReminder(models.Model):
         if self.send_at and self.event:
             if self.send_at > self.event.start_datetime:
                 raise ValidationError("Reminder cannot be scheduled after event start time.")
-
-
-class EventCategory(models.Model):
-    """Categories for organizing events"""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-    color = models.CharField(max_length=7, default="#3498db", help_text="Hex color code")
-    is_active = models.BooleanField(default=True)
-    
-    # Metadata
-    created_at = models.DateTimeField(default=timezone.now)
-    created_by = models.CharField(max_length=255, blank=True)
-
-    class Meta:
-        verbose_name_plural = "Event Categories"
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
 
 
 class EventVolunteer(models.Model):
@@ -475,5 +500,5 @@ class EventVolunteer(models.Model):
         """Calculate hours volunteered"""
         if self.check_in_time and self.check_out_time:
             duration = self.check_out_time - self.check_in_time
-            return duration.total_seconds() / 3600
+            return round(duration.total_seconds() / 3600, 2)
         return 0

@@ -6381,3 +6381,503 @@ INFO 2025-09-11 15:33:50,350 autoreload Watching for file changes with StatReloa
 INFO 2025-09-11 15:34:22,722 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
 INFO 2025-09-11 15:34:24,314 autoreload Watching for file changes with StatReloader
 INFO 2025-09-11 15:34:37,552 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:35:38,051 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:35:38,052 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-09-11 15:35:40,152 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 15:35:40,154 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-11 15:35:40,160 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 15:35:40,162 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-11 15:35:50,214 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:35:50,612 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 15:35:59,697 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:00,886 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:00,919 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-11 15:36:01,245 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,253 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,259 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,269 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,272 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,286 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,291 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,296 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,300 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,308 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,314 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,319 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,326 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,333 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,337 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:01,434 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:01,443 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 15:36:01,474 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 15:36:01,479 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 15:36:01,538 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:01,615 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:01,617 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:01,682 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:01,697 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 15:36:01,700 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 15:36:01,802 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 15:36:01,808 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 15:36:01,814 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-11 15:36:01,834 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:36:01,837 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:01,846 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:01,850 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 15:36:01,851 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:01,912 views [PledgeViewSet] Returning 0 recent pledges
+WARNING 2025-09-11 15:36:01,919 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 15:36:01,926 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 15:36:01,927 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 15:36:01,931 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:01,941 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-11 15:36:02,112 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 15:36:02,112 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:02,128 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 15:36:02,129 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:02,152 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 15:36:02,181 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:02,181 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 15:36:02,182 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 15:36:02,198 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:02,199 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:02,202 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:36:02,230 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 15:36:02,232 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 15:36:02,338 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:36:29,364 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:29,482 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-11 15:36:32,903 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:32,937 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 15:36:32,940 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 15:36:32,953 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 15:36:33,058 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:33,090 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:33,093 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:33,126 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-11 15:36:33,154 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:36:33,194 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 15:36:33,196 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 15:36:33,200 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:33,236 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:33,245 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:33,262 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 15:36:33,271 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 15:36:33,275 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 15:36:33,276 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 15:36:33,327 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:36:33,347 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 15:36:33,368 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 15:36:33,382 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 15:36:33,390 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:33,401 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 15:36:33,409 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:33,452 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:33,472 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:33,479 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 15:36:33,488 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 15:36:33,491 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 15:36:33,528 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:36:33,554 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:33,576 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 15:36:33,586 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 15:36:33,586 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 15:36:33,605 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 15:36:33,605 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 15:36:33,654 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-11 15:36:43,921 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:36:43,925 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 15:36:43,948 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:36:43,949 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:36:44,050 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:36:44,151 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:36:47,594 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,595 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,596 basehttp "OPTIONS /api/v1/pledges/?page=1 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,596 basehttp "OPTIONS /api/v1/pledges/?page=1 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,596 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,598 basehttp "OPTIONS /api/v1/pledges/?page=1 HTTP/1.1" 200 0
+INFO 2025-09-11 15:36:47,690 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:47,699 basehttp "GET /api/v1/pledges/?page=1 HTTP/1.1" 200 52
+INFO 2025-09-11 15:36:47,721 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:47,724 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:47,807 basehttp "GET /api/v1/pledges/?page=1 HTTP/1.1" 200 52
+INFO 2025-09-11 15:36:47,825 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:47,867 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:47,871 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 341
+INFO 2025-09-11 15:36:47,937 basehttp "GET /api/v1/pledges/?page=1 HTTP/1.1" 200 52
+INFO 2025-09-11 15:36:47,957 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 15:36:47,975 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 15:36:47,977 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 341
+WARNING 2025-09-11 15:37:00,104 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:37:00,104 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 15:37:00,131 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:37:00,132 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:37:00,221 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:37:00,312 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-11 15:37:48,762 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:37:48,764 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 15:37:48,782 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 15:37:48,786 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 15:37:48,882 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 15:37:49,108 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:39:10,215 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 18:53:49,974 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 18:53:49,959 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-09-11 18:53:50,900 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 18:53:50,900 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-11 18:53:50,909 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 18:53:50,911 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-11 18:53:50,911 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+WARNING 2025-09-11 18:53:51,105 log Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-09-11 18:53:51,109 log Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-09-11 18:53:51,109 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 54
+WARNING 2025-09-11 18:53:51,109 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 54
+INFO 2025-09-11 18:54:01,169 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:54:01,191 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 18:55:40,626 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:55:40,661 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 18:55:40,719 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:55:40,733 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 18:59:01,935 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:59:01,955 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 18:59:02,035 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 18:59:02,050 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 19:16:43,883 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:16:43,905 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 19:16:43,973 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:16:43,989 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 96
+INFO 2025-09-11 19:17:21,282 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:22,447 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-11 19:17:22,849 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-11 19:17:23,344 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,358 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,371 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,379 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,384 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,388 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,392 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,398 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,402 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,407 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,411 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,416 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,420 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,424 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,537 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:17:23,546 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:17:23,551 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:17:23,583 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:17:23,586 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:17:23,654 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:17:23,748 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:17:23,751 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-11 19:17:23,768 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:17:23,773 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:17:23,786 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:17:23,795 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 19:17:23,798 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:17:23,820 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:17:23,822 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:17:23,823 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-11 19:17:23,858 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:17:23,859 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:17:23,861 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:17:23,867 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:17:23,878 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:17:23,906 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:17:23,919 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:17:23,942 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:17:23,974 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:17:23,975 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:17:23,977 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:17:24,008 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:17:24,042 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:17:24,059 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:17:24,070 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:17:24,074 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:17:24,077 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:17:24,088 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:17:24,106 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:17:24,114 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:17:24,121 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:17:24,355 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:17:24,487 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-11 19:17:55,043 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:17:55,043 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:17:55,072 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:17:55,073 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:17:55,289 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:17:55,401 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:18:07,430 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:18:07,543 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-11 19:18:13,168 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:18:13,224 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:18:13,257 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:18:13,260 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:18:13,262 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:18:13,306 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:18:13,311 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-11 19:18:13,417 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:18:13,426 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:18:13,430 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:18:13,432 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:18:13,457 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:18:13,478 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:18:13,484 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:18:13,488 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:18:13,528 views [PledgeViewSet] Returning 0 recent pledges
+WARNING 2025-09-11 19:18:13,530 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:18:13,536 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:18:13,538 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:18:13,547 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:18:13,584 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 19:18:13,604 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:18:13,610 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:18:13,618 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:18:13,624 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:18:13,662 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:18:13,672 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:18:13,677 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:18:13,677 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:18:13,689 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:18:13,773 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:18:13,786 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:18:13,790 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:18:13,796 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:18:13,815 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:18:13,820 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:18:13,829 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:18:13,835 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-11 19:18:19,719 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:18:19,727 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:18:19,745 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:18:19,751 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:18:19,848 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:18:19,957 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:22:05,488 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\models.py changed, reloading.
+INFO 2025-09-11 19:22:07,725 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 19:22:33,076 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\serializers.py changed, reloading.
+INFO 2025-09-11 19:22:34,796 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 19:44:23,266 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:23,266 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-09-11 19:44:23,705 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 19:44:23,705 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-11 19:44:23,715 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-11 19:44:23,715 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-11 19:44:23,722 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:23,731 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:24,165 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-11 19:44:24,185 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-11 19:44:24,256 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:44:24,264 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:24,343 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:44:24,361 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
+INFO 2025-09-11 19:44:24,483 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
+INFO 2025-09-11 19:44:45,377 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,226 views Successful login for user: robbddzaka1@gmail.com
+INFO 2025-09-11 19:44:46,240 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-09-11 19:44:46,469 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,474 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,484 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,487 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,490 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,502 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,503 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,510 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,513 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,513 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,529 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,529 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,540 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,540 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,549 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,550 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:44:46,676 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:44:46,677 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:44:46,685 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:44:46,729 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:44:46,730 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:44:46,735 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:44:46,737 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-11 19:44:46,851 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:44:46,877 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:44:46,891 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:44:46,894 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 19:44:46,895 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:44:46,899 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:44:46,918 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:44:47,152 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:44:47,161 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:44:47,187 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 19:44:47,188 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:44:47,194 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:44:47,200 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:44:47,214 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:44:47,227 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:44:47,230 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:44:47,260 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:44:47,280 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:44:47,283 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:44:47,299 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:44:47,310 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:44:47,326 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:44:47,476 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:44:47,476 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:44:47,505 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:44:47,524 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:44:47,524 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:44:47,544 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:44:47,557 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:44:47,573 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:44:47,690 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+WARNING 2025-09-11 19:45:01,482 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:45:01,484 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:45:01,506 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 19:45:01,510 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:01,629 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:45:01,725 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:45:14,623 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:14,706 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-11 19:45:15,007 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:45:15,022 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 19:45:15,043 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:45:15,054 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:45:15,056 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:15,075 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:45:15,089 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:45:15,117 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 19:45:15,117 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:15,118 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:15,121 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-11 19:45:15,130 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:15,132 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:15,151 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:45:15,152 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+WARNING 2025-09-11 19:45:15,180 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:45:15,188 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:15,193 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:15,196 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-11 19:45:15,198 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:45:15,256 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:45:15,268 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:15,301 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:15,326 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:45:15,335 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:45:15,380 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:15,407 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:15,407 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:45:15,416 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:15,423 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:45:15,432 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:15,447 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:15,452 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:15,502 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:15,525 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:45:15,527 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:45:15,737 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:45:15,834 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:45:23,882 basehttp "OPTIONS /api/v1/pledges/?page=1&limit=25&silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,892 basehttp "OPTIONS /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,892 basehttp "OPTIONS /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,892 basehttp "OPTIONS /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,894 basehttp "OPTIONS /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,921 basehttp "OPTIONS /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:23,935 basehttp "OPTIONS /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-11 19:45:24,042 basehttp "GET /api/v1/pledges/?page=1&limit=25&silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 52
+INFO 2025-09-11 19:45:24,053 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,057 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,077 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,077 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,083 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:24,088 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:24,163 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,178 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,180 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:24,250 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,267 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,267 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,269 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:24,285 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,287 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:24,530 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:24,550 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:24,551 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:31,975 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-11 19:45:32,227 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:32,239 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:45:32,252 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 19:45:32,270 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:45:32,282 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:32,283 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-11 19:45:32,284 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:32,289 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:45:32,291 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:45:32,301 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:45:32,316 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-11 19:45:32,325 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-11 19:45:32,326 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:45:32,334 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:32,352 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-11 19:45:32,352 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:45:32,375 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-11 19:45:32,387 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:32,395 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+WARNING 2025-09-11 19:45:32,395 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 19:45:32,464 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 19:45:32,471 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 19:45:32,505 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 19:45:32,523 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:32,541 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:32,555 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 19:45:32,561 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 19:45:32,572 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 19:45:32,574 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 19:45:32,575 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 19:45:32,579 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:32,596 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 19:45:32,598 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 19:45:32,602 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 19:45:32,607 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 19:45:32,681 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 19:45:32,915 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 19:45:33,004 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 20:07:52,442 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 360
+INFO 2025-09-11 20:07:59,125 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 20:07:59,187 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 20:07:59,201 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 20:07:59,205 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 20:07:59,325 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 20:07:59,335 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 20:07:59,370 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-11 20:07:59,375 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-11 20:07:59,389 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-11 20:07:59,393 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 20:07:59,396 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-11 20:07:59,406 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 20:07:59,542 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 157
+INFO 2025-09-11 20:07:59,605 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-11 20:07:59,625 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-11 20:07:59,635 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-11 20:08:29,805 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 20:08:29,813 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 20:08:29,814 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 20:08:29,815 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-11 20:08:29,849 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-11 20:08:29,860 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-11 20:08:29,862 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-11 20:08:29,862 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-11 20:08:29,862 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-11 20:08:29,874 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 20:08:29,883 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 20:08:29,885 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 20:08:29,899 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 20:08:29,902 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 20:08:29,938 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109
+INFO 2025-09-11 20:08:30,003 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 20:08:30,008 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-11 20:08:30,042 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-11 20:08:30,046 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 20:08:30,058 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-11 20:08:30,082 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-11 20:08:30,123 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 109

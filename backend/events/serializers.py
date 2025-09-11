@@ -1,10 +1,27 @@
 # events/serializers.py - COMPLETE Events serializers for ChurchConnect
 from rest_framework import serializers
 from django.utils import timezone
+from django.db import transaction
 from .models import Event, EventRegistration, EventReminder, EventCategory, EventVolunteer
-from members.serializers import MemberSummarySerializer
-from groups.serializers import GroupSerializer
+from members.models import Member
 from groups.models import Group
+
+
+class MemberSummarySerializer(serializers.ModelSerializer):
+    """Simple member serializer for event contexts"""
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    class Meta:
+        model = Member
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'phone']
+
+
+class GroupSummarySerializer(serializers.ModelSerializer):
+    """Simple group serializer for event contexts"""
+    
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'description']
 
 
 class EventCategorySerializer(serializers.ModelSerializer):
@@ -16,12 +33,13 @@ class EventCategorySerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'color', 'is_active',
             'created_at', 'created_by'
         ]
+        read_only_fields = ['id', 'created_at', 'created_by']
 
 
 class EventVolunteerSerializer(serializers.ModelSerializer):
     """Serializer for event volunteers"""
     member = MemberSummarySerializer(read_only=True)
-    member_id = serializers.UUIDField(write_only=True)
+    member_id = serializers.UUIDField(write_only=True, source='member.id')
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     hours_volunteered = serializers.ReadOnlyField()
@@ -34,11 +52,12 @@ class EventVolunteerSerializer(serializers.ModelSerializer):
             'notes', 'invited_date', 'response_date', 'check_in_time', 'check_out_time',
             'hours_volunteered', 'created_at', 'created_by'
         ]
+        read_only_fields = ['id', 'invited_date', 'created_at', 'created_by']
 
     def validate(self, data):
         """Validate volunteer assignment"""
         event = data.get('event')
-        member_id = data.get('member_id')
+        member_id = data.get('member', {}).get('id') if data.get('member') else None
         role = data.get('role')
         
         # Check for duplicate volunteer role for same member
@@ -58,10 +77,108 @@ class EventVolunteerSerializer(serializers.ModelSerializer):
         
         return data
 
+    def create(self, validated_data):
+        """Create volunteer assignment with proper member handling"""
+        member_data = validated_data.pop('member', {})
+        member_id = member_data.get('id')
+        
+        if member_id:
+            try:
+                validated_data['member'] = Member.objects.get(id=member_id)
+            except Member.DoesNotExist:
+                raise serializers.ValidationError({"member_id": "Member not found."})
+        
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """Update volunteer assignment with proper member handling"""
+        member_data = validated_data.pop('member', {})
+        member_id = member_data.get('id')
+        
+        if member_id:
+            try:
+                validated_data['member'] = Member.objects.get(id=member_id)
+            except Member.DoesNotExist:
+                raise serializers.ValidationError({"member_id": "Member not found."})
+        
+        return super().update(instance, validated_data)
+
+
+class EventRegistrationSerializer(serializers.ModelSerializer):
+    """Serializer for event registrations"""
+    member = MemberSummarySerializer(read_only=True)
+    member_id = serializers.UUIDField(write_only=True)
+    event_title = serializers.CharField(source='event.title', read_only=True)
+    member_name = serializers.CharField(source='member.get_full_name', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    payment_status_display = serializers.CharField(source='get_payment_status_display', read_only=True)
+
+    class Meta:
+        model = EventRegistration
+        fields = [
+            'id', 'event', 'member', 'member_id', 'event_title', 'member_name',
+            'status', 'status_display', 'registration_date', 'notes',
+            'dietary_requirements', 'emergency_contact_name', 'emergency_contact_phone',
+            'accessibility_needs', 'payment_status', 'payment_status_display',
+            'payment_amount', 'payment_reference', 'payment_date',
+            'approved_by', 'approval_date', 'check_in_time', 'check_out_time',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'registration_date', 'created_at', 'updated_at',
+            'approved_by', 'approval_date'
+        ]
+
+    def validate(self, data):
+        """Validate registration"""
+        event = data.get('event')
+        member_id = data.get('member_id')
+        
+        if event and member_id:
+            # Check if registration already exists
+            existing = EventRegistration.objects.filter(
+                event=event, 
+                member_id=member_id
+            )
+            
+            if self.instance:
+                existing = existing.exclude(pk=self.instance.pk)
+                
+            if existing.exists():
+                raise serializers.ValidationError(
+                    "Member is already registered for this event."
+                )
+            
+            # Validate member exists
+            try:
+                Member.objects.get(id=member_id)
+            except Member.DoesNotExist:
+                raise serializers.ValidationError({"member_id": "Member not found."})
+            
+            # Check if registration is open
+            if not event.registration_open and not self.instance:
+                # Allow waitlist registration if event is full
+                if event.is_full:
+                    data['status'] = 'waitlist'
+                else:
+                    raise serializers.ValidationError(
+                        "Registration is closed for this event."
+                    )
+        
+        return data
+
+    def create(self, validated_data):
+        """Create registration with proper member assignment"""
+        member_id = validated_data.pop('member_id')
+        validated_data['member_id'] = member_id
+        return super().create(validated_data)
+
 
 class EventSerializer(serializers.ModelSerializer):
     """Main event serializer with full details"""
-    target_groups = GroupSerializer(many=True, read_only=True)
+    category = EventCategorySerializer(read_only=True)
+    category_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    target_groups = GroupSummarySerializer(many=True, read_only=True)
     target_group_ids = serializers.PrimaryKeyRelatedField(
         many=True, 
         write_only=True, 
@@ -90,9 +207,10 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id', 'title', 'description', 'event_type', 'event_type_display',
-            'location', 'location_details', 'start_datetime', 'end_datetime',
-            'registration_deadline', 'max_capacity', 'requires_registration',
-            'registration_fee', 'organizer', 'contact_email', 'contact_phone',
+            'category', 'category_id', 'location', 'location_details', 
+            'start_datetime', 'end_datetime', 'registration_deadline', 
+            'max_capacity', 'requires_registration', 'registration_fee', 
+            'organizer', 'contact_email', 'contact_phone',
             'target_groups', 'target_group_ids', 'age_min', 'age_max',
             'status', 'status_display', 'is_public', 'is_featured',
             'prerequisites', 'tags', 'image_url', 'external_registration_url',
@@ -101,6 +219,7 @@ class EventSerializer(serializers.ModelSerializer):
             'available_spots', 'is_past', 'is_upcoming', 'is_today',
             'registration_open', 'is_full', 'duration_hours'
         ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'last_modified_by']
 
     def get_registration_count(self, obj):
         """Get count of confirmed registrations"""
@@ -121,28 +240,62 @@ class EventSerializer(serializers.ModelSerializer):
         
         if start_datetime and end_datetime:
             if start_datetime >= end_datetime:
-                raise serializers.ValidationError("Start time must be before end time.")
+                raise serializers.ValidationError({
+                    "end_datetime": "End time must be after start time."
+                })
         
         age_min = data.get('age_min')
         age_max = data.get('age_max')
         
-        if age_min and age_max:
+        if age_min is not None and age_max is not None:
             if age_min > age_max:
-                raise serializers.ValidationError("Minimum age cannot be greater than maximum age.")
+                raise serializers.ValidationError({
+                    "age_max": "Maximum age cannot be less than minimum age."
+                })
         
         registration_deadline = data.get('registration_deadline')
         if registration_deadline and start_datetime:
             if registration_deadline > start_datetime:
-                raise serializers.ValidationError(
-                    "Registration deadline cannot be after event start time."
-                )
+                raise serializers.ValidationError({
+                    "registration_deadline": "Registration deadline cannot be after event start time."
+                })
+        
+        # Validate category exists
+        category_id = data.get('category_id')
+        if category_id:
+            try:
+                EventCategory.objects.get(id=category_id, is_active=True)
+            except EventCategory.DoesNotExist:
+                raise serializers.ValidationError({
+                    "category_id": "Category not found or inactive."
+                })
         
         return data
+
+    @transaction.atomic
+    def create(self, validated_data):
+        """Create event with proper category handling"""
+        category_id = validated_data.pop('category_id', None)
+        if category_id:
+            validated_data['category_id'] = category_id
+        
+        return super().create(validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        """Update event with proper category handling"""
+        category_id = validated_data.pop('category_id', None)
+        if category_id is not None:
+            validated_data['category_id'] = category_id
+        
+        return super().update(instance, validated_data)
 
 
 class EventListSerializer(serializers.ModelSerializer):
     """Simplified serializer for list views"""
+    category = EventCategorySerializer(read_only=True)
     registration_count = serializers.SerializerMethodField()
+    volunteer_count = serializers.SerializerMethodField()
     is_upcoming = serializers.ReadOnlyField()
     is_past = serializers.ReadOnlyField()
     registration_open = serializers.ReadOnlyField()
@@ -152,20 +305,24 @@ class EventListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'id', 'title', 'event_type', 'event_type_display', 'location', 
-            'start_datetime', 'end_datetime', 'status', 'status_display',
-            'is_public', 'is_featured', 'registration_count', 'max_capacity', 
-            'requires_registration', 'registration_open', 'is_upcoming', 'is_past',
-            'organizer', 'registration_fee'
+            'id', 'title', 'event_type', 'event_type_display', 'category',
+            'location', 'start_datetime', 'end_datetime', 'status', 'status_display',
+            'is_public', 'is_featured', 'registration_count', 'volunteer_count',
+            'max_capacity', 'requires_registration', 'registration_open', 
+            'is_upcoming', 'is_past', 'organizer', 'registration_fee', 'image_url'
         ]
 
     def get_registration_count(self, obj):
         return obj.registrations.filter(status__in=['confirmed', 'attended']).count()
 
+    def get_volunteer_count(self, obj):
+        return obj.volunteers.filter(status='confirmed').count()
+
 
 class EventCalendarSerializer(serializers.ModelSerializer):
     """Minimal serializer for calendar view"""
     event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    color = serializers.SerializerMethodField()
     
     class Meta:
         model = Event
@@ -175,11 +332,8 @@ class EventCalendarSerializer(serializers.ModelSerializer):
             'is_public', 'status', 'is_featured', 'color'
         ]
     
-    def to_representation(self, instance):
-        """Add color field for calendar display"""
-        data = super().to_representation(instance)
-        
-        # Add color based on event type
+    def get_color(self, obj):
+        """Add color based on event type"""
         color_map = {
             'service': '#3498db',
             'meeting': '#e74c3c',
@@ -187,15 +341,25 @@ class EventCalendarSerializer(serializers.ModelSerializer):
             'youth': '#f39c12',
             'workshop': '#9b59b6',
             'outreach': '#1abc9c',
+            'conference': '#e67e22',
+            'retreat': '#8e44ad',
+            'fundraiser': '#27ae60',
+            'kids': '#f1c40f',
+            'seniors': '#95a5a6',
+            'prayer': '#34495e',
+            'bible_study': '#2c3e50',
+            'baptism': '#16a085',
+            'wedding': '#e91e63',
+            'funeral': '#607d8b',
             'other': '#95a5a6'
         }
         
-        data['color'] = color_map.get(instance.event_type, '#95a5a6')
-        return data
+        return color_map.get(obj.event_type, '#95a5a6')
 
 
 class EventCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating events"""
+    category_id = serializers.UUIDField(required=False, allow_null=True)
     target_group_ids = serializers.PrimaryKeyRelatedField(
         many=True, 
         queryset=Group.objects.all(),
@@ -206,12 +370,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'title', 'description', 'event_type', 'location', 'location_details',
-            'start_datetime', 'end_datetime', 'registration_deadline',
-            'max_capacity', 'requires_registration', 'registration_fee',
-            'organizer', 'contact_email', 'contact_phone', 'target_group_ids',
-            'age_min', 'age_max', 'status', 'is_public', 'is_featured',
-            'prerequisites', 'tags', 'image_url', 'external_registration_url'
+            'title', 'description', 'event_type', 'category_id',
+            'location', 'location_details', 'start_datetime', 'end_datetime', 
+            'registration_deadline', 'max_capacity', 'requires_registration', 
+            'registration_fee', 'organizer', 'contact_email', 'contact_phone', 
+            'target_group_ids', 'age_min', 'age_max', 'status', 'is_public', 
+            'is_featured', 'prerequisites', 'tags', 'image_url', 
+            'external_registration_url'
         ]
 
     def validate(self, data):
@@ -221,64 +386,38 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         
         if start_datetime and end_datetime:
             if start_datetime >= end_datetime:
-                raise serializers.ValidationError("Start time must be before end time.")
+                raise serializers.ValidationError({
+                    "end_datetime": "End time must be after start time."
+                })
+        
+        age_min = data.get('age_min')
+        age_max = data.get('age_max')
+        
+        if age_min is not None and age_max is not None:
+            if age_min > age_max:
+                raise serializers.ValidationError({
+                    "age_max": "Maximum age cannot be less than minimum age."
+                })
         
         return data
 
-
-class EventRegistrationSerializer(serializers.ModelSerializer):
-    """Serializer for event registrations"""
-    member = MemberSummarySerializer(read_only=True)
-    member_id = serializers.UUIDField(write_only=True)
-    event_title = serializers.CharField(source='event.title', read_only=True)
-    member_name = serializers.CharField(source='member.get_full_name', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    payment_status_display = serializers.CharField(source='get_payment_status_display', read_only=True)
-
-    class Meta:
-        model = EventRegistration
-        fields = [
-            'id', 'event', 'member', 'member_id', 'event_title', 'member_name',
-            'status', 'status_display', 'registration_date', 'notes',
-            'dietary_requirements', 'emergency_contact_name', 'emergency_contact_phone',
-            'accessibility_needs', 'payment_status', 'payment_status_display',
-            'payment_amount', 'payment_reference', 'payment_date',
-            'approved_by', 'approval_date', 'check_in_time', 'check_out_time',
-            'created_at', 'updated_at'
-        ]
-
-    def validate(self, data):
-        """Validate registration"""
-        event = data.get('event')
-        member_id = data.get('member_id')
+    @transaction.atomic
+    def create(self, validated_data):
+        """Create event with proper relationships"""
+        category_id = validated_data.pop('category_id', None)
+        if category_id:
+            validated_data['category_id'] = category_id
         
-        if event and member_id:
-            # Check if registration already exists
-            existing = EventRegistration.objects.filter(
-                event=event, 
-                member_id=member_id
-            )
-            
-            if self.instance:
-                existing = existing.exclude(pk=self.instance.pk)
-                
-            if existing.exists():
-                raise serializers.ValidationError(
-                    "Member is already registered for this event."
-                )
-            
-            # Check if registration is open
-            if not event.registration_open and not self.instance:
-                raise serializers.ValidationError(
-                    "Registration is closed for this event."
-                )
-            
-            # Check capacity
-            if event.is_full and not self.instance:
-                # Allow waitlist registration
-                data['status'] = 'waitlist'
+        return super().create(validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        """Update event with proper relationships"""
+        category_id = validated_data.pop('category_id', None)
+        if category_id is not None:
+            validated_data['category_id'] = category_id
         
-        return data
+        return super().update(instance, validated_data)
 
 
 class EventReminderSerializer(serializers.ModelSerializer):
@@ -295,6 +434,7 @@ class EventReminderSerializer(serializers.ModelSerializer):
             'subject', 'message', 'send_to_all', 'target_statuses',
             'sent', 'sent_at', 'sent_count', 'created_at', 'created_by'
         ]
+        read_only_fields = ['id', 'sent_at', 'sent_count', 'created_at', 'created_by']
 
     def validate(self, data):
         """Validate reminder"""
@@ -303,9 +443,9 @@ class EventReminderSerializer(serializers.ModelSerializer):
         
         if event and send_at:
             if send_at > event.start_datetime:
-                raise serializers.ValidationError(
-                    "Reminder cannot be scheduled after event start time."
-                )
+                raise serializers.ValidationError({
+                    "send_at": "Reminder cannot be scheduled after event start time."
+                })
         
         return data
 
@@ -313,25 +453,25 @@ class EventReminderSerializer(serializers.ModelSerializer):
 class EventStatsSerializer(serializers.Serializer):
     """Serializer for event statistics"""
     summary = serializers.DictField()
-    by_status = serializers.DictField()
-    by_type = serializers.DictField()
+    breakdown = serializers.DictField()
     monthly_stats = serializers.ListField()
-    upcoming_events = serializers.ListField()
+    recent_activity = serializers.DictField()
 
 
 class EventExportSerializer(serializers.ModelSerializer):
     """Serializer for exporting events"""
     event_type_display = serializers.CharField(source='get_event_type_display')
     status_display = serializers.CharField(source='get_status_display')
+    category_name = serializers.CharField(source='category.name', default='')
     registration_count = serializers.SerializerMethodField()
     volunteer_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Event
         fields = [
-            'id', 'title', 'event_type_display', 'location', 'organizer',
-            'start_datetime', 'end_datetime', 'status_display', 'is_public',
-            'requires_registration', 'max_capacity', 'registration_count',
+            'id', 'title', 'event_type_display', 'category_name', 'location', 
+            'organizer', 'start_datetime', 'end_datetime', 'status_display', 
+            'is_public', 'requires_registration', 'max_capacity', 'registration_count',
             'volunteer_count', 'registration_fee', 'created_at'
         ]
 
