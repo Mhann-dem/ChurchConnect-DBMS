@@ -6316,3 +6316,68 @@ INFO 2025-09-10 19:06:33,443 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 10
 INFO 2025-09-10 19:06:33,476 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
 INFO 2025-09-10 19:06:33,568 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
 INFO 2025-09-10 19:06:33,647 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 114
+INFO 2025-09-11 13:03:27,239 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:06:43,298 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-09-11 13:06:45,886 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:08:26,902 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 13:08:28,542 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:35:14,319 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-11 13:35:16,353 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:35:35,813 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-11 13:35:37,025 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:35:43,371 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-11 13:35:44,719 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:36:59,569 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-11 13:37:00,749 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:37:02,898 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-11 13:37:04,360 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:37:09,882 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\serializers.py changed, reloading.
+INFO 2025-09-11 13:37:11,219 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:38:58,969 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-09-11 13:39:00,382 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:39:03,621 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-09-11 13:39:05,029 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:39:29,669 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:43:34,566 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-09-11 13:43:36,303 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:43:58,695 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-09-11 13:44:00,064 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:45:10,546 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\views.py changed, reloading.
+INFO 2025-09-11 13:45:12,807 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:45:28,313 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 13:45:29,892 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:46:15,498 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\urls.py changed, reloading.
+INFO 2025-09-11 13:46:17,207 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:46:48,290 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\urls.py changed, reloading.
+INFO 2025-09-11 13:46:49,683 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:47:07,562 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\groups\urls.py changed, reloading.
+INFO 2025-09-11 13:47:09,423 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:47:18,221 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\urls.py changed, reloading.
+INFO 2025-09-11 13:47:20,219 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:47:35,873 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\urls.py changed, reloading.
+INFO 2025-09-11 13:47:37,643 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:47:53,078 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\reports\urls.py changed, reloading.
+INFO 2025-09-11 13:47:54,778 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:49:13,360 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:49:31,618 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\core\urls.py changed, reloading.
+INFO 2025-09-11 13:49:33,042 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:50:40,392 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\core\urls.py changed, reloading.
+INFO 2025-09-11 13:50:42,302 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 13:53:17,328 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\core\views.py changed, reloading.
+INFO 2025-09-11 13:53:19,022 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 14:53:58,294 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:20:37,577 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-09-11 15:20:43,980 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:21:42,858 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 15:21:44,394 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:27:30,025 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:31:18,997 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 15:31:20,673 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:31:23,287 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 15:31:24,804 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:31:42,115 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:33:47,720 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\urls.py changed, reloading.
+INFO 2025-09-11 15:33:50,350 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:34:22,722 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\churchconnect\urls.py changed, reloading.
+INFO 2025-09-11 15:34:24,314 autoreload Watching for file changes with StatReloader
+INFO 2025-09-11 15:34:37,552 autoreload Watching for file changes with StatReloader

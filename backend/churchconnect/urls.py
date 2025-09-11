@@ -49,14 +49,14 @@ urlpatterns = [
     path('', include('events.urls')),
     
     # Legacy API endpoints (for backward compatibility)
-    # Uncomment these if you want to support both /api/ and /api/v1/ paths
-    path('api/auth/', include('authentication.urls')),
-    path('api/members/', include('members.urls')),
-    path('api/families/', include('families.urls')),
-    path('api/groups/', include('groups.urls')),
-    path('api/pledges/', include('pledges.urls')),
-    path('api/reports/', include('reports.urls')),
-    path('api/core/', include('core.urls')),
+    # # Uncomment these if you want to support both /api/ and /api/v1/ paths
+    # path('api/auth/', include('authentication.urls')),
+    # path('api/members/', include('members.urls')),
+    # path('api/families/', include('families.urls')),
+    # path('api/groups/', include('groups.urls')),
+    # path('api/pledges/', include('pledges.urls')),
+    # path('api/reports/', include('reports.urls')),
+    # path('api/core/', include('core.urls')),
     
     # Redirect root to API docs
     path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
