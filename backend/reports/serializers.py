@@ -2,7 +2,42 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from .models import Report, ReportRun, ReportTemplate
+
+
+class ReportTemplateSerializer(serializers.ModelSerializer):
+    """Serializer for ReportTemplate model"""
+    
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
+    default_format_display = serializers.CharField(source='get_default_format_display', read_only=True)
+    
+    class Meta:
+        model = ReportTemplate
+        fields = [
+            'id', 'name', 'description', 'report_type', 'report_type_display',
+            'default_filters', 'default_columns', 'default_format', 
+            'default_format_display', 'created_by', 'created_by_name',
+            'created_at', 'updated_at', 'is_system_template', 'is_active', 
+            'usage_count', 'last_used'
+        ]
+        read_only_fields = [
+            'id', 'created_by', 'created_at', 'updated_at', 'usage_count', 'last_used'
+        ]
+    
+    def validate_default_filters(self, value):
+        """Validate default filters format"""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("Default filters must be a dictionary.")
+        return value
+    
+    def validate_default_columns(self, value):
+        """Validate default columns format"""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Default columns must be a list.")
+        return value
 
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -28,7 +63,7 @@ class ReportSerializer(serializers.ModelSerializer):
             'columns', 'email_recipients', 'email_subject', 'email_body',
             'is_active', 'total_runs', 'successful_runs', 'last_successful_run'
         ]
-        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at', 'last_run']
     
     def get_total_runs(self, obj):
         """Get total number of report runs"""
@@ -49,7 +84,11 @@ class ReportSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email recipients must be a list.")
         
         for email in value:
-            if not isinstance(email, str) or '@' not in email:
+            if not isinstance(email, str):
+                raise serializers.ValidationError("Each email must be a string.")
+            try:
+                validate_email(email)
+            except ValidationError:
                 raise serializers.ValidationError(f"Invalid email format: {email}")
         
         return value
@@ -59,6 +98,11 @@ class ReportSerializer(serializers.ModelSerializer):
         if not isinstance(value, list):
             raise serializers.ValidationError("Columns must be a list.")
         
+        # Ensure all column names are strings
+        for column in value:
+            if not isinstance(column, str):
+                raise serializers.ValidationError("All column names must be strings.")
+        
         return value
     
     def validate_filters(self, value):
@@ -67,6 +111,20 @@ class ReportSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Filters must be a dictionary.")
         
         return value
+    
+    def validate(self, data):
+        """Cross-field validation"""
+        # Validate scheduling requirements
+        if data.get('is_scheduled') and not data.get('frequency'):
+            raise serializers.ValidationError({
+                'frequency': 'Frequency is required for scheduled reports.'
+            })
+        
+        # If email recipients are provided, email subject should also be provided
+        if data.get('email_recipients') and not data.get('email_subject'):
+            data['email_subject'] = f"Scheduled Report: {data.get('name', 'Unnamed Report')}"
+        
+        return data
 
 
 class ReportRunSerializer(serializers.ModelSerializer):
@@ -74,24 +132,27 @@ class ReportRunSerializer(serializers.ModelSerializer):
     
     report_name = serializers.CharField(source='report.name', read_only=True)
     report_type = serializers.CharField(source='report.report_type', read_only=True)
-    executed_by_name = serializers.CharField(source='triggered_by.get_full_name', read_only=True)
+    triggered_by_name = serializers.CharField(source='triggered_by.get_full_name', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     
     # File information
     file_size_mb = serializers.SerializerMethodField()
     download_url = serializers.SerializerMethodField()
+    duration_display = serializers.CharField(read_only=True)
+    file_size_display = serializers.CharField(read_only=True)
     
     class Meta:
         model = ReportRun
         fields = [
             'id', 'report', 'report_name', 'report_type', 'started_at',
-            'completed_at', 'status', 'status_display', 'file_path',
-            'file_size', 'file_size_mb', 'record_count', 'error_message',
-            'triggered_by', 'executed_by_name', 'execution_time', 'download_url'  # Changed executed_by to triggered_by
+            'completed_at', 'execution_time', 'status', 'status_display', 
+            'file_path', 'file_size', 'file_size_mb', 'file_size_display',
+            'record_count', 'error_message', 'triggered_by', 'triggered_by_name', 
+            'download_url', 'duration_display'
         ]
         read_only_fields = [
-            'id', 'started_at', 'completed_at', 'file_path', 'file_size',
-            'record_count', 'error_message', 'execution_time'
+            'id', 'started_at', 'completed_at', 'execution_time', 'file_path', 
+            'file_size', 'record_count', 'error_message'
         ]
     
     def get_file_size_mb(self, obj):
@@ -105,29 +166,8 @@ class ReportRunSerializer(serializers.ModelSerializer):
         if obj.status == 'completed' and obj.file_path:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(f'/api/reports/download/{obj.id}/')
+                return request.build_absolute_uri(f'/api/v1/reports/download/{obj.id}/')
         return None
-
-
-class ReportTemplateSerializer(serializers.ModelSerializer):
-    """Serializer for ReportTemplate model"""
-    
-    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
-    report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
-    default_format_display = serializers.CharField(source='get_default_format_display', read_only=True)
-    
-    class Meta:
-        model = ReportTemplate
-        fields = [
-            'id', 'name', 'description', 'report_type', 'report_type_display',
-            'default_filters', 'default_columns', 'default_format', 
-            'default_format_display', 'created_by', 'created_by_name',
-            'created_at', 'is_system_template', 'is_active', 'usage_count',
-            'last_used'
-        ]
-        read_only_fields = [
-            'id', 'created_by', 'created_at', 'usage_count', 'last_used'
-        ]
 
 
 class ReportGenerationSerializer(serializers.Serializer):
@@ -149,6 +189,12 @@ class ReportGenerationSerializer(serializers.Serializer):
         """Validate columns format"""
         if not isinstance(value, list):
             raise serializers.ValidationError("Columns must be a list.")
+        
+        # Ensure all column names are strings
+        for column in value:
+            if not isinstance(column, str):
+                raise serializers.ValidationError("All column names must be strings.")
+        
         return value
 
 
@@ -193,12 +239,16 @@ class BulkReportActionSerializer(serializers.Serializer):
     
     report_ids = serializers.ListField(
         child=serializers.UUIDField(),
-        min_length=1
+        min_length=1,
+        max_length=100  # Limit bulk operations
     )
     action = serializers.ChoiceField(choices=ACTION_CHOICES)
     
     def validate_report_ids(self, value):
-        """Validate that all report IDs exist"""
+        """Validate that all report IDs exist and user has access"""
+        from django.db.models import Q
+        
+        # Check if reports exist
         existing_ids = Report.objects.filter(id__in=value).values_list('id', flat=True)
         missing_ids = set(value) - set(existing_ids)
         
@@ -207,4 +257,17 @@ class BulkReportActionSerializer(serializers.Serializer):
                 f"Reports not found: {', '.join(str(id) for id in missing_ids)}"
             )
         
+        return value
+
+
+class ReportExportSerializer(serializers.Serializer):
+    """Serializer for legacy export endpoints"""
+    
+    format = serializers.ChoiceField(choices=['csv'], default='csv')
+    filters = serializers.JSONField(default=dict, required=False)
+    
+    def validate_filters(self, value):
+        """Validate filters format"""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("Filters must be a dictionary.")
         return value

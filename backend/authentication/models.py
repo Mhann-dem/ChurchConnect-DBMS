@@ -37,6 +37,17 @@ class AdminUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', extra_fields.get('active', True))
         extra_fields.setdefault('role', 'readonly')
         
+        # Generate username from email if not provided
+        if 'username' not in extra_fields:
+            username = email.split('@')[0]
+            # Ensure uniqueness
+            counter = 1
+            original_username = username
+            while self.filter(username=username).exists():
+                username = f"{original_username}{counter}"
+                counter += 1
+            extra_fields['username'] = username
+        
         user = self.model(email=email, **extra_fields)
         
         if password:
@@ -101,47 +112,7 @@ class AdminUserManager(BaseUserManager):
             last_login__lt=cutoff_date
         ).exclude(last_login__isnull=True)
 
-class PasswordResetToken(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    token = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    used = models.BooleanField(default=False)
-    used_at = models.DateTimeField(null=True, blank=True)  # Add this field
-    ip_address = models.GenericIPAddressField(null=True, blank=True)  # Add this field
-    user_agent = models.TextField(blank=True, null=True)  # Add this field
-    
-    class Meta:
-        db_table = 'password_reset_tokens'
-        indexes = [
-            models.Index(fields=['token']),
-            models.Index(fields=['expires_at']),
-            models.Index(fields=['used']),  # Add this index
-        ]
-    
-    def __str__(self):
-        return f"Password reset for {self.user.email}"
-    
-    def is_valid(self):
-        return not self.used and timezone.now() < self.expires_at
-    
-    def is_expired(self):  # Add this method
-        return timezone.now() >= self.expires_at
-    
-    def get_remaining_time(self):  # Add this method
-        return self.expires_at - timezone.now()
-    
-    @classmethod
-    def create_token(cls, user, expiration_hours=24):
-        """Create a new password reset token"""
-        token = secrets.token_urlsafe(32)  # Use secrets instead of signing
-        expires_at = timezone.now() + timedelta(hours=expiration_hours)
-        
-        return cls.objects.create(
-            user=user,
-            token=token,
-            expires_at=expires_at
-        )
+
 class AdminUser(AbstractUser):
     """
     Enhanced admin user model with comprehensive security features
@@ -361,9 +332,12 @@ class AdminUser(AbstractUser):
         
         # Update password change timestamp if password was changed
         if self.pk:
-            old_instance = AdminUser.objects.get(pk=self.pk)
-            if old_instance.password != self.password:
-                self.password_changed_at = timezone.now()
+            try:
+                old_instance = AdminUser.objects.get(pk=self.pk)
+                if old_instance.password != self.password:
+                    self.password_changed_at = timezone.now()
+            except AdminUser.DoesNotExist:
+                pass
         elif self.password:  # New user with password
             self.password_changed_at = timezone.now()
         
@@ -410,71 +384,259 @@ class AdminUser(AbstractUser):
     def can_export_data(self):
         """Check if user can export data"""
         return self.role in ['super_admin', 'admin'] and self.active
+
+
+class PasswordResetToken(models.Model):
+    """Password reset tokens with enhanced security"""
     
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=255, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        db_table = 'password_reset_tokens'
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['expires_at']),
+            models.Index(fields=['used']),
+            models.Index(fields=['user', 'used']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(expires_at__gt=models.F('created_at')),
+                name='expires_after_created'
+            ),
+        ]
+    
+    def __str__(self):
+        return f"Password reset for {self.user.email} ({'used' if self.used else 'active'})"
+    
+    def is_valid(self):
+        """Check if token is valid and not expired"""
+        return not self.used and timezone.now() < self.expires_at
+    
+    def is_expired(self):
+        """Check if token is expired"""
+        return timezone.now() >= self.expires_at
+    
+    def get_remaining_time(self):
+        """Get remaining time before expiration"""
+        return self.expires_at - timezone.now() if not self.is_expired() else timedelta(0)
+    
+    def mark_used(self, ip_address=None, user_agent=None):
+        """Mark token as used"""
+        self.used = True
+        self.used_at = timezone.now()
+        if ip_address:
+            self.ip_address = ip_address
+        if user_agent:
+            self.user_agent = user_agent
+        self.save(update_fields=['used', 'used_at', 'ip_address', 'user_agent'])
+    
+    @classmethod
+    def cleanup_inactive_sessions(cls, days=30):
+        """Remove inactive sessions older than specified days"""
+        cutoff_date = timezone.now() - timedelta(days=days)
+        return cls.objects.filter(
+            last_activity__lt=cutoff_date,
+            is_active=False
+        ).delete()
+    def create_token(cls, user, expiration_hours=24, ip_address=None, user_agent=None):
+        """Create a new password reset token"""
+        # Invalidate existing tokens for this user
+        cls.objects.filter(user=user, used=False).update(used=True, used_at=timezone.now())
+        
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=expiration_hours)
+        
+        return cls.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+
+    @classmethod
+    def cleanup_expired(cls):
+        """Remove expired tokens"""
+        return cls.objects.filter(expires_at__lt=timezone.now()).delete()
+
 
 class LoginAttempt(models.Model):
-    username = models.CharField(max_length=255)
-    email = models.EmailField(blank=True, null=True)  # Add this field
+    """Enhanced login attempt tracking with security features"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=255, default='unknown')
+    email = models.EmailField(blank=True, null=True)
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField(blank=True)
     attempted_at = models.DateTimeField(auto_now_add=True)
     successful = models.BooleanField(default=False)
-    suspicious = models.BooleanField(default=False)  # Add this field
-    blocked = models.BooleanField(default=False)  # Add this field
-    country = models.CharField(max_length=100, blank=True, null=True)  # Add this field
-    city = models.CharField(max_length=100, blank=True, null=True)  # Add this field
-    details = models.JSONField(default=dict)  # Add this field
+    suspicious = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    details = models.JSONField(default=dict, blank=True)
     
     class Meta:
         db_table = 'login_attempts'
         indexes = [
             models.Index(fields=['username']),
-            models.Index(fields=['email']),  # Add this index
+            models.Index(fields=['email']),
             models.Index(fields=['ip_address']),
             models.Index(fields=['attempted_at']),
-            models.Index(fields=['successful']),  # Add this index
-            models.Index(fields=['suspicious']),  # Add this index
+            models.Index(fields=['successful']),
+            models.Index(fields=['suspicious']),
+            models.Index(fields=['ip_address', 'attempted_at']),
         ]
+        ordering = ['-attempted_at']
+
+    def __str__(self):
+        status = 'Success' if self.successful else 'Failed'
+        return f"{self.email or self.username} - {status} - {self.attempted_at}"
+
+    @classmethod
+    def record_attempt(cls, username=None, email=None, ip_address=None, 
+                      user_agent=None, successful=False, suspicious=False, 
+                      details=None):
+        """Record a login attempt"""
+        return cls.objects.create(
+            username=username or 'unknown',
+            email=email,
+            ip_address=ip_address,
+            user_agent=user_agent or '',
+            successful=successful,
+            suspicious=suspicious,
+            details=details or {}
+        )
+
+    @classmethod
+    def cleanup_old_attempts(cls, days=90):
+        """Remove old login attempts"""
+        cutoff_date = timezone.now() - timedelta(days=days)
+        return cls.objects.filter(attempted_at__lt=cutoff_date).delete()
+
 
 class SecurityLog(models.Model):
-    SEVERITY_CHOICES = [  # Add this
+    """Enhanced security logging"""
+    
+    SEVERITY_CHOICES = [
         ('INFO', 'Information'),
         ('WARNING', 'Warning'),
         ('ERROR', 'Error'),
         ('CRITICAL', 'Critical'),
     ]
     
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    user_email = models.EmailField(blank=True, null=True)  # Add this field
+    EVENT_TYPE_CHOICES = [
+        ('LOGIN', 'Login Event'),
+        ('LOGOUT', 'Logout Event'),
+        ('PASSWORD_CHANGE', 'Password Change'),
+        ('PASSWORD_RESET', 'Password Reset'),
+        ('ACCOUNT_LOCKED', 'Account Locked'),
+        ('ACCOUNT_UNLOCKED', 'Account Unlocked'),
+        ('PERMISSION_DENIED', 'Permission Denied'),
+        ('SUSPICIOUS_ACTIVITY', 'Suspicious Activity'),
+        ('DATA_ACCESS', 'Data Access'),
+        ('SYSTEM_ERROR', 'System Error'),
+        ('SECURITY_EVENT', 'General Security Event'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='security_logs'
+    )
+    user_email = models.EmailField(blank=True, null=True)
     action = models.CharField(max_length=255)
-    event_type = models.CharField(max_length=100, default='SECURITY_EVENT')  # Add this field
-    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default='INFO')  # Add this field
-    ip_address = models.GenericIPAddressField()
+    event_type = models.CharField(
+        max_length=100, 
+        choices=EVENT_TYPE_CHOICES, 
+        default='SECURITY_EVENT'
+    )
+    severity = models.CharField(
+        max_length=20, 
+        choices=SEVERITY_CHOICES, 
+        default='INFO'
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     details = models.JSONField(default=dict)
-    additional_data = models.JSONField(default=dict, blank=True)  # Add this field
+    additional_data = models.JSONField(default=dict, blank=True)
     
     class Meta:
         db_table = 'security_logs'
         indexes = [
             models.Index(fields=['user']),
-            models.Index(fields=['user_email']),  # Add this index
+            models.Index(fields=['user_email']),
             models.Index(fields=['action']),
-            models.Index(fields=['event_type']),  # Add this index
-            models.Index(fields=['severity']),  # Add this index
+            models.Index(fields=['event_type']),
+            models.Index(fields=['severity']),
             models.Index(fields=['timestamp']),
+            models.Index(fields=['event_type', 'timestamp']),
         ]
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        user_id = self.user_email or (self.user.email if self.user else 'unknown')
+        return f"{user_id} - {self.action} - {self.severity}"
+
+    @classmethod
+    def log_event(cls, user=None, action=None, event_type='SECURITY_EVENT', 
+                  severity='INFO', ip_address=None, user_agent=None, 
+                  details=None, additional_data=None):
+        """Log a security event"""
+        return cls.objects.create(
+            user=user,
+            user_email=user.email if user else None,
+            action=action,
+            event_type=event_type,
+            severity=severity,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            details=details or {},
+            additional_data=additional_data or {}
+        )
+
+    @classmethod
+    def cleanup_old_logs(cls, days=365):
+        """Remove old security logs"""
+        cutoff_date = timezone.now() - timedelta(days=days)
+        return cls.objects.filter(timestamp__lt=cutoff_date).delete()
+
 
 class UserSession(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    session_key = models.CharField(max_length=40)
+    """Enhanced user session tracking"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='user_sessions'
+    )
+    session_key = models.CharField(max_length=40, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-    last_activity = models.DateTimeField(auto_now=True)  # Add this field
+    last_activity = models.DateTimeField(auto_now=True)
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)  # Add this field
+    is_active = models.BooleanField(default=True)
+    device_type = models.CharField(max_length=50, blank=True)
+    browser = models.CharField(max_length=100, blank=True)
     
     class Meta:
         db_table = 'user_sessions'
@@ -482,6 +644,25 @@ class UserSession(models.Model):
             models.Index(fields=['user']),
             models.Index(fields=['session_key']),
             models.Index(fields=['expires_at']),
-            models.Index(fields=['is_active']),  # Add this index
-            models.Index(fields=['last_activity']),  # Add this index
+            models.Index(fields=['is_active']),
+            models.Index(fields=['last_activity']),
+            models.Index(fields=['user', 'is_active']),
         ]
+        ordering = ['-last_activity']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.session_key[:8]}... - {'Active' if self.is_active else 'Inactive'}"
+
+    def is_expired(self):
+        """Check if session is expired"""
+        return timezone.now() >= self.expires_at
+
+    def deactivate(self):
+        """Deactivate the session"""
+        self.is_active = False
+        self.save(update_fields=['is_active'])
+
+    @classmethod
+    def cleanup_expired_sessions(cls):
+        """Remove expired sessions"""
+        return cls.objects.filter(expires_at__lt=timezone.now()).delete()

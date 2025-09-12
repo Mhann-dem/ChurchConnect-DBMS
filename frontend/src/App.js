@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 import { useTheme } from './context/ThemeContext';
 import { useToast } from './context/ToastContext';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -93,6 +94,7 @@ function App() {
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
+  <HelmetProvider>
     <div className="app">
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
@@ -213,6 +215,7 @@ function App() {
         )}
       </div>
     </div>
+  </HelmetProvider>
   );
 }
 

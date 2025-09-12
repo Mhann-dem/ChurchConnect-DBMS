@@ -159,8 +159,25 @@ ASGI_APPLICATION = 'churchconnect.asgi.application'
 DATABASE_URL = config('DATABASE_URL', default=None)
 
 if DATABASE_URL:
+    # Replace the DATABASE_URL section with:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='churchconnect'),
+            'USER': config('DB_USER', default='churchadmin'),
+            'PASSWORD': config('DB_PASSWORD', default='1mhann.dem'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'require' if IS_PRODUCTION else 'prefer',
+                'connect_timeout': 10,
+                'application_name': 'churchconnect',
+            },
+            'CONN_MAX_AGE': 600,
+            'TEST': {
+                'NAME': 'test_churchconnect',
+            }
+        }
     }
     # Enhanced database options for production
     DATABASES['default'].update({

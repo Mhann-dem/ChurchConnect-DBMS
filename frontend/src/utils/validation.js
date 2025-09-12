@@ -330,6 +330,17 @@ export const validateFile = (file, options = {}) => {
   return result;
 };
 
+// Add this function to your existing validation.js file
+export const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
+  
+  // Basic HTML sanitization - remove script tags and potential XSS
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .trim();
+};
 
 // Add these to your validation.js file
 export const validateMember = (memberData) => {

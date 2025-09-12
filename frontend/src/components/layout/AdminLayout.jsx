@@ -1,113 +1,205 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Outlet, useLocation, Navigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { Outlet, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Breadcrumbs from './Breadcrumbs';
 import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
+import { useToast } from '../../context/ToastContext';
+import LoadingSpinner from '../shared/LoadingSpinner';
 
-// Error Boundary Component
-class AdminErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
+// Lazy load components for better performance
+const KeyboardShortcuts = lazy(() => import('../shared/KeyboardShortcuts'));
+const NotificationCenter = lazy(() => import('../shared/NotificationCenter'));
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
+// Enhanced Error Boundary Component with better error reporting
+const AdminErrorFallback = ({ error, resetError }) => {
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
-  componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="errorBoundary">
-          <div className="errorContent">
-            <div className="errorIcon">⚠️</div>
-            <h2>Something went wrong</h2>
-            <p>We're sorry, but something unexpected happened in the admin panel.</p>
-            <details className="errorDetails">
-              <summary>Error Details</summary>
-              <pre>{this.state.error && this.state.error.toString()}</pre>
-              <pre>{this.state.errorInfo.componentStack}</pre>
-            </details>
-            <div className="errorActions">
-              <button 
-                onClick={() => window.location.reload()} 
-                className="errorButton primary"
-              >
-                Reload Page
-              </button>
-              <button 
-                onClick={() => window.location.href = '/admin/dashboard'} 
-                className="errorButton secondary"
-              >
-                Go to Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      );
+  useEffect(() => {
+    // Log error to monitoring service
+    console.error('Admin Layout Error:', error);
+    
+    // Report to error tracking service (e.g., Sentry)
+    if (window.Sentry) {
+      window.Sentry.captureException(error);
     }
+  }, [error]);
 
-    return this.props.children;
-  }
-}
+  const handleRetry = useCallback(() => {
+    resetError();
+    showToast('Retrying...', 'info');
+  }, [resetError, showToast]);
 
+  const handleGoToDashboard = useCallback(() => {
+    resetError();
+    navigate('/admin/dashboard', { replace: true });
+  }, [resetError, navigate]);
+
+  const handleReload = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  return (
+    <div className="errorBoundary" role="alert" aria-live="assertive">
+      <div className="errorContent">
+        <div className="errorIcon" aria-hidden="true">⚠️</div>
+        <h2>Something went wrong</h2>
+        <p>We're sorry, but something unexpected happened in the admin panel.</p>
+        
+        {process.env.NODE_ENV === 'development' && (
+          <details className="errorDetails">
+            <summary>Error Details (Development)</summary>
+            <pre>{error?.message}</pre>
+            <pre>{error?.stack}</pre>
+          </details>
+        )}
+        
+        <div className="errorActions">
+          <button 
+            onClick={handleRetry}
+            className="errorButton primary"
+            type="button"
+          >
+            Try Again
+          </button>
+          <button 
+            onClick={handleGoToDashboard}
+            className="errorButton secondary"
+            type="button"
+          >
+            Go to Dashboard
+          </button>
+          <button 
+            onClick={handleReload}
+            className="errorButton secondary"
+            type="button"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced loading component
+const AdminLoadingScreen = ({ message = 'Loading ChurchConnect...' }) => (
+  <div className="loadingContainer" role="status" aria-live="polite">
+    <div className="loadingContent">
+      <div className="loadingLogo">
+        <div className="logoSpinner">
+          <span className="logoText">CC</span>
+        </div>
+        <div className="loadingRings">
+          <div className="ring ring1"></div>
+          <div className="ring ring2"></div>
+          <div className="ring ring3"></div>
+        </div>
+      </div>
+      
+      <div className="loadingText">
+        <h1>ChurchConnect</h1>
+        <p>Administrative Dashboard</p>
+        <div className="loadingProgress">
+          <div className="progressBar">
+            <div className="progressFill"></div>
+          </div>
+          <span className="progressText">{message}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Main AdminLayout Component
 const AdminLayout = () => {
+  // State management
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const { user, isLoading, hasPermission } = useAuth();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [keyboardShortcutsOpen, setKeyboardShortcutsOpen] = useState(false);
+  
+  // Hooks
+  const { user, isLoading, hasPermission, logout } = useAuth();
   const { settings } = useSettings();
+  const { showToast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Memoize permission check
+  // Memoize permission check for performance
   const canAccessAdmin = useMemo(() => {
-    return user && (
-      user.role === 'admin' || 
-      user.role === 'super_admin' || 
-      hasPermission('access_admin')
-    );
+    if (!user) return false;
+    
+    const adminRoles = ['admin', 'super_admin'];
+    return adminRoles.includes(user.role) || hasPermission('access_admin');
   }, [user, hasPermission]);
 
-  // Enhanced responsive detection
+  // Enhanced responsive detection with debouncing
   const checkScreenSize = useCallback(() => {
     const width = window.innerWidth;
     const mobile = width < 768;
     const tablet = width >= 768 && width < 1024;
-    const desktop = width >= 1024;
 
     setIsMobile(mobile);
     setIsTablet(tablet);
     
+    // Auto-close sidebar on mobile
     if (mobile && sidebarOpen) {
       setSidebarOpen(false);
     }
     
     // Smart auto-collapse logic
-    if (tablet) {
+    if (tablet && !isCollapsed) {
       setIsCollapsed(true);
-    } else if (desktop && width >= 1400) {
+    } else if (width >= 1400 && isCollapsed && !mobile) {
       setIsCollapsed(false);
     }
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isCollapsed]);
 
-  useEffect(() => {
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+  // Debounced resize handler
+  const debouncedResize = useMemo(() => {
+    let timeoutId;
+    return () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkScreenSize, 150);
+    };
   }, [checkScreenSize]);
 
-  // Handle unsaved changes warning
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      showToast('Connection restored', 'success');
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      showToast('Connection lost. Some features may be limited.', 'warning');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [showToast]);
+
+  // Responsive setup
+  useEffect(() => {
+    checkScreenSize();
+    window.addEventListener('resize', debouncedResize);
+    return () => window.removeEventListener('resize', debouncedResize);
+  }, [checkScreenSize, debouncedResize]);
+
+  // Unsaved changes warning
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges) {
@@ -117,36 +209,127 @@ const AdminLayout = () => {
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && hasUnsavedChanges) {
+        // Auto-save logic could go here
+        console.log('Page hidden with unsaved changes');
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [hasUnsavedChanges]);
 
-  // Keyboard shortcuts
+  // Enhanced keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Toggle sidebar with Ctrl+B
-      if (e.ctrlKey && e.key === 'b') {
-        e.preventDefault();
-        if (!isMobile) {
-          setIsCollapsed(!isCollapsed);
-        } else {
-          setSidebarOpen(!sidebarOpen);
-        }
+      // Prevent shortcuts when typing in inputs
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        return;
       }
-      
-      // Close sidebar with Escape
-      if (e.key === 'Escape' && sidebarOpen) {
-        setSidebarOpen(false);
+
+      // Global shortcuts
+      switch (true) {
+        case e.ctrlKey && e.key === 'b':
+          e.preventDefault();
+          if (!isMobile) {
+            setIsCollapsed(!isCollapsed);
+          } else {
+            setSidebarOpen(!sidebarOpen);
+          }
+          break;
+
+        case e.key === 'Escape':
+          if (sidebarOpen) {
+            setSidebarOpen(false);
+          } else if (keyboardShortcutsOpen) {
+            setKeyboardShortcutsOpen(false);
+          }
+          break;
+
+        case e.ctrlKey && e.key === '/':
+          e.preventDefault();
+          setKeyboardShortcutsOpen(true);
+          break;
+
+        case e.ctrlKey && e.key === 'k':
+          e.preventDefault();
+          // Open command palette (implement later)
+          showToast('Command palette coming soon!', 'info');
+          break;
+
+        case e.altKey && e.key === 'd':
+          e.preventDefault();
+          navigate('/admin/dashboard');
+          break;
+
+        case e.altKey && e.key === 'm':
+          e.preventDefault();
+          navigate('/admin/members');
+          break;
+
+        case e.altKey && e.key === 'g':
+          e.preventDefault();
+          navigate('/admin/groups');
+          break;
+
+        case e.altKey && e.key === 'p':
+          e.preventDefault();
+          navigate('/admin/pledges');
+          break;
+
+        case e.altKey && e.key === 'r':
+          e.preventDefault();
+          navigate('/admin/reports');
+          break;
+
+        default:
+          break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isCollapsed, sidebarOpen, isMobile]);
+  }, [isCollapsed, sidebarOpen, isMobile, keyboardShortcutsOpen, navigate, showToast]);
 
+  // Auto logout on extended inactivity
+  useEffect(() => {
+    let inactivityTimer;
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+    const resetInactivityTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        showToast('Session expired due to inactivity', 'warning');
+        logout();
+        navigate('/admin/login');
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
+
+    resetInactivityTimer();
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      events.forEach(event => {
+        document.removeEventListener(event, resetInactivityTimer);
+      });
+    };
+  }, [logout, navigate, showToast]);
+
+  // Handlers
   const toggleSidebar = useCallback(() => {
-    setSidebarOpen(!sidebarOpen);
-  }, [sidebarOpen]);
+    setSidebarOpen(prev => !prev);
+  }, []);
 
   const closeSidebar = useCallback(() => {
     setSidebarOpen(false);
@@ -156,158 +339,153 @@ const AdminLayout = () => {
     setIsCollapsed(collapsed);
   }, []);
 
-  // Loading state with enhanced spinner
+  // Loading state
   if (isLoading) {
-    return (
-      <div className="loadingContainer" role="status" aria-live="polite">
-        <div className="loadingContent">
-          <div className="loadingLogo">
-            <div className="logoSpinner">
-              <span className="logoText">CC</span>
-            </div>
-            <div className="loadingRings">
-              <div className="ring ring1"></div>
-              <div className="ring ring2"></div>
-              <div className="ring ring3"></div>
-            </div>
-          </div>
-          
-          <div className="loadingSpinner">
-            <div className="spinner"></div>
-          </div>
-          
-          <div className="loadingText">
-            <h1>Loading ChurchConnect</h1>
-            <p>Administrative Dashboard</p>
-            <div className="loadingDots">
-              <span className="dot dot1"></span>
-              <span className="dot dot2"></span>
-              <span className="dot dot3"></span>
-            </div>
-            <div className="loadingProgress">
-              <div className="progressBar">
-                <div className="progressFill"></div>
-              </div>
-              <span className="progressText">Preparing your workspace...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminLoadingScreen message="Authenticating..." />;
   }
 
   // Permission check - redirect if user doesn't have admin access
   if (!canAccessAdmin) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
 
+  // Calculate sidebar width
   const sidebarWidth = isCollapsed ? 72 : 280;
-  const tabletSidebarWidth = isTablet ? 64 : sidebarWidth;
+  const effectiveWidth = isMobile ? 0 : (isTablet ? 64 : sidebarWidth);
 
   return (
-    <AdminErrorBoundary>
+    <ErrorBoundary FallbackComponent={AdminErrorFallback} onError={(error, errorInfo) => {
+      console.error('Admin Layout Error:', error, errorInfo);
+    }}>
       <div 
-        className={`adminLayout ${settings?.theme === 'dark' ? 'dark' : ''} ${isMobile ? 'mobile' : ''} ${isTablet ? 'tablet' : ''}`}
+        className={`
+          adminLayout 
+          ${settings?.theme === 'dark' ? 'dark' : ''} 
+          ${isMobile ? 'mobile' : ''} 
+          ${isTablet ? 'tablet' : ''}
+          ${!isOnline ? 'offline' : ''}
+        `}
         data-sidebar-open={sidebarOpen}
         data-sidebar-collapsed={isCollapsed}
+        data-testid="admin-layout"
       >
+        {/* Offline indicator */}
+        {!isOnline && (
+          <div className="offlineIndicator" role="alert">
+            <span>You are offline. Some features may be limited.</span>
+          </div>
+        )}
+
         {/* Enhanced Sidebar */}
         <div 
           className={`sidebarContainer ${isMobile ? 'mobile' : ''} ${sidebarOpen ? 'open' : ''}`}
-          style={{
-            '--sidebar-width': `${isTablet ? tabletSidebarWidth : sidebarWidth}px`
-          }}
+          style={{ '--sidebar-width': `${effectiveWidth}px` }}
         >
-          <Sidebar 
-            isOpen={sidebarOpen} 
-            onClose={closeSidebar}
-            onCollapseChange={handleSidebarCollapse}
-            isMobile={isMobile}
-            isTablet={isTablet}
-          />
+          <Suspense fallback={<LoadingSpinner size="sm" />}>
+            <Sidebar 
+              isOpen={sidebarOpen} 
+              onClose={closeSidebar}
+              onCollapseChange={handleSidebarCollapse}
+              isMobile={isMobile}
+              isTablet={isTablet}
+              isCollapsed={isCollapsed}
+              currentPath={location.pathname}
+            />
+          </Suspense>
         </div>
 
         {/* Main Application Area */}
         <div 
           className={`mainApplication ${isMobile ? 'mobile' : ''} ${isTablet ? 'tablet' : ''}`} 
           style={{
-            marginLeft: isMobile ? 0 : `${isTablet ? tabletSidebarWidth : sidebarWidth}px`,
+            marginLeft: effectiveWidth,
             transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
-          
           {/* Enhanced Header */}
-          <div className="headerContainer">
-            <Header 
-              onMenuClick={toggleSidebar}
-              user={user}
-              sidebarOpen={sidebarOpen}
-              isAdmin={true}
-              isMobile={isMobile}
-              isCollapsed={isCollapsed}
-            />
-          </div>
+          <Header 
+            onMenuClick={toggleSidebar}
+            user={user}
+            sidebarOpen={sidebarOpen}
+            isAdmin={true}
+            isMobile={isMobile}
+            isCollapsed={isCollapsed}
+            hasUnsavedChanges={hasUnsavedChanges}
+            isOnline={isOnline}
+          />
 
-          {/* Enhanced Main Content */}
+          {/* Main Content with Error Boundary */}
           <main 
             className="mainContent"
             role="main"
             aria-label="Admin dashboard content"
+            id="main-content"
           >
-            <div className="contentWrapper">
+            {/* Breadcrumbs */}
+            <div className="breadcrumbsContainer">
+              <Breadcrumbs currentPath={location.pathname} />
+            </div>
+
+            {/* Page Header with Context */}
+            <div className="pageHeader">
+              <div className="pageTitleSection">
+                <h1 className="pageTitle">
+                  {getPageTitle(location.pathname)}
+                </h1>
+                <p className="pageDescription">
+                  {getPageDescription(location.pathname)}
+                </p>
+              </div>
               
-              {/* Enhanced Breadcrumbs */}
-              <div className="breadcrumbsContainer">
-                <div className="breadcrumbsCard">
-                  <Breadcrumbs />
-                </div>
+              <div className="pageActions">
+                <button 
+                  className="actionButton secondary"
+                  title="Keyboard shortcuts (Ctrl+/)"
+                  onClick={() => setKeyboardShortcutsOpen(true)}
+                  type="button"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                  Help
+                </button>
               </div>
+            </div>
 
-              {/* Page Title and Actions */}
-              <div className="pageHeader">
-                <div className="pageTitleSection">
-                  <h1 className="pageTitle">
-                    {getPageTitle(location.pathname)}
-                  </h1>
-                  <p className="pageDescription">
-                    {getPageDescription(location.pathname)}
-                  </p>
-                </div>
-                
-                {/* Quick Actions */}
-                <div className="pageActions">
-                  <button 
-                    className="actionButton secondary"
-                    title="Keyboard shortcuts: Ctrl+B to toggle sidebar"
-                    onClick={() => {/* Open help modal */}}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    Help
-                  </button>
-                </div>
-              </div>
-
-              {/* Enhanced Content Area with Error Boundary */}
-              <div className="contentArea">
-                <div className="contentCard">
-                  <AdminErrorBoundary>
+            {/* Content Area with Skip Link */}
+            <div className="contentArea">
+              <a href="#main-content" className="skip-link">
+                Skip to main content
+              </a>
+              
+              <div className="contentCard">
+                <ErrorBoundary 
+                  FallbackComponent={AdminErrorFallback}
+                  onReset={() => window.location.reload()}
+                >
+                  <Suspense fallback={
+                    <div className="contentLoading">
+                      <LoadingSpinner size="lg" />
+                      <p>Loading page content...</p>
+                    </div>
+                  }>
                     <Outlet context={{ 
                       setHasUnsavedChanges, 
                       isMobile, 
-                      isTablet 
+                      isTablet,
+                      isOnline,
+                      user
                     }} />
-                  </AdminErrorBoundary>
-                </div>
+                  </Suspense>
+                </ErrorBoundary>
               </div>
             </div>
           </main>
         </div>
 
-        {/* Enhanced Mobile Overlay */}
+        {/* Mobile Overlay */}
         {isMobile && sidebarOpen && (
           <div 
             className="mobileOverlay"
@@ -324,53 +502,74 @@ const AdminLayout = () => {
           />
         )}
 
-        {/* Keyboard Shortcuts Help */}
-        <div className="keyboardShortcuts" aria-hidden="true">
-          <div className="shortcutHint">
-            Press <kbd>Ctrl</kbd> + <kbd>B</kbd> to toggle sidebar
-          </div>
-        </div>
+        {/* Lazy-loaded components */}
+        <Suspense fallback={null}>
+          {keyboardShortcutsOpen && (
+            <KeyboardShortcuts 
+              isOpen={keyboardShortcutsOpen}
+              onClose={() => setKeyboardShortcutsOpen(false)}
+            />
+          )}
+          
+          <NotificationCenter user={user} />
+        </Suspense>
+
+        {/* Focus trap for accessibility */}
+        <div 
+          className="focus-trap"
+          tabIndex={0}
+          onFocus={() => {
+            const firstFocusable = document.querySelector('.sidebar-nav a, .header button, .main-content [tabindex]:not([tabindex="-1"])');
+            firstFocusable?.focus();
+          }}
+        />
       </div>
-    </AdminErrorBoundary>
+    </ErrorBoundary>
   );
 };
 
-// Helper functions for page titles and descriptions
+// Enhanced helper functions with better route mapping
 const getPageTitle = (pathname) => {
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const lastSegment = pathSegments[pathSegments.length - 1];
+  const segments = pathname.split('/').filter(Boolean);
+  const route = segments[segments.length - 1] || 'dashboard';
   
   const titleMap = {
-    'dashboard': 'Dashboard',
-    'members': 'Members',
-    'groups': 'Groups',
-    'pledges': 'Pledges',
-    'reports': 'Reports',
-    'settings': 'Settings',
-    'events': 'Events',
-    'new': 'Create New',
-    'edit': 'Edit',
-    'view': 'View Details'
+    'dashboard': 'Dashboard Overview',
+    'members': 'Member Management',
+    'groups': 'Ministry Groups',
+    'pledges': 'Pledge & Donations',
+    'reports': 'Reports & Analytics',
+    'settings': 'System Settings',
+    'events': 'Event Management',
+    'profile': 'User Profile',
+    'notifications': 'Notifications',
+    'help': 'Help Center'
   };
   
-  return titleMap[lastSegment] || 'Admin Panel';
+  return titleMap[route] || 'Admin Panel';
 };
 
 const getPageDescription = (pathname) => {
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const lastSegment = pathSegments[pathSegments.length - 1];
+  const segments = pathname.split('/').filter(Boolean);
+  const route = segments[segments.length - 1] || 'dashboard';
   
   const descriptionMap = {
-    'dashboard': 'Overview of your church management system',
-    'members': 'Manage church members and their information',
-    'groups': 'Organize and manage ministry groups',
-    'pledges': 'Track donations and financial commitments',
-    'reports': 'Generate insights and analytics',
-    'settings': 'Configure system preferences and options',
-    'events': 'Manage church events and activities'
+    'dashboard': 'Monitor church activities and key metrics',
+    'members': 'Manage member records, profiles, and information',
+    'groups': 'Organize ministry groups and small group management',
+    'pledges': 'Track financial commitments and donation management',
+    'reports': 'Generate comprehensive reports and view analytics',
+    'settings': 'Configure system preferences and administrative options',
+    'events': 'Plan and manage church events and activities',
+    'profile': 'Manage your account settings and preferences',
+    'notifications': 'View and manage system notifications',
+    'help': 'Get help and access documentation'
   };
   
-  return descriptionMap[lastSegment] || 'Administrative interface';
+  return descriptionMap[route] || 'Administrative interface for church management';
 };
 
-export default AdminLayout;
+// Add display name for debugging
+AdminLayout.displayName = 'AdminLayout';
+
+export default React.memo(AdminLayout);
