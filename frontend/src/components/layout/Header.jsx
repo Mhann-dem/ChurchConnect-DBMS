@@ -1,4 +1,3 @@
-// src/components/layout/Header.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
@@ -6,7 +5,7 @@ import { Navigation } from './Navigation';
 import styles from './Layout.module.css';
 import logo from '../../assets/images/logo.png';
 
-const Header = ({ isAdmin = false }) => {
+const Header = ({ isAdmin = false, onMenuClick, user: userProp, sidebarOpen, isCollapsed, isMobile }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -14,12 +13,17 @@ const Header = ({ isAdmin = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [lastAdminPath, setLastAdminPath] = useState('/admin/dashboard');
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Use passed user prop or fallback to auth user
+  const currentUser = userProp || user;
 
   // Memoize expensive computations
   const isAdminOnPublicPage = useMemo(() => 
-    user && (user.role === 'admin' || user.role === 'super_admin') && 
+    currentUser && (currentUser.role === 'admin' || currentUser.role === 'super_admin') && 
     !location.pathname.startsWith('/admin'), 
-    [user, location.pathname]
+    [currentUser, location.pathname]
   );
 
   // Remember last admin page visited
@@ -47,14 +51,31 @@ const Header = ({ isAdmin = false }) => {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
+      if (event.key === 'Escape') {
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
+        if (showNotifications) {
+          setShowNotifications(false);
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, showNotifications]);
+
+  // Fetch notifications for admin users
+  useEffect(() => {
+    if (isAdmin && currentUser) {
+      // This would normally fetch from your notification service
+      setNotifications([
+        { id: 1, title: 'New member registered', message: 'John Doe has joined', time: '5 mins ago', unread: true },
+        { id: 2, title: 'Event reminder', message: 'Sunday service starts in 1 hour', time: '1 hour ago', unread: false },
+        { id: 3, title: 'Pledge received', message: '$500 donation received', time: '2 hours ago', unread: true }
+      ]);
+    }
+  }, [isAdmin, currentUser]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -87,6 +108,10 @@ const Header = ({ isAdmin = false }) => {
     setIsMobileMenuOpen(false);
   }, []);
 
+  const toggleNotifications = useCallback(() => {
+    setShowNotifications(!showNotifications);
+  }, [showNotifications]);
+
   // Updated navigation links for different user types - FIXED URLs
   const getNavigationLinks = () => {
     if (isAdmin) {
@@ -94,7 +119,7 @@ const Header = ({ isAdmin = false }) => {
         { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
         { name: 'Members', path: '/admin/members', icon: '👥' },
         { name: 'Families', path: '/admin/families', icon: '🏠' },
-        { name: 'Groups', path: '/admin/groups', icon: '🏢' },
+        { name: 'Groups', path: '/admin/groups', icon: '👨‍👩‍👧‍👦' },
         { name: 'Events', path: '/admin/events', icon: '📅' },
         { name: 'Pledges', path: '/admin/pledges', icon: '💰' },
         { name: 'Reports', path: '/admin/reports', icon: '📈' },
@@ -103,7 +128,7 @@ const Header = ({ isAdmin = false }) => {
     } else {
       return [
         { name: 'Home', path: '/', icon: '🏠' },
-        { name: 'Member Registration', path: '/registration', icon: '📝' },
+        { name: 'Member Registration', path: '/register', icon: '📝' },
         { name: 'Events', path: '/events', icon: '📅' },
         { name: 'Ministries', path: '/ministries', icon: '🙏' },
         { name: 'Contact', path: '/contact', icon: '📧' }
@@ -112,6 +137,7 @@ const Header = ({ isAdmin = false }) => {
   };
 
   const navigationLinks = getNavigationLinks();
+  const unreadCount = notifications.filter(n => n.unread).length;
 
   return (
     <>
@@ -120,8 +146,44 @@ const Header = ({ isAdmin = false }) => {
         role="banner"
       >
         <div className={styles.headerContainer}>
+          {/* Mobile Menu Button - Only show for non-admin or when sidebar not present */}
+          {(!isAdmin || isMobile) && (
+            <button
+              className={`${styles.mobileMenuBtn} ${isAdmin ? styles.adminMobileBtn : ''}`}
+              onClick={isAdmin && onMenuClick ? onMenuClick : toggleMobileMenu}
+              aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                {isMobileMenuOpen ? (
+                  <>
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </>
+                ) : (
+                  <>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </>
+                )}
+              </svg>
+            </button>
+          )}
+
           {/* Brand/Logo Section */}
-          <div className={styles.brandContainer}>
+          <div className={`${styles.brandContainer} ${isAdmin && !isMobile ? styles.adminBrand : ''}`}>
             <Link 
               to={isAdmin ? '/admin/dashboard' : '/'} 
               className={styles.logoLink}
@@ -142,6 +204,20 @@ const Header = ({ isAdmin = false }) => {
             </Link>
           </div>
 
+          {/* Admin Header Info - Show when not mobile */}
+          {isAdmin && !isMobile && (
+            <div className={styles.adminHeaderInfo}>
+              <div className={styles.breadcrumbsContainer}>
+                <div className={styles.currentPage}>
+                  {getCurrentPageTitle(location.pathname)}
+                </div>
+                <div className={styles.pageDescription}>
+                  {getCurrentPageDescription(location.pathname)}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Desktop Navigation */}
           {!isAdmin && (
             <nav className={styles.mainNav} role="navigation" aria-label="Main navigation">
@@ -157,44 +233,73 @@ const Header = ({ isAdmin = false }) => {
             </div>
           )}
 
-          {/* Mobile Menu Button */}
-          <button
-            className={styles.mobileMenuBtn}
-            onClick={toggleMobileMenu}
-            aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-menu"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              {isMobileMenuOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </>
-              )}
-            </svg>
-          </button>
-
           {/* User Section */}
-          <div className={styles.userSection}>
-            {user ? (
+          <div className={`${styles.userSection} ${isAdmin ? styles.adminUserSection : ''}`}>
+            {currentUser ? (
               <div className={styles.userMenu}>
+                {/* Admin Notifications - Only for admin users */}
+                {isAdmin && (
+                  <div className={styles.notificationsContainer}>
+                    <button
+                      onClick={toggleNotifications}
+                      className={`${styles.notificationBtn} ${unreadCount > 0 ? styles.hasUnread : ''}`}
+                      aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                      </svg>
+                      {unreadCount > 0 && (
+                        <span className={styles.notificationBadge}>{unreadCount}</span>
+                      )}
+                    </button>
+
+                    {/* Notifications Dropdown */}
+                    {showNotifications && (
+                      <div className={styles.notificationsDropdown}>
+                        <div className={styles.notificationsHeader}>
+                          <h3>Notifications</h3>
+                          <button 
+                            onClick={() => setShowNotifications(false)}
+                            className={styles.closeBtn}
+                            aria-label="Close notifications"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                        <div className={styles.notificationsList}>
+                          {notifications.length > 0 ? (
+                            notifications.map(notification => (
+                              <div 
+                                key={notification.id} 
+                                className={`${styles.notificationItem} ${notification.unread ? styles.unread : ''}`}
+                              >
+                                <div className={styles.notificationContent}>
+                                  <div className={styles.notificationTitle}>{notification.title}</div>
+                                  <div className={styles.notificationMessage}>{notification.message}</div>
+                                  <div className={styles.notificationTime}>{notification.time}</div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className={styles.noNotifications}>
+                              <p>No notifications</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.notificationsFooter}>
+                          <Link to="/admin/notifications" onClick={() => setShowNotifications(false)}>
+                            View all notifications
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Admin Dashboard Button - Show when admin is on public site */}
                 {isAdminOnPublicPage && (
                   <button
@@ -242,42 +347,43 @@ const Header = ({ isAdmin = false }) => {
                   </button>
                 )}
 
-                {/* User Info - Show only when not admin on public site */}
-                {!isAdminOnPublicPage && (
-                  <div className={styles.userInfo}>
-                    <div className={styles.userAvatar} role="img" aria-label={`${user.firstName}'s avatar`}>
-                      {user.avatar ? (
-                        <img 
-                          src={user.avatar} 
-                          alt={`${user.firstName}'s avatar`} 
-                          className={styles.avatarImg}
-                        />
-                      ) : (
-                        <span className={styles.avatarText}>
-                          {user.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
-                      )}
-                    </div>
+                {/* User Info */}
+                <div className={styles.userInfo}>
+                  <div className={styles.userAvatar} role="img" aria-label={`${currentUser.first_name}'s avatar`}>
+                    {currentUser.avatar ? (
+                      <img 
+                        src={currentUser.avatar} 
+                        alt={`${currentUser.first_name}'s avatar`} 
+                        className={styles.avatarImg}
+                      />
+                    ) : (
+                      <span className={styles.avatarText}>
+                        {currentUser.first_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
+                  {(!isAdmin || !isMobile) && (
                     <div className={styles.userDetails}>
                       <span className={styles.userName}>
-                        Welcome, {user.firstName}
+                        {isAdmin ? `${currentUser.first_name} ${currentUser.last_name}` : `Welcome, ${currentUser.first_name}`}
                       </span>
-                      {user.role && (
+                      {currentUser.role && (
                         <span className={styles.userRole}>
-                          {user.role}
+                          {currentUser.role}
                         </span>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Quick Actions Dropdown for Admins */}
-                {(user.role === 'admin' || user.role === 'super_admin') && !isAdminOnPublicPage && (
-                  <div className={styles.quickActions}>
+                {isAdmin && !isMobile && (
+                  <div className={styles.quickActionsDropdown}>
                     <button 
                       className={styles.quickActionsBtn}
                       aria-label="Quick admin actions"
                       aria-haspopup="true"
+                      onClick={() => {/* Toggle dropdown */}}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <circle cx="12" cy="12" r="1"></circle>
@@ -492,19 +598,19 @@ const Header = ({ isAdmin = false }) => {
 
         {/* Mobile Menu Footer */}
         <div className={styles.mobileMenuFooter}>
-          {user ? (
+          {currentUser ? (
             <div className={styles.mobileUserSection}>
               <div className={styles.mobileUserInfo}>
-                <div className={styles.mobileUserAvatar} role="img" aria-label={`${user.firstName}'s avatar`}>
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={`${user.firstName}'s avatar`} />
+                <div className={styles.mobileUserAvatar} role="img" aria-label={`${currentUser.first_name}'s avatar`}>
+                  {currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt={`${currentUser.first_name}'s avatar`} />
                   ) : (
-                    <span>{user.firstName?.charAt(0)?.toUpperCase() || 'U'}</span>
+                    <span>{currentUser.first_name?.charAt(0)?.toUpperCase() || 'U'}</span>
                   )}
                 </div>
                 <div className={styles.mobileUserDetails}>
-                  <span className={styles.mobileUserName}>{user.firstName} {user.lastName}</span>
-                  <span className={styles.mobileUserRole}>{user.role || 'Member'}</span>
+                  <span className={styles.mobileUserName}>{currentUser.first_name} {currentUser.last_name}</span>
+                  <span className={styles.mobileUserRole}>{currentUser.role || 'Member'}</span>
                 </div>
               </div>
               <button 
@@ -565,8 +671,57 @@ const Header = ({ isAdmin = false }) => {
           )}
         </div>
       </nav>
+
+      {/* Notifications Overlay */}
+      {showNotifications && (
+        <div 
+          className={styles.notificationsOverlay}
+          onClick={() => setShowNotifications(false)}
+          aria-hidden="true"
+        />
+      )}
     </>
   );
+};
+
+// Helper functions for page titles and descriptions
+const getCurrentPageTitle = (pathname) => {
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const lastSegment = pathSegments[pathSegments.length - 1];
+  
+  const titleMap = {
+    'dashboard': 'Dashboard',
+    'members': 'Members',
+    'families': 'Families', 
+    'groups': 'Groups',
+    'events': 'Events',
+    'pledges': 'Pledges',
+    'reports': 'Reports',
+    'settings': 'Settings',
+    'new': 'Create New',
+    'edit': 'Edit',
+    'view': 'View Details'
+  };
+  
+  return titleMap[lastSegment] || 'Admin Panel';
+};
+
+const getCurrentPageDescription = (pathname) => {
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const lastSegment = pathSegments[pathSegments.length - 1];
+  
+  const descriptionMap = {
+    'dashboard': 'System overview and statistics',
+    'members': 'Church member management',
+    'families': 'Family unit management',
+    'groups': 'Ministry and small groups',
+    'events': 'Church events and activities',
+    'pledges': 'Financial commitments tracking',
+    'reports': 'Analytics and insights',
+    'settings': 'System configuration'
+  };
+  
+  return descriptionMap[lastSegment] || 'Administrative interface';
 };
 
 export default Header;

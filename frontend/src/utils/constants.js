@@ -9,17 +9,24 @@ export const API_TIMEOUT = 10000; // 10 seconds
 export const TOKEN_KEY = 'churchconnect_token';
 export const REFRESH_TOKEN_KEY = 'churchconnect_refresh_token';
 export const TOKEN_EXPIRY_KEY = 'churchconnect_token_expiry';
+export const JWT_EXPIRY = parseInt(process.env.REACT_APP_JWT_EXPIRY) || 3600;
+export const SESSION_TIMEOUT = parseInt(process.env.REACT_APP_SESSION_TIMEOUT) || 1800;
 
-// Pagination
-export const DEFAULT_PAGE_SIZE = 25;
-export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
+// Application Info
 export const APP_NAME = process.env.REACT_APP_APP_NAME || 'ChurchConnect';
 export const APP_VERSION = process.env.REACT_APP_APP_VERSION || '1.0.0';
 
-// Authentication Constants
-export const JWT_EXPIRY = parseInt(process.env.REACT_APP_JWT_EXPIRY) || 3600;
-export const SESSION_TIMEOUT = parseInt(process.env.REACT_APP_SESSION_TIMEOUT) || 1800;
+// Pagination
+export const DEFAULT_PAGE_SIZE = 25;
+export const MAX_PAGE_SIZE = 100;
+export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+export const PAGINATION_OPTIONS = [10, 25, 50, 100];
+
+export const PAGINATION = {
+  DEFAULT_PAGE_SIZE: 25,
+  PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
+  MAX_VISIBLE_PAGES: 7,
+};
 
 // Routes
 export const ROUTES = {
@@ -51,7 +58,17 @@ export const ROUTES = {
   NOT_FOUND: '/404',
 };
 
+// Form Steps
+export const FORM_STEPS = {
+  PERSONAL_INFO: 'personal_info',
+  CONTACT_INFO: 'contact_info',
+  MINISTRY_INTERESTS: 'ministry_interests',
+  PLEDGE_INFO: 'pledge_info',
+  FAMILY_INFO: 'family_info',
+  CONFIRMATION: 'confirmation'
+};
 
+// Form Validation
 export const FORM_VALIDATION = {
   NAME: {
     MIN_LENGTH: 2,
@@ -72,7 +89,71 @@ export const FORM_VALIDATION = {
   },
 };
 
-// Relationship Type Options
+// Validation Rules
+export const VALIDATION_RULES = {
+  EMAIL: {
+    PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    MAX_LENGTH: 254
+  },
+  PHONE: {
+    PATTERN: /^[\+]?[1-9][\d]{0,15}$/,
+    MIN_LENGTH: 10,
+    MAX_LENGTH: 15
+  },
+  NAME: {
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 50,
+    PATTERN: /^[a-zA-Z\s\-'\.]+$/
+  },
+  PLEDGE_AMOUNT: {
+    MIN: 0.01,
+    MAX: 1000000
+  }
+};
+
+// Gender Options
+export const GENDER_OPTIONS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+];
+
+// Contact Method Options
+export const CONTACT_METHOD_OPTIONS = [
+  { value: 'email', label: 'Email', icon: 'Mail' },
+  { value: 'phone', label: 'Phone', icon: 'Phone' },
+  { value: 'sms', label: 'SMS', icon: 'MessageSquare' },
+  { value: 'mail', label: 'Postal Mail', icon: 'MapPin' },
+  { value: 'no_contact', label: 'No Contact', icon: 'X' }
+];
+
+// Pledge Options
+export const PLEDGE_FREQUENCY_OPTIONS = [
+  { value: 'one-time', label: 'One-time' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'annually', label: 'Annually' }
+];
+
+export const PLEDGE_STATUS_OPTIONS = [
+  { value: 'active', label: 'Active', color: 'success' },
+  { value: 'completed', label: 'Completed', color: 'info' },
+  { value: 'cancelled', label: 'Cancelled', color: 'danger' },
+  { value: 'suspended', label: 'Suspended', color: 'warning' },
+  { value: 'pending', label: 'Pending', color: 'secondary' }
+];
+
+// Member Options
+export const MEMBER_STATUS_OPTIONS = [
+  { value: 'active', label: 'Active', color: 'success' },
+  { value: 'inactive', label: 'Inactive', color: 'secondary' },
+  { value: 'pending', label: 'Pending', color: 'warning' },
+  { value: 'suspended', label: 'Suspended', color: 'danger' }
+];
+
+// Relationship Options
 export const RELATIONSHIP_TYPE_OPTIONS = [
   { value: 'head', label: 'Head of Household' },
   { value: 'spouse', label: 'Spouse' },
@@ -81,104 +162,6 @@ export const RELATIONSHIP_TYPE_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
-// Age Bracket Options
-export const AGE_BRACKET_OPTIONS = [
-  { value: '0-17', label: 'Under 18' },
-  { value: '18-25', label: '18-25' },
-  { value: '26-40', label: '26-40' },
-  { value: '41-60', label: '41-60' },
-  { value: '60+', label: '60+' },
-];
-
-// Admin Role Options
-export const ADMIN_ROLE_OPTIONS = [
-  { value: 'super_admin', label: 'Super Admin' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'readonly', label: 'Read Only' },
-];
-
-
-// Pagination Constants
-export const PAGINATION = {
-  DEFAULT_PAGE_SIZE: 25,
-  PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
-  MAX_VISIBLE_PAGES: 7,
-};
-
-// Toast/Notification Constants
-export const TOAST = {
-  DURATION: parseInt(process.env.REACT_APP_TOAST_DURATION) || 5000,
-  POSITION: 'top-right',
-  TYPES: {
-    SUCCESS: 'success',
-    ERROR: 'error',
-    WARNING: 'warning',
-    INFO: 'info',
-  },
-};
-
-
-// Accessibility Constants
-export const ACCESSIBILITY = {
-  KEYBOARD_DELAY: 300,
-  FOCUS_VISIBLE_DELAY: 100,
-  SCREEN_READER_DELAY: 500,
-};
-
-// Feature Flags
-export const FEATURES = {
-  DARK_MODE: process.env.REACT_APP_ENABLE_DARK_MODE === 'true',
-  MULTI_LANGUAGE: process.env.REACT_APP_ENABLE_MULTI_LANGUAGE === 'true',
-  ANALYTICS: process.env.REACT_APP_ENABLE_ANALYTICS === 'true',
-  SERVICE_WORKER: process.env.REACT_APP_ENABLE_SERVICE_WORKER === 'true',
-  ACCESSIBILITY: process.env.REACT_APP_ENABLE_ACCESSIBILITY_FEATURES === 'true',
-  PUSH_NOTIFICATIONS: process.env.REACT_APP_ENABLE_PUSH_NOTIFICATIONS === 'true',
-};
-
-
-// Form Constants
-export const FORM_STEPS = {
-  PERSONAL_INFO: 'personal_info',
-  CONTACT_INFO: 'contact_info',
-  MINISTRY_INTERESTS: 'ministry_interests',
-  PLEDGE_INFO: 'pledge_info',
-  FAMILY_INFO: 'family_info',
-  CONFIRMATION: 'confirmation'
-};
-
-// Gender Options
-export const GENDER_OPTIONS = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say' }
-];
-
-// Contact Method Options
-export const CONTACT_METHOD_OPTIONS = [
-  { value: 'email', label: 'Email' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'sms', label: 'SMS/Text' },
-  { value: 'mail', label: 'Mail' },
-  { value: 'no_contact', label: 'No Contact' }
-];
-
-// Pledge Frequency Options
-export const PLEDGE_FREQUENCY_OPTIONS = [
-  { value: 'one-time', label: 'One Time' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'annually', label: 'Annually' }
-];
-
-// Pledge Status Options
-export const PLEDGE_STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' }
-];
-
-// Family Relationship Types
 export const FAMILY_RELATIONSHIP_OPTIONS = [
   { value: 'head', label: 'Head of Family' },
   { value: 'spouse', label: 'Spouse' },
@@ -187,14 +170,15 @@ export const FAMILY_RELATIONSHIP_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
-// User Roles
-export const USER_ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
-  READONLY: 'readonly'
-};
+// Age Options
+export const AGE_BRACKET_OPTIONS = [
+  { value: '0-17', label: 'Under 18' },
+  { value: '18-25', label: '18-25' },
+  { value: '26-40', label: '26-40' },
+  { value: '41-60', label: '41-60' },
+  { value: '60+', label: '60+' },
+];
 
-// Age Brackets for Filtering
 export const AGE_BRACKETS = [
   { value: '0-17', label: 'Under 18' },
   { value: '18-25', label: '18-25' },
@@ -203,14 +187,38 @@ export const AGE_BRACKETS = [
   { value: '60+', label: '60+' }
 ];
 
-// Languages
+export const AGE_RANGE_OPTIONS = [
+  { value: '', label: 'All Ages' },
+  { value: '0-17', label: 'Under 18' },
+  { value: '18-25', label: '18-25' },
+  { value: '26-40', label: '26-40' },
+  { value: '41-60', label: '41-60' },
+  { value: '61+', label: '61 and older' }
+];
+
+// User Roles
+export const ADMIN_ROLE_OPTIONS = [
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'readonly', label: 'Read Only' },
+];
+
+export const USER_ROLES = [
+  { value: 'super_admin', label: 'Super Administrator' },
+  { value: 'admin', label: 'Administrator' },
+  { value: 'staff', label: 'Staff Member' },
+  { value: 'volunteer', label: 'Volunteer' },
+  { value: 'read_only', label: 'Read Only' }
+];
+
+// Language Options
 export const LANGUAGE_OPTIONS = [
-  { value: 'english', label: 'English' },
-  { value: 'spanish', label: 'Spanish' },
-  { value: 'french', label: 'French' },
-  { value: 'portuguese', label: 'Portuguese' },
-  { value: 'chinese', label: 'Chinese' },
-  { value: 'korean', label: 'Korean' },
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'zh', label: 'Chinese' },
   { value: 'other', label: 'Other' }
 ];
 
@@ -225,7 +233,7 @@ export const ACCESSIBILITY_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
-// Common Ministries/Groups
+// Ministry Options
 export const DEFAULT_MINISTRIES = [
   { value: 'worship', label: 'Worship Ministry' },
   { value: 'youth', label: 'Youth Ministry' },
@@ -241,22 +249,20 @@ export const DEFAULT_MINISTRIES = [
   { value: 'facilities', label: 'Facilities Ministry' }
 ];
 
-// Form Validation Messages
-export const VALIDATION_MESSAGES = {
-  REQUIRED: 'This field is required',
-  EMAIL: 'Please enter a valid email address',
-  PHONE: 'Please enter a valid phone number',
-  MIN_LENGTH: (min) => `Must be at least ${min} characters`,
-  MAX_LENGTH: (max) => `Must not exceed ${max} characters`,
-  MIN_VALUE: (min) => `Must be at least ${min}`,
-  MAX_VALUE: (max) => `Must not exceed ${max}`,
-  INVALID_DATE: 'Please enter a valid date',
-  FUTURE_DATE: 'Date cannot be in the future',
-  PAST_DATE: 'Date must be in the past',
-  PASSWORDS_MATCH: 'Passwords must match'
-};
+export const MINISTRY_CATEGORIES = [
+  { value: 'worship', label: 'Worship & Music' },
+  { value: 'youth', label: 'Youth Ministry' },
+  { value: 'children', label: 'Children\'s Ministry' },
+  { value: 'seniors', label: 'Senior Ministry' },
+  { value: 'outreach', label: 'Outreach & Missions' },
+  { value: 'education', label: 'Christian Education' },
+  { value: 'fellowship', label: 'Fellowship & Social' },
+  { value: 'service', label: 'Service & Volunteer' },
+  { value: 'prayer', label: 'Prayer Ministry' },
+  { value: 'other', label: 'Other' }
+];
 
-// Date Formats
+// Date and Time
 export const DATE_FORMATS = {
   DISPLAY: 'MMM dd, yyyy',
   INPUT: 'yyyy-MM-dd',
@@ -264,30 +270,105 @@ export const DATE_FORMATS = {
   SHORT: 'MM/dd/yyyy'
 };
 
-// Export Formats
+export const DATE_RANGE_PRESETS = [
+  { value: '7', label: 'Last 7 days' },
+  { value: '30', label: 'Last 30 days' },
+  { value: '90', label: 'Last 3 months' },
+  { value: '180', label: 'Last 6 months' },
+  { value: '365', label: 'Last year' },
+  { value: 'all', label: 'All time' }
+];
+
+export const TIME_ZONES = [
+  { value: 'America/New_York', label: 'Eastern Time' },
+  { value: 'America/Chicago', label: 'Central Time' },
+  { value: 'America/Denver', label: 'Mountain Time' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time' },
+  { value: 'America/Anchorage', label: 'Alaska Time' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time' }
+];
+
+// Export Options
 export const EXPORT_FORMATS = [
   { value: 'csv', label: 'CSV', extension: '.csv' },
   { value: 'xlsx', label: 'Excel', extension: '.xlsx' },
   { value: 'pdf', label: 'PDF', extension: '.pdf' }
 ];
 
-// Chart Colors
-export const CHART_COLORS = {
-  DANGER: '#EF4444',
-  INFO: '#6366F1',
-  SUCCESS: '#22C55E',
-  MUTED: '#6B7280',
-  PRIMARY: '#0ea5e9',
-  SECONDARY: '#78716c',
-  SUCCESS: '#22c55e',
-  WARNING: '#f59e0b',
-  ERROR: '#ef4444',
-  INFO: '#3b82f6',
-  LIGHT: '#f8fafc',
-  DARK: '#1e293b',
+export const EXPORT_FORMAT_OPTIONS = [
+  { value: 'csv', label: 'CSV', extension: 'csv', mimeType: 'text/csv' },
+  { value: 'excel', label: 'Excel', extension: 'xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+  { value: 'pdf', label: 'PDF', extension: 'pdf', mimeType: 'application/pdf' },
+  { value: 'json', label: 'JSON', extension: 'json', mimeType: 'application/json' }
+];
+
+// Filter Defaults
+export const MEMBER_FILTERS_DEFAULTS = {
+  gender: '',
+  ageRange: '',
+  pledgeStatus: '',
+  registrationDateRange: '',
+  isActive: true,
+  ministryId: '',
+  joinDateRange: ''
 };
 
-// Theme Colors
+export const PLEDGE_FILTERS_DEFAULTS = {
+  status: 'all',
+  frequency: 'all',
+  amountRange: '',
+  dateRange: '',
+  memberId: ''
+};
+
+// Search
+export const SEARCH_CONSTRAINTS = {
+  MIN_LENGTH: 2,
+  MAX_LENGTH: 100,
+  DEBOUNCE_DELAY: 500
+};
+
+// UI Constants
+export const UI_CONSTANTS = {
+  TOAST_DURATION: 5000,
+  LOADING_SPINNER_DELAY: 200,
+  MODAL_ANIMATION_DURATION: 300,
+  PAGE_TRANSITION_DURATION: 200
+};
+
+export const TOAST = {
+  DURATION: parseInt(process.env.REACT_APP_TOAST_DURATION) || 5000,
+  POSITION: 'top-right',
+  TYPES: {
+    SUCCESS: 'success',
+    ERROR: 'error',
+    WARNING: 'warning',
+    INFO: 'info',
+  },
+};
+
+export const ANIMATION_DURATION = {
+  FAST: 150,
+  NORMAL: 300,
+  SLOW: 500
+};
+
+export const Z_INDEX = {
+  DROPDOWN: 1000,
+  MODAL: 1050,
+  TOAST: 1100,
+  TOOLTIP: 1200
+};
+
+// Colors and Themes
+export const CHART_COLORS = {
+  PRIMARY: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'],
+  SUCCESS: ['#10B981', '#059669', '#047857', '#065F46'],
+  WARNING: ['#F59E0B', '#D97706', '#B45309', '#92400E'],
+  DANGER: ['#EF4444', '#DC2626', '#B91C1C', '#991B1B'],
+  NEUTRAL: ['#6B7280', '#4B5563', '#374151', '#1F2937']
+};
+
 export const THEME_COLORS = {
   LIGHT: {
     primary: '#3B82F6',
@@ -319,7 +400,6 @@ export const THEME_COLORS = {
   }
 };
 
-// Breakpoints for Responsive Design
 export const BREAKPOINTS = {
   SM: '640px',
   MD: '768px',
@@ -328,7 +408,7 @@ export const BREAKPOINTS = {
   '2XL': '1536px'
 };
 
-// Local Storage Keys
+// Storage Keys
 export const STORAGE_KEYS = {
   THEME: 'churchconnect_theme',
   LANGUAGE: 'churchconnect_language',
@@ -338,9 +418,34 @@ export const STORAGE_KEYS = {
   USER_PREFERENCES: 'churchconnect_user_preferences',
   AUTH_TOKEN: 'churchconnect_auth_token',
   REFRESH_TOKEN: 'churchconnect_refresh_token',
+  FILTER_PRESETS: 'churchconnect_filter_presets'
 };
 
-// Error Messages
+// API Endpoints
+export const API_ENDPOINTS = {
+  MEMBERS: '/api/admin/members',
+  PLEDGES: '/api/admin/pledges',
+  GROUPS: '/api/admin/groups',
+  REPORTS: '/api/admin/reports',
+  EXPORT: '/api/admin/export',
+  STATISTICS: '/api/admin/statistics'
+};
+
+// Messages
+export const VALIDATION_MESSAGES = {
+  REQUIRED: 'This field is required',
+  EMAIL: 'Please enter a valid email address',
+  PHONE: 'Please enter a valid phone number',
+  MIN_LENGTH: (min) => `Must be at least ${min} characters`,
+  MAX_LENGTH: (max) => `Must not exceed ${max} characters`,
+  MIN_VALUE: (min) => `Must be at least ${min}`,
+  MAX_VALUE: (max) => `Must not exceed ${max}`,
+  INVALID_DATE: 'Please enter a valid date',
+  FUTURE_DATE: 'Date cannot be in the future',
+  PAST_DATE: 'Date must be in the past',
+  PASSWORDS_MATCH: 'Passwords must match'
+};
+
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Network error. Please check your connection and try again.',
   SERVER_ERROR: 'Server error. Please try again later.',
@@ -349,10 +454,10 @@ export const ERROR_MESSAGES = {
   NOT_FOUND: 'The requested resource was not found.',
   VALIDATION_ERROR: 'Please correct the errors below.',
   SESSION_EXPIRED: 'Your session has expired. Please log in again.',
-  GENERIC_ERROR: 'An unexpected error occurred. Please try again.'
+  GENERIC_ERROR: 'An unexpected error occurred. Please try again.',
+  GENERIC: 'An unexpected error occurred. Please try again.'
 };
 
-// Success Messages
 export const SUCCESS_MESSAGES = {
   MEMBER_CREATED: 'Member record created successfully!',
   MEMBER_UPDATED: 'Member record updated successfully!',
@@ -372,6 +477,8 @@ export const SUCCESS_MESSAGES = {
   SAVE_SUCCESS: 'Changes saved successfully!',
   EMAIL_SENT: 'Email sent successfully!',
   EXPORT_SUCCESS: 'Export completed successfully!',
+  EXPORT_COMPLETED: 'Export completed successfully!',
+  DATA_REFRESHED: 'Data refreshed successfully!'
 };
 
 // File Upload
@@ -386,68 +493,63 @@ export const FILE_UPLOAD = {
   MAX_FILES: 5,
 };
 
-// Animation Durations
-export const ANIMATION_DURATION = {
-  FAST: 150,
-  NORMAL: 300,
-  SLOW: 500
+// Feature Flags
+export const FEATURES = {
+  DARK_MODE: process.env.REACT_APP_ENABLE_DARK_MODE === 'true',
+  MULTI_LANGUAGE: process.env.REACT_APP_ENABLE_MULTI_LANGUAGE === 'true',
+  ANALYTICS: process.env.REACT_APP_ENABLE_ANALYTICS === 'true',
+  SERVICE_WORKER: process.env.REACT_APP_ENABLE_SERVICE_WORKER === 'true',
+  ACCESSIBILITY: process.env.REACT_APP_ENABLE_ACCESSIBILITY_FEATURES === 'true',
+  PUSH_NOTIFICATIONS: process.env.REACT_APP_ENABLE_PUSH_NOTIFICATIONS === 'true',
 };
 
-// Z-Index Values
-export const Z_INDEX = {
-  DROPDOWN: 1000,
-  MODAL: 1050,
-  TOAST: 1100,
-  TOOLTIP: 1200
+export const ACCESSIBILITY = {
+  KEYBOARD_DELAY: 300,
+  FOCUS_VISIBLE_DELAY: 100,
+  SCREEN_READER_DELAY: 500,
 };
 
+// Additional Options
+export const EVENT_TYPES = [
+  { value: 'worship', label: 'Worship Service' },
+  { value: 'bible_study', label: 'Bible Study' },
+  { value: 'fellowship', label: 'Fellowship Event' },
+  { value: 'outreach', label: 'Outreach Event' },
+  { value: 'fundraising', label: 'Fundraising' },
+  { value: 'meeting', label: 'Meeting' },
+  { value: 'social', label: 'Social Event' },
+  { value: 'educational', label: 'Educational' },
+  { value: 'other', label: 'Other' }
+];
 
-export {
-  API_BASE_URL,
-  API_TIMEOUT,
-  TOKEN_KEY,
-  REFRESH_TOKEN_KEY,
-  TOKEN_EXPIRY_KEY,
-  DEFAULT_PAGE_SIZE,
-  PAGE_SIZE_OPTIONS,
-  FORM_STEPS,
-  GENDER_OPTIONS,
-  CONTACT_METHOD_OPTIONS,
-  PLEDGE_FREQUENCY_OPTIONS,
-  PLEDGE_STATUS_OPTIONS,
-  FAMILY_RELATIONSHIP_OPTIONS,
-  USER_ROLES,
-  AGE_BRACKETS,
-  LANGUAGE_OPTIONS,
-  ACCESSIBILITY_OPTIONS,
-  DEFAULT_MINISTRIES,
-  VALIDATION_MESSAGES,
-  DATE_FORMATS,
-  EXPORT_FORMATS,
-  CHART_COLORS,
-  THEME_COLORS,
-  BREAKPOINTS,
-  STORAGE_KEYS,
-  ERROR_MESSAGES,
-  SUCCESS_MESSAGES,
-  FILE_UPLOAD,
-  ANIMATION_DURATION,
-  Z_INDEX,
-  APP_NAME,
-  APP_VERSION,
-  JWT_EXPIRY,
-  SESSION_TIMEOUT,
-  ROUTES,
-  RELATIONSHIP_TYPE_OPTIONS,
-  ADMIN_ROLE_OPTIONS,
-  PAGINATION,
-  TOAST,
-  FORM_VALIDATION,
-  AGE_BRACKET_OPTIONS,
-  ACCESSIBILITY,
-  FEATURES
+export const PERMISSIONS = {
+  CREATE: 'create',
+  READ: 'read',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  EXPORT: 'export',
+  ADMIN: 'admin'
 };
 
+export const BULK_ACTIONS = [
+  { value: 'export', label: 'Export Selected', icon: 'Download' },
+  { value: 'update_status', label: 'Update Status', icon: 'Edit' },
+  { value: 'add_to_group', label: 'Add to Group', icon: 'UserPlus' },
+  { value: 'send_email', label: 'Send Email', icon: 'Mail' },
+  { value: 'delete', label: 'Delete Selected', icon: 'Trash2', variant: 'danger' }
+];
+
+export const REPORT_TYPES = [
+  { value: 'member_list', label: 'Member Directory' },
+  { value: 'pledge_summary', label: 'Pledge Summary' },
+  { value: 'attendance_report', label: 'Attendance Report' },
+  { value: 'financial_report', label: 'Financial Report' },
+  { value: 'ministry_report', label: 'Ministry Participation' },
+  { value: 'birthday_list', label: 'Birthday List' },
+  { value: 'anniversary_list', label: 'Anniversary List' }
+];
+
+// Default export with all constants
 export default {
   API_BASE_URL,
   API_TIMEOUT,

@@ -5,10 +5,9 @@ from django.db import connection
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status
 from django.utils import timezone
 from datetime import datetime, timedelta
-import datetime as dt
 import sys
 import django
 import logging
@@ -27,19 +26,19 @@ def health_check(request):
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         
-        return JsonResponse({
+        return Response({
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
             'database': 'connected',
             'version': '1.0.0'
         })
     except Exception as e:
-        return JsonResponse({
+        return Response({
             'status': 'unhealthy',
             'timestamp': datetime.now().isoformat(),
             'database': 'disconnected',
             'error': str(e)
-        }, status=503)
+        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -58,26 +57,31 @@ def system_status(request):
             db_status = 'disconnected'
             migration_count = 0
         
-        # Get app versions and counts
+        # Get app versions and counts - use safe approach
+        total_members = 0
+        total_groups = 0  
+        total_pledges = 0
+        
+        # Use try/except for each model access
         try:
             from members.models import Member
             total_members = Member.objects.count()
-        except:
-            total_members = 0
+        except Exception:
+            pass  # Silently fail if model not available
             
         try:
             from groups.models import Group
             total_groups = Group.objects.count()
-        except:
-            total_groups = 0
+        except Exception:
+            pass  # Silently fail if model not available
             
         try:
             from pledges.models import Pledge
             total_pledges = Pledge.objects.count()
-        except:
-            total_pledges = 0
+        except Exception:
+            pass  # Silently fail if model not available
         
-        return JsonResponse({
+        return Response({
             'status': 'ok',
             'timestamp': datetime.now().isoformat(),
             'system': {
@@ -100,11 +104,11 @@ def system_status(request):
             }
         })
     except Exception as e:
-        return JsonResponse({
+        return Response({
             'status': 'error',
             'timestamp': datetime.now().isoformat(),
             'error': str(e)
-        }, status=500)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -112,7 +116,7 @@ def api_version(request):
     """
     API version information.
     """
-    return JsonResponse({
+    return Response({
         'api_version': '1.0.0',
         'api_name': 'ChurchConnect API',
         'documentation_url': '/api/docs/',

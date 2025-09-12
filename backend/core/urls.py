@@ -1,6 +1,4 @@
-# Step 2: Update core/urls.py with complete endpoints
 # File: backend/churchconnect/core/urls.py
-
 from django.urls import path
 from . import views
 

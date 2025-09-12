@@ -331,6 +331,207 @@ export const validateFile = (file, options = {}) => {
 };
 
 
+// Add these to your validation.js file
+export const validateMember = (memberData) => {
+  const errors = {};
+  
+  // Required fields validation
+  if (!validateRequired(memberData.firstName)) {
+    errors.firstName = 'First name is required';
+  } else if (!validateName(memberData.firstName)) {
+    errors.firstName = 'Please enter a valid first name';
+  }
+
+  if (!validateRequired(memberData.lastName)) {
+    errors.lastName = 'Last name is required';
+  } else if (!validateName(memberData.lastName)) {
+    errors.lastName = 'Please enter a valid last name';
+  }
+
+  if (!validateRequired(memberData.email)) {
+    errors.email = 'Email is required';
+  } else if (!validateEmail(memberData.email)) {
+    errors.email = 'Please enter a valid email address';
+  }
+
+  if (!validateRequired(memberData.phone)) {
+    errors.phone = 'Phone number is required';
+  } else if (!validatePhone(memberData.phone)) {
+    errors.phone = 'Please enter a valid phone number';
+  }
+
+  if (!validateRequired(memberData.dateOfBirth)) {
+    errors.dateOfBirth = 'Date of birth is required';
+  } else {
+    const ageValidation = validateAge(memberData.dateOfBirth);
+    if (!ageValidation.isValid) {
+      errors.dateOfBirth = ageValidation.message;
+    }
+  }
+
+  if (!validateRequired(memberData.gender)) {
+    errors.gender = 'Gender is required';
+  }
+
+  // Optional fields validation
+  if (memberData.address && !validateRequired(memberData.address)) {
+    errors.address = 'Please enter a valid address';
+  }
+
+  if (memberData.city && !validateRequired(memberData.city)) {
+    errors.city = 'Please enter a valid city';
+  }
+
+  if (memberData.postalCode && !validateRequired(memberData.postalCode)) {
+    errors.postalCode = 'Please enter a valid postal code';
+  }
+
+  return { isValid: Object.keys(errors).length === 0, errors };
+};
+
+export const validateFilters = (filters) => {
+  const errors = {};
+  
+  // Validate date filters
+  if (filters.startDate && !validateDate(filters.startDate)) {
+    errors.startDate = 'Invalid start date format';
+  }
+  
+  if (filters.endDate && !validateDate(filters.endDate)) {
+    errors.endDate = 'Invalid end date format';
+  }
+  
+  // Validate date range (end date should be after start date)
+  if (filters.startDate && filters.endDate) {
+    const start = new Date(filters.startDate);
+    const end = new Date(filters.endDate);
+    
+    if (start > end) {
+      errors.dateRange = 'End date must be after start date';
+    }
+  }
+  
+  // Validate status filter if provided
+  if (filters.status && !['active', 'inactive', 'pending'].includes(filters.status)) {
+    errors.status = 'Invalid status value';
+  }
+  
+  // Validate search query if provided
+  if (filters.search && !validateSearchQuery(filters.search)) {
+    errors.search = 'Search query must be between 2 and 100 characters';
+  }
+  
+  return { isValid: Object.keys(errors).length === 0, errors };
+};
+
+export const validatePledgeFilters = (filters) => {
+  const errors = {};
+  
+  // Validate date filters
+  if (filters.startDate && !validateDate(filters.startDate)) {
+    errors.startDate = 'Invalid start date format';
+  }
+  
+  if (filters.endDate && !validateDate(filters.endDate)) {
+    errors.endDate = 'Invalid end date format';
+  }
+  
+  // Validate date range
+  if (filters.startDate && filters.endDate) {
+    const start = new Date(filters.startDate);
+    const end = new Date(filters.endDate);
+    
+    if (start > end) {
+      errors.dateRange = 'End date must be after start date';
+    }
+  }
+  
+  // Validate pledge status
+  if (filters.status && !['active', 'fulfilled', 'cancelled', 'overdue'].includes(filters.status)) {
+    errors.status = 'Invalid pledge status';
+  }
+  
+  // Validate frequency filter
+  if (filters.frequency && !['weekly', 'monthly', 'quarterly', 'yearly', 'one-time'].includes(filters.frequency)) {
+    errors.frequency = 'Invalid pledge frequency';
+  }
+  
+  // Validate amount range
+  if (filters.minAmount && !validateNumber(filters.minAmount, { min: 0 })) {
+    errors.minAmount = 'Invalid minimum amount';
+  }
+  
+  if (filters.maxAmount && !validateNumber(filters.maxAmount, { min: 0 })) {
+    errors.maxAmount = 'Invalid maximum amount';
+  }
+  
+  if (filters.minAmount && filters.maxAmount) {
+    const min = parseFloat(filters.minAmount);
+    const max = parseFloat(filters.maxAmount);
+    
+    if (min > max) {
+      errors.amountRange = 'Maximum amount must be greater than minimum amount';
+    }
+  }
+  
+  return { isValid: Object.keys(errors).length === 0, errors };
+};
+
+export const validateReportFilters = (filters) => {
+  const errors = {};
+  
+  // Validate required date range for reports
+  if (!validateRequired(filters.startDate)) {
+    errors.startDate = 'Start date is required for reports';
+  } else if (!validateDate(filters.startDate)) {
+    errors.startDate = 'Invalid start date format';
+  }
+  
+  if (!validateRequired(filters.endDate)) {
+    errors.endDate = 'End date is required for reports';
+  } else if (!validateDate(filters.endDate)) {
+    errors.endDate = 'Invalid end date format';
+  }
+  
+  // Validate date range
+  if (filters.startDate && filters.endDate) {
+    const start = new Date(filters.startDate);
+    const end = new Date(filters.endDate);
+    
+    if (start > end) {
+      errors.dateRange = 'End date must be after start date';
+    }
+    
+    // Validate that date range is not too large (e.g., more than 5 years)
+    const maxRange = 5 * 365 * 24 * 60 * 60 * 1000; // 5 years in milliseconds
+    if (end - start > maxRange) {
+      errors.dateRange = 'Date range cannot exceed 5 years';
+    }
+  }
+  
+  // Validate report type
+  const validReportTypes = ['members', 'pledges', 'donations', 'financial', 'activity'];
+  if (!validateRequired(filters.reportType)) {
+    errors.reportType = 'Report type is required';
+  } else if (!validReportTypes.includes(filters.reportType)) {
+    errors.reportType = 'Invalid report type';
+  }
+  
+  // Validate format if provided
+  if (filters.format && !['pdf', 'csv', 'excel'].includes(filters.format)) {
+    errors.format = 'Invalid report format';
+  }
+  
+  // Validate grouping if provided
+  if (filters.groupBy && !['month', 'quarter', 'year', 'category', 'status'].includes(filters.groupBy)) {
+    errors.groupBy = 'Invalid grouping option';
+  }
+  
+  return { isValid: Object.keys(errors).length === 0, errors };
+};
+
+
+
 /**
  * Generic number validation
  * @param {string|number} value - Value to validate

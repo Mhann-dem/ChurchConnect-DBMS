@@ -1,37 +1,44 @@
-# ChurchConnect DBMS Documentation
+# ChurchConnect DBMS Documentation - Updated
 
 ## Project Overview
 
 ChurchConnect DBMS is a custom-built Church Data Management System designed to streamline member data collection and administrative workflows while ensuring excellent usability for all user types. The system consists of:
 
 1. A public-facing form portal for members to submit their information without requiring login - designed to be intuitive for users of all ages and technical abilities
-2. A secure admin dashboard for church staff to view, search, and manage member records, pledges, groups, and events - with role-based interfaces optimized for different administrative needs
-3. A robust backend API and database to store and manage the collected data
-4. An integrated help system with context-sensitive guidance for all user types
+2. A comprehensive public website with events, ministries, and information pages for community engagement
+3. A secure admin dashboard for church staff to view, search, and manage member records, pledges, groups, events, and content - with role-based interfaces optimized for different administrative needs
+4. A robust backend API and database to store and manage the collected data
+5. An integrated help system with context-sensitive guidance for all user types
 
 ### Primary User Personas
 
 *1. Church Members (Form Users)*
 - Demographics: All ages (teens to seniors), varying technical abilities
-- Goals: Submit personal information, update contact details, register interest in ministries, make pledges
+- Goals: Submit personal information, update contact details, register interest in ministries, make pledges, view events, explore ministries
 - Challenges: May have limited technical skills, accessibility needs, privacy concerns
-- Needs: Simple, intuitive interface, clear instructions, support for different devices
+- Needs: Simple, intuitive interface, clear instructions, support for different devices, easy access to church information
 
-*2. Church Administrators*
-- Demographics: Staff members responsible for member management
-- Goals: Efficiently process member data, generate reports, manage communications
+*2. Public Visitors (Website Users)*
+- Demographics: Potential members, community members, visitors
+- Goals: Learn about the church, view upcoming events, understand ministries, get contact information
+- Challenges: May be unfamiliar with the church, need quick access to relevant information
+- Needs: Welcoming website experience, easy navigation, clear event information, accessibility
+
+*3. Church Administrators*
+- Demographics: Staff members responsible for member management and content
+- Goals: Efficiently process member data, generate reports, manage communications, publish events, update content
 - Challenges: May have limited technical training, need to perform complex data operations
-- Needs: Streamlined workflows, bulk operations, search/filter capabilities
+- Needs: Streamlined workflows, bulk operations, search/filter capabilities, easy content management
 
-*3. Church Leadership*
+*4. Church Leadership*
 - Demographics: Pastors, ministry leaders, finance committee
-- Goals: Understand membership trends, track ministry growth, monitor financial commitments
+- Goals: Understand membership trends, track ministry growth, monitor financial commitments, communicate with congregation
 - Challenges: Limited time for data analysis, need actionable insights
-- Needs: Visual dashboards, exportable reports, high-level statistics
+- Needs: Visual dashboards, exportable reports, high-level statistics, event management
 
-*4. IT Support Staff*
+*5. IT Support Staff*
 - Demographics: Technical personnel (may be volunteers)
-- Goals: Maintain system, troubleshoot issues, train users
+- Goals: Maintain system, troubleshoot issues, train users, ensure website performance
 - Challenges: Limited resources, supporting users with varying technical abilities
 - Needs: Clear documentation, simplified user management, efficient troubleshooting tools
 
@@ -49,21 +56,49 @@ ChurchConnect DBMS is a custom-built Church Data Management System designed to s
 
 ### System Components
 
-mermaid
+```mermaid
 graph TD
-    A[Public Form Portal] -->|Submits Data| B[API Endpoints]
-    C[Admin Dashboard] -->|Auth Request| D[Authentication]
-    D -->|Auth Token| C
-    C -->|CRUD Operations| B
-    B -->|Store/Retrieve| E[Database]
-    F[Export Module] -->|Generate| G[CSV/Reports]
-
+    A[Public Website] -->|Browse Content| B[API Endpoints]
+    C[Public Form Portal] -->|Submits Data| B
+    D[Admin Dashboard] -->|Auth Request| E[Authentication]
+    E -->|Auth Token| D
+    D -->|CRUD Operations| B
+    B -->|Store/Retrieve| F[Database]
+    G[Export Module] -->|Generate| H[CSV/Reports]
+    I[Event Management] -->|Publish/Update| B
+    J[Content Management] -->|Manage Pages| B
+```
 
 ## Core Modules
 
-### 1. Member Form Page (Public)
+### 1. Public Website Pages
 
-*Route*: /form
+*Routes*: 
+- / (Homepage)
+- /events (Public Events Page)
+- /ministries (Ministries Page)
+- /privacy (Privacy Policy Page)
+- /terms (Terms of Service Page)
+- /cookies (Cookie Policy Page)
+- /accessibility (Accessibility Statement Page)
+- /sitemap (Site Map Page)
+- /feedback (Feedback Page)
+- /404 (Not Found Page)
+
+*Purpose*: Provide comprehensive information about the church, upcoming events, ministries, and enable community engagement.
+
+*Key Features*:
+- **Homepage**: Church welcome message, featured events, ministry highlights, quick navigation
+- **Events Page**: Display of upcoming and past events with filtering and search capabilities
+- **Ministries Page**: Comprehensive ministry information with contact details and meeting times
+- **Policy Pages**: Legal compliance pages (privacy, terms, cookies, accessibility)
+- **Feedback System**: Allow visitors to submit feedback and inquiries
+- **Responsive Design**: Optimized for all device types and screen sizes
+- **SEO Optimization**: Proper meta tags, structured data, and search engine optimization
+
+### 2. Member Form Page (Public)
+
+*Route*: /form or /register
 
 *Purpose*: Allow church members to submit their personal information, interests, and pledges without requiring login.
 
@@ -83,6 +118,7 @@ graph TD
 - Preferred Language (dropdown)
 - Accessibility Needs (optional - checkboxes)
 - Family Members (optional - expandable section)
+- Event Interests (checkboxes - from available events)
 
 *User Experience Features*:
 - Multi-step form with clear progress indicator (reduces cognitive load)
@@ -94,17 +130,9 @@ graph TD
 - Auto-formatting for phone numbers and dates
 - Clear visual feedback for validation errors
 - Screen reader compatible with proper ARIA labels
+- Integration with events system for interest registration
 
-*Implementation Notes*:
-- Form validation should occur on both frontend and backend
-- Success response: "Thank you" message with option to submit another entry
-- CSRF protection required
-- Consider reCAPTCHA integration to prevent spam
-- Support for slow internet connections with optimized loading
-- Form analytics to identify abandonment points
-- Localization/internationalization support for multilingual congregations
-
-### 2. Admin Authentication
+### 3. Admin Authentication
 
 *Routes*:
 - /admin/login
@@ -115,7 +143,7 @@ graph TD
 - Secure login form with email/password
 - Password reset functionality
 - Session management with timeout/auto-logout
-- Role-based permissions (Super Admin, Regular Admin, Read-only)
+- Role-based permissions (Super Admin, Regular Admin, Read-only, Content Manager)
 
 *Security Requirements*:
 - JWT token authentication
@@ -123,30 +151,43 @@ graph TD
 - HTTPS required
 - Failed login attempt limiting
 
-### 3. Admin Dashboard
+### 4. Admin Dashboard
 
 *Routes*:
 - /admin/dashboard (main stats overview)
 - /admin/members (member listing)
 - /admin/groups (ministry/group management)
 - /admin/pledges (financial pledges)
+- /admin/events (event management)
+- /admin/content (website content management)
 - /admin/reports (data exports)
 - /admin/settings (system settings)
 - /admin/help (integrated help center)
 
-*User-Centered Design Features*:
-- Responsive layout adaptive to different screen sizes and devices
-- Customizable dashboard widgets based on role and frequency of use
-- Color-coded visual indicators for quick status recognition
-- Streamlined workflows for common tasks (minimal clicks required)
-- Keyboard shortcuts for power users
-- Dark mode and high contrast mode options
-- Font size adjustment controls
-- Consistent UI patterns across all sections
-- Undo/redo functionality for critical actions
-- Guided tours for new features
-
 *Key Features*:
+
+*Event Management*:
+- Create, edit, and delete events with rich content editor
+- Event scheduling with recurring event support
+- Image upload and gallery management for events
+- Event categories and tags for organization
+- RSVP tracking and attendee management
+- Event visibility controls (public/private/members-only)
+- Event registration forms and capacity management
+- Event analytics and attendance tracking
+- Integration with member communication system
+- Calendar view and timeline management
+- Event promotion tools and social media integration
+
+*Content Management*:
+- Edit homepage content and featured items
+- Manage ministry descriptions and contact information
+- Update policy pages and legal content
+- Control site navigation and menu structure
+- Manage testimonials and member stories
+- Photo gallery management for church activities
+- Blog/news section management
+- SEO settings for all public pages
 
 *Member Management*:
 - View all members with pagination (25 per page default, adjustable)
@@ -157,6 +198,8 @@ graph TD
 - Member photos with privacy controls
 - Visual indicators for members requiring follow-up
 - Birthday notifications and automated greeting system
+- Event attendance tracking per member
+- Ministry involvement history
 
 *Search & Filter*:
 - Full-text search across member data with typo tolerance
@@ -166,6 +209,7 @@ graph TD
   - Pledge status (has pledged/not pledged)
   - Age bracket (18-25, 26-40, 41-60, 60+)
   - Registration date range
+  - Event attendance history
   - Custom tags
   - Attendance patterns
   - Communication preferences
@@ -179,6 +223,7 @@ graph TD
 - Ministry distribution with engagement metrics
 - Age demographics with comparative analysis
 - Attendance tracking and trends
+- Event popularity and attendance analytics
 - Member journey visualization
 - Geographic distribution map
 - Data comparison across time periods
@@ -191,20 +236,13 @@ graph TD
 - Event invitations and RSVP tracking
 - Communication history and open/click tracking
 - Follow-up scheduling and reminders
-
-*Export Functionality*:
-- CSV export with customizable fields
-- PDF reports with branding options
-- Print-friendly reports for different purposes
-- Data backup options
-- Scheduled automatic reports (weekly/monthly)
-- Integration with common office software
-- Mobile-friendly data viewing options
+- Event reminder automation
+- Newsletter and bulletin management
 
 ## Data Models
 
 ### Members
-
+```
 id: UUID (primary key)
 first_name: string
 last_name: string
@@ -228,10 +266,94 @@ is_active: boolean
 communication_opt_in: boolean
 emergency_contact_name: string (optional)
 emergency_contact_phone: string (optional)
+```
 
+### Events
+```
+id: UUID (primary key)
+title: string (required)
+description: text
+short_description: string (for listings)
+start_date: datetime (required)
+end_date: datetime (required)
+is_recurring: boolean
+recurrence_pattern: json (optional - for recurring events)
+location: string
+address: text (optional)
+category: enum ['worship', 'ministry', 'social', 'educational', 'outreach', 'youth', 'children', 'seniors', 'other']
+tags: many-to-many (EventTags)
+max_capacity: integer (optional)
+registration_required: boolean
+registration_deadline: datetime (optional)
+is_public: boolean (default true)
+is_featured: boolean (default false)
+image_url: string (optional)
+gallery_images: json (array of image URLs)
+contact_person: string (optional)
+contact_email: string (optional)
+contact_phone: string (optional)
+cost: decimal (optional)
+external_link: string (optional)
+special_instructions: text (optional)
+created_by: UUID (foreign key to Admin Users)
+created_at: datetime
+updated_at: datetime
+is_active: boolean (default true)
+```
+
+### Event Registrations
+```
+id: UUID (primary key)
+event_id: UUID (foreign key to Events)
+member_id: UUID (foreign key to Members, optional - for guest registrations)
+guest_name: string (optional - for non-members)
+guest_email: string (optional)
+guest_phone: string (optional)
+registration_date: datetime
+attendance_status: enum ['registered', 'attended', 'no_show', 'cancelled']
+notes: text (optional)
+```
+
+### Event Tags
+```
+id: UUID (primary key)
+name: string (unique)
+color: string (hex color)
+description: text (optional)
+created_at: datetime
+```
+
+### Content Pages
+```
+id: UUID (primary key)
+slug: string (unique - URL identifier)
+title: string
+content: text (rich content)
+meta_title: string (SEO)
+meta_description: text (SEO)
+is_published: boolean
+publish_date: datetime (optional)
+last_updated: datetime
+updated_by: UUID (foreign key to Admin Users)
+page_type: enum ['static', 'ministry', 'policy', 'other']
+parent_page: UUID (foreign key to Content Pages, optional)
+sort_order: integer
+```
+
+### Site Settings
+```
+id: UUID (primary key)
+setting_key: string (unique)
+setting_value: text
+setting_type: enum ['string', 'boolean', 'integer', 'json']
+description: text
+is_public: boolean (can be accessed by frontend)
+updated_by: UUID (foreign key to Admin Users)
+updated_at: datetime
+```
 
 ### Families
-
+```
 id: UUID (primary key)
 family_name: string
 primary_contact_id: UUID (foreign key to Members)
@@ -239,39 +361,27 @@ address: text (optional)
 created_at: datetime
 updated_at: datetime
 notes: text
-
-
-### Family_Relationships
-
-id: UUID (primary key)
-family_id: UUID (foreign key to Families)
-member_id: UUID (foreign key to Members)
-relationship_type: enum ['head', 'spouse', 'child', 'dependent', 'other']
-notes: text
-
+```
 
 ### Groups/Ministries
-
+```
 id: UUID (primary key)
 name: string
 description: text
 leader_name: string (optional)
+leader_contact: string (optional)
 meeting_schedule: string (optional)
+meeting_location: string (optional)
+is_public: boolean (show on public website)
+category: enum ['ministry', 'small_group', 'committee', 'service_team', 'other']
+max_members: integer (optional)
 created_at: datetime
+updated_at: datetime
 active: boolean
-
-
-### Member-Group Relationship
-
-id: UUID (primary key)
-member_id: UUID (foreign key to Members)
-group_id: UUID (foreign key to Groups)
-join_date: datetime
-role: string (optional)
-
+```
 
 ### Pledges
-
+```
 id: UUID (primary key)
 member_id: UUID (foreign key to Members)
 amount: decimal
@@ -281,83 +391,221 @@ end_date: date (optional)
 status: enum ['active', 'completed', 'cancelled']
 notes: text
 created_at: datetime
-
-
-### Admin Users
-
-id: UUID (primary key)
-username: string (unique)
-email: string (unique)
-password: string (hashed)
-first_name: string
-last_name: string
-role: enum ['super_admin', 'admin', 'readonly']
-last_login: datetime
-active: boolean
-
-
-### Tags
-
-id: UUID (primary key)
-name: string
-color: string (hex color)
-created_by: UUID (foreign key to Admin Users)
-created_at: datetime
-
-
-### Member Tags
-
-id: UUID (primary key)
-member_id: UUID (foreign key to Members)
-tag_id: UUID (foreign key to Tags)
-created_at: datetime
-created_by: UUID (foreign key to Admin Users)
-
+```
 
 ## API Endpoints
 
 ### Public Endpoints
 
-POST /api/members/
-- Creates new member record
-- No authentication required
-- Rate limited
+**Content & Events**
+- GET /api/public/events/ - Get public events (with filtering)
+- GET /api/public/events/{id}/ - Get specific event details
+- GET /api/public/ministries/ - Get public ministry information
+- GET /api/public/pages/{slug}/ - Get static page content
+- GET /api/public/site-settings/ - Get public site settings
+- POST /api/public/feedback/ - Submit feedback
+- POST /api/public/event-registration/ - Register for events (public)
+
+**Member Registration**
+- POST /api/members/ - Creates new member record
+- POST /api/members/save-progress/ - Save partial form data
+- GET /api/members/resume/{token}/ - Resume form completion
 
 ### Protected Endpoints (requires authentication)
 
-*Members*
-- GET /api/members/ - List all members (paginated)
-- GET /api/members/{id}/ - Get specific member details
-- PUT /api/members/{id}/ - Update member
-- DELETE /api/members/{id}/ - Delete member
-- GET /api/members/search/?q={query} - Search members
+**Events Management**
+- GET /api/admin/events/ - List all events (paginated, with filters)
+- POST /api/admin/events/ - Create new event
+- GET /api/admin/events/{id}/ - Get specific event details
+- PUT /api/admin/events/{id}/ - Update event
+- DELETE /api/admin/events/{id}/ - Delete event
+- POST /api/admin/events/{id}/duplicate/ - Duplicate event
+- GET /api/admin/events/{id}/registrations/ - Get event registrations
+- POST /api/admin/events/{id}/send-reminders/ - Send event reminders
+- GET /api/admin/events/analytics/ - Get events analytics
 
-*Groups*
-- GET /api/groups/ - List all groups
-- POST /api/groups/ - Create new group
-- GET /api/groups/{id}/ - Get specific group
-- PUT /api/groups/{id}/ - Update group
-- DELETE /api/groups/{id}/ - Delete group
-- GET /api/groups/{id}/members/ - List members in group
+**Content Management**
+- GET /api/admin/content/ - List all content pages
+- POST /api/admin/content/ - Create new content page
+- GET /api/admin/content/{slug}/ - Get specific content page
+- PUT /api/admin/content/{slug}/ - Update content page
+- DELETE /api/admin/content/{slug}/ - Delete content page
+- POST /api/admin/content/upload-image/ - Upload images for content
 
-*Pledges*
-- GET /api/pledges/ - List all pledges
-- POST /api/pledges/ - Create pledge
-- GET /api/pledges/{id}/ - Get specific pledge
-- PUT /api/pledges/{id}/ - Update pledge
-- DELETE /api/pledges/{id}/ - Delete pledge
-- GET /api/pledges/stats/ - Get pledge statistics
+**Members** (Updated)
+- GET /api/admin/members/ - List all members (paginated)
+- GET /api/admin/members/{id}/ - Get specific member details
+- PUT /api/admin/members/{id}/ - Update member
+- DELETE /api/admin/members/{id}/ - Delete member
+- GET /api/admin/members/search/?q={query} - Search members
+- GET /api/admin/members/{id}/events/ - Get member's event history
+- POST /api/admin/members/{id}/events/{event_id}/attendance/ - Mark attendance
 
-*Authentication*
-- POST /api/auth/login/ - Login
-- POST /api/auth/logout/ - Logout
-- POST /api/auth/password-reset/ - Request password reset
-- POST /api/auth/password-reset/confirm/ - Confirm password reset
+**Groups** (Updated)
+- GET /api/admin/groups/ - List all groups
+- POST /api/admin/groups/ - Create new group
+- GET /api/admin/groups/{id}/ - Get specific group
+- PUT /api/admin/groups/{id}/ - Update group
+- DELETE /api/admin/groups/{id}/ - Delete group
+- GET /api/admin/groups/{id}/members/ - List members in group
+- POST /api/admin/groups/{id}/toggle-public/ - Toggle public visibility
 
-*Reports*
-- GET /api/reports/members/csv/ - Export members CSV
-- GET /api/reports/pledges/csv/ - Export pledges CSV
-- GET /api/reports/stats/ - Get system statistics
+**System Settings**
+- GET /api/admin/settings/ - Get all system settings
+- PUT /api/admin/settings/ - Update system settings
+- POST /api/admin/settings/backup/ - Create system backup
+- GET /api/admin/analytics/dashboard/ - Get dashboard analytics
+
+## Implementation Plan
+
+### Phase 1: Foundation & User Research (3 weeks)
+- Initial user research with all stakeholder groups
+- Conduct usability interviews with representative users from each persona
+- Create wireframes and prototype testing for public website and admin interface
+- Database schema setup including events and content management
+- Basic API endpoints for all core functionality
+- Authentication system with role-based permissions
+- Public website foundation with responsive design
+
+### Phase 2: Core Admin Dashboard & Event System (4 weeks)
+- Member management interface with user-centered design
+- Complete event management system with CRUD operations
+- Event registration and attendance tracking
+- Content management system for website pages
+- Search and filtering with natural language capabilities
+- Basic reporting with visual elements
+- Group management with public visibility controls
+- Early user testing with administrative staff
+
+### Phase 3: Public Website & Advanced Features (4 weeks)
+- Complete public website with all pages
+- Public events display with filtering and search
+- Ministry showcase and information pages
+- Advanced admin features (bulk operations, advanced reporting)
+- Communication system integration
+- Data visualization optimized for decision-making
+- Email/SMS notification system
+- Comprehensive accessibility implementation
+
+### Phase 4: Integration & Enhancement (3 weeks)
+- Advanced reporting with scheduled delivery
+- Data export with multiple format options
+- System settings and user preferences
+- Multi-language support framework
+- SEO optimization for all public pages
+- Performance optimization for all user contexts
+- User acceptance testing with diverse user groups
+
+### Phase 5: Testing & Deployment (2 weeks)
+- Comprehensive testing with real users from all personas
+- Accessibility audit and remediation
+- Security review and penetration testing
+- Performance testing under various conditions
+- Content management training for administrators
+- Deployment to production with monitoring
+
+### Phase 6: Training & Go-Live Support (2 weeks)
+- Development of help system and documentation
+- Creation of training materials for different user types
+- Setup of support ticketing system
+- Content migration and initial setup
+- Go-live support and immediate issue resolution
+- Post-launch monitoring and optimization
+
+## User Experience & Accessibility Improvements
+
+### Public Website Visitors
+1. **Website Navigation**:
+   - Intuitive navigation with clear information architecture
+   - Mobile-first responsive design
+   - Quick access to key information (events, contact, ministries)
+   - Search functionality across all content
+   - Breadcrumb navigation for complex page structures
+
+2. **Event Discovery**:
+   - Visual event calendar with multiple view options
+   - Event filtering by category, date, and audience
+   - Event detail pages with registration options
+   - Social sharing capabilities for events
+   - Integration with calendar applications (Google, Outlook, Apple)
+
+3. **Accessibility Requirements**:
+   - WCAG 2.1 AA compliance minimum (AAA recommended)
+   - Screen reader compatibility with proper ARIA attributes
+   - Keyboard navigation support for all interactive elements
+   - Sufficient color contrast and text sizing options
+   - Alternative text for all images and media
+   - Captions for video content
+
+### Church Member Experience (Enhanced)
+1. **Registration Process**:
+   - Event interest selection during member registration
+   - Automatic event recommendations based on interests
+   - Easy access to update preferences and interests
+
+2. **Event Interaction**:
+   - Simple event registration process
+   - Email confirmations and reminders
+   - Easy access to registered events list
+   - Cancellation and modification options
+
+### Admin/Staff User Experience (Enhanced)
+1. **Event Management**:
+   - Drag-and-drop event calendar interface
+   - Bulk event operations and templates
+   - Event analytics and attendance reporting
+   - Automated reminder system management
+   - Event promotion tools and social media integration
+
+2. **Content Management**:
+   - WYSIWYG editor for page content
+   - Media library for image and document management
+   - Preview functionality before publishing
+   - SEO optimization tools and guidance
+   - Content scheduling and publishing workflow
+
+3. **Enhanced Dashboard Features**:
+   - Real-time visitor and engagement analytics
+   - Event performance metrics
+   - Member engagement tracking across events and ministries
+   - Content performance analytics
+   - Quick action buttons for common tasks
+
+## Security and Compliance
+
+### Data Protection
+- GDPR compliance with consent management
+- Data retention policies with automated cleanup
+- Secure file upload and storage
+- Regular security audits and updates
+
+### Content Security
+- Input sanitization for all user-generated content
+- XSS protection for rich content editing
+- File type restrictions and virus scanning
+- Backup and recovery procedures for all content
+
+## Training and Support Resources
+
+### For Website Visitors
+- Site tour and navigation guide
+- FAQ section for common questions
+- Contact options prominently displayed
+- Accessibility help and support options
+
+### For Content Managers
+- Content management system tutorial
+- SEO best practices guide
+- Image optimization and media guidelines
+- Publishing workflow documentation
+
+### For Event Coordinators
+- Event creation and management guide
+- Registration management tutorial
+- Communication tools training
+- Analytics and reporting guide
+
+This updated documentation reflects the comprehensive nature of ChurchConnect DBMS as both a member management system and a full-featured church website with robust event management capabilities.
 
 ## Implementation Plan
 

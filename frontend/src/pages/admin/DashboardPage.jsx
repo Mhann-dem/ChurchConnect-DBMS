@@ -26,7 +26,10 @@ import {
   SparklesIcon,
   TrophyIcon,
   FireIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  HomeIcon,
+  BuildingOffice2Icon,
+  GiftIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
 import dashboardService from '../../services/dashboardService';
@@ -43,8 +46,12 @@ const DashboardPage = () => {
     memberStats: null,
     pledgeStats: null,
     groupStats: null,
+    familyStats: null,
+    eventStats: null,
     recentMembers: [],
     recentPledges: [],
+    recentEvents: [],
+    recentFamilies: [],
     systemHealth: null,
     alerts: []
   });
@@ -75,14 +82,18 @@ const DashboardPage = () => {
       
       setError(null);
 
-      // Fetch all dashboard data concurrently
+      // Fetch all dashboard data concurrently - FIXED URLs
       const [
         systemStats,
         memberStats,
         pledgeStats,
         groupStats,
+        familyStats,
+        eventStats,
         recentMembers,
         recentPledges,
+        recentEvents,
+        recentFamilies,
         systemHealth,
         alerts
       ] = await Promise.allSettled([
@@ -90,8 +101,12 @@ const DashboardPage = () => {
         dashboardService.getMemberStats('30d'),
         dashboardService.getPledgeStats('30d'),
         dashboardService.getGroupStats(),
+        dashboardService.getFamilyStats(),
+        dashboardService.getEventStats(),
         dashboardService.getRecentMembers(5),
         dashboardService.getRecentPledges(5),
+        dashboardService.getRecentEvents(5),
+        dashboardService.getRecentFamilies(5),
         dashboardService.getSystemHealth(),
         dashboardService.getAlerts()
       ]);
@@ -111,6 +126,8 @@ const DashboardPage = () => {
           total_members: 0, 
           total_groups: 0, 
           total_pledges: 0,
+          total_families: 0,
+          total_events: 0,
           monthly_revenue: 0 
         }),
         memberStats: processResult(memberStats, { 
@@ -130,8 +147,20 @@ const DashboardPage = () => {
           active_groups: 0, 
           growth_rate: 0 
         }),
+        familyStats: processResult(familyStats, { 
+          total_families: 0, 
+          new_families: 0, 
+          growth_rate: 0 
+        }),
+        eventStats: processResult(eventStats, { 
+          total_events: 0, 
+          upcoming_events: 0, 
+          this_month_events: 0 
+        }),
         recentMembers: processResult(recentMembers, { results: [] }).results || [],
         recentPledges: processResult(recentPledges, { results: [] }).results || [],
+        recentEvents: processResult(recentEvents, { results: [] }).results || [],
+        recentFamilies: processResult(recentFamilies, { results: [] }).results || [],
         systemHealth: processResult(systemHealth, { status: 'unknown' }),
         alerts: processResult(alerts, { results: [] }).results || []
       };
@@ -283,7 +312,7 @@ const DashboardPage = () => {
     );
   }
 
-  // Generate stats with real data
+  // Generate stats with real data - FIXED URLs
   const stats = [
     {
       name: 'Total Members',
@@ -298,6 +327,18 @@ const DashboardPage = () => {
       route: '/admin/members'
     },
     {
+      name: 'Total Families',
+      value: dashboardData?.familyStats?.total_families?.toLocaleString() || '0',
+      icon: HomeIcon,
+      change: dashboardData?.familyStats?.growth_rate || 0,
+      changeType: (dashboardData?.familyStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
+      description: `${dashboardData?.familyStats?.new_families || 0} new families`,
+      color: 'from-green-500 to-teal-500',
+      bgPattern: 'bg-green-50',
+      iconBg: 'bg-green-500',
+      route: '/admin/families'
+    },
+    {
       name: 'Active Groups',
       value: dashboardData?.groupStats?.active_groups?.toLocaleString() || '0',
       icon: UserGroupIcon,
@@ -308,6 +349,18 @@ const DashboardPage = () => {
       bgPattern: 'bg-emerald-50',
       iconBg: 'bg-emerald-500',
       route: '/admin/groups'
+    },
+    {
+      name: 'Upcoming Events',
+      value: dashboardData?.eventStats?.upcoming_events?.toLocaleString() || '0',
+      icon: CalendarDaysIcon,
+      change: 0,
+      changeType: 'neutral',
+      description: `${dashboardData?.eventStats?.this_month_events || 0} this month`,
+      color: 'from-orange-500 to-red-500',
+      bgPattern: 'bg-orange-50',
+      iconBg: 'bg-orange-500',
+      route: '/admin/events'
     },
     {
       name: 'Monthly Pledges',
@@ -449,7 +502,7 @@ const DashboardPage = () => {
           </div>
         </Card>
 
-        {/* Stats Grid with Real Data */}
+        {/* Stats Grid with Real Data - UPDATED */}
         <div className={styles.statsGrid}>
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -505,7 +558,7 @@ const DashboardPage = () => {
           })}
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content Grid - ENHANCED WITH NEW SECTIONS */}
         <div className={styles.contentGrid}>
           
           {/* Recent Members Card */}
@@ -521,55 +574,51 @@ const DashboardPage = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  to="/admin/members"
+                  to="/admin/families"
                   icon={ArrowTopRightOnSquareIcon}
                   iconPosition="right"
                 >
-                  View all ({dashboardData?.memberStats?.total_members || 0})
+                  View all ({dashboardData?.familyStats?.total_families || 0})
                 </Button>
               </div>
             </div>
             
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.recentMembers?.length > 0 ? (
-                  dashboardData.recentMembers.slice(0, 4).map((member, index) => (
+                {dashboardData?.recentFamilies?.length > 0 ? (
+                  dashboardData.recentFamilies.slice(0, 4).map((family, index) => (
                     <Card 
-                      key={member.id} 
-                      className={`${styles.memberItem} group`}
+                      key={family.id} 
+                      className={`${styles.familyItem} group`}
                     >
                       <div className="flex items-center space-x-4 p-4">
-                        <Avatar 
-                          name={`${member.first_name} ${member.last_name}`}
-                          status={member.is_active ? 'active' : 'inactive'}
-                        />
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
+                            <HomeIcon className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1">
                             <p className="text-sm font-bold text-gray-900 truncate">
-                              {member.first_name} {member.last_name}
+                              {family.family_name}
                             </p>
-                            <Badge variant={member.is_active ? 'success' : 'warning'}>
-                              {member.is_active ? 'Active' : 'Inactive'}
+                            <Badge variant="success">
+                              {family.member_count || 0} members
                             </Badge>
                           </div>
                           <div className="space-y-1">
+                            <p className="text-xs text-gray-600 truncate">
+                              Primary: {family.primary_contact_name}
+                            </p>
                             <div className="flex items-center space-x-4 text-xs text-gray-500">
                               <div className="flex items-center space-x-1">
                                 <CalendarDaysIcon className="w-3 h-3" />
-                                <span>Joined {new Date(member.registration_date).toLocaleDateString()}</span>
+                                <span>Added {new Date(family.created_at).toLocaleDateString()}</span>
                               </div>
-                            </div>
-                            <div className="flex items-center space-x-4 text-xs text-gray-600">
-                              {member.email && (
+                              {family.address && (
                                 <div className="flex items-center space-x-1">
-                                  <EnvelopeIcon className="w-3 h-3" />
-                                  <span className="truncate">{member.email}</span>
-                                </div>
-                              )}
-                              {member.phone && (
-                                <div className="flex items-center space-x-1">
-                                  <PhoneIcon className="w-3 h-3" />
-                                  <span>{member.phone}</span>
+                                  <MapPinIcon className="w-3 h-3" />
+                                  <span className="truncate">{family.address}</span>
                                 </div>
                               )}
                             </div>
@@ -578,7 +627,7 @@ const DashboardPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          to={`/admin/members/${member.id}`}
+                          to={`/admin/families/${family.id}`}
                           icon={EyeIcon}
                           className="opacity-0 group-hover:opacity-100"
                         />
@@ -587,15 +636,15 @@ const DashboardPage = () => {
                   ))
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <UserIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No recent member registrations</p>
+                    <HomeIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No recent families added</p>
                     <Button 
                       variant="ghost"
-                      to="/register"
+                      to="/admin/families?action=create"
                       icon={PlusIcon}
                       className="mt-2"
                     >
-                      Add First Member
+                      Add First Family
                     </Button>
                   </div>
                 )}
@@ -661,7 +710,7 @@ const DashboardPage = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - UPDATED WITH CORRECT URLS */}
         <Card className={styles.quickActionsCard} hover={false}>
           <div className={styles.sectionHeader}>
             <div className="flex items-center space-x-3">
@@ -673,10 +722,10 @@ const DashboardPage = () => {
           </div>
           
           <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/register"
+                  to="/admin/members?action=create"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-blue-100 group-hover:bg-blue-200 mb-3`}>
@@ -689,7 +738,20 @@ const DashboardPage = () => {
               
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/admin/groups/new"
+                  to="/admin/families?action=create"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-green-100 group-hover:bg-green-200 mb-3`}>
+                    <HomeIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Add Family</span>
+                  <span className="text-xs text-gray-500 mt-1">Family unit</span>
+                </Link>
+              </Card>
+              
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/groups?action=create"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-emerald-100 group-hover:bg-emerald-200 mb-3`}>
@@ -699,10 +761,23 @@ const DashboardPage = () => {
                   <span className="text-xs text-gray-500 mt-1">Ministry/small group</span>
                 </Link>
               </Card>
+
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/events?action=create"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-orange-100 group-hover:bg-orange-200 mb-3`}>
+                    <CalendarDaysIcon className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Create Event</span>
+                  <span className="text-xs text-gray-500 mt-1">Church activity</span>
+                </Link>
+              </Card>
               
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
-                  to="/admin/pledges/new"
+                  to="/admin/pledges?action=create"
                   className="flex flex-col items-center justify-center p-5 text-center"
                 >
                   <div className={`${styles.iconContainer} bg-amber-100 group-hover:bg-amber-200 mb-3`}>
@@ -712,7 +787,7 @@ const DashboardPage = () => {
                   <span className="text-xs text-gray-500 mt-1">Financial commitment</span>
                 </Link>
               </Card>
-              
+
               <Card className={`${styles.quickActionItem} group`}>
                 <Link
                   to="/admin/reports"
@@ -723,6 +798,32 @@ const DashboardPage = () => {
                   </div>
                   <span className="text-sm font-semibold text-gray-900">Generate Report</span>
                   <span className="text-xs text-gray-500 mt-1">Analytics & insights</span>
+                </Link>
+              </Card>
+
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/register"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-indigo-100 group-hover:bg-indigo-200 mb-3`}>
+                    <UserIcon className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Public Register</span>
+                  <span className="text-xs text-gray-500 mt-1">Member portal</span>
+                </Link>
+              </Card>
+
+              <Card className={`${styles.quickActionItem} group`}>
+                <Link
+                  to="/admin/settings"
+                  className="flex flex-col items-center justify-center p-5 text-center"
+                >
+                  <div className={`${styles.iconContainer} bg-gray-100 group-hover:bg-gray-200 mb-3`}>
+                    <Cog6ToothIcon className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Settings</span>
+                  <span className="text-xs text-gray-500 mt-1">System config</span>
                 </Link>
               </Card>
             </div>

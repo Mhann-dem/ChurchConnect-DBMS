@@ -1,0 +1,12 @@
+{"timestamp": "2025-09-12 12:21:08,656", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:21:09,183", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}
+{"timestamp": "2025-09-12 12:31:35,933", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:31:36,074", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}
+{"timestamp": "2025-09-12 12:31:38,673", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:31:38,732", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}
+{"timestamp": "2025-09-12 12:31:39,216", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:31:39,262", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}
+{"timestamp": "2025-09-12 12:31:39,523", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:31:39,598", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}
+{"timestamp": "2025-09-12 12:31:40,088", "level": "INFO", "message": "REQUEST: GET /", "module": "middleware", "funcName": "log_request", "lineno": 236}
+{"timestamp": "2025-09-12 12:31:40,130", "level": "INFO", "message": "RESPONSE: 500 /", "module": "middleware", "funcName": "log_response", "lineno": 255}

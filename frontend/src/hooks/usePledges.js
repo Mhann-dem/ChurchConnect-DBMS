@@ -785,3 +785,4 @@ const usePledges = (initialFilters = {}, options = {}) => {
 };
 
 export default usePledges;
+export { usePledges }; 

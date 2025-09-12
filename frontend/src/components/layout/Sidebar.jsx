@@ -17,7 +17,11 @@ import {
   BellIcon,
   UserPlusIcon,
   ClipboardDocumentListIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  BuildingOffice2Icon,
+  BuildingOfficeIcon,
+  ChartPieIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
@@ -36,15 +40,15 @@ const navigationItems = [
     href: '/admin/members',
     icon: UsersIcon,
     permission: 'view_members',
-    badge: '1,248',
+    badge: null, // Will be populated dynamically
     description: 'Church Member Management'
   },
   {
     name: 'Families',
     href: '/admin/families',
-    icon: UserGroupIcon,
+    icon: BuildingOfficeIcon,
     permission: 'view_families',
-    badge: '312',
+    badge: null, // Will be populated dynamically
     description: 'Family Management'
   },
   {
@@ -52,7 +56,7 @@ const navigationItems = [
     href: '/admin/groups',
     icon: UserGroupIcon,
     permission: 'view_groups',
-    badge: '23',
+    badge: null, // Will be populated dynamically
     description: 'Ministry & Small Groups'
   },
   {
@@ -60,7 +64,7 @@ const navigationItems = [
     href: '/admin/events',
     icon: CalendarDaysIcon,
     permission: 'view_events',
-    badge: '8',
+    badge: null, // Will be populated dynamically
     description: 'Church Events & Activities'
   },
   {
@@ -68,7 +72,7 @@ const navigationItems = [
     href: '/admin/pledges',
     icon: CurrencyDollarIcon,
     permission: 'view_pledges',
-    badge: 'New',
+    badge: null, // Will be populated dynamically
     description: 'Donations & Financial Commitments'
   },
   {
@@ -82,43 +86,107 @@ const navigationItems = [
   {
     name: 'Settings',
     href: '/admin/settings',
-    icon: CogIcon,
+    icon: Cog6ToothIcon,
     permission: 'admin_settings',
     badge: null,
     description: 'System Configuration'
   }
 ];
 
-export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
+// Quick action items with correct URLs
+const quickActionItems = [
+  {
+    name: 'Add Member',
+    href: '/admin/members?action=create',
+    icon: UserPlusIcon,
+    color: 'from-blue-500 to-indigo-500',
+    description: 'Register new member'
+  },
+  {
+    name: 'Add Family',
+    href: '/admin/families?action=create',
+    icon: BuildingOfficeIcon,
+    color: 'from-green-500 to-teal-500',
+    description: 'Create family unit'
+  },
+  {
+    name: 'Create Group',
+    href: '/admin/groups?action=create',
+    icon: UserGroupIcon,
+    color: 'from-purple-500 to-violet-500',
+    description: 'Ministry/small group'
+  },
+  {
+    name: 'Create Event',
+    href: '/admin/events?action=create',
+    icon: CalendarDaysIcon,
+    color: 'from-orange-500 to-red-500',
+    description: 'Church activity'
+  },
+  {
+    name: 'Record Pledge',
+    href: '/admin/pledges?action=create',
+    icon: CurrencyDollarIcon,
+    color: 'from-yellow-500 to-orange-500',
+    description: 'Financial commitment'
+  }
+];
+
+export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet }) => {
   const { logout, hasPermission, user } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [stats, setStats] = useState({
+    members: 0,
+    families: 0,
+    groups: 0,
+    events: 0,
+    pledges: 0
+  });
 
   const isDark = settings?.theme === 'dark';
 
+  // Auto-collapse logic
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
-      
-      if (mobile) {
-        setIsCollapsed(false);
-      }
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    if (isTablet && !isMobile) {
+      setIsCollapsed(true);
+    } else if (!isTablet && !isMobile && window.innerWidth >= 1400) {
+      setIsCollapsed(false);
+    }
+  }, [isMobile, isTablet]);
 
   useEffect(() => {
     if (onCollapseChange) {
       onCollapseChange(isCollapsed);
     }
   }, [isCollapsed, onCollapseChange]);
+
+  // Fetch sidebar stats
+  useEffect(() => {
+    // This would normally fetch from your dashboard service
+    // For now, using placeholder data
+    const fetchStats = async () => {
+      try {
+        // const statsData = await dashboardService.getSidebarStats();
+        // setStats(statsData);
+        
+        // Placeholder data
+        setStats({
+          members: 1248,
+          families: 312,
+          groups: 23,
+          events: 8,
+          pledges: 156
+        });
+      } catch (error) {
+        console.warn('Failed to fetch sidebar stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -134,72 +202,99 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     }
   };
 
-  const filteredNavigationItems = navigationItems.filter(item => 
+  // Update navigation items with stats
+  const navigationItemsWithStats = navigationItems.map(item => ({
+    ...item,
+    badge: (() => {
+      switch (item.name) {
+        case 'Members':
+          return stats.members > 0 ? stats.members.toLocaleString() : null;
+        case 'Families':
+          return stats.families > 0 ? stats.families.toLocaleString() : null;
+        case 'Groups':
+          return stats.groups > 0 ? stats.groups.toString() : null;
+        case 'Events':
+          return stats.events > 0 ? `${stats.events} upcoming` : null;
+        case 'Pledges':
+          return stats.pledges > 0 ? `${stats.pledges} active` : null;
+        default:
+          return item.badge;
+      }
+    })()
+  }));
+
+  const filteredNavigationItems = navigationItemsWithStats.filter(item => 
     !item.permission || hasPermission(item.permission)
   );
 
   const sidebarStyle = {
     position: 'fixed',
     top: 0,
-    left: isMobile && !isOpen ? '-280px' : 0,
+    left: isMobile && !isOpen ? '-320px' : 0,
     height: '100vh',
-    width: isCollapsed ? '64px' : '280px',
-    background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-    borderRight: '1px solid rgba(148, 163, 184, 0.1)',
+    width: isCollapsed && !isMobile ? '72px' : '320px',
+    background: isDark 
+      ? 'linear-gradient(180deg, #111827 0%, #030712 100%)'
+      : 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+    borderRight: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
     display: 'flex',
     flexDirection: 'column',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     zIndex: 50,
-    boxShadow: '4px 0 24px rgba(0, 0, 0, 0.12)'
+    boxShadow: isMobile ? '8px 0 32px rgba(0, 0, 0, 0.3)' : '4px 0 24px rgba(0, 0, 0, 0.12)',
+    backdropFilter: 'blur(20px)'
   };
 
   const headerStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: isCollapsed ? '16px 12px' : '20px 24px',
-    borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
-    minHeight: '72px'
+    padding: isCollapsed && !isMobile ? '20px 16px' : '24px 24px',
+    borderBottom: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
+    minHeight: '80px',
+    background: 'rgba(255, 255, 255, 0.02)'
   };
 
   const brandStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '16px',
     color: 'white',
     textDecoration: 'none',
-    transition: 'opacity 0.2s ease'
+    transition: 'all 0.3s ease'
   };
 
   const logoStyle = {
-    width: '32px',
-    height: '32px',
+    width: '40px',
+    height: '40px',
     background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    borderRadius: '8px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '16px',
     fontWeight: 'bold',
     color: 'white',
-    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+    boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
+    border: '2px solid rgba(59, 130, 246, 0.2)'
   };
 
   const textStyle = {
-    display: isCollapsed ? 'none' : 'flex',
+    display: isCollapsed && !isMobile ? 'none' : 'flex',
     flexDirection: 'column',
-    gap: '2px'
+    gap: '4px'
   };
 
   const titleStyle = {
-    fontSize: '16px',
+    fontSize: '18px',
     fontWeight: '700',
     color: 'white',
-    lineHeight: '1.2'
+    lineHeight: '1.2',
+    letterSpacing: '-0.025em'
   };
 
   const subtitleStyle = {
-    fontSize: '11px',
+    fontSize: '12px',
     color: '#94a3b8',
     fontWeight: '500'
   };
@@ -207,27 +302,27 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
   const controlsStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '12px'
   };
 
   const controlButtonStyle = {
-    width: '28px',
-    height: '28px',
+    width: '32px',
+    height: '32px',
     background: 'rgba(255, 255, 255, 0.1)',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '8px',
     color: '#94a3b8',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     backdropFilter: 'blur(8px)'
   };
 
   const navStyle = {
     flex: 1,
-    padding: isCollapsed ? '16px 8px' : '24px 16px',
+    padding: isCollapsed && !isMobile ? '20px 12px' : '24px 20px',
     overflowY: 'auto',
     overflowX: 'hidden',
     scrollbarWidth: 'thin',
@@ -235,7 +330,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
   };
 
   const sectionStyle = {
-    marginBottom: '24px'
+    marginBottom: '32px'
   };
 
   const sectionTitleStyle = {
@@ -244,29 +339,30 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
-    marginBottom: '8px',
-    paddingLeft: isCollapsed ? '0' : '12px',
-    display: isCollapsed ? 'none' : 'block'
+    marginBottom: '12px',
+    paddingLeft: isCollapsed && !isMobile ? '0' : '16px',
+    display: isCollapsed && !isMobile ? 'none' : 'block'
   };
 
-  const quickActionStyle = {
+  const quickActionStyle = (color) => ({
     width: '100%',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    padding: isCollapsed ? '10px 8px' : '12px 16px',
-    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+    gap: '12px',
+    padding: isCollapsed && !isMobile ? '12px 8px' : '16px 20px',
+    background: `linear-gradient(135deg, ${color})`,
     color: 'white',
-    borderRadius: '8px',
+    borderRadius: '12px',
     textDecoration: 'none',
-    fontSize: '13px',
-    fontWeight: '500',
-    transition: 'all 0.2s ease',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'all 0.3s ease',
     border: 'none',
     cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)',
-    justifyContent: isCollapsed ? 'center' : 'flex-start'
-  };
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start',
+    marginBottom: '8px'
+  });
 
   const navListStyle = {
     listStyle: 'none',
@@ -274,15 +370,15 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     padding: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px'
+    gap: '6px'
   };
 
   const getNavItemStyle = (isActive) => ({
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: isCollapsed ? '12px 8px' : '12px 16px',
-    borderRadius: '8px',
+    gap: '16px',
+    padding: isCollapsed && !isMobile ? '16px 12px' : '16px 20px',
+    borderRadius: '12px',
     textDecoration: 'none',
     fontSize: '14px',
     fontWeight: '500',
@@ -290,25 +386,25 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     background: isActive 
       ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%)'
       : 'transparent',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     position: 'relative',
     overflow: 'hidden',
     border: `1px solid ${isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'}`,
-    boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.2)' : 'none',
-    justifyContent: isCollapsed ? 'center' : 'flex-start'
+    boxShadow: isActive ? '0 8px 24px rgba(59, 130, 246, 0.3)' : 'none',
+    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start'
   });
 
   const iconStyle = {
-    width: '18px',
-    height: '18px',
+    width: '20px',
+    height: '20px',
     flexShrink: 0
   };
 
   const navContentStyle = {
-    display: isCollapsed ? 'none' : 'flex',
+    display: isCollapsed && !isMobile ? 'none' : 'flex',
     flexDirection: 'column',
     flex: 1,
-    gap: '2px'
+    gap: '4px'
   };
 
   const labelContainerStyle = {
@@ -320,13 +416,14 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
   const badgeStyle = (badge) => ({
     fontSize: '10px',
     fontWeight: '600',
-    padding: '2px 6px',
-    borderRadius: '10px',
-    background: badge === 'New' 
-      ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+    padding: '4px 8px',
+    borderRadius: '12px',
+    background: badge?.includes('upcoming') || badge?.includes('active')
+      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
       : 'rgba(255, 255, 255, 0.2)',
     color: 'white',
-    border: '1px solid rgba(255, 255, 255, 0.1)'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    whiteSpace: 'nowrap'
   });
 
   const descriptionStyle = {
@@ -337,68 +434,72 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
 
   const tooltipStyle = {
     position: 'absolute',
-    left: '72px',
+    left: '84px',
     top: '50%',
     transform: 'translateY(-50%)',
     background: '#1f2937',
     color: 'white',
-    padding: '8px 12px',
-    borderRadius: '8px',
+    padding: '12px 16px',
+    borderRadius: '12px',
     fontSize: '12px',
     whiteSpace: 'nowrap',
     zIndex: 1000,
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
     border: '1px solid rgba(75, 85, 99, 0.3)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    backdropFilter: 'blur(8px)'
   };
 
   const footerStyle = {
-    padding: isCollapsed ? '16px 8px' : '20px 16px',
-    borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+    padding: isCollapsed && !isMobile ? '20px 12px' : '24px 20px',
+    borderTop: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '12px',
+    background: 'rgba(255, 255, 255, 0.02)'
   };
 
   const footerLinkStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: isCollapsed ? '10px 8px' : '10px 16px',
-    borderRadius: '6px',
+    gap: '16px',
+    padding: isCollapsed && !isMobile ? '12px 8px' : '12px 20px',
+    borderRadius: '8px',
     textDecoration: 'none',
     fontSize: '13px',
     fontWeight: '500',
     color: '#94a3b8',
-    transition: 'all 0.2s ease',
-    justifyContent: isCollapsed ? 'center' : 'flex-start'
+    transition: 'all 0.3s ease',
+    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start'
   };
 
   const userSectionStyle = {
-    display: isCollapsed ? 'none' : 'block',
-    padding: '12px 16px',
+    display: isCollapsed && !isMobile ? 'none' : 'block',
+    padding: '16px 20px',
     background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '8px',
-    marginBottom: '8px'
+    borderRadius: '12px',
+    marginBottom: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.1)'
   };
 
   const userInfoStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px'
+    gap: '12px'
   };
 
   const userAvatarStyle = {
-    width: '32px',
-    height: '32px',
+    width: '40px',
+    height: '40px',
     background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    borderRadius: '8px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '12px',
+    fontSize: '14px',
     fontWeight: '600',
-    color: 'white'
+    color: 'white',
+    border: '2px solid rgba(139, 92, 246, 0.3)'
   };
 
   const userDetailsStyle = {
@@ -407,29 +508,29 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
   };
 
   const userNameStyle = {
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: '600',
     color: 'white',
-    marginBottom: '2px'
+    marginBottom: '4px'
   };
 
   const userRoleStyle = {
-    fontSize: '11px',
+    fontSize: '12px',
     color: '#94a3b8',
-    marginBottom: '4px'
+    marginBottom: '6px'
   };
 
   const userStatusStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
-    fontSize: '10px',
+    gap: '8px',
+    fontSize: '11px',
     color: '#22c55e'
   };
 
   const statusIndicatorStyle = {
-    width: '6px',
-    height: '6px',
+    width: '8px',
+    height: '8px',
     background: '#22c55e',
     borderRadius: '50%',
     animation: 'pulse 2s infinite'
@@ -439,17 +540,17 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: isCollapsed ? '12px 8px' : '12px 16px',
+    gap: '16px',
+    padding: isCollapsed && !isMobile ? '16px 8px' : '16px 20px',
     background: 'transparent',
     border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '8px',
-    fontSize: '13px',
+    borderRadius: '12px',
+    fontSize: '14px',
     fontWeight: '500',
     color: '#ef4444',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    justifyContent: isCollapsed ? 'center' : 'flex-start'
+    transition: 'all 0.3s ease',
+    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start'
   };
 
   return (
@@ -463,8 +564,8 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                 src="/logo.png" 
                 alt="ChurchConnect" 
                 style={{
-                  width: '20px',
-                  height: '20px',
+                  width: '24px',
+                  height: '24px',
                   objectFit: 'contain'
                 }}
                 onError={(e) => {
@@ -475,7 +576,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
               <span 
                 style={{
                   display: 'none',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: 'bold',
                   color: 'white'
                 }}
@@ -496,8 +597,8 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
               src="/logo.png" 
               alt="ChurchConnect" 
               style={{
-                width: '20px',
-                height: '20px',
+                width: '24px',
+                height: '24px',
                 objectFit: 'contain'
               }}
               onError={(e) => {
@@ -508,7 +609,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
             <span 
               style={{
                 display: 'none',
-                fontSize: '14px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 color: 'white'
               }}
@@ -527,16 +628,18 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
               onMouseEnter={(e) => {
                 e.target.style.background = 'rgba(255, 255, 255, 0.2)';
                 e.target.style.color = 'white';
+                e.target.style.transform = 'scale(1.1)';
               }}
               onMouseLeave={(e) => {
                 e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                 e.target.style.color = '#94a3b8';
+                e.target.style.transform = 'scale(1)';
               }}
             >
               {isCollapsed ? (
-                <ChevronRightIcon style={{ width: '14px', height: '14px' }} />
+                <ChevronRightIcon style={{ width: '16px', height: '16px' }} />
               ) : (
-                <ChevronLeftIcon style={{ width: '14px', height: '14px' }} />
+                <ChevronLeftIcon style={{ width: '16px', height: '16px' }} />
               )}
             </button>
           )}
@@ -554,7 +657,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                 e.target.style.color = '#94a3b8';
               }}
             >
-              <XMarkIcon style={{ width: '14px', height: '14px' }} />
+              <XMarkIcon style={{ width: '16px', height: '16px' }} />
             </button>
           )}
         </div>
@@ -562,74 +665,37 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
 
       {/* Navigation */}
       <nav style={navStyle}>
-        {/* Quick Actions Section - UPDATED WITH CORRECT URLS */}
+        {/* Quick Actions Section */}
         {(!isCollapsed || isMobile) && (
           <div style={sectionStyle}>
             <h3 style={sectionTitleStyle}>Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link 
-                to="/admin/members?action=create" 
-                style={{...quickActionStyle, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'}}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(5, 150, 105, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.3)';
-                }}
-              >
-                <UserPlusIcon style={iconStyle} />
-                {!isCollapsed && 'Add New Member'}
-              </Link>
-              
-              <Link 
-                to="/admin/groups?action=create" 
-                style={{...quickActionStyle, background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'}}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 8px rgba(124, 58, 237, 0.3)';
-                }}
-              >
-                <UserGroupIcon style={iconStyle} />
-                {!isCollapsed && 'Create Group'}
-              </Link>
-
-              <Link 
-                to="/admin/events?action=create" 
-                style={{...quickActionStyle, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'}}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(245, 158, 11, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 8px rgba(245, 158, 11, 0.3)';
-                }}
-              >
-                <CalendarDaysIcon style={iconStyle} />
-                {!isCollapsed && 'Create Event'}
-              </Link>
-
-              <Link 
-                to="/admin/pledges?action=create" 
-                style={{...quickActionStyle, background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'}}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.3)';
-                }}
-              >
-                <CurrencyDollarIcon style={iconStyle} />
-                {!isCollapsed && 'Record Pledge'}
-              </Link>
+              {quickActionItems.map((action, index) => {
+                const Icon = action.icon;
+                return (
+                  <Link 
+                    key={action.name}
+                    to={action.href} 
+                    style={quickActionStyle(action.color)}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+                    }}
+                  >
+                    <Icon style={iconStyle} />
+                    {(!isCollapsed || isMobile) && (
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span>{action.name}</span>
+                        <span style={{ fontSize: '11px', opacity: 0.8 }}>{action.description}</span>
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
@@ -656,8 +722,9 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                     onMouseEnter={(e) => {
                       setHoveredItem(item.name);
                       if (!isActive) {
-                        e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                        e.target.style.background = 'rgba(255, 255, 255, 0.08)';
                         e.target.style.color = '#ffffff';
+                        e.target.style.transform = 'translateX(4px)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -665,6 +732,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                       if (!isActive) {
                         e.target.style.background = 'transparent';
                         e.target.style.color = '#cbd5e1';
+                        e.target.style.transform = 'translateX(0)';
                       }
                     }}
                   >
@@ -687,8 +755,13 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && !isMobile && hoveredItem === item.name && (
                     <div style={tooltipStyle}>
-                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>{item.name}</div>
+                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
                       <div style={{ fontSize: '10px', color: '#d1d5db' }}>{item.description}</div>
+                      {item.badge && (
+                        <div style={{ marginTop: '4px', fontSize: '9px', color: '#22c55e' }}>
+                          {item.badge}
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>
@@ -704,8 +777,9 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
         <Link 
           to="/" 
           style={footerLinkStyle}
+          title={isCollapsed && !isMobile ? 'Visit Public Site' : ''}
           onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
             e.target.style.color = '#ffffff';
           }}
           onMouseLeave={(e) => {
@@ -723,11 +797,12 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
         </Link>
 
         {/* Help Link */}
-        <NavLink 
+        <Link 
           to="/admin/help" 
           style={footerLinkStyle}
+          title={isCollapsed && !isMobile ? 'Help & Support' : ''}
           onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
             e.target.style.color = '#ffffff';
           }}
           onMouseLeave={(e) => {
@@ -742,7 +817,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
               <div style={descriptionStyle}>Get assistance</div>
             </div>
           )}
-        </NavLink>
+        </Link>
 
         {/* User Section */}
         {(!isCollapsed || isMobile) && user && (
@@ -767,13 +842,16 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
         <button 
           onClick={handleLogout} 
           style={logoutButtonStyle}
+          title={isCollapsed && !isMobile ? 'Sign Out' : ''}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(239, 68, 68, 0.1)';
             e.target.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+            e.target.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
             e.target.style.background = 'transparent';
             e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            e.target.style.transform = 'translateY(0)';
           }}
         >
           <ArrowLeftOnRectangleIcon style={iconStyle} />
@@ -790,6 +868,24 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange }) => {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        
+        /* Custom scrollbar */
+        nav::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        nav::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        nav::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.3);
+          border-radius: 3px;
+        }
+        
+        nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(148, 163, 184, 0.5);
         }
       `}</style>
     </div>
