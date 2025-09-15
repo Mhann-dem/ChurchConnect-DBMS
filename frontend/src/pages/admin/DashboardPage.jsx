@@ -34,11 +34,12 @@ import {
 import useAuth from '../../hooks/useAuth';
 import dashboardService from '../../services/dashboardService';
 import { useToast } from '../../context/ToastContext';
-import styles from './AdminPages.module.css';
+import { useSettings } from '../../context/SettingsContext';
 
 const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
+  const { settings } = useSettings();
   
   // State management
   const [dashboardData, setDashboardData] = useState({
@@ -62,6 +63,8 @@ const DashboardPage = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRefresh, setLastRefresh] = useState(null);
 
+  const isDark = settings?.theme === 'dark';
+
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => {
@@ -82,7 +85,7 @@ const DashboardPage = () => {
       
       setError(null);
 
-      // Fetch all dashboard data concurrently - FIXED URLs
+      // Fetch all dashboard data concurrently
       const [
         systemStats,
         memberStats,
@@ -194,10 +197,33 @@ const DashboardPage = () => {
     fetchDashboardData(false);
   };
 
-  // Reusable components
-  const Card = ({ children, className = '', hover = true, ...props }) => (
+  // Reusable components with inline styles
+  const Card = ({ children, className = '', hover = true, style = {}, ...props }) => (
     <div 
-      className={`${styles.cardBase} ${hover ? styles.cardHover : ''} ${className}`}
+      style={{
+        background: 'white',
+        borderRadius: '12px',
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: hover ? 'pointer' : 'default',
+        ...style,
+        ...(hover && {
+          ':hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+          }
+        })
+      }}
+      className={className}
+      onMouseEnter={hover ? (e) => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+      } : undefined}
+      onMouseLeave={hover ? (e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
+      } : undefined}
       {...props}
     >
       {children}
@@ -210,80 +236,263 @@ const DashboardPage = () => {
     size = 'md', 
     to, 
     onClick, 
-    className = '', 
+    style = {}, 
     icon: Icon,
     iconPosition = 'left',
     disabled = false,
     ...props 
   }) => {
-    const baseClasses = `${styles.buttonBase} ${styles[`button-${variant}`]} ${styles[`button-${size}`]} ${className} ${disabled ? styles.buttonDisabled : ''}`;
-    
+    const baseStyle = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      borderRadius: '8px',
+      fontWeight: '600',
+      textDecoration: 'none',
+      transition: 'all 0.2s',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      border: 'none',
+      ...style
+    };
+
+    const variants = {
+      primary: {
+        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        color: 'white',
+        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+      },
+      secondary: {
+        background: 'white',
+        color: '#374151',
+        border: '1px solid #d1d5db',
+        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+      },
+      ghost: {
+        background: 'transparent',
+        color: '#6b7280',
+        padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '12px 24px' : '8px 16px',
+        fontSize: size === 'sm' ? '12px' : size === 'lg' ? '16px' : '14px'
+      },
+      danger: {
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+        color: 'white',
+        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+      }
+    };
+
+    const finalStyle = { ...baseStyle, ...variants[variant], opacity: disabled ? 0.5 : 1 };
+
     const content = (
       <>
-        {Icon && iconPosition === 'left' && <Icon className={styles.buttonIcon} />}
+        {Icon && iconPosition === 'left' && <Icon style={{ width: '16px', height: '16px' }} />}
         <span>{children}</span>
-        {Icon && iconPosition === 'right' && <Icon className={styles.buttonIcon} />}
+        {Icon && iconPosition === 'right' && <Icon style={{ width: '16px', height: '16px' }} />}
       </>
     );
 
     if (to && !disabled) {
       return (
-        <Link to={to} className={baseClasses} {...props}>
+        <Link to={to} style={finalStyle} {...props}>
           {content}
         </Link>
       );
     }
 
     return (
-      <button className={baseClasses} onClick={onClick} disabled={disabled} {...props}>
+      <button style={finalStyle} onClick={onClick} disabled={disabled} {...props}>
         {content}
       </button>
     );
   };
 
-  const Badge = ({ children, variant = 'default', className = '' }) => (
-    <span className={`${styles.badgeBase} ${styles[`badge-${variant}`]} ${className}`}>
-      {children}
-    </span>
-  );
+  const Badge = ({ children, variant = 'default', style = {} }) => {
+    const variants = {
+      default: { background: '#f3f4f6', color: '#374151' },
+      success: { background: '#d1fae5', color: '#065f46' },
+      warning: { background: '#fef3c7', color: '#92400e' },
+      danger: { background: '#fee2e2', color: '#991b1b' },
+      info: { background: '#dbeafe', color: '#1e40af' },
+      light: { background: 'rgba(255, 255, 255, 0.9)', color: '#374151' }
+    };
 
-  const Avatar = ({ name, size = 'md', status, className = '' }) => {
+    return (
+      <span style={{
+        fontSize: '12px',
+        fontWeight: '600',
+        padding: '4px 8px',
+        borderRadius: '6px',
+        ...variants[variant],
+        ...style
+      }}>
+        {children}
+      </span>
+    );
+  };
+
+  const Avatar = ({ name, size = 'md', status, style = {} }) => {
+    const sizes = {
+      sm: { width: '32px', height: '32px', fontSize: '12px' },
+      md: { width: '40px', height: '40px', fontSize: '16px' },
+      lg: { width: '56px', height: '56px', fontSize: '20px' }
+    };
+
     const getInitials = (fullName) => {
       if (!fullName) return 'U';
       return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
     return (
-      <div className={`${styles.avatarBase} ${styles[`avatar-${size}`]} ${className}`}>
-        <span className={styles.avatarText}>{getInitials(name)}</span>
-        {status && <div className={`${styles.avatarStatus} ${styles[`status-${status}`]}`}></div>}
+      <div style={{
+        ...sizes[size],
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        color: 'white',
+        position: 'relative',
+        ...style
+      }}>
+        <span>{getInitials(name)}</span>
+        {status && (
+          <div style={{
+            position: 'absolute',
+            bottom: '-2px',
+            right: '-2px',
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            background: status === 'online' ? '#22c55e' : '#ef4444',
+            border: '2px solid white'
+          }} />
+        )}
       </div>
     );
   };
 
-  // Loading state
+  // Loading state with sidebar colors
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingContent}>
-          <div className={styles.loadingLogo}>
-            <div className={styles.logoSpinner}>
-              <span className={styles.logoText}>CC</span>
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        background: isDark 
+          ? 'linear-gradient(180deg, #111827 0%, #030712 100%)'
+          : 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '32px'
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '120px',
+            height: '120px'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: 'white',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 2,
+              boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
+              border: '2px solid rgba(59, 130, 246, 0.2)'
+            }}>
+              CC
             </div>
-            <div className={styles.loadingRings}>
-              <div className={`${styles.ring} ${styles.ring1}`}></div>
-              <div className={`${styles.ring} ${styles.ring2}`}></div>
-              <div className={`${styles.ring} ${styles.ring3}`}></div>
+            
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '50%',
+                  border: '2px solid rgba(59, 130, 246, 0.3)',
+                  animation: `pulse 2s infinite ${i * 0.5}s`,
+                  transform: `scale(${1 + i * 0.2})`
+                }}
+              />
+            ))}
+          </div>
+          
+          <div style={{ textAlign: 'center', color: 'white' }}>
+            <h1 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              marginBottom: '8px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              ChurchConnect
+            </h1>
+            <p style={{
+              fontSize: '16px',
+              color: '#94a3b8',
+              marginBottom: '16px'
+            }}>
+              Loading Dashboard
+            </p>
+            
+            <div style={{
+              width: '200px',
+              height: '4px',
+              background: 'rgba(59, 130, 246, 0.2)',
+              borderRadius: '2px',
+              overflow: 'hidden',
+              marginBottom: '12px'
+            }}>
+              <div style={{
+                height: '100%',
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                borderRadius: '2px',
+                animation: 'progress 2s infinite'
+              }} />
             </div>
-          </div>
-          <div className={styles.loadingSpinner}>
-            <div className={styles.spinner}></div>
-          </div>
-          <div className={styles.loadingText}>
-            <h1>Loading Dashboard</h1>
-            <p>Fetching real-time church community data...</p>
+            
+            <span style={{
+              fontSize: '14px',
+              color: '#64748b'
+            }}>
+              Fetching real-time church community data...
+            </span>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+          }
+          
+          @keyframes progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -291,14 +500,35 @@ const DashboardPage = () => {
   // Error state
   if (error && !dashboardData.stats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center">
-        <Card className="text-center space-y-6 max-w-md mx-auto p-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl">
-            <ExclamationTriangleIcon className="w-8 h-8 text-white" />
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom right, #fef2f2, #fce7f3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}>
+        <Card style={{ textAlign: 'center', maxWidth: '500px', padding: '48px' }} hover={false}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+            fontSize: '32px'
+          }}>
+            ⚠️
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-red-900 mb-4">Connection Error</h2>
-            <p className="text-red-700 mb-6 text-lg">{error}</p>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b', marginBottom: '16px' }}>
+              Connection Error
+            </h2>
+            <p style={{ color: '#dc2626', marginBottom: '32px', fontSize: '16px' }}>
+              {error}
+            </p>
             <Button 
               variant="danger"
               onClick={() => fetchDashboardData()}
@@ -312,7 +542,7 @@ const DashboardPage = () => {
     );
   }
 
-  // Generate stats with real data - FIXED URLs
+  // Generate stats with real data
   const stats = [
     {
       name: 'Total Members',
@@ -322,8 +552,6 @@ const DashboardPage = () => {
       changeType: (dashboardData?.memberStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.memberStats?.new_members || 0} new this month`,
       color: 'from-blue-500 to-cyan-500',
-      bgPattern: 'bg-blue-50',
-      iconBg: 'bg-blue-500',
       route: '/admin/members'
     },
     {
@@ -334,8 +562,6 @@ const DashboardPage = () => {
       changeType: (dashboardData?.familyStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.familyStats?.new_families || 0} new families`,
       color: 'from-green-500 to-teal-500',
-      bgPattern: 'bg-green-50',
-      iconBg: 'bg-green-500',
       route: '/admin/families'
     },
     {
@@ -346,8 +572,6 @@ const DashboardPage = () => {
       changeType: (dashboardData?.groupStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.groupStats?.total_groups || 0} total groups`,
       color: 'from-emerald-500 to-green-500',
-      bgPattern: 'bg-emerald-50',
-      iconBg: 'bg-emerald-500',
       route: '/admin/groups'
     },
     {
@@ -358,8 +582,6 @@ const DashboardPage = () => {
       changeType: 'neutral',
       description: `${dashboardData?.eventStats?.this_month_events || 0} this month`,
       color: 'from-orange-500 to-red-500',
-      bgPattern: 'bg-orange-50',
-      iconBg: 'bg-orange-500',
       route: '/admin/events'
     },
     {
@@ -370,8 +592,6 @@ const DashboardPage = () => {
       changeType: (dashboardData?.pledgeStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.pledgeStats?.active_pledges || 0} active pledges`,
       color: 'from-yellow-500 to-orange-500',
-      bgPattern: 'bg-yellow-50',
-      iconBg: 'bg-yellow-500',
       route: '/admin/pledges'
     },
     {
@@ -382,8 +602,6 @@ const DashboardPage = () => {
       changeType: 'neutral',
       description: dashboardData?.systemHealth?.uptime || 'System monitoring',
       color: 'from-purple-500 to-indigo-500',
-      bgPattern: 'bg-purple-50',
-      iconBg: dashboardData?.systemHealth?.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500',
       route: '/admin/reports'
     }
   ];
@@ -419,70 +637,113 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className={styles.dashboardContainer}>
-      <div className={styles.dashboardContent}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#f8fafc',
+      padding: '24px'
+    }}>
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px'
+      }}>
         
-        {/* Enhanced Welcome Header */}
-        <Card className={styles.welcomeCard} hover={false}>
-          <div className="relative p-8 text-white overflow-hidden">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
+        {/* Enhanced Welcome Header with Sidebar Colors */}
+        <Card style={{
+          background: isDark 
+            ? 'linear-gradient(180deg, #111827 0%, #030712 100%)'
+            : 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+          color: 'white',
+          overflow: 'hidden',
+          position: 'relative',
+          border: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(20px)'
+        }} hover={false}>
+          <div style={{ padding: '32px', position: 'relative', zIndex: 2 }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+              alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+              justifyContent: 'space-between',
+              gap: '24px'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <Avatar 
                     name={user ? `${user.first_name} ${user.last_name}` : 'Admin'} 
                     size="lg" 
                     status="online" 
                   />
                   <div>
-                    <h1 className={styles.welcomeTitle}>
+                    <h1 style={{
+                      fontSize: '32px',
+                      fontWeight: 'bold',
+                      marginBottom: '8px',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
                       Welcome back, {user?.first_name || 'Admin'}!
                     </h1>
-                    <p className={styles.welcomeSubtitle}>
+                    <p style={{
+                      fontSize: '18px',
+                      color: '#94a3b8'
+                    }}>
                       Your church community dashboard - Real-time data
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-4 text-sm">
-                  <Badge variant="light" className="flex items-center space-x-2">
-                    <CalendarDaysIcon className="w-4 h-4" />
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+                  <Badge variant="light" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CalendarDaysIcon style={{ width: '16px', height: '16px' }} />
                     <span>{formatDate(currentTime)}</span>
                   </Badge>
-                  <Badge variant="light" className="flex items-center space-x-2">
-                    <ClockIcon className="w-4 h-4" />
+                  <Badge variant="light" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClockIcon style={{ width: '16px', height: '16px' }} />
                     <span>{formatTime(currentTime)}</span>
                   </Badge>
-                  <Badge variant={dashboardData?.systemHealth?.status === 'healthy' ? 'success' : 'warning'} 
-                        className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full animate-pulse ${
-                      dashboardData?.systemHealth?.status === 'healthy' ? 'bg-emerald-400' : 'bg-orange-400'
-                    }`}></div>
+                  <Badge 
+                    variant={dashboardData?.systemHealth?.status === 'healthy' ? 'success' : 'warning'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: dashboardData?.systemHealth?.status === 'healthy' ? '#22c55e' : '#f59e0b',
+                      animation: 'pulse 2s infinite'
+                    }} />
                     <span>
                       {dashboardData?.systemHealth?.status === 'healthy' ? 'All Systems Online' : 'System Status: Checking'}
                     </span>
                   </Badge>
                   {lastRefresh && (
-                    <Badge variant="light" className="flex items-center space-x-2">
-                      <ArrowPathIcon className="w-4 h-4" />
+                    <Badge variant="light" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ArrowPathIcon style={{ width: '16px', height: '16px' }} />
                       <span>Updated {getRelativeTime(lastRefresh)}</span>
                     </Badge>
                   )}
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-3">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                 <Button 
                   variant="secondary"
                   onClick={handleRefresh}
                   disabled={refreshing}
                   icon={ArrowPathIcon}
-                  className={refreshing ? 'animate-spin' : ''}
+                  style={{ opacity: refreshing ? 0.7 : 1 }}
                 >
                   {refreshing ? 'Refreshing...' : 'Refresh Data'}
                 </Button>
                 <Button 
                   variant="secondary"
-                  to="/register"
+                  to="/admin/members?action=create"
                   icon={PlusIcon}
                 >
                   Add Member
@@ -497,27 +758,50 @@ const DashboardPage = () => {
               </div>
             </div>
             
-            {/* Background decoration */}
-            <div className={styles.welcomeDecoration}></div>
+            {/* Background decoration with sidebar colors */}
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-10%',
+              width: '600px',
+              height: '600px',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)',
+              borderRadius: '50%',
+              zIndex: 1
+            }} />
           </div>
         </Card>
 
-        {/* Stats Grid with Real Data - UPDATED */}
-        <div className={styles.statsGrid}>
+        {/* Stats Grid with Real Data */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '20px'
+        }}>
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <Card 
-                key={stat.name} 
-                className={`${styles.statCard} group`}
-                style={{ 
+                key={stat.name}
+                style={{
                   animationDelay: `${index * 0.1}s`,
+                  animation: 'fadeInUp 0.5s ease-out forwards',
+                  opacity: 0,
+                  transform: 'translateY(20px)'
                 }}
               >
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`${styles.iconContainer} ${stat.iconBg}`}>
-                      <Icon className="w-6 h-6 text-white" />
+                <div style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      background: `linear-gradient(135deg, ${stat.color.split(' ')[1]}, ${stat.color.split(' ')[3]})`,
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Icon style={{ width: '24px', height: '24px', color: 'white' }} />
                     </div>
                     <Button
                       variant="ghost"
@@ -525,31 +809,32 @@ const DashboardPage = () => {
                       to={stat.route}
                       icon={EyeIcon}
                       iconPosition="right"
-                      title={`View ${stat.name}`}
                     />
                   </div>
                   
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
                       {stat.name}
                     </p>
-                    <p className="text-3xl font-bold text-gray-900 group-hover:scale-105 transition-transform duration-300">
+                    <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>
                       {stat.value}
                     </p>
                     
-                    <div className="flex items-center justify-between">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Badge 
-                        variant={stat.changeType === 'positive' ? 'success' : stat.changeType === 'negative' ? 'danger' : 'secondary'}
-                        className="flex items-center space-x-1"
+                        variant={stat.changeType === 'positive' ? 'success' : stat.changeType === 'negative' ? 'danger' : 'default'}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                       >
                         {stat.changeType === 'positive' ? (
-                          <ArrowUpIcon className="w-3 h-3" />
+                          <ArrowUpIcon style={{ width: '12px', height: '12px' }} />
                         ) : stat.changeType === 'negative' ? (
-                          <ArrowDownIcon className="w-3 h-3" />
+                          <ArrowDownIcon style={{ width: '12px', height: '12px' }} />
                         ) : null}
                         <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change).toFixed(1)}%` : '—'}</span>
                       </Badge>
-                      <span className="text-xs text-gray-500 font-medium">{stat.description}</span>
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                        {stat.description}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -558,70 +843,98 @@ const DashboardPage = () => {
           })}
         </div>
 
-        {/* Main Content Grid - ENHANCED WITH NEW SECTIONS */}
-        <div className={styles.contentGrid}>
+        {/* Main Content Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '2fr 1fr',
+          gap: '24px'
+        }}>
           
-          {/* Recent Members Card */}
-          <Card className={styles.membersCard}>
-            <div className={styles.sectionHeader}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`${styles.iconContainer} bg-gradient-to-r from-blue-500 to-indigo-500`}>
-                    <UsersIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className={styles.sectionTitle}>Recent Members</h3>
+          {/* Recent Families Card */}
+          <Card>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px 24px 0',
+              borderBottom: '1px solid #f3f4f6'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <HomeIcon style={{ width: '20px', height: '20px', color: 'white' }} />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  to="/admin/families"
-                  icon={ArrowTopRightOnSquareIcon}
-                  iconPosition="right"
-                >
-                  View all ({dashboardData?.familyStats?.total_families || 0})
-                </Button>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+                  Recent Families
+                </h3>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                to="/admin/families"
+                icon={ArrowTopRightOnSquareIcon}
+                iconPosition="right"
+              >
+                View all ({dashboardData?.familyStats?.total_families || 0})
+              </Button>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {dashboardData?.recentFamilies?.length > 0 ? (
                   dashboardData.recentFamilies.slice(0, 4).map((family, index) => (
                     <Card 
-                      key={family.id} 
-                      className={`${styles.familyItem} group`}
+                      key={family.id}
+                      style={{
+                        background: '#f9fafb',
+                        border: '1px solid #f3f4f6',
+                        transition: 'all 0.2s'
+                      }}
                     >
-                      <div className="flex items-center space-x-4 p-4">
-                        <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                            <HomeIcon className="w-6 h-6 text-white" />
-                          </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <HomeIcon style={{ width: '24px', height: '24px', color: 'white' }} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <p className="text-sm font-bold text-gray-900 truncate">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#1f2937' }}>
                               {family.family_name}
                             </p>
                             <Badge variant="success">
                               {family.member_count || 0} members
                             </Badge>
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-600 truncate">
-                              Primary: {family.primary_contact_name}
-                            </p>
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <div className="flex items-center space-x-1">
-                                <CalendarDaysIcon className="w-3 h-3" />
-                                <span>Added {new Date(family.created_at).toLocaleDateString()}</span>
-                              </div>
-                              {family.address && (
-                                <div className="flex items-center space-x-1">
-                                  <MapPinIcon className="w-3 h-3" />
-                                  <span className="truncate">{family.address}</span>
-                                </div>
-                              )}
+                          <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                            Primary: {family.primary_contact_name}
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11px', color: '#9ca3af' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <CalendarDaysIcon style={{ width: '12px', height: '12px' }} />
+                              <span>Added {new Date(family.created_at).toLocaleDateString()}</span>
                             </div>
+                            {family.address && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <MapPinIcon style={{ width: '12px', height: '12px' }} />
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {family.address}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <Button
@@ -629,20 +942,18 @@ const DashboardPage = () => {
                           size="sm"
                           to={`/admin/families/${family.id}`}
                           icon={EyeIcon}
-                          className="opacity-0 group-hover:opacity-100"
                         />
                       </div>
                     </Card>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <HomeIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No recent families added</p>
+                  <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
+                    <HomeIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#d1d5db' }} />
+                    <p style={{ marginBottom: '8px' }}>No recent families added</p>
                     <Button 
                       variant="ghost"
                       to="/admin/families?action=create"
                       icon={PlusIcon}
-                      className="mt-2"
                     >
                       Add First Family
                     </Button>
@@ -653,56 +964,88 @@ const DashboardPage = () => {
           </Card>
 
           {/* Alerts/Notifications Card */}
-          <Card className={styles.notificationsCard}>
-            <div className={styles.sectionHeader}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`${styles.iconContainer} bg-gradient-to-r from-purple-500 to-pink-500`}>
-                    <BellIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className={styles.sectionTitle}>System Alerts</h3>
+          <Card>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px 24px 0',
+              borderBottom: '1px solid #f3f4f6'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <BellIcon style={{ width: '20px', height: '20px', color: 'white' }} />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  to="/admin/notifications"
-                  icon={ArrowTopRightOnSquareIcon}
-                  iconPosition="right"
-                >
-                  View all
-                </Button>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+                  System Alerts
+                </h3>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                to="/admin/notifications"
+                icon={ArrowTopRightOnSquareIcon}
+                iconPosition="right"
+              >
+                View all
+              </Button>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {dashboardData?.alerts?.length > 0 ? (
                   dashboardData.alerts.slice(0, 5).map((alert) => (
                     <Card 
-                      key={alert.id} 
-                      className={`${styles.notificationItem} border-l-4 border-l-blue-500 bg-blue-50`}
+                      key={alert.id}
+                      style={{
+                        background: '#eff6ff',
+                        border: '1px solid #dbeafe',
+                        borderLeft: '4px solid #3b82f6'
+                      }}
+                      hover={false}
                     >
-                      <div className="flex items-start space-x-3 p-4">
-                        <div className="flex-shrink-0">
-                          <div className={`${styles.iconContainer} bg-white shadow-sm border border-gray-100`}>
-                            <BellIcon className="w-4 h-4 text-gray-600" />
-                          </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px' }}>
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          background: 'white',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                        }}>
+                          <BellIcon style={{ width: '16px', height: '16px', color: '#3b82f6' }} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="text-sm font-semibold text-gray-900">{alert.title}</p>
-                            <span className="text-xs text-gray-500">{getRelativeTime(alert.created_at)}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                              {alert.title}
+                            </p>
+                            <span style={{ fontSize: '11px', color: '#6b7280' }}>
+                              {getRelativeTime(alert.created_at)}
+                            </span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{alert.message}</p>
+                          <p style={{ fontSize: '13px', color: '#6b7280' }}>
+                            {alert.message}
+                          </p>
                         </div>
                       </div>
                     </Card>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <CheckCircleIcon className="w-12 h-12 mx-auto mb-4 text-green-300" />
-                    <p>All systems running smoothly</p>
-                    <p className="text-xs">No alerts or notifications</p>
+                  <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
+                    <CheckCircleIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#22c55e' }} />
+                    <p style={{ marginBottom: '4px' }}>All systems running smoothly</p>
+                    <p style={{ fontSize: '12px' }}>No alerts or notifications</p>
                   </div>
                 )}
               </div>
@@ -710,139 +1053,110 @@ const DashboardPage = () => {
           </Card>
         </div>
 
-        {/* Quick Actions - UPDATED WITH CORRECT URLS */}
-        <Card className={styles.quickActionsCard} hover={false}>
-          <div className={styles.sectionHeader}>
-            <div className="flex items-center space-x-3">
-              <div className={`${styles.iconContainer} bg-gradient-to-r from-amber-500 to-orange-500`}>
-                <SparklesIcon className="w-5 h-5 text-white" />
-              </div>
-              <h3 className={styles.sectionTitle}>Quick Actions</h3>
+        {/* Quick Actions */}
+        <Card hover={false}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '24px 24px 0',
+            borderBottom: '1px solid #f3f4f6'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <SparklesIcon style={{ width: '20px', height: '20px', color: 'white' }} />
             </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+              Quick Actions
+            </h3>
           </div>
           
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/members?action=create"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-blue-100 group-hover:bg-blue-200 mb-3`}>
-                    <UsersIcon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Add Member</span>
-                  <span className="text-xs text-gray-500 mt-1">New registration</span>
-                </Link>
-              </Card>
-              
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/families?action=create"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-green-100 group-hover:bg-green-200 mb-3`}>
-                    <HomeIcon className="w-6 h-6 text-green-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Add Family</span>
-                  <span className="text-xs text-gray-500 mt-1">Family unit</span>
-                </Link>
-              </Card>
-              
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/groups?action=create"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-emerald-100 group-hover:bg-emerald-200 mb-3`}>
-                    <UserGroupIcon className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Create Group</span>
-                  <span className="text-xs text-gray-500 mt-1">Ministry/small group</span>
-                </Link>
-              </Card>
-
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/events?action=create"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-orange-100 group-hover:bg-orange-200 mb-3`}>
-                    <CalendarDaysIcon className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Create Event</span>
-                  <span className="text-xs text-gray-500 mt-1">Church activity</span>
-                </Link>
-              </Card>
-              
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/pledges?action=create"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-amber-100 group-hover:bg-amber-200 mb-3`}>
-                    <CurrencyDollarIcon className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Record Pledge</span>
-                  <span className="text-xs text-gray-500 mt-1">Financial commitment</span>
-                </Link>
-              </Card>
-
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/reports"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-purple-100 group-hover:bg-purple-200 mb-3`}>
-                    <DocumentChartBarIcon className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Generate Report</span>
-                  <span className="text-xs text-gray-500 mt-1">Analytics & insights</span>
-                </Link>
-              </Card>
-
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/register"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-indigo-100 group-hover:bg-indigo-200 mb-3`}>
-                    <UserIcon className="w-6 h-6 text-indigo-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Public Register</span>
-                  <span className="text-xs text-gray-500 mt-1">Member portal</span>
-                </Link>
-              </Card>
-
-              <Card className={`${styles.quickActionItem} group`}>
-                <Link
-                  to="/admin/settings"
-                  className="flex flex-col items-center justify-center p-5 text-center"
-                >
-                  <div className={`${styles.iconContainer} bg-gray-100 group-hover:bg-gray-200 mb-3`}>
-                    <Cog6ToothIcon className="w-6 h-6 text-gray-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Settings</span>
-                  <span className="text-xs text-gray-500 mt-1">System config</span>
-                </Link>
-              </Card>
+          <div style={{ padding: '24px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px'
+            }}>
+              {[
+                { name: 'Add Member', to: '/admin/members?action=create', icon: UsersIcon, color: '#3b82f6' },
+                { name: 'Add Family', to: '/admin/families?action=create', icon: HomeIcon, color: '#10b981' },
+                { name: 'Create Group', to: '/admin/groups?action=create', icon: UserGroupIcon, color: '#8b5cf6' },
+                { name: 'Create Event', to: '/admin/events?action=create', icon: CalendarDaysIcon, color: '#f59e0b' },
+                { name: 'Record Pledge', to: '/admin/pledges?action=create', icon: CurrencyDollarIcon, color: '#ef4444' },
+                { name: 'Generate Report', to: '/admin/reports', icon: DocumentChartBarIcon, color: '#6366f1' },
+                { name: 'Public Register', to: '/register', icon: UserIcon, color: '#14b8a6' },
+                { name: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon, color: '#64748b' }
+              ].map((action, index) => {
+                const Icon = action.icon;
+                return (
+                  <Card 
+                    key={action.name}
+                    style={{ background: '#fafafa', border: '1px solid #f0f0f0' }}
+                  >
+                    <Link
+                      to={action.to}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        color: 'inherit'
+                      }}
+                    >
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: `${action.color}20`,
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '12px'
+                      }}>
+                        <Icon style={{ width: '24px', height: '24px', color: action.color }} />
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                        {action.name}
+                      </span>
+                    </Link>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </Card>
 
         {/* Footer */}
-        <div className={styles.footer}>
-          <div className="text-sm text-gray-600 mb-4 md:mb-0">
+        <div style={{
+          display: 'flex',
+          flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+          alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+          justifyContent: 'space-between',
+          padding: '24px 0',
+          borderTop: '1px solid #e5e7eb',
+          gap: '16px'
+        }}>
+          <div style={{ fontSize: '14px', color: '#6b7280' }}>
             © 2024 ChurchConnect DBMS. Serving your community with real-time data.
           </div>
-          <div className="flex items-center space-x-6">
-            <Link to="/admin/privacy" className={styles.footerLink}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+            <Link to="/admin/privacy" style={{ fontSize: '14px', color: '#6b7280', textDecoration: 'none' }}>
               Privacy Policy
             </Link>
-            <Link to="/admin/terms" className={styles.footerLink}>
+            <Link to="/admin/terms" style={{ fontSize: '14px', color: '#6b7280', textDecoration: 'none' }}>
               Terms of Service
             </Link>
-            <Link to="/admin/support" className={styles.footerLink}>
+            <Link to="/admin/support" style={{ fontSize: '14px', color: '#6b7280', textDecoration: 'none' }}>
               Support
             </Link>
             <Button
@@ -853,12 +1167,30 @@ const DashboardPage = () => {
             >
               Settings
             </Button>
-            <div className="text-xs text-gray-500">
+            <div style={{ fontSize: '12px', color: '#9ca3af' }}>
               v1.2.0 | {user?.role || 'Admin'} Access
             </div>
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 };
