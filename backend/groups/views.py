@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.utils import timezone
 import logging
+import uuid
 
 from .models import Group, MemberGroupRelationship, GroupCategory
 from .serializers import (
@@ -44,22 +45,28 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
-        # Filter by category if specified
+    
+        # Filter by category if specified and not "all"
         category_id = self.request.query_params.get('category')
-        if category_id:
-            queryset = queryset.filter(categories__category_id=category_id)
-        
+        if category_id and category_id != 'all':
+            try:
+                # Validate it's a proper UUID
+                uuid.UUID(category_id)
+                queryset = queryset.filter(categories__category_id=category_id)
+            except ValueError:
+                # Handle invalid UUID gracefully - skip the filter
+                pass
+    
         # Filter by member if specified
         member_id = self.request.query_params.get('member')
         if member_id:
             queryset = queryset.filter(memberships__member_id=member_id)
-        
+    
         # Filter by leader if specified
         leader_id = self.request.query_params.get('leader_id')
         if leader_id:
             queryset = queryset.filter(leader_id=leader_id)
-        
+    
         return queryset.distinct()
 
     def get_permissions(self):

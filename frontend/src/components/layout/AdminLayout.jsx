@@ -13,16 +13,13 @@ import LoadingSpinner from '../shared/LoadingSpinner';
 const KeyboardShortcuts = lazy(() => import('../shared/KeyboardShortcuts'));
 const NotificationCenter = lazy(() => import('../shared/NotificationCenter'));
 
-// Enhanced Error Boundary Component with better error reporting
+// Enhanced Error Boundary Component
 const AdminErrorFallback = ({ error, resetError }) => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Log error to monitoring service
     console.error('Admin Layout Error:', error);
-    
-    // Report to error tracking service (e.g., Sentry)
     if (window.Sentry) {
       window.Sentry.captureException(error);
     }
@@ -38,46 +35,110 @@ const AdminErrorFallback = ({ error, resetError }) => {
     navigate('/admin/dashboard', { replace: true });
   }, [resetError, navigate]);
 
-  const handleReload = useCallback(() => {
-    window.location.reload();
-  }, []);
-
   return (
-    <div className="errorBoundary" role="alert" aria-live="assertive">
-      <div className="errorContent">
-        <div className="errorIcon" aria-hidden="true">⚠️</div>
-        <h2>Something went wrong</h2>
-        <p>We're sorry, but something unexpected happened in the admin panel.</p>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px'
+    }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '48px',
+        maxWidth: '500px',
+        width: '100%',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 24px',
+          fontSize: '32px'
+        }}>
+          ⚠️
+        </div>
+        
+        <h2 style={{
+          fontSize: '24px',
+          fontWeight: 'bold',
+          color: '#1f2937',
+          marginBottom: '16px'
+        }}>
+          Something went wrong
+        </h2>
+        
+        <p style={{
+          color: '#6b7280',
+          marginBottom: '32px',
+          fontSize: '16px',
+          lineHeight: '1.5'
+        }}>
+          We're sorry, but something unexpected happened in the admin panel.
+        </p>
         
         {process.env.NODE_ENV === 'development' && (
-          <details className="errorDetails">
-            <summary>Error Details (Development)</summary>
-            <pre>{error?.message}</pre>
-            <pre>{error?.stack}</pre>
+          <details style={{
+            background: '#f3f4f6',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '24px',
+            textAlign: 'left'
+          }}>
+            <summary style={{ cursor: 'pointer', fontWeight: '600', marginBottom: '8px' }}>
+              Error Details (Development)
+            </summary>
+            <pre style={{
+              fontSize: '12px',
+              color: '#ef4444',
+              overflow: 'auto',
+              whiteSpace: 'pre-wrap'
+            }}>
+              {error?.message}
+            </pre>
           </details>
         )}
         
-        <div className="errorActions">
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button 
             onClick={handleRetry}
-            className="errorButton primary"
-            type="button"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
             Try Again
           </button>
           <button 
             onClick={handleGoToDashboard}
-            className="errorButton secondary"
-            type="button"
+            style={{
+              background: 'white',
+              color: '#374151',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
             Go to Dashboard
-          </button>
-          <button 
-            onClick={handleReload}
-            className="errorButton secondary"
-            type="button"
-          >
-            Reload Page
           </button>
         </div>
       </div>
@@ -87,34 +148,122 @@ const AdminErrorFallback = ({ error, resetError }) => {
 
 // Enhanced loading component
 const AdminLoadingScreen = ({ message = 'Loading ChurchConnect...' }) => (
-  <div className="loadingContainer" role="status" aria-live="polite">
-    <div className="loadingContent">
-      <div className="loadingLogo">
-        <div className="logoSpinner">
-          <span className="logoText">CC</span>
+  <div style={{
+    position: 'fixed',
+    inset: 0,
+    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999
+  }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '32px'
+    }}>
+      <div style={{
+        position: 'relative',
+        width: '120px',
+        height: '120px'
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          color: 'white',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 2
+        }}>
+          CC
         </div>
-        <div className="loadingRings">
-          <div className="ring ring1"></div>
-          <div className="ring ring2"></div>
-          <div className="ring ring3"></div>
-        </div>
+        
+        {/* Animated rings */}
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '2px solid rgba(59, 130, 246, 0.3)',
+              animation: `pulse 2s infinite ${i * 0.5}s`,
+              transform: `scale(${1 + i * 0.2})`
+            }}
+          />
+        ))}
       </div>
       
-      <div className="loadingText">
-        <h1>ChurchConnect</h1>
-        <p>Administrative Dashboard</p>
-        <div className="loadingProgress">
-          <div className="progressBar">
-            <div className="progressFill"></div>
-          </div>
-          <span className="progressText">{message}</span>
+      <div style={{ textAlign: 'center', color: 'white' }}>
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: 'bold',
+          marginBottom: '8px',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          ChurchConnect
+        </h1>
+        <p style={{
+          fontSize: '16px',
+          color: '#94a3b8',
+          marginBottom: '16px'
+        }}>
+          Administrative Dashboard
+        </p>
+        
+        <div style={{
+          width: '200px',
+          height: '4px',
+          background: 'rgba(59, 130, 246, 0.2)',
+          borderRadius: '2px',
+          overflow: 'hidden',
+          marginBottom: '12px'
+        }}>
+          <div style={{
+            height: '100%',
+            background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+            borderRadius: '2px',
+            animation: 'progress 2s infinite'
+          }} />
         </div>
+        
+        <span style={{
+          fontSize: '14px',
+          color: '#64748b'
+        }}>
+          {message}
+        </span>
       </div>
     </div>
+    
+    <style jsx>{`
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      
+      @keyframes progress {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+    `}</style>
   </div>
 );
 
-// Main AdminLayout Component
+// Main AdminLayout Component with Fixed Layout
 const AdminLayout = () => {
   // State management
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -135,7 +284,6 @@ const AdminLayout = () => {
   // Memoize permission check for performance
   const canAccessAdmin = useMemo(() => {
     if (!user) return false;
-    
     const adminRoles = ['admin', 'super_admin'];
     return adminRoles.includes(user.role) || hasPermission('access_admin');
   }, [user, hasPermission]);
@@ -149,12 +297,10 @@ const AdminLayout = () => {
     setIsMobile(mobile);
     setIsTablet(tablet);
     
-    // Auto-close sidebar on mobile
     if (mobile && sidebarOpen) {
       setSidebarOpen(false);
     }
     
-    // Smart auto-collapse logic
     if (tablet && !isCollapsed) {
       setIsCollapsed(true);
     } else if (width >= 1400 && isCollapsed && !mobile) {
@@ -199,133 +345,6 @@ const AdminLayout = () => {
     return () => window.removeEventListener('resize', debouncedResize);
   }, [checkScreenSize, debouncedResize]);
 
-  // Unsaved changes warning
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return e.returnValue;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && hasUnsavedChanges) {
-        // Auto-save logic could go here
-        console.log('Page hidden with unsaved changes');
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [hasUnsavedChanges]);
-
-  // Enhanced keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Prevent shortcuts when typing in inputs
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
-        return;
-      }
-
-      // Global shortcuts
-      switch (true) {
-        case e.ctrlKey && e.key === 'b':
-          e.preventDefault();
-          if (!isMobile) {
-            setIsCollapsed(!isCollapsed);
-          } else {
-            setSidebarOpen(!sidebarOpen);
-          }
-          break;
-
-        case e.key === 'Escape':
-          if (sidebarOpen) {
-            setSidebarOpen(false);
-          } else if (keyboardShortcutsOpen) {
-            setKeyboardShortcutsOpen(false);
-          }
-          break;
-
-        case e.ctrlKey && e.key === '/':
-          e.preventDefault();
-          setKeyboardShortcutsOpen(true);
-          break;
-
-        case e.ctrlKey && e.key === 'k':
-          e.preventDefault();
-          // Open command palette (implement later)
-          showToast('Command palette coming soon!', 'info');
-          break;
-
-        case e.altKey && e.key === 'd':
-          e.preventDefault();
-          navigate('/admin/dashboard');
-          break;
-
-        case e.altKey && e.key === 'm':
-          e.preventDefault();
-          navigate('/admin/members');
-          break;
-
-        case e.altKey && e.key === 'g':
-          e.preventDefault();
-          navigate('/admin/groups');
-          break;
-
-        case e.altKey && e.key === 'p':
-          e.preventDefault();
-          navigate('/admin/pledges');
-          break;
-
-        case e.altKey && e.key === 'r':
-          e.preventDefault();
-          navigate('/admin/reports');
-          break;
-
-        default:
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isCollapsed, sidebarOpen, isMobile, keyboardShortcutsOpen, navigate, showToast]);
-
-  // Auto logout on extended inactivity
-  useEffect(() => {
-    let inactivityTimer;
-    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-
-    const resetInactivityTimer = () => {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => {
-        showToast('Session expired due to inactivity', 'warning');
-        logout();
-        navigate('/admin/login');
-      }, INACTIVITY_TIMEOUT);
-    };
-
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    events.forEach(event => {
-      document.addEventListener(event, resetInactivityTimer, { passive: true });
-    });
-
-    resetInactivityTimer();
-
-    return () => {
-      clearTimeout(inactivityTimer);
-      events.forEach(event => {
-        document.removeEventListener(event, resetInactivityTimer);
-      });
-    };
-  }, [logout, navigate, showToast]);
-
   // Handlers
   const toggleSidebar = useCallback(() => {
     setSidebarOpen(prev => !prev);
@@ -344,7 +363,7 @@ const AdminLayout = () => {
     return <AdminLoadingScreen message="Authenticating..." />;
   }
 
-  // Permission check - redirect if user doesn't have admin access
+  // Permission check
   if (!canAccessAdmin) {
     return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
@@ -354,34 +373,44 @@ const AdminLayout = () => {
   const effectiveWidth = isMobile ? 0 : (isTablet ? 64 : sidebarWidth);
 
   return (
-    <ErrorBoundary FallbackComponent={AdminErrorFallback} onError={(error, errorInfo) => {
-      console.error('Admin Layout Error:', error, errorInfo);
-    }}>
-      <div 
-        className={`
-          adminLayout 
-          ${settings?.theme === 'dark' ? 'dark' : ''} 
-          ${isMobile ? 'mobile' : ''} 
-          ${isTablet ? 'tablet' : ''}
-          ${!isOnline ? 'offline' : ''}
-        `}
-        data-sidebar-open={sidebarOpen}
-        data-sidebar-collapsed={isCollapsed}
-        data-testid="admin-layout"
-      >
+    <ErrorBoundary FallbackComponent={AdminErrorFallback}>
+      <div style={{
+        display: 'flex',
+        height: '100vh',
+        background: '#f8fafc',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
         {/* Offline indicator */}
         {!isOnline && (
-          <div className="offlineIndicator" role="alert">
-            <span>You are offline. Some features may be limited.</span>
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+            color: 'white',
+            padding: '8px 16px',
+            textAlign: 'center',
+            fontSize: '14px',
+            fontWeight: '600',
+            zIndex: 9998
+          }}>
+            You are offline. Some features may be limited.
           </div>
         )}
 
-        {/* Enhanced Sidebar */}
-        <div 
-          className={`sidebarContainer ${isMobile ? 'mobile' : ''} ${sidebarOpen ? 'open' : ''}`}
-          style={{ '--sidebar-width': `${effectiveWidth}px` }}
-        >
-          <Suspense fallback={<LoadingSpinner size="sm" />}>
+        {/* Sidebar Container */}
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: isMobile && !sidebarOpen ? `-${sidebarWidth}px` : 0,
+          height: '100vh',
+          width: `${sidebarWidth}px`,
+          zIndex: isMobile ? 1000 : 100,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}>
+          <Suspense fallback={<div style={{ width: sidebarWidth, height: '100vh', background: '#1e293b' }} />}>
             <Sidebar 
               isOpen={sidebarOpen} 
               onClose={closeSidebar}
@@ -395,80 +424,156 @@ const AdminLayout = () => {
         </div>
 
         {/* Main Application Area */}
-        <div 
-          className={`mainApplication ${isMobile ? 'mobile' : ''} ${isTablet ? 'tablet' : ''}`} 
-          style={{
-            marginLeft: effectiveWidth,
-            transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-        >
-          {/* Enhanced Header */}
-          <Header 
-            onMenuClick={toggleSidebar}
-            user={user}
-            sidebarOpen={sidebarOpen}
-            isAdmin={true}
-            isMobile={isMobile}
-            isCollapsed={isCollapsed}
-            hasUnsavedChanges={hasUnsavedChanges}
-            isOnline={isOnline}
-          />
+        <div style={{
+          flex: 1,
+          marginLeft: effectiveWidth,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative'
+        }}>
+          {/* Header - Overlapping with Sidebar */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: effectiveWidth,
+            right: 0,
+            height: '80px',
+            zIndex: 90,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+            transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
+            <Header 
+              onMenuClick={toggleSidebar}
+              user={user}
+              sidebarOpen={sidebarOpen}
+              isAdmin={true}
+              isMobile={isMobile}
+              isCollapsed={isCollapsed}
+              hasUnsavedChanges={hasUnsavedChanges}
+              isOnline={isOnline}
+            />
+          </div>
 
-          {/* Main Content with Error Boundary */}
-          <main 
-            className="mainContent"
-            role="main"
-            aria-label="Admin dashboard content"
-            id="main-content"
-          >
+          {/* Main Content */}
+          <main style={{
+            flex: 1,
+            paddingTop: '80px', // Account for fixed header
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             {/* Breadcrumbs */}
-            <div className="breadcrumbsContainer">
+            <div style={{
+              padding: '16px 24px 0',
+              background: 'white'
+            }}>
               <Breadcrumbs currentPath={location.pathname} />
             </div>
 
             {/* Page Header with Context */}
-            <div className="pageHeader">
-              <div className="pageTitleSection">
-                <h1 className="pageTitle">
-                  {getPageTitle(location.pathname)}
-                </h1>
-                <p className="pageDescription">
-                  {getPageDescription(location.pathname)}
-                </p>
-              </div>
-              
-              <div className="pageActions">
-                <button 
-                  className="actionButton secondary"
-                  title="Keyboard shortcuts (Ctrl+/)"
-                  onClick={() => setKeyboardShortcutsOpen(true)}
-                  type="button"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                  </svg>
-                  Help
-                </button>
+            <div style={{
+              padding: '24px',
+              background: 'white',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px'
+              }}>
+                <div>
+                  <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    marginBottom: '8px'
+                  }}>
+                    {getPageTitle(location.pathname)}
+                  </h1>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#6b7280'
+                  }}>
+                    {getPageDescription(location.pathname)}
+                  </p>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button 
+                    onClick={() => setKeyboardShortcutsOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 16px',
+                      background: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.color = '#3b82f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.color = '#374151';
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Help
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Content Area with Skip Link */}
-            <div className="contentArea">
-              <a href="#main-content" className="skip-link">
-                Skip to main content
-              </a>
-              
-              <div className="contentCard">
+            {/* Content Area */}
+            <div style={{
+              flex: 1,
+              padding: '24px',
+              background: '#f8fafc'
+            }}>
+              <div style={{
+                background: 'white',
+                borderRadius: '12px',
+                minHeight: 'calc(100vh - 200px)',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+              }}>
                 <ErrorBoundary 
                   FallbackComponent={AdminErrorFallback}
                   onReset={() => window.location.reload()}
                 >
                   <Suspense fallback={
-                    <div className="contentLoading">
-                      <LoadingSpinner size="lg" />
-                      <p>Loading page content...</p>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '400px',
+                      flexDirection: 'column',
+                      gap: '16px'
+                    }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '3px solid #e5e7eb',
+                        borderTop: '3px solid #3b82f6',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                      <p style={{ color: '#6b7280', fontSize: '14px' }}>Loading page content...</p>
                     </div>
                   }>
                     <Outlet context={{ 
@@ -488,17 +593,14 @@ const AdminLayout = () => {
         {/* Mobile Overlay */}
         {isMobile && sidebarOpen && (
           <div 
-            className="mobileOverlay"
-            onClick={closeSidebar}
-            role="button"
-            tabIndex="0"
-            aria-label="Close sidebar"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                closeSidebar();
-              }
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+              cursor: 'pointer'
             }}
+            onClick={closeSidebar}
           />
         )}
 
@@ -513,22 +615,19 @@ const AdminLayout = () => {
           
           <NotificationCenter user={user} />
         </Suspense>
-
-        {/* Focus trap for accessibility */}
-        <div 
-          className="focus-trap"
-          tabIndex={0}
-          onFocus={() => {
-            const firstFocusable = document.querySelector('.sidebar-nav a, .header button, .main-content [tabindex]:not([tabindex="-1"])');
-            firstFocusable?.focus();
-          }}
-        />
       </div>
+      
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </ErrorBoundary>
   );
 };
 
-// Enhanced helper functions with better route mapping
+// Helper functions
 const getPageTitle = (pathname) => {
   const segments = pathname.split('/').filter(Boolean);
   const route = segments[segments.length - 1] || 'dashboard';
@@ -536,6 +635,7 @@ const getPageTitle = (pathname) => {
   const titleMap = {
     'dashboard': 'Dashboard Overview',
     'members': 'Member Management',
+    'families': 'Family Management',
     'groups': 'Ministry Groups',
     'pledges': 'Pledge & Donations',
     'reports': 'Reports & Analytics',
@@ -556,6 +656,7 @@ const getPageDescription = (pathname) => {
   const descriptionMap = {
     'dashboard': 'Monitor church activities and key metrics',
     'members': 'Manage member records, profiles, and information',
+    'families': 'Manage family units and household information',
     'groups': 'Organize ministry groups and small group management',
     'pledges': 'Track financial commitments and donation management',
     'reports': 'Generate comprehensive reports and view analytics',
@@ -569,7 +670,6 @@ const getPageDescription = (pathname) => {
   return descriptionMap[route] || 'Administrative interface for church management';
 };
 
-// Add display name for debugging
 AdminLayout.displayName = 'AdminLayout';
 
 export default React.memo(AdminLayout);

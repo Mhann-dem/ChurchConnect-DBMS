@@ -1,0 +1,36 @@
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django
+staticfiles/
+media/

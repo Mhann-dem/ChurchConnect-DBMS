@@ -114,7 +114,7 @@ class LoginView(APIView):
     """
     Enhanced login view with comprehensive security features
     """
-    permission_classes = [permissions.AllowAny, PasswordResetPermission]
+    permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
     
     def post(self, request):

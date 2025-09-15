@@ -290,8 +290,8 @@ class EventRegistration(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations')
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='event_registrations')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations',null=True,blank=True )
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='event_registrations',null=True,blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
     # Registration details

@@ -1,4 +1,4 @@
-// Enhanced useGroups.js Hook
+// Enhanced useGroups.js Hook - Fixed
 import { useState, useEffect, useCallback, useRef } from 'react';
 import groupsService from '../services/groups';
 import useAuth from './useAuth';
@@ -189,7 +189,44 @@ export const useGroups = () => {
     } finally {
       setLoading(false);
     }
-  }, [showToast, getGroups]);
+  }, [showToast]); // Removed the circular dependency
+
+  // Search groups
+  const searchGroups = useCallback(async (searchTerm, filters = {}) => {
+    setLoading(true);
+    setError(null);
+    const signal = cancelRequests();
+
+    try {
+      const response = await groupsService.searchGroups({
+        search: searchTerm,
+        ...filters
+      }, { signal });
+
+      if (response.success) {
+        setGroups(response.data.results || []);
+        setPagination({
+          count: response.data.count || 0,
+          next: response.data.next,
+          previous: response.data.previous,
+          page: 1,
+          pageSize: 20,
+          totalPages: Math.ceil((response.data.count || 0) / 20)
+        });
+        return response.data.results || [];
+      } else {
+        throw new Error(response.error || 'Failed to search groups');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[useGroups] Error searching groups:', error);
+        setError(error.message);
+        showToast?.(error.message || 'Failed to search groups', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
 
   // Get group by ID
   const getGroupById = useCallback(async (groupId) => {

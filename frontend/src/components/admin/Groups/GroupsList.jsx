@@ -1,4 +1,4 @@
-// Enhanced GroupsList.jsx
+// Enhanced GroupsList.jsx - Fixed React child rendering errors
 import React, { useState, useMemo } from 'react';
 import { 
   Users, Calendar, MapPin, Mail, Phone, Edit, Trash2, Eye, MoreVertical,
@@ -107,6 +107,27 @@ const GroupsList = ({
     return !group.leader_name || !group.active || (group.member_count || 0) === 0;
   };
 
+  // Render action for EmptyState - FIXED
+  const renderEmptyAction = () => {
+    if (!emptyAction) return null;
+    
+    // If action is already a React element, render it directly
+    if (React.isValidElement(emptyAction)) {
+      return emptyAction;
+    }
+    
+    // If action is an object with label and action properties, create a button
+    if (typeof emptyAction === 'object' && emptyAction !== null && emptyAction.label && emptyAction.action) {
+      return (
+        <Button onClick={emptyAction.action} variant="primary">
+          {emptyAction.label}
+        </Button>
+      );
+    }
+    
+    return null;
+  };
+
   if (loading && groups.length === 0) {
     return (
       <div className={styles.loadingContainer}>
@@ -119,10 +140,10 @@ const GroupsList = ({
   if (!loading && groups.length === 0) {
     return (
       <EmptyState
-        icon={Users}
+        icon={<Users size={48} />}
         title="No Groups Found"
         description={emptyMessage}
-        action={emptyAction}
+        action={renderEmptyAction()}
       />
     );
   }
@@ -188,6 +209,10 @@ const GroupsList = ({
               onEdit={onEdit}
               onDelete={onDelete}
               needsAttention={needsAttention(group)}
+              getStatusBadge={getStatusBadge}
+              getCategoryColor={getCategoryColor}
+              formatMemberCount={formatMemberCount}
+              formatDate={formatDate}
             />
           ))}
         </div>
@@ -212,6 +237,9 @@ const GroupsList = ({
               onEdit={onEdit}
               onDelete={onDelete}
               needsAttention={needsAttention(group)}
+              getStatusBadge={getStatusBadge}
+              getCategoryColor={getCategoryColor}
+              formatMemberCount={formatMemberCount}
             />
           ))}
         </div>
@@ -239,7 +267,7 @@ const GroupsList = ({
   );
 };
 
-// Group Card Component
+// Group Card Component - FIXED
 const GroupCard = ({ 
   group, 
   selected, 
@@ -247,7 +275,11 @@ const GroupCard = ({
   onView, 
   onEdit, 
   onDelete, 
-  needsAttention = false 
+  needsAttention = false,
+  getStatusBadge,
+  getCategoryColor,
+  formatMemberCount,
+  formatDate
 }) => {
   const [showActions, setShowActions] = useState(false);
 
@@ -444,7 +476,7 @@ const GroupCard = ({
   );
 };
 
-// Group List Item Component
+// Group List Item Component - FIXED
 const GroupListItem = ({ 
   group, 
   selected, 
@@ -452,7 +484,10 @@ const GroupListItem = ({
   onView, 
   onEdit, 
   onDelete, 
-  needsAttention = false 
+  needsAttention = false,
+  getStatusBadge,
+  getCategoryColor,
+  formatMemberCount
 }) => {
   return (
     <div 
@@ -532,42 +567,6 @@ const GroupListItem = ({
       </div>
     </div>
   );
-};
-
-// Helper function moved outside component
-const getStatusBadge = (group) => {
-  if (!group.active) {
-    return <Badge variant="secondary">Inactive</Badge>;
-  }
-  
-  const now = new Date();
-  const endDate = group.end_date ? new Date(group.end_date) : null;
-  
-  if (endDate && endDate < now) {
-    return <Badge variant="warning">Ended</Badge>;
-  }
-  
-  return <Badge variant="success">Active</Badge>;
-};
-
-const getCategoryColor = (category) => {
-  const colors = {
-    'ministry': 'primary',
-    'small-group': 'secondary',
-    'committee': 'warning',
-    'service': 'info',
-    'youth': 'success',
-    'seniors': 'purple',
-    'worship': 'pink',
-    'outreach': 'orange',
-    'prayer': 'blue',
-    'study': 'green',
-    'support': 'red',
-    'sports': 'yellow',
-    'arts': 'indigo',
-    'other': 'gray'
-  };
-  return colors[category] || 'gray';
 };
 
 export default GroupsList;

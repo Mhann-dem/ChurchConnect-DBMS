@@ -232,7 +232,7 @@ class LoginSerializer(serializers.Serializer):
         recent_time = timezone.now() - timedelta(hours=1)
         recent_logins = LoginAttempt.objects.filter(
             email=user.email,
-            success=True,
+            successful=True,
             attempted_at__gte=recent_time
         ).values_list('ip_address', flat=True).distinct()
         
