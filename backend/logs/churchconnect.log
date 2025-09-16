@@ -11487,3 +11487,1194 @@ INFO 2025-09-15 20:48:25,240 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 27
 INFO 2025-09-15 20:48:25,368 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
 INFO 2025-09-15 20:48:34,140 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
 INFO 2025-09-15 20:48:34,240 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:50:30,208 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:50:30,335 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:50:30,568 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:50:30,658 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:51:35,637 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 20:51:36,491 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:51:36,597 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 110
+INFO 2025-09-15 20:53:35,371 basehttp "OPTIONS /api/v1/groups/ HTTP/1.1" 200 0
+INFO 2025-09-15 20:53:35,525 signals New group created: Cell Ayeduase
+INFO 2025-09-15 20:53:35,575 basehttp "POST /api/v1/groups/ HTTP/1.1" 201 595
+INFO 2025-09-15 20:53:57,939 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-15 20:53:58,062 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-15 20:53:58,213 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-15 20:53:58,332 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-15 21:06:53,449 autoreload Watching for file changes with StatReloader
+INFO 2025-09-15 21:06:57,623 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 21:07:29,204 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-15 21:07:29,206 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-15 21:07:29,206 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-15 21:07:29,206 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-15 21:07:29,248 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-15 21:07:29,255 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-15 21:07:29,278 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-15 21:07:29,285 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-15 21:07:29,384 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-15 21:07:29,384 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-15 21:07:29,387 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+ERROR 2025-09-15 21:07:29,399 log Internal Server Error: /api/v1/groups/statistics/
+WARNING 2025-09-15 21:07:29,425 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-15 21:07:29,425 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-15 21:07:29,433 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-15 21:07:29,441 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-15 21:07:29,456 log Not Found: /api/v1/dashboard/health/
+ERROR 2025-09-15 21:07:29,456 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-15 21:07:29,456 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-15 21:07:29,482 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-15 21:07:29,571 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-15 21:07:29,579 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-15 21:07:29,610 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-15 21:07:29,612 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-15 21:07:29,640 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-15 21:07:29,666 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-15 21:07:29,666 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-15 21:07:29,681 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-15 21:07:29,688 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-15 21:07:29,699 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-15 21:07:29,707 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-15 21:07:29,725 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-15 21:07:29,729 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-15 21:07:29,736 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-15 21:07:29,747 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+ERROR 2025-09-15 21:07:29,754 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-15 21:07:29,760 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-15 21:07:29,763 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+ERROR 2025-09-15 21:07:29,764 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-15 21:07:29,808 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-15 21:07:29,920 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-15 21:07:30,612 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-15 21:07:30,612 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-15 21:07:30,612 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-15 21:07:30,868 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-15 21:07:30,870 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-15 21:07:30,873 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-15 21:07:33,053 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-15 21:07:33,053 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-15 21:07:33,062 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-15 21:07:33,208 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-15 21:07:33,210 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-15 21:07:33,211 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-15 21:07:48,049 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 21:07:51,696 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 21:09:24,131 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 21:09:26,629 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-15 21:09:33,303 views SECURITY EVENT: LOGOUT_SUCCESS - User logged out successfully
+INFO 2025-09-15 21:09:33,303 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 200 84
+INFO 2025-09-15 21:09:33,700 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-15 21:09:33,751 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-15 21:09:33,826 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-15 21:09:33,834 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 09:31:32,365 autoreload Watching for file changes with StatReloader
+INFO 2025-09-16 09:47:49,758 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 09:47:50,181 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 09:47:50,319 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 09:47:50,339 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 09:48:24,884 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+ERROR 2025-09-16 09:48:26,469 serializers Failed to log login attempt: LoginAttempt() got unexpected keyword arguments: 'success'
+INFO 2025-09-16 09:48:26,475 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 09:48:28,047 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 09:48:28,080 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 09:48:28,343 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,370 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,381 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,386 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,397 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,399 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,404 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,414 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,421 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,422 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,434 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,435 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,444 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,448 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,453 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,455 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:28,843 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:48:28,973 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:48:29,021 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 09:48:29,024 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:48:29,075 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-16 09:48:29,151 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 09:48:29,154 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 09:48:29,158 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 09:48:29,169 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 09:48:29,183 views [MemberViewSet] Returning 0 recent members
+ERROR 2025-09-16 09:48:29,185 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:48:29,218 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 09:48:29,219 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:48:29,221 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:48:29,233 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:48:29,286 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 09:48:29,496 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:48:29,535 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:48:29,559 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 09:48:29,570 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 09:48:29,582 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 09:48:29,584 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:48:29,585 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 09:48:29,585 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 09:48:29,613 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 09:48:29,618 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 09:48:29,654 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:48:29,657 views [PledgeViewSet] Returning 0 recent pledges
+ERROR 2025-09-16 09:48:29,658 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:48:29,683 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 09:48:29,716 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 09:48:29,720 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:48:29,733 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 09:48:29,797 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 09:48:29,797 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:48:29,799 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 09:48:29,817 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:48:29,870 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:48:29,877 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 09:48:30,636 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:30,651 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:48:30,827 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 09:48:30,962 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:48:32,035 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:48:32,040 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:48:32,045 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:48:32,219 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:48:32,222 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:48:32,226 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:48:35,508 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:48:35,509 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:48:35,510 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:48:35,745 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:48:35,747 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:48:35,748 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 09:50:01,208 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:01,210 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:50:01,238 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:01,239 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:50:01,365 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:50:01,414 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:01,417 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:01,418 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:50:01,488 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:50:01,539 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:01,540 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:01,541 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:02,556 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:02,557 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:02,557 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:02,672 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:02,674 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:02,675 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:04,794 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:04,795 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:04,797 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:04,944 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:04,946 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:04,947 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 09:50:14,358 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:14,359 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:50:14,399 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:14,403 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 09:50:14,484 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:14,487 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:14,488 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:50:14,509 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 09:50:14,647 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:50:14,648 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:14,653 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:14,657 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:15,666 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:15,669 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:15,672 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:15,862 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:15,864 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:15,866 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:17,823 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:17,825 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:17,827 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:18,020 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:18,022 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:18,024 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:50:52,964 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-16 09:50:53,293 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-16 09:50:54,584 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:50:54,595 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:50:54,672 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:50:54,699 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:50:54,711 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 09:50:54,764 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 09:50:54,828 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:54,889 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 09:50:54,890 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:50:54,916 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:50:55,029 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:50:55,039 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:50:55,079 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 09:50:55,098 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 09:50:55,104 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 09:50:55,128 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:50:55,151 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 09:50:55,181 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:50:55,183 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:50:55,194 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:50:55,199 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 09:50:55,199 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 09:50:55,221 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 09:50:55,228 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+ERROR 2025-09-16 09:50:55,265 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 09:50:55,273 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:50:55,279 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 09:50:55,315 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:50:55,317 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 09:50:55,427 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:50:55,469 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 09:50:55,481 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:50:55,537 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:50:55,561 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 09:50:55,565 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 09:50:55,649 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:55,649 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:55,655 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:50:56,925 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 09:50:57,119 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:50:58,589 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:58,592 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:58,592 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:50:58,843 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:50:58,846 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:50:58,849 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:51:00,881 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:51:00,883 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:51:00,889 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:51:01,114 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:51:01,118 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:51:01,119 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:56:24,359 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:56:24,376 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:56:24,379 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:56:24,399 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 09:56:24,409 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:56:24,413 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:56:24,427 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:56:24,434 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:56:24,437 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 09:56:24,447 views [PledgeViewSet] Returning 0 recent pledges
+ERROR 2025-09-16 09:56:24,462 views Error generating group statistics: can't set attribute 'member_count'
+WARNING 2025-09-16 09:56:24,463 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 09:56:24,473 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 09:56:24,490 log Not Found: /api/v1/dashboard/alerts/
+ERROR 2025-09-16 09:56:24,491 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 09:56:24,492 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:56:24,492 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-16 09:56:24,493 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:56:24,502 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 09:56:24,508 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 09:56:24,581 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 09:56:24,603 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 09:56:24,605 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 09:56:24,607 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 09:56:24,628 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:56:24,652 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:56:24,654 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 09:56:24,655 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 09:56:24,663 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:56:24,687 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 09:56:24,693 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 09:56:24,702 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 09:56:24,703 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 09:56:24,707 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 09:56:24,722 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 09:56:24,726 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 09:56:24,762 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:56:24,776 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:56:24,778 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:56:24,779 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 09:56:24,966 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 09:56:25,743 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:56:25,744 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:56:25,745 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:56:25,912 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:56:25,913 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:56:25,916 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:56:27,870 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:56:27,871 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:56:27,873 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 09:56:28,054 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 09:56:28,055 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 09:56:28,056 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 10:29:20,462 basehttp "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-09-16 10:29:20,841 views SECURITY EVENT: LOGOUT_SUCCESS - User logged out successfully
+INFO 2025-09-16 10:29:20,852 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 200 84
+INFO 2025-09-16 10:29:22,404 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 10:29:22,421 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 10:29:22,485 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 10:29:22,494 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 13:51:22,691 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 13:51:22,719 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 13:51:22,925 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 13:51:22,940 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 13:51:43,665 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+ERROR 2025-09-16 13:51:44,828 serializers Failed to log login attempt: LoginAttempt() got unexpected keyword arguments: 'success'
+INFO 2025-09-16 13:51:44,834 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 13:51:44,907 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 13:51:44,931 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 13:51:45,153 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,173 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,185 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,204 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,205 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,213 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,225 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,225 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,241 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,241 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,249 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,254 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,280 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,290 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,303 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,308 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:45,485 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:51:45,625 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 13:51:45,644 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 13:51:45,752 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 13:51:45,754 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-16 13:51:45,755 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:51:45,827 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 13:51:45,837 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:51:45,839 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 13:51:45,845 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 13:51:45,847 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 13:51:45,884 views [MemberViewSet] Returning 0 recent members
+WARNING 2025-09-16 13:51:45,935 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 13:51:45,935 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 13:51:45,942 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 13:51:45,951 views Error generating group statistics: can't set attribute 'member_count'
+WARNING 2025-09-16 13:51:45,955 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 13:51:45,963 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 13:51:45,973 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 13:51:45,979 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:51:45,985 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-16 13:51:46,037 log Not Found: /api/v1/dashboard/alerts/
+ERROR 2025-09-16 13:51:46,051 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:51:46,055 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 13:51:46,082 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 13:51:46,119 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 13:51:46,147 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 13:51:46,230 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 13:51:46,250 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 13:51:46,254 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 13:51:46,263 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 13:51:46,302 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 13:51:46,304 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 13:51:46,329 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+ERROR 2025-09-16 13:51:46,333 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:51:46,335 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:51:46,337 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:51:46,373 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:51:46,377 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 13:51:46,483 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:46,489 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:51:46,733 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 13:51:46,849 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:51:48,231 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:51:48,232 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:51:48,233 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:51:48,387 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:51:48,391 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:51:48,400 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:51:50,400 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:51:50,401 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:51:50,402 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:51:50,569 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:51:50,572 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:51:50,574 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 13:52:34,304 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:52:34,307 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:52:34,349 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:52:34,363 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 13:52:34,467 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:34,470 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:34,474 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:52:34,518 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:52:34,641 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:34,642 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:34,643 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:52:34,654 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:52:35,639 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:35,640 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:35,642 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:52:35,822 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:35,823 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:35,824 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:52:37,809 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:37,810 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:37,812 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:52:38,108 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:52:38,109 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:52:38,112 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:53:01,253 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 13:53:01,255 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 13:53:01,537 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-16 13:53:01,737 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-16 13:53:38,875 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+WARNING 2025-09-16 13:53:41,482 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:53:41,485 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:53:41,517 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:53:41,524 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 13:53:41,592 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:41,598 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:41,601 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:53:41,620 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:53:41,729 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:41,732 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 13:53:41,733 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:53:41,734 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:42,747 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:42,751 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:42,753 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:42,862 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:42,864 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:42,865 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:44,887 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:44,888 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:44,889 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:45,047 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:45,047 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:45,047 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 13:53:58,112 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:53:58,114 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:53:58,159 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:53:58,162 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 13:53:58,367 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:53:58,381 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:58,382 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:58,387 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:53:58,509 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:53:58,539 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:58,539 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:58,539 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:59,522 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:59,522 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:59,522 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:53:59,801 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:53:59,804 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:53:59,807 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:01,642 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:01,647 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:01,650 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:01,947 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:01,949 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:01,951 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 13:54:10,872 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:54:10,876 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:54:10,918 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:54:10,920 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 13:54:11,083 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:11,088 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:11,091 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:54:11,258 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:54:11,352 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:11,354 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:11,360 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:54:11,468 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:54:12,311 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:12,313 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:12,315 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:12,557 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:12,560 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:12,563 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:14,516 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:14,519 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:14,521 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:14,768 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:14,773 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:14,777 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 13:54:25,786 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:54:25,788 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:54:25,822 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 13:54:25,824 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 13:54:25,934 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:25,937 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:25,939 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:26,124 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:26,127 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:26,130 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:54:26,172 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 13:54:26,321 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:54:27,223 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:27,226 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:27,229 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:27,470 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:27,473 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:27,477 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:29,384 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:29,385 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:29,387 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:54:29,737 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:54:29,738 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:54:29,739 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:54:35,350 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-16 13:54:35,641 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-16 13:56:45,476 basehttp "OPTIONS /api/v1/pledges/?filters[search]=false&filters[filters][isValid]=false&filters[filters][errors][status]=Invalid+pledge+status&filters[filters][errors][frequency]=Invalid+pledge+frequency&filters[page]=1&filters[limit]=25&page=1&limit=25&silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-16 13:56:45,481 basehttp "OPTIONS /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-16 13:56:45,481 basehttp "OPTIONS /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-16 13:56:45,484 basehttp "OPTIONS /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-16 13:56:45,487 basehttp "OPTIONS /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 0
+INFO 2025-09-16 13:56:45,737 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:56:45,739 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:56:45,749 basehttp "GET /api/v1/pledges/?filters[search]=false&filters[filters][isValid]=false&filters[filters][errors][status]=Invalid+pledge+status&filters[filters][errors][frequency]=Invalid+pledge+frequency&filters[page]=1&filters[limit]=25&page=1&limit=25&silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 52
+INFO 2025-09-16 13:56:45,827 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:56:45,832 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:56:45,840 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:56:45,840 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:56:46,031 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:56:46,032 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:56:46,075 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:56:46,076 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:56:46,079 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:56:46,088 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:03,586 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-16 13:57:06,205 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:06,205 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:06,217 basehttp "GET /api/v1/pledges/?filters[search]=false&filters[filters][isValid]=false&filters[filters][errors][status]=Invalid+pledge+status&filters[filters][errors][frequency]=Invalid+pledge+frequency&filters[page]=1&filters[limit]=25&page=1&limit=25&silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 52
+INFO 2025-09-16 13:57:06,253 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:06,255 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:06,258 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:06,268 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:06,396 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:06,406 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:06,443 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:06,452 basehttp "GET /api/v1/pledges/stats/?silent=true&signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:06,459 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:06,461 basehttp "GET /api/v1/pledges/stats/?signal=[object+AbortSignal] HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:14,393 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:14,435 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 13:57:14,458 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:14,491 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:14,498 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 13:57:14,500 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:14,522 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-16 13:57:14,522 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 13:57:14,586 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 13:57:14,597 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 13:57:14,597 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 13:57:14,632 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+WARNING 2025-09-16 13:57:14,660 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:57:14,667 log Not Found: /api/v1/dashboard/alerts/
+ERROR 2025-09-16 13:57:14,672 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 13:57:14,690 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 13:57:14,697 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 13:57:14,697 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:57:14,711 views [PledgeViewSet] Returning 0 recent pledges
+WARNING 2025-09-16 13:57:14,810 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 13:57:14,814 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:14,815 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 13:57:14,824 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 13:57:14,913 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 13:57:14,918 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 13:57:14,923 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 13:57:14,924 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 13:57:14,925 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 13:57:14,934 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 13:57:14,979 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 13:57:15,000 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 13:57:15,011 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 13:57:15,011 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 13:57:15,023 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+ERROR 2025-09-16 13:57:15,093 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:57:15,098 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:57:15,100 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 13:57:15,136 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 13:57:15,162 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 13:57:15,165 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 13:57:15,184 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 13:57:15,850 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:57:15,850 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:57:15,850 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:57:16,237 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:57:16,240 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:57:16,242 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:57:18,001 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:57:18,003 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:57:18,006 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 13:57:18,400 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 13:57:18,401 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 13:57:18,404 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:13:14,663 autoreload Watching for file changes with StatReloader
+INFO 2025-09-16 14:13:17,604 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:17,609 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-09-16 14:13:17,878 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 14:13:17,883 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-16 14:13:17,891 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 14:13:17,894 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-16 14:13:17,896 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:18,209 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-16 14:13:18,229 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-16 14:13:18,352 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:13:18,361 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:18,511 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 14:13:18,514 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:13:18,684 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 14:13:33,366 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+ERROR 2025-09-16 14:13:34,663 serializers Failed to log login attempt: LoginAttempt() got unexpected keyword arguments: 'success'
+INFO 2025-09-16 14:13:34,668 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 14:13:34,693 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 14:13:34,712 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 14:13:36,378 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,382 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,392 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,393 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,404 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,406 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,418 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,423 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,428 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,428 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,428 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,429 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,453 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,454 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,456 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,459 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 14:13:36,703 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 14:13:36,753 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 14:13:36,796 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 14:13:36,813 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 14:13:36,831 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 14:13:36,894 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 14:13:36,946 log Not Found: /api/v1/dashboard/health/
+ERROR 2025-09-16 14:13:36,954 views Error generating group statistics: can't set attribute 'member_count'
+WARNING 2025-09-16 14:13:36,961 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 14:13:36,965 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+ERROR 2025-09-16 14:13:36,994 log Internal Server Error: /api/v1/groups/statistics/
+WARNING 2025-09-16 14:13:37,003 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 14:13:37,004 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:13:37,011 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 14:13:37,036 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 14:13:37,043 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:13:37,072 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 14:13:37,092 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 14:13:37,150 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 14:13:37,189 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 14:13:37,194 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 14:13:37,273 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 14:13:37,295 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 14:13:37,307 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 14:13:37,312 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 14:13:37,324 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 14:13:37,346 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 14:13:37,380 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+ERROR 2025-09-16 14:13:37,380 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 14:13:37,411 views [PledgeViewSet] Statistics returned successfully
+ERROR 2025-09-16 14:13:37,412 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 14:13:37,423 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+ERROR 2025-09-16 14:13:37,430 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:13:37,444 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:13:37,474 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 14:13:37,476 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 14:13:37,510 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:13:37,543 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 14:13:37,546 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 14:13:37,912 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:13:38,077 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 14:13:39,860 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 14:13:39,862 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:13:39,865 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 14:13:39,991 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 14:13:39,992 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:13:39,993 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 14:13:42,019 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 14:13:42,020 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:13:42,022 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 14:13:42,160 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 14:13:42,163 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:13:42,165 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:14:51,875 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 14:14:51,886 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 14:14:52,228 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-16 14:14:52,581 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-16 14:30:22,941 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\models.py changed, reloading.
+INFO 2025-09-16 14:30:27,571 autoreload Watching for file changes with StatReloader
+INFO 2025-09-16 14:40:47,266 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-16 14:46:03,397 basehttp "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-09-16 14:46:03,667 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 14:46:03,683 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 14:46:03,690 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-16 14:46:03,696 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:46:03,709 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 14:46:03,714 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 14:46:03,740 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 14:46:03,740 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 14:46:03,742 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 14:46:03,749 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 14:46:03,754 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 14:46:03,782 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 14:46:03,783 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 14:46:03,784 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-16 14:46:03,790 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 14:46:03,793 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 14:46:03,794 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 14:46:03,815 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 14:46:03,837 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 14:46:03,853 log Not Found: /api/v1/dashboard/health/
+ERROR 2025-09-16 14:46:03,864 views Error generating group statistics: can't set attribute 'member_count'
+WARNING 2025-09-16 14:46:03,865 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 14:46:03,866 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:46:03,879 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:46:03,889 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 14:46:03,920 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 14:46:03,923 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 14:46:03,927 views SECURITY EVENT: LOGOUT_SUCCESS - User logged out successfully
+INFO 2025-09-16 14:46:03,930 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:46:03,937 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 200 84
+INFO 2025-09-16 14:46:03,955 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 14:46:03,960 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 14:46:03,993 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 14:46:04,014 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 14:46:04,017 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 14:46:04,038 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:46:04,086 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+ERROR 2025-09-16 14:46:04,087 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 14:46:04,092 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 14:46:04,092 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 14:46:04,131 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 14:46:04,134 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 14:46:04,180 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:46:05,273 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:46:05,351 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 14:46:05,469 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 14:46:05,561 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 15:11:57,361 basehttp "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+WARNING 2025-09-16 15:11:57,378 log Unauthorized: /api/v1/auth/logout/
+WARNING 2025-09-16 15:11:57,379 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 401 172
+INFO 2025-09-16 15:11:57,387 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-16 15:11:57,518 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+WARNING 2025-09-16 15:11:57,614 views SECURITY EVENT: LOGOUT_ERROR - Invalid refresh token on logout: Token is blacklisted
+WARNING 2025-09-16 15:11:57,615 log Bad Request: /api/v1/auth/logout/
+WARNING 2025-09-16 15:11:57,617 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 400 25
+INFO 2025-09-16 15:11:58,493 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:11:58,519 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-09-16 15:11:58,593 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:11:58,610 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 15:11:58,707 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+WARNING 2025-09-16 15:15:13,974 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 15:15:13,976 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-16 15:15:13,980 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 15:15:13,987 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-16 15:15:15,858 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:15:15,876 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 15:15:16,138 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:15:16,159 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 15:15:16,370 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:15:16,390 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+ERROR 2025-09-16 15:16:07,208 serializers Failed to log login attempt: column "success" of relation "login_attempts" does not exist
+LINE 1: ...ess", "user_agent", "attempted_at", "successful", "success",...
+                                                             ^
+
+INFO 2025-09-16 15:16:07,213 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 15:16:07,268 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 15:16:07,280 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 15:16:08,629 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-16 15:16:08,660 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:16:08,699 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 15:16:08,702 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 15:16:08,811 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 15:16:08,815 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 15:16:08,818 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 15:16:08,888 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 15:16:08,912 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 15:16:08,928 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-16 15:16:09,007 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 15:16:09,014 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 15:16:09,017 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 15:16:09,018 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 15:16:09,090 views [PledgeViewSet] Returning 0 recent pledges
+WARNING 2025-09-16 15:16:09,098 log Not Found: /api/v1/dashboard/health/
+ERROR 2025-09-16 15:16:09,108 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 15:16:09,113 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 15:16:09,114 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 15:16:09,115 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 15:16:09,120 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 15:16:09,133 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:16:09,150 views [MemberViewSet] Returning 0 recent members
+ERROR 2025-09-16 15:16:09,167 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 15:16:09,182 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 15:16:09,190 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 15:16:09,275 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 15:16:09,301 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:16:09,367 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 15:16:09,371 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 15:16:09,378 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 15:16:09,411 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 15:16:09,417 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 15:16:09,429 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 15:16:09,450 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 15:16:09,454 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 15:16:09,457 views [MemberViewSet] Returning 0 recent members
+ERROR 2025-09-16 15:16:09,458 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 15:16:09,463 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 15:16:11,398 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:16:11,615 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 15:16:12,103 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 15:16:12,105 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 15:16:12,107 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 15:16:12,227 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 15:16:12,228 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 15:16:12,230 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 15:16:14,260 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 15:16:14,261 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 15:16:14,262 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 15:16:14,430 views Error generating group statistics: can't set attribute 'member_count'
+ERROR 2025-09-16 15:16:14,434 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 15:16:14,438 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 15:47:44,495 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:47:44,505 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:47:44,509 views SECURITY EVENT: LOGOUT_SUCCESS - User logged out successfully
+INFO 2025-09-16 15:47:44,514 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 15:47:44,514 views Error generating group statistics: can't set attribute 'member_count'
+INFO 2025-09-16 15:47:44,532 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 200 84
+ERROR 2025-09-16 15:47:44,532 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 15:47:44,538 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 15:47:44,543 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 15:47:44,545 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 15:47:44,547 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+ERROR 2025-09-16 15:47:44,547 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 15:47:44,551 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 15:47:44,554 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 15:47:44,593 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 15:47:44,643 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 15:47:44,649 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 15:47:44,666 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 15:47:44,670 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 15:47:44,710 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 15:47:44,731 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 15:47:44,733 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:47:44,734 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-16 15:47:44,763 log Not Found: /api/v1/dashboard/alerts/
+ERROR 2025-09-16 15:47:44,787 views Error generating group statistics: can't set attribute 'member_count'
+WARNING 2025-09-16 15:47:44,794 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 15:47:44,797 log Internal Server Error: /api/v1/groups/statistics/
+WARNING 2025-09-16 15:47:44,819 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 15:47:44,819 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 15:47:44,821 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 15:47:44,840 basehttp - Broken pipe from ('127.0.0.1', 63984)
+INFO 2025-09-16 15:47:44,844 basehttp - Broken pipe from ('127.0.0.1', 54156)
+INFO 2025-09-16 15:47:44,845 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 15:47:44,850 basehttp - Broken pipe from ('127.0.0.1', 57276)
+INFO 2025-09-16 15:47:44,869 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 15:47:44,873 basehttp - Broken pipe from ('127.0.0.1', 64802)
+INFO 2025-09-16 15:47:44,884 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 15:47:44,890 basehttp - Broken pipe from ('127.0.0.1', 55817)
+INFO 2025-09-16 15:47:44,940 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 15:47:44,963 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 15:47:44,966 basehttp - Broken pipe from ('127.0.0.1', 58335)
+INFO 2025-09-16 15:47:45,787 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:47:45,872 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 15:47:45,880 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 15:47:45,889 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 17:47:25,641 autoreload Watching for file changes with StatReloader
+INFO 2025-09-16 18:00:58,123 autoreload Watching for file changes with StatReloader
+INFO 2025-09-16 18:05:03,905 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 18:05:03,924 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 18:05:04,094 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 18:05:04,108 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-09-16 18:05:12,016 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:13,247 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 18:05:13,729 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 18:05:13,767 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 18:05:14,153 basehttp "OPTIONS /api/v1/reports/stats/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,175 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,203 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,208 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,222 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,237 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,242 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,250 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,255 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,269 basehttp "OPTIONS /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,273 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,284 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,288 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,296 basehttp "OPTIONS /api/v1/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,304 basehttp "OPTIONS /api/v1/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:14,461 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+INFO 2025-09-16 18:05:14,480 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:05:14,567 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 18:05:14,608 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+WARNING 2025-09-16 18:05:14,637 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:05:14,642 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:05:14,709 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 18:05:14,715 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 18:05:14,722 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:05:14,795 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 18:05:14,804 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+WARNING 2025-09-16 18:05:14,812 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 18:05:14,817 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:05:14,860 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-16 18:05:14,869 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 18:05:14,871 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 18:05:14,872 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 18:05:14,878 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 18:05:14,889 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 18:05:14,890 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 18:05:14,903 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 18:05:14,920 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+INFO 2025-09-16 18:05:14,935 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+ERROR 2025-09-16 18:05:14,970 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:15,006 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:05:15,007 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 0, 'active_members': 0, 'inactive_members': 0, 'recent_registrations': 0}, 'demographics': {'gender': {}, 'age_groups': {'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 18:05:15,031 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 197
+INFO 2025-09-16 18:05:15,104 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:05:15,148 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:05:15,154 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 18:05:15,155 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:05:15,157 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 18:05:15,171 views [MemberViewSet] Returning 0 recent members
+INFO 2025-09-16 18:05:15,183 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 18:05:15,188 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 18:05:15,201 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+ERROR 2025-09-16 18:05:15,233 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:05:15,234 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:15,236 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:05:16,082 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:16,087 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:05:16,401 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 18:05:16,594 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:05:16,828 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:05:16,831 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:16,832 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:05:16,989 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:05:16,995 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:16,999 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:05:19,994 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:05:19,997 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:19,997 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:05:20,205 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:05:20,207 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:05:20,208 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:19:46,497 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-09-16 18:19:46,627 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 659
+INFO 2025-09-16 18:38:18,984 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:38:19,000 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:38:19,012 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:38:19,023 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:38:19,086 views [MemberViewSet] Returning 3 recent members
+ERROR 2025-09-16 18:38:19,098 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+INFO 2025-09-16 18:38:19,101 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 18:38:19,101 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 3, 'active_members': 3, 'inactive_members': 0, 'recent_registrations': 3}, 'demographics': {'gender': {'': 3}, 'age_groups': {'under_18': 0, '18_35': 1, '36_55': 2, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 18:38:19,115 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 18:38:19,118 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 898
+ERROR 2025-09-16 18:38:19,118 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 18:38:19,118 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 18:38:19,118 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 201
+INFO 2025-09-16 18:38:19,134 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 18:38:19,176 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 18:38:19,176 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+ERROR 2025-09-16 18:38:19,176 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 18:38:19,203 log Not Found: /api/v1/dashboard/alerts/
+WARNING 2025-09-16 18:38:19,212 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:38:19,243 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:38:19,313 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:38:19,317 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 18:38:19,366 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:38:19,369 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 18:38:19,398 views [MemberViewSet] Returning 3 recent members
+INFO 2025-09-16 18:38:19,400 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 18:38:19,406 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:38:19,409 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 898
+INFO 2025-09-16 18:38:19,409 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 18:38:19,412 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 18:38:19,454 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 18:38:19,468 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 3, 'active_members': 3, 'inactive_members': 0, 'recent_registrations': 3}, 'demographics': {'gender': {'': 3}, 'age_groups': {'under_18': 0, '18_35': 1, '36_55': 2, '56_plus': 0, 'unknown': 0}}}
+WARNING 2025-09-16 18:38:19,473 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 18:38:19,489 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 18:38:19,491 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 201
+ERROR 2025-09-16 18:38:19,517 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+INFO 2025-09-16 18:38:19,517 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 18:38:19,519 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:38:19,533 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:19,556 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:38:19,727 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:38:20,349 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:20,350 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:20,352 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:20,714 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:20,714 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:20,714 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:22,463 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:22,463 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:22,463 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:22,946 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:22,946 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:22,946 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 18:38:52,557 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:38:52,557 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:38:52,573 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:38:52,573 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 18:38:52,657 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:52,657 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:52,657 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:38:52,722 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:38:52,798 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:52,799 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:52,801 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:38:52,833 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:38:53,933 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:53,934 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:53,939 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:54,056 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:54,058 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:54,059 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:57,156 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:57,157 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:57,158 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:38:57,367 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:38:57,369 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:38:57,371 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 18:41:19,856 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:41:19,856 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:41:19,878 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:41:19,886 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 18:41:19,970 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:19,970 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:19,986 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:41:20,021 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:41:20,118 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:20,118 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:20,118 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:41:20,136 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:41:21,122 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:21,122 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:21,124 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:21,277 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:21,279 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:21,281 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:23,253 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:23,255 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:23,257 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:23,449 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:23,449 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:23,453 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:41:28,862 basehttp "OPTIONS /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 18:41:28,871 basehttp "OPTIONS /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-09-16 18:41:29,142 basehttp "GET /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+INFO 2025-09-16 18:41:29,319 basehttp "GET /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 529
+WARNING 2025-09-16 18:41:44,763 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:41:44,765 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 18:41:44,812 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 18:41:44,816 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 18:41:44,893 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:44,897 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:44,900 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:41:44,957 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:41:45,067 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:45,067 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:45,067 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 18:41:45,086 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 18:41:46,040 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:46,040 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:46,042 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:46,329 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:46,329 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:46,329 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:48,177 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:48,177 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:48,177 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 18:41:48,461 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 18:41:48,461 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 18:41:48,461 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 19:11:55,705 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 19:11:55,711 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-09-16 19:11:55,717 log Unauthorized: /api/v1/core/health/
+WARNING 2025-09-16 19:11:55,719 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-09-16 19:11:55,723 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-09-16 19:11:56,236 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-16 19:11:56,260 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-09-16 19:11:56,367 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 19:11:56,382 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-09-16 19:11:56,486 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 19:11:56,577 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 19:11:56,710 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-09-16 19:12:07,903 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-09-16 19:12:07,934 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-09-16 19:12:07,938 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1026
+INFO 2025-09-16 19:12:09,127 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 19:12:09,220 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 3, 'active_members': 3, 'inactive_members': 0, 'recent_registrations': 3}, 'demographics': {'gender': {'': 3}, 'age_groups': {'under_18': 0, '18_35': 1, '36_55': 2, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 19:12:09,231 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 201
+INFO 2025-09-16 19:12:09,263 basehttp "GET /api/v1/reports/stats/ HTTP/1.1" 200 217
+WARNING 2025-09-16 19:12:09,352 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 19:12:09,366 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 19:12:09,405 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 19:12:09,421 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+WARNING 2025-09-16 19:12:09,423 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 19:12:09,457 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 19:12:09,527 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+INFO 2025-09-16 19:12:09,573 views [PledgeViewSet] Statistics returned successfully
+WARNING 2025-09-16 19:12:09,615 log Not Found: /api/v1/dashboard/health/
+INFO 2025-09-16 19:12:09,647 views [MemberViewSet] Returning 3 recent members
+ERROR 2025-09-16 19:12:09,649 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 19:12:09,661 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 19:12:09,700 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+WARNING 2025-09-16 19:12:09,760 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+INFO 2025-09-16 19:12:09,769 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 898
+ERROR 2025-09-16 19:12:09,785 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 19:12:09,825 views [PledgeViewSet] Returning 0 recent pledges
+WARNING 2025-09-16 19:12:09,887 log Not Found: /api/v1/dashboard/alerts/
+INFO 2025-09-16 19:12:09,949 views [MemberViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 19:12:09,989 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+WARNING 2025-09-16 19:12:10,028 basehttp "GET /api/v1/dashboard/alerts/ HTTP/1.1" 404 23996
+INFO 2025-09-16 19:12:10,106 views [MemberViewSet] Statistics returned: {'summary': {'total_members': 3, 'active_members': 3, 'inactive_members': 0, 'recent_registrations': 3}, 'demographics': {'gender': {'': 3}, 'age_groups': {'under_18': 0, '18_35': 1, '36_55': 2, '56_plus': 0, 'unknown': 0}}}
+INFO 2025-09-16 19:12:10,135 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 201
+INFO 2025-09-16 19:12:10,304 views [MemberViewSet] Recent members request from: robbddzaka1@gmail.com, limit: 5
+ERROR 2025-09-16 19:12:10,318 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+INFO 2025-09-16 19:12:10,336 views [MemberViewSet] Returning 3 recent members
+ERROR 2025-09-16 19:12:10,338 log Internal Server Error: /api/v1/groups/statistics/
+INFO 2025-09-16 19:12:10,354 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 898
+ERROR 2025-09-16 19:12:10,369 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 19:12:10,417 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-09-16 19:12:10,419 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-09-16 19:12:10,478 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-09-16 19:12:10,562 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 24
+INFO 2025-09-16 19:12:10,572 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-09-16 19:12:10,586 basehttp "GET /api/v1/pledges/statistics/?range=30d HTTP/1.1" 200 341
+INFO 2025-09-16 19:12:12,063 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-09-16 19:12:12,165 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 19:12:13,058 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:12:13,058 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:12:13,076 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:12:13,184 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:12:13,185 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:12:13,186 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:12:15,217 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:12:15,220 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:12:15,223 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:12:15,347 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:12:15,347 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:12:15,347 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+WARNING 2025-09-16 19:14:35,119 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 19:14:35,123 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+WARNING 2025-09-16 19:14:35,168 log Not Found: /api/v1/dashboard/health/
+WARNING 2025-09-16 19:14:35,170 basehttp "GET /api/v1/dashboard/health/ HTTP/1.1" 404 23996
+ERROR 2025-09-16 19:14:35,306 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:35,309 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:35,311 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 19:14:35,328 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 19:14:35,488 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:35,491 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:35,494 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 19:14:35,497 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+ERROR 2025-09-16 19:14:36,449 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:36,449 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:36,455 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:14:36,607 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:36,607 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:36,607 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:14:39,137 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:39,137 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:39,137 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+ERROR 2025-09-16 19:14:39,238 views Error generating group statistics: Unsupported lookup 'is_active' for ManyToOneRel or join on the field not permitted.
+ERROR 2025-09-16 19:14:39,238 log Internal Server Error: /api/v1/groups/statistics/
+ERROR 2025-09-16 19:14:39,238 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 500 39
+INFO 2025-09-16 19:29:57,766 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\groups\views.py changed, reloading.
+INFO 2025-09-16 19:30:01,597 autoreload Watching for file changes with StatReloader

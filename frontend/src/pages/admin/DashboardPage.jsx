@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   UsersIcon, 
   UserGroupIcon, 
@@ -40,6 +40,7 @@ const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
   const { settings } = useSettings();
+  const navigate = useNavigate();
   
   // State management
   const [dashboardData, setDashboardData] = useState({
@@ -64,6 +65,22 @@ const DashboardPage = () => {
   const [lastRefresh, setLastRefresh] = useState(null);
 
   const isDark = settings?.theme === 'dark';
+
+  // Enhanced navigation handlers for better integration
+  const handleNavigateToEvents = useCallback((params = {}) => {
+    const searchParams = new URLSearchParams(params);
+    navigate(`/admin/events?${searchParams.toString()}`);
+  }, [navigate]);
+
+  const handleNavigateToGroups = useCallback((params = {}) => {
+    const searchParams = new URLSearchParams(params);
+    navigate(`/admin/groups?${searchParams.toString()}`);
+  }, [navigate]);
+
+  const handleNavigateToMembers = useCallback((params = {}) => {
+    const searchParams = new URLSearchParams(params);
+    navigate(`/admin/members?${searchParams.toString()}`);
+  }, [navigate]);
 
   // Update time every minute
   useEffect(() => {
@@ -375,6 +392,385 @@ const DashboardPage = () => {
     );
   };
 
+  // Enhanced stat card click handler
+  const StatCard = ({ stat, index }) => {
+    const Icon = stat.icon;
+    const [showQuickActions, setShowQuickActions] = useState(false);
+
+    return (
+      <Card 
+        key={stat.name}
+        style={{
+          animationDelay: `${index * 0.1}s`,
+          animation: 'fadeInUp 0.5s ease-out forwards',
+          opacity: 0,
+          transform: 'translateY(20px)',
+          position: 'relative',
+          cursor: 'pointer'
+        }}
+        onMouseEnter={() => setShowQuickActions(true)}
+        onMouseLeave={() => setShowQuickActions(false)}
+        onClick={stat.onClick}
+      >
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: `linear-gradient(135deg, ${stat.color.split(' ')[1]}, ${stat.color.split(' ')[3]})`,
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Icon style={{ width: '24px', height: '24px', color: 'white' }} />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                stat.onClick();
+              }}
+              icon={EyeIcon}
+              iconPosition="right"
+            />
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
+              {stat.name}
+            </p>
+            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>
+              {stat.value}
+            </p>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Badge 
+                variant={stat.changeType === 'positive' ? 'success' : stat.changeType === 'negative' ? 'danger' : 'default'}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                {stat.changeType === 'positive' ? (
+                  <ArrowUpIcon style={{ width: '12px', height: '12px' }} />
+                ) : stat.changeType === 'negative' ? (
+                  <ArrowDownIcon style={{ width: '12px', height: '12px' }} />
+                ) : null}
+                <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change).toFixed(1)}%` : '—'}</span>
+              </Badge>
+              <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                {stat.description}
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Actions Dropdown */}
+          {showQuickActions && stat.quickActions && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '0',
+              right: '0',
+              background: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #e5e7eb',
+              zIndex: 10,
+              padding: '8px',
+              marginTop: '8px'
+            }}>
+              {stat.quickActions.map((action, actionIndex) => (
+                <button
+                  key={actionIndex}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    action.action();
+                    setShowQuickActions(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    textAlign: 'left',
+                    border: 'none',
+                    background: 'transparent',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: '#374151',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
+  // Enhanced Recent Families Card with proper navigation
+  const RecentFamiliesCard = () => (
+    <Card>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '24px 24px 0',
+        borderBottom: '1px solid #f3f4f6'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <HomeIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+            Recent Families
+          </h3>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/admin/families')}
+          icon={ArrowTopRightOnSquareIcon}
+          iconPosition="right"
+        >
+          View all ({dashboardData?.familyStats?.total_families || 0})
+        </Button>
+      </div>
+      
+      <div style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {dashboardData?.recentFamilies?.length > 0 ? (
+            dashboardData.recentFamilies.slice(0, 4).map((family, index) => (
+              <Card 
+                key={family.id}
+                style={{
+                  background: '#f9fafb',
+                  border: '1px solid #f3f4f6',
+                  transition: 'all 0.2s',
+                  cursor: 'pointer'
+                }}
+                onClick={() => navigate(`/admin/families/${family.id}`)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <HomeIcon style={{ width: '24px', height: '24px', color: 'white' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#1f2937' }}>
+                        {family.family_name}
+                      </p>
+                      <Badge variant="success">
+                        {family.member_count || 0} members
+                      </Badge>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                      Primary: {family.primary_contact_name}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11px', color: '#9ca3af' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <CalendarDaysIcon style={{ width: '12px', height: '12px' }} />
+                        <span>Added {new Date(family.created_at).toLocaleDateString()}</span>
+                      </div>
+                      {family.address && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPinIcon style={{ width: '12px', height: '12px' }} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {family.address}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/admin/families/${family.id}`);
+                    }}
+                    icon={EyeIcon}
+                  />
+                </div>
+              </Card>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
+              <HomeIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#d1d5db' }} />
+              <p style={{ marginBottom: '8px' }}>No recent families added</p>
+              <Button 
+                variant="ghost"
+                onClick={() => navigate('/admin/families?action=create')}
+                icon={PlusIcon}
+              >
+                Add First Family
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Enhanced Quick Actions Grid Implementation
+  const QuickActionsGrid = () => {
+    const quickActionsConfig = [
+      { 
+        name: 'Add Member', 
+        onClick: () => handleNavigateToMembers({ action: 'create' }), 
+        icon: UsersIcon, 
+        color: '#3b82f6',
+        description: 'Register a new church member'
+      },
+      { 
+        name: 'Add Family', 
+        onClick: () => navigate('/admin/families?action=create'), 
+        icon: HomeIcon, 
+        color: '#10b981',
+        description: 'Register a new family unit'
+      },
+      { 
+        name: 'Create Group', 
+        onClick: () => handleNavigateToGroups({ action: 'create' }), 
+        icon: UserGroupIcon, 
+        color: '#8b5cf6',
+        description: 'Start a new ministry or group'
+      },
+      { 
+        name: 'Create Event', 
+        onClick: () => handleNavigateToEvents({ action: 'create' }), 
+        icon: CalendarDaysIcon, 
+        color: '#f59e0b',
+        description: 'Schedule a church event or activity'
+      },
+      { 
+        name: 'Record Pledge', 
+        onClick: () => navigate('/admin/pledges?action=create'), 
+        icon: CurrencyDollarIcon, 
+        color: '#ef4444',
+        description: 'Record a new financial pledge'
+      },
+      { 
+        name: 'Generate Report', 
+        onClick: () => navigate('/admin/reports'), 
+        icon: DocumentChartBarIcon, 
+        color: '#6366f1',
+        description: 'View analytics and reports'
+      },
+      { 
+        name: 'Public Register', 
+        onClick: () => window.open('/register', '_blank'), 
+        icon: UserIcon, 
+        color: '#14b8a6',
+        description: 'Open public registration page'
+      },
+      { 
+        name: 'Settings', 
+        onClick: () => navigate('/admin/settings'), 
+        icon: Cog6ToothIcon, 
+        color: '#64748b',
+        description: 'Configure system settings'
+      }
+    ];
+
+    return (
+      <Card hover={false}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '24px 24px 0',
+          borderBottom: '1px solid #f3f4f6'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <SparklesIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+            Quick Actions
+          </h3>
+        </div>
+        
+        <div style={{ padding: '24px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px'
+          }}>
+            {quickActionsConfig.map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <Card 
+                  key={action.name}
+                  style={{ background: '#fafafa', border: '1px solid #f0f0f0', cursor: 'pointer' }}
+                  onClick={action.onClick}
+                >
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      background: `${action.color}20`,
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '12px'
+                    }}>
+                      <Icon style={{ width: '24px', height: '24px', color: action.color }} />
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
+                      {action.name}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', textAlign: 'center' }}>
+                      {action.description}
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   // Loading state with sidebar colors
   if (loading) {
     return (
@@ -542,7 +938,7 @@ const DashboardPage = () => {
     );
   }
 
-  // Generate stats with real data
+  // Enhanced stats with real data and quick actions
   const stats = [
     {
       name: 'Total Members',
@@ -552,7 +948,21 @@ const DashboardPage = () => {
       changeType: (dashboardData?.memberStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.memberStats?.new_members || 0} new this month`,
       color: 'from-blue-500 to-cyan-500',
-      route: '/admin/members'
+      onClick: () => handleNavigateToMembers(),
+      quickActions: [
+        {
+          label: 'Add Member',
+          action: () => handleNavigateToMembers({ action: 'create' })
+        },
+        {
+          label: 'View Active',
+          action: () => handleNavigateToMembers({ status: 'active' })
+        },
+        {
+          label: 'Search Members',
+          action: () => handleNavigateToMembers({ focus: 'search' })
+        }
+      ]
     },
     {
       name: 'Total Families',
@@ -562,7 +972,17 @@ const DashboardPage = () => {
       changeType: (dashboardData?.familyStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.familyStats?.new_families || 0} new families`,
       color: 'from-green-500 to-teal-500',
-      route: '/admin/families'
+      onClick: () => navigate('/admin/families'),
+      quickActions: [
+        {
+          label: 'Add Family',
+          action: () => navigate('/admin/families?action=create')
+        },
+        {
+          label: 'View Recent',
+          action: () => navigate('/admin/families?sort=created&order=desc')
+        }
+      ]
     },
     {
       name: 'Active Groups',
@@ -572,7 +992,25 @@ const DashboardPage = () => {
       changeType: (dashboardData?.groupStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.groupStats?.total_groups || 0} total groups`,
       color: 'from-emerald-500 to-green-500',
-      route: '/admin/groups'
+      onClick: () => handleNavigateToGroups({ status: 'active' }),
+      quickActions: [
+        {
+          label: 'Create Group',
+          action: () => handleNavigateToGroups({ action: 'create' })
+        },
+        {
+          label: 'Need Leaders',
+          action: () => handleNavigateToGroups({ leader: 'no' })
+        },
+        {
+          label: 'View All',
+          action: () => handleNavigateToGroups()
+        },
+        {
+          label: 'Analytics',
+          action: () => handleNavigateToGroups({ view: 'analytics' })
+        }
+      ]
     },
     {
       name: 'Upcoming Events',
@@ -582,17 +1020,45 @@ const DashboardPage = () => {
       changeType: 'neutral',
       description: `${dashboardData?.eventStats?.this_month_events || 0} this month`,
       color: 'from-orange-500 to-red-500',
-      route: '/admin/events'
+      onClick: () => handleNavigateToEvents({ upcoming: 'true', view: 'calendar' }),
+      quickActions: [
+        {
+          label: 'Create Event',
+          action: () => handleNavigateToEvents({ action: 'create' })
+        },
+        {
+          label: 'Calendar View',
+          action: () => handleNavigateToEvents({ view: 'calendar' })
+        },
+        {
+          label: 'This Week',
+          action: () => handleNavigateToEvents({ upcoming: 'this_week' })
+        },
+        {
+          label: 'Event List',
+          action: () => handleNavigateToEvents({ view: 'list' })
+        }
+      ]
     },
     {
       name: 'Monthly Pledges',
-      value: `$${dashboardData?.pledgeStats?.monthly_total?.toLocaleString() || '0'}`,
+      value: `${dashboardData?.pledgeStats?.monthly_total?.toLocaleString() || '0'}`,
       icon: CurrencyDollarIcon,
       change: dashboardData?.pledgeStats?.growth_rate || 0,
       changeType: (dashboardData?.pledgeStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',
       description: `${dashboardData?.pledgeStats?.active_pledges || 0} active pledges`,
       color: 'from-yellow-500 to-orange-500',
-      route: '/admin/pledges'
+      onClick: () => navigate('/admin/pledges'),
+      quickActions: [
+        {
+          label: 'Record Pledge',
+          action: () => navigate('/admin/pledges?action=create')
+        },
+        {
+          label: 'View Active',
+          action: () => navigate('/admin/pledges?status=active')
+        }
+      ]
     },
     {
       name: 'System Health',
@@ -602,7 +1068,17 @@ const DashboardPage = () => {
       changeType: 'neutral',
       description: dashboardData?.systemHealth?.uptime || 'System monitoring',
       color: 'from-purple-500 to-indigo-500',
-      route: '/admin/reports'
+      onClick: () => navigate('/admin/reports'),
+      quickActions: [
+        {
+          label: 'View Reports',
+          action: () => navigate('/admin/reports')
+        },
+        {
+          label: 'System Status',
+          action: () => navigate('/admin/system')
+        }
+      ]
     }
   ];
 
@@ -772,75 +1248,13 @@ const DashboardPage = () => {
           </div>
         </Card>
 
-        {/* Stats Grid with Real Data */}
+        {/* Enhanced Stats Grid with Quick Actions */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '20px'
         }}>
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card 
-                key={stat.name}
-                style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animation: 'fadeInUp 0.5s ease-out forwards',
-                  opacity: 0,
-                  transform: 'translateY(20px)'
-                }}
-              >
-                <div style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      background: `linear-gradient(135deg, ${stat.color.split(' ')[1]}, ${stat.color.split(' ')[3]})`,
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Icon style={{ width: '24px', height: '24px', color: 'white' }} />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      to={stat.route}
-                      icon={EyeIcon}
-                      iconPosition="right"
-                    />
-                  </div>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                      {stat.name}
-                    </p>
-                    <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>
-                      {stat.value}
-                    </p>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Badge 
-                        variant={stat.changeType === 'positive' ? 'success' : stat.changeType === 'negative' ? 'danger' : 'default'}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        {stat.changeType === 'positive' ? (
-                          <ArrowUpIcon style={{ width: '12px', height: '12px' }} />
-                        ) : stat.changeType === 'negative' ? (
-                          <ArrowDownIcon style={{ width: '12px', height: '12px' }} />
-                        ) : null}
-                        <span>{stat.changeType !== 'neutral' ? `${Math.abs(stat.change).toFixed(1)}%` : '—'}</span>
-                      </Badge>
-                      <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
-                        {stat.description}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+          {stats.map((stat, index) => <StatCard key={stat.name} stat={stat} index={index} />)}
         </div>
 
         {/* Main Content Grid */}
@@ -850,118 +1264,8 @@ const DashboardPage = () => {
           gap: '24px'
         }}>
           
-          {/* Recent Families Card */}
-          <Card>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '24px 24px 0',
-              borderBottom: '1px solid #f3f4f6'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <HomeIcon style={{ width: '20px', height: '20px', color: 'white' }} />
-                </div>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                  Recent Families
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                to="/admin/families"
-                icon={ArrowTopRightOnSquareIcon}
-                iconPosition="right"
-              >
-                View all ({dashboardData?.familyStats?.total_families || 0})
-              </Button>
-            </div>
-            
-            <div style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {dashboardData?.recentFamilies?.length > 0 ? (
-                  dashboardData.recentFamilies.slice(0, 4).map((family, index) => (
-                    <Card 
-                      key={family.id}
-                      style={{
-                        background: '#f9fafb',
-                        border: '1px solid #f3f4f6',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          borderRadius: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <HomeIcon style={{ width: '24px', height: '24px', color: 'white' }} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#1f2937' }}>
-                              {family.family_name}
-                            </p>
-                            <Badge variant="success">
-                              {family.member_count || 0} members
-                            </Badge>
-                          </div>
-                          <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
-                            Primary: {family.primary_contact_name}
-                          </p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11px', color: '#9ca3af' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <CalendarDaysIcon style={{ width: '12px', height: '12px' }} />
-                              <span>Added {new Date(family.created_at).toLocaleDateString()}</span>
-                            </div>
-                            {family.address && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <MapPinIcon style={{ width: '12px', height: '12px' }} />
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {family.address}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          to={`/admin/families/${family.id}`}
-                          icon={EyeIcon}
-                        />
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
-                    <HomeIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#d1d5db' }} />
-                    <p style={{ marginBottom: '8px' }}>No recent families added</p>
-                    <Button 
-                      variant="ghost"
-                      to="/admin/families?action=create"
-                      icon={PlusIcon}
-                    >
-                      Add First Family
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+          {/* Enhanced Recent Families Card */}
+          <RecentFamiliesCard />
 
           {/* Alerts/Notifications Card */}
           <Card>
@@ -1053,88 +1357,8 @@ const DashboardPage = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card hover={false}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '24px 24px 0',
-            borderBottom: '1px solid #f3f4f6'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <SparklesIcon style={{ width: '20px', height: '20px', color: 'white' }} />
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-              Quick Actions
-            </h3>
-          </div>
-          
-          <div style={{ padding: '24px' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px'
-            }}>
-              {[
-                { name: 'Add Member', to: '/admin/members?action=create', icon: UsersIcon, color: '#3b82f6' },
-                { name: 'Add Family', to: '/admin/families?action=create', icon: HomeIcon, color: '#10b981' },
-                { name: 'Create Group', to: '/admin/groups?action=create', icon: UserGroupIcon, color: '#8b5cf6' },
-                { name: 'Create Event', to: '/admin/events?action=create', icon: CalendarDaysIcon, color: '#f59e0b' },
-                { name: 'Record Pledge', to: '/admin/pledges?action=create', icon: CurrencyDollarIcon, color: '#ef4444' },
-                { name: 'Generate Report', to: '/admin/reports', icon: DocumentChartBarIcon, color: '#6366f1' },
-                { name: 'Public Register', to: '/register', icon: UserIcon, color: '#14b8a6' },
-                { name: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon, color: '#64748b' }
-              ].map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <Card 
-                    key={action.name}
-                    style={{ background: '#fafafa', border: '1px solid #f0f0f0' }}
-                  >
-                    <Link
-                      to={action.to}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '20px',
-                        textAlign: 'center',
-                        textDecoration: 'none',
-                        color: 'inherit'
-                      }}
-                    >
-                      <div style={{
-                        width: '48px',
-                        height: '48px',
-                        background: `${action.color}20`,
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '12px'
-                      }}>
-                        <Icon style={{ width: '24px', height: '24px', color: action.color }} />
-                      </div>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                        {action.name}
-                      </span>
-                    </Link>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </Card>
+        {/* Enhanced Quick Actions */}
+        <QuickActionsGrid />
 
         {/* Footer */}
         <div style={{

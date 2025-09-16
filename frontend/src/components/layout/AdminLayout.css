@@ -401,6 +401,10 @@
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-light);
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .pageTitleSection {
@@ -414,12 +418,21 @@
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  /* font-size: 2rem;
+  font-weight: 800; */
+  /* color: #1f2937; */
+  margin: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .pageDescription {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
+  max-width: 600px;
 }
 
 .pageActions {

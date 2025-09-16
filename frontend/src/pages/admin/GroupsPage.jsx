@@ -1,7 +1,26 @@
-// Enhanced GroupsPage.jsx
+// Enhanced GroupsPage.jsx with Dashboard Integration and Improved Features
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Plus, Filter, RefreshCw, Download, Users, TrendingUp, AlertCircle, Eye } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { 
+  Plus, 
+  Filter, 
+  RefreshCw, 
+  Download, 
+  Users, 
+  TrendingUp, 
+  AlertCircle, 
+  Eye, 
+  Grid,
+  List as ListIcon,
+  BarChart3,
+  MapPin,
+  Calendar,
+  UserCheck,
+  UserX,
+  Settings,
+  Star,
+  Activity
+} from 'lucide-react';
 import { useGroups } from '../../hooks/useGroups';
 import { useToast } from '../../hooks/useToast';
 import { useRealTimeUpdates } from '../../hooks/useRealTimeUpdates';
@@ -14,24 +33,35 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import Avatar from '../../components/ui/Avatar';
 import styles from './AdminPages.module.css';
 
 const GroupsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  
+  // Get initial state from URL params (dashboard integration)
+  const initialAction = searchParams.get('action');
+  const initialView = searchParams.get('view') || 'grid';
+  const initialGroupId = searchParams.get('group');
+  
+  // State management
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [showGroupForm, setShowGroupForm] = useState(initialAction === 'create');
   const [showGroupDetail, setShowGroupDetail] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState(initialView);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [activeTab, setActiveTab] = useState('overview');
   const [filters, setFilters] = useState({
-    status: 'all',
-    category: 'all',
-    hasLeader: 'all',
-    memberCount: 'all',
-    isPublic: 'all'
+    status: searchParams.get('status') || 'all',
+    category: searchParams.get('category') || 'all',
+    hasLeader: searchParams.get('leader') || 'all',
+    memberCount: searchParams.get('size') || 'all',
+    isPublic: searchParams.get('visibility') || 'all'
   });
 
   const {
@@ -47,8 +77,6 @@ const GroupsPage = () => {
     getGroupStats,
     exportGroupData
   } = useGroups();
-
-  const { showToast } = useToast();
 
   // Real-time updates for groups
   useRealTimeUpdates('groups', {
@@ -115,6 +143,10 @@ const GroupsPage = () => {
           aValue = new Date(a.created_at);
           bValue = new Date(b.created_at);
           break;
+        case 'updated':
+          aValue = new Date(a.updated_at);
+          bValue = new Date(b.updated_at);
+          break;
         case 'category':
           aValue = a.category || '';
           bValue = b.category || '';
@@ -138,17 +170,52 @@ const GroupsPage = () => {
     return filtered;
   }, [groups, searchTerm, filters, sortBy, sortOrder]);
 
-  // Group statistics
+  // Enhanced group statistics
   const groupStats = useMemo(() => {
-    if (!groups) return { total: 0, active: 0, withoutLeaders: 0, totalMembers: 0, avgMembers: 0 };
+    if (!groups) return { 
+      total: 0, 
+      active: 0, 
+      withoutLeaders: 0, 
+      totalMembers: 0, 
+      avgMembers: 0,
+      categories: {},
+      recentActivity: 0,
+      publicGroups: 0,
+      privateGroups: 0
+    };
 
     const total = groups.length;
     const active = groups.filter(g => g.active).length;
     const withoutLeaders = groups.filter(g => !g.leader_name).length;
     const totalMembers = groups.reduce((sum, g) => sum + (g.member_count || 0), 0);
     const avgMembers = total > 0 ? Math.round(totalMembers / total) : 0;
+    const publicGroups = groups.filter(g => g.is_public).length;
+    const privateGroups = total - publicGroups;
 
-    return { total, active, withoutLeaders, totalMembers, avgMembers };
+    // Category breakdown
+    const categories = groups.reduce((acc, group) => {
+      const category = group.category || 'other';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Recent activity (groups updated in last 7 days)
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentActivity = groups.filter(g => 
+      new Date(g.updated_at) > weekAgo
+    ).length;
+
+    return { 
+      total, 
+      active, 
+      withoutLeaders, 
+      totalMembers, 
+      avgMembers,
+      categories,
+      recentActivity,
+      publicGroups,
+      privateGroups
+    };
   }, [groups]);
 
   // Load groups on mount and when filters change
@@ -168,15 +235,35 @@ const GroupsPage = () => {
     loadGroups();
   }, [searchTerm, filters, refreshGroups, searchGroups, showToast]);
 
+  // Handle initial group selection from URL
+  useEffect(() => {
+    if (initialGroupId && groups.length > 0) {
+      const group = groups.find(g => g.id === parseInt(initialGroupId));
+      if (group) {
+        setSelectedGroup(group);
+        setShowGroupDetail(true);
+      }
+    }
+  }, [initialGroupId, groups]);
+
+  // Update URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (viewMode !== 'grid') params.set('view', viewMode);
+    if (searchTerm) params.set('search', searchTerm);
+    if (filters.status !== 'all') params.set('status', filters.status);
+    if (filters.category !== 'all') params.set('category', filters.category);
+    if (filters.hasLeader !== 'all') params.set('leader', filters.hasLeader);
+    if (filters.memberCount !== 'all') params.set('size', filters.memberCount);
+    if (filters.isPublic !== 'all') params.set('visibility', filters.isPublic);
+    
+    setSearchParams(params);
+  }, [viewMode, searchTerm, filters, setSearchParams]);
+
   // Handle search with debouncing
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
-    if (term) {
-      setSearchParams({ search: term });
-    } else {
-      setSearchParams({});
-    }
-  }, [setSearchParams]);
+  }, []);
 
   // Group management handlers
   const handleCreateGroup = useCallback(() => {
@@ -192,7 +279,11 @@ const GroupsPage = () => {
   const handleViewGroup = useCallback((group) => {
     setSelectedGroup(group);
     setShowGroupDetail(true);
-  }, []);
+    // Update URL to include group ID
+    const params = new URLSearchParams(searchParams);
+    params.set('group', group.id.toString());
+    setSearchParams(params);
+  }, [searchParams, setSearchParams]);
 
   const handleSaveGroup = useCallback(async (groupData) => {
     try {
@@ -222,11 +313,15 @@ const GroupsPage = () => {
       if (selectedGroup && selectedGroup.id === groupId) {
         setSelectedGroup(null);
         setShowGroupDetail(false);
+        // Remove group from URL
+        const params = new URLSearchParams(searchParams);
+        params.delete('group');
+        setSearchParams(params);
       }
     } catch (error) {
       showToast(error.message || 'Failed to delete group', 'error');
     }
-  }, [deleteGroup, showToast, selectedGroup]);
+  }, [deleteGroup, showToast, selectedGroup, searchParams, setSearchParams]);
 
   const handleFilterChange = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -262,6 +357,14 @@ const GroupsPage = () => {
     setSearchParams({});
   }, [setSearchParams]);
 
+  // Tab configuration for analytics view
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'categories', label: 'Categories', icon: BarChart3 },
+    { id: 'leadership', label: 'Leadership', icon: UserCheck },
+    { id: 'activity', label: 'Recent Activity', icon: TrendingUp }
+  ];
+
   if (loading && !groups) {
     return (
       <div className={styles.loadingContainer}>
@@ -273,7 +376,7 @@ const GroupsPage = () => {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerContent}>
           <h1 className={styles.pageTitle}>Groups & Ministries</h1>
@@ -315,7 +418,7 @@ const GroupsPage = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Enhanced Stats Cards */}
       <div className={styles.statsGrid}>
         <Card className={styles.statCard}>
           <div className={styles.statHeader}>
@@ -354,7 +457,7 @@ const GroupsPage = () => {
         <Card className={styles.statCard}>
           <div className={styles.statHeader}>
             <div className={styles.statIcon}>
-              <AlertCircle size={24} />
+              <UserX size={24} />
             </div>
             <div>
               <h3>Need Leaders</h3>
@@ -371,16 +474,16 @@ const GroupsPage = () => {
         <Card className={styles.statCard}>
           <div className={styles.statHeader}>
             <div className={styles.statIcon}>
-              <Eye size={24} />
+              <Activity size={24} />
             </div>
             <div>
-              <h3>Filtered Results</h3>
-              <span className={styles.statValue}>{filteredAndSortedGroups.length}</span>
+              <h3>Recent Activity</h3>
+              <span className={styles.statValue}>{groupStats.recentActivity}</span>
             </div>
           </div>
           <div className={styles.statFooter}>
             <span className={styles.statSubtext}>
-              {filteredAndSortedGroups.length === groupStats.total ? 'Showing all' : 'Filtered view'}
+              Groups updated this week
             </span>
           </div>
         </Card>
@@ -405,6 +508,7 @@ const GroupsPage = () => {
               <option value="name">Sort by Name</option>
               <option value="members">Sort by Members</option>
               <option value="created">Sort by Created</option>
+              <option value="updated">Sort by Updated</option>
               <option value="category">Sort by Category</option>
               <option value="leader">Sort by Leader</option>
             </select>
@@ -422,16 +526,20 @@ const GroupsPage = () => {
                 variant={viewMode === 'grid' ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-              >
-                Grid
-              </Button>
+                icon={Grid}
+              />
               <Button
                 variant={viewMode === 'list' ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-              >
-                List
-              </Button>
+                icon={ListIcon}
+              />
+              <Button
+                variant={viewMode === 'analytics' ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('analytics')}
+                icon={BarChart3}
+              />
             </div>
           </div>
         </div>
@@ -535,37 +643,201 @@ const GroupsPage = () => {
         )}
       </div>
 
-      {/* Groups List */}
-      {error ? (
-        <Card className={styles.errorCard}>
-          <div className={styles.errorContent}>
-            <AlertCircle size={48} className={styles.errorIcon} />
-            <h3>Error Loading Groups</h3>
-            <p>{error}</p>
-            <Button onClick={handleRefresh} variant="primary">
-              Try Again
-            </Button>
+      {/* Content based on view mode */}
+      {viewMode === 'analytics' ? (
+        <div className={styles.analyticsView}>
+          {/* Analytics Tab Navigation */}
+          <div className={styles.tabNavigation}>
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`${styles.tabButton} ${activeTab === tab.id ? styles.active : ''}`}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
-        </Card>
+
+          {/* Analytics Content */}
+          <div className={styles.analyticsContent}>
+            {activeTab === 'overview' && (
+              <div className={styles.overviewGrid}>
+                <Card className={styles.analyticsCard}>
+                  <h3>Group Distribution</h3>
+                  <div className={styles.distributionChart}>
+                    <div className={styles.chartItem}>
+                      <div className={styles.chartBar} style={{ width: `${(groupStats.publicGroups / Math.max(groupStats.total, 1)) * 100}%` }}></div>
+                      <span>Public Groups: {groupStats.publicGroups}</span>
+                    </div>
+                    <div className={styles.chartItem}>
+                      <div className={styles.chartBar} style={{ width: `${(groupStats.privateGroups / Math.max(groupStats.total, 1)) * 100}%` }}></div>
+                      <span>Private Groups: {groupStats.privateGroups}</span>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className={styles.analyticsCard}>
+                  <h3>Health Indicators</h3>
+                  <div className={styles.healthMetrics}>
+                    <div className={styles.metric}>
+                      <UserCheck size={20} />
+                      <div>
+                        <span className={styles.metricValue}>
+                          {Math.round((groupStats.active / Math.max(groupStats.total, 1)) * 100)}%
+                        </span>
+                        <span className={styles.metricLabel}>Active Groups</span>
+                      </div>
+                    </div>
+                    <div className={styles.metric}>
+                      <Users size={20} />
+                      <div>
+                        <span className={styles.metricValue}>
+                          {Math.round(((groupStats.total - groupStats.withoutLeaders) / Math.max(groupStats.total, 1)) * 100)}%
+                        </span>
+                        <span className={styles.metricLabel}>With Leaders</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === 'categories' && (
+              <div className={styles.categoriesView}>
+                <Card className={styles.analyticsCard}>
+                  <h3>Groups by Category</h3>
+                  <div className={styles.categoryList}>
+                    {Object.entries(groupStats.categories).map(([category, count]) => (
+                      <div key={category} className={styles.categoryItem}>
+                        <span className={styles.categoryName}>{category}</span>
+                        <Badge variant="secondary">{count} groups</Badge>
+                      </div>
+                    ))}
+                    {Object.keys(groupStats.categories).length === 0 && (
+                      <p className={styles.emptyText}>No categories found</p>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === 'leadership' && (
+              <div className={styles.leadershipView}>
+                <Card className={styles.analyticsCard}>
+                  <h3>Leadership Status</h3>
+                  <div className={styles.leadershipStats}>
+                    <div className={styles.statRow}>
+                      <span>Groups with Leaders:</span>
+                      <Badge variant="success">{groupStats.total - groupStats.withoutLeaders}</Badge>
+                    </div>
+                    <div className={styles.statRow}>
+                      <span>Groups needing Leaders:</span>
+                      <Badge variant="warning">{groupStats.withoutLeaders}</Badge>
+                    </div>
+                    <div className={styles.statRow}>
+                      <span>Leadership Coverage:</span>
+                      <Badge variant={groupStats.withoutLeaders === 0 ? 'success' : 'warning'}>
+                        {Math.round(((groupStats.total - groupStats.withoutLeaders) / Math.max(groupStats.total, 1)) * 100)}%
+                      </Badge>
+                    </div>
+                  </div>
+                </Card>
+
+                {groupStats.withoutLeaders > 0 && (
+                  <Card className={styles.analyticsCard}>
+                    <h3>Groups Needing Leaders</h3>
+                    <div className={styles.needsLeaderList}>
+                      {filteredAndSortedGroups
+                        .filter(group => !group.leader_name)
+                        .slice(0, 5)
+                        .map(group => (
+                          <div key={group.id} className={styles.needsLeaderItem}>
+                            <div>
+                              <h4>{group.name}</h4>
+                              <p>{group.category || 'Uncategorized'}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => handleViewGroup(group)}
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'activity' && (
+              <div className={styles.activityView}>
+                <Card className={styles.analyticsCard}>
+                  <h3>Recent Activity</h3>
+                  <div className={styles.activityList}>
+                    {filteredAndSortedGroups
+                      .filter(group => {
+                        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                        return new Date(group.updated_at) > weekAgo;
+                      })
+                      .slice(0, 10)
+                      .map(group => (
+                        <div key={group.id} className={styles.activityItem}>
+                          <Avatar name={group.name} size="sm" />
+                          <div className={styles.activityDetails}>
+                            <h4>{group.name}</h4>
+                            <p>Updated {new Date(group.updated_at).toLocaleDateString()}</p>
+                          </div>
+                          <Badge variant="info">{group.member_count || 0} members</Badge>
+                        </div>
+                      ))}
+                    {groupStats.recentActivity === 0 && (
+                      <p className={styles.emptyText}>No recent activity</p>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
       ) : (
-        <GroupsList
-          groups={filteredAndSortedGroups}
-          loading={loading}
-          viewMode={viewMode}
-          onEdit={handleEditGroup}
-          onView={handleViewGroup}
-          onDelete={handleDeleteGroup}
-          emptyMessage={
-            searchTerm || Object.values(filters).some(v => v !== 'all')
-              ? 'No groups match your current filters.'
-              : 'No groups have been created yet.'
-          }
-          emptyAction={
-            searchTerm || Object.values(filters).some(v => v !== 'all')
-              ? { label: 'Clear Filters', action: clearFilters }
-              : { label: 'Create First Group', action: handleCreateGroup }
-          }
-        />
+        /* Groups List */
+        error ? (
+          <Card className={styles.errorCard}>
+            <div className={styles.errorContent}>
+              <AlertCircle size={48} className={styles.errorIcon} />
+              <h3>Error Loading Groups</h3>
+              <p>{error}</p>
+              <Button onClick={handleRefresh} variant="primary">
+                Try Again
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <GroupsList
+            groups={filteredAndSortedGroups}
+            loading={loading}
+            viewMode={viewMode}
+            onEdit={handleEditGroup}
+            onView={handleViewGroup}
+            onDelete={handleDeleteGroup}
+            emptyMessage={
+              searchTerm || Object.values(filters).some(v => v !== 'all')
+                ? 'No groups match your current filters.'
+                : 'No groups have been created yet.'
+            }
+            emptyAction={
+              searchTerm || Object.values(filters).some(v => v !== 'all')
+                ? { label: 'Clear Filters', action: clearFilters }
+                : { label: 'Create First Group', action: handleCreateGroup }
+            }
+          />
+        )
       )}
 
       {/* Group Form Modal */}
@@ -596,6 +868,10 @@ const GroupsPage = () => {
         onClose={() => {
           setShowGroupDetail(false);
           setSelectedGroup(null);
+          // Remove group from URL
+          const params = new URLSearchParams(searchParams);
+          params.delete('group');
+          setSearchParams(params);
         }}
         title={selectedGroup?.name || 'Group Details'}
         size="large"
@@ -608,6 +884,9 @@ const GroupsPage = () => {
           onClose={() => {
             setShowGroupDetail(false);
             setSelectedGroup(null);
+            const params = new URLSearchParams(searchParams);
+            params.delete('group');
+            setSearchParams(params);
           }}
         />
       </Modal>

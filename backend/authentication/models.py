@@ -483,6 +483,7 @@ class LoginAttempt(models.Model):
     user_agent = models.TextField(blank=True)
     attempted_at = models.DateTimeField(auto_now_add=True)
     successful = models.BooleanField(default=False)
+    success = models.BooleanField(default=False)
     suspicious = models.BooleanField(default=False)
     blocked = models.BooleanField(default=False)
     country = models.CharField(max_length=100, blank=True, null=True)

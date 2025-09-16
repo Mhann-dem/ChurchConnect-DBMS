@@ -2,7 +2,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
 
-// Simple UI Components
+// FIXED: Import the real members service instead of using mock
+import membersService from '../../services/members';
+
+// FIXED: Import real hooks
+import { useToast } from '../../hooks/useToast';
+import useAuth from '../../hooks/useAuth';
+
+// Simple UI Components (keeping as-is)
 const Button = ({ children, variant = 'default', onClick, disabled = false, ...props }) => {
   const variantClasses = {
     default: styles.buttonDefault,
@@ -27,7 +34,7 @@ const LoadingSpinner = ({ size = 'sm' }) => (
   <span className={`${styles.spinner} ${styles[`spinner-${size}`]}`} />
 );
 
-// Mock Step Components
+// [Keep all the Step components exactly as they are - PersonalInfo, ContactInfo, etc.]
 const StepIndicator = ({ steps, currentStep, completedSteps }) => (
   <div className={styles.stepIndicator}>
     {steps.map((step, index) => (
@@ -308,7 +315,7 @@ const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => 
   </div>
 );
 
-// Mock hooks and services
+// Keep existing useForm hook as-is
 const useForm = (initialData) => {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -352,23 +359,6 @@ const useForm = (initialData) => {
     resetForm
   };
 };
-
-const useToast = () => ({
-  showToast: (message, type) => console.log(`Toast: ${type} - ${message}`)
-});
-
-const mockMembersService = {
-  createMember: async (data) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { id: Date.now(), ...data };
-  }
-};
-
-// Mock Auth Context
-const AuthContext = React.createContext({
-  user: { id: 1, firstName: 'Admin', lastName: 'User', role: 'admin' },
-  isAuthenticated: true
-});
 
 const STEPS = [
   { id: 'personal', title: 'Personal Information', component: PersonalInfo },
@@ -455,6 +445,45 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
+// FIXED: Transform form data to match backend API expectations
+const transformFormDataForAPI = (formData) => {
+  return {
+    // Map frontend field names to backend field names
+    first_name: formData.firstName,
+    last_name: formData.lastName,
+    preferred_name: formData.preferredName || '',
+    email: formData.email,
+    date_of_birth: formData.dateOfBirth || null,
+    gender: formData.gender || null,
+    phone: formData.phone || '',
+    alternate_phone: formData.alternatePhone || '',
+    address: formData.address || '',
+    preferred_contact_method: formData.preferredContactMethod || 'email',
+    preferred_language: formData.preferredLanguage || 'English',
+    accessibility_needs: formData.accessibilityNeeds || '',
+    emergency_contact_name: formData.emergencyContactName || '',
+    emergency_contact_phone: formData.emergencyContactPhone || '',
+    ministry_interests: formData.ministryInterests || [],
+    prayer_request: formData.prayerRequest || '',
+    communication_opt_in: formData.communicationOptIn !== false,
+    is_active: true, // New members are active by default
+    registration_date: new Date().toISOString(),
+    registered_by: formData.registeredBy || null,
+    internal_notes: formData.internalNotes || '',
+    tags: formData.tags || [],
+    
+    // Handle pledge data if provided
+    ...(formData.pledgeAmount && formData.pledgeFrequency && {
+      pledge_data: {
+        amount: parseFloat(formData.pledgeAmount),
+        frequency: formData.pledgeFrequency,
+        start_date: new Date().toISOString(),
+        status: 'active'
+      }
+    })
+  };
+};
+
 const MemberRegistrationForm = ({ 
   isAdminMode = false, 
   onSuccess = null,
@@ -462,8 +491,8 @@ const MemberRegistrationForm = ({
   onCancel = null 
 }) => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
-  const { user, isAuthenticated } = useContext(AuthContext);
+  const { showToast } = useToast(); // FIXED: Use real hook
+  const { user, isAuthenticated } = useAuth(); // FIXED: Use real hook
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -488,7 +517,7 @@ const MemberRegistrationForm = ({
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
   });
 
-  // Auto-save functionality (using memory instead of localStorage for Claude.ai compatibility)
+  // Auto-save functionality (using memory instead of localStorage)
   useEffect(() => {
     const saveData = () => {
       const savedData = {
@@ -498,7 +527,6 @@ const MemberRegistrationForm = ({
         isAdminMode: effectiveAdminMode
       };
       
-      // Use in-memory storage instead of localStorage
       window.formDataCache = savedData;
     };
 
@@ -525,27 +553,32 @@ const MemberRegistrationForm = ({
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
 
+  // FIXED: Use real members service instead of mock
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     try {
-      const submitData = {
-        ...formData,
-        ...(effectiveAdminMode && {
-          registeredBy: user.id,
-          registrationContext: 'admin_portal',
-          internalNotes: formData.internalNotes
-        })
-      };
-
-      const result = await mockMembersService.createMember(submitData);
+      console.log('[RegistrationForm] Submitting form data:', formData);
       
+      // Transform the form data to match API expectations
+      const apiData = transformFormDataForAPI(formData);
+      console.log('[RegistrationForm] Transformed API data:', apiData);
+
+      // FIXED: Use real members service
+      const result = await membersService.createMember(apiData);
+      console.log('[RegistrationForm] Create member result:', result);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create member');
+      }
+
       // Clear saved data
       delete window.formDataCache;
 
       if (effectiveAdminMode && onSuccess) {
-        onSuccess(result);
-        showToast('Member registered successfully!', 'success');
+        console.log('[RegistrationForm] Calling onSuccess callback');
+        onSuccess(result.data);
+        showToast(`${result.data?.first_name || 'Member'} registered successfully!`, 'success');
       } else {
         showToast('Registration submitted successfully!', 'success');
         navigate('/thank-you', { 
@@ -558,7 +591,21 @@ const MemberRegistrationForm = ({
         });
       }
     } catch (error) {
-      showToast(error.message || 'An error occurred. Please try again.', 'error');
+      console.error('[RegistrationForm] Submit error:', error);
+      
+      // Handle specific error types
+      const errorMessage = error?.response?.data?.error || 
+                          error?.response?.data?.detail ||
+                          error?.validationErrors?.message ||
+                          error?.message || 
+                          'An error occurred. Please try again.';
+                          
+      showToast(errorMessage, 'error');
+      
+      // Log validation errors for debugging
+      if (error?.validationErrors) {
+        console.error('[RegistrationForm] Validation errors:', error.validationErrors);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -572,7 +619,7 @@ const MemberRegistrationForm = ({
         <div className={styles.adminHeader}>
           <h3>Admin Options</h3>
           <span className={styles.adminBadge}>
-            Registering as: {user?.firstName} {user?.lastName}
+            Registering as: {user?.firstName || user?.first_name} {user?.lastName || user?.last_name}
           </span>
         </div>
         
@@ -581,6 +628,7 @@ const MemberRegistrationForm = ({
             <label htmlFor="internalNotes">Internal Notes</label>
             <textarea
               id="internalNotes"
+              name="internalNotes"
               value={formData.internalNotes}
               onChange={handleChange}
               placeholder="Internal notes (not visible to member)"

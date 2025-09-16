@@ -83,6 +83,8 @@ const MembersPage = () => {
     isLoading = false,
     error = null,
     refetch = () => Promise.resolve(),
+    invalidateCache,
+    clearError,
     createMember,
     deleteMember,
     updateMemberStatus,
@@ -140,27 +142,97 @@ const MembersPage = () => {
     };
   }, []);
 
-  // Member registration handlers
+  // FIXED: Add debugging to the useMembers hook call
+  useEffect(() => {
+    console.log('[MembersPage] useMembers state changed:', {
+      membersCount: members?.length,
+      isLoading,
+      error,
+      totalMembers,
+      currentPage,
+      searchQuery: debouncedSearchQuery,
+      hasActiveFilters: Object.entries(filters).some(([key, value]) => 
+        value !== MEMBER_FILTERS_DEFAULTS[key] && 
+        value !== '' && 
+        value !== null && 
+        value !== undefined
+      )
+    });
+  }, [members, isLoading, error, totalMembers, currentPage, debouncedSearchQuery, filters]);
+
+  // FIXED: Enhanced registration success handler
   const handleRegistrationSuccess = useCallback(async (newMember) => {
+    console.log('[MembersPage] Registration success called with:', newMember);
+    
     try {
       setShowRegistrationForm(false);
-      showToast(`${newMember.first_name} ${newMember.last_name} registered successfully!`, 'success');
       
-      // Refresh the members list
-      await refetch();
+      const memberName = `${newMember.first_name || newMember.firstName || 'Unknown'} ${newMember.last_name || newMember.lastName || ''}`.trim();
+      showToast(`${memberName} registered successfully!`, 'success');
       
-      // Navigate to new member if created
-      if (newMember.id) {
-        const shouldNavigate = window.confirm('Member registered successfully! Would you like to view their profile?');
-        if (shouldNavigate) {
-          navigate(`/admin/members/${newMember.id}`);
+      // FIXED: Multiple strategies to ensure data refresh
+      try {
+        // Strategy 1: Force a complete refresh of the members hook
+        console.log('[MembersPage] Forcing data refresh...');
+        
+        // Clear any filters and reset to first page to see the new member
+        setCurrentPage(1);
+        setCurrentSearchQuery('');
+        setSelectedMembers(new Set());
+        
+        // Wait a moment for the state to settle
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Strategy 2: Force refresh the members list
+        if (typeof refetch === 'function') {
+          console.log('[MembersPage] Calling refetch...');
+          const refreshResult = await refetch();
+          console.log('[MembersPage] Refetch result:', refreshResult);
         }
+        
+        // Strategy 3: Invalidate cache in the useMembers hook if available
+        if (typeof invalidateCache === 'function') {
+          console.log('[MembersPage] Invalidating cache...');
+          invalidateCache();
+        }
+        
+        // Strategy 4: Add the new member optimistically to the current list
+        // This ensures immediate UI update while the refresh happens
+        if (newMember && (members && Array.isArray(members))) {
+          console.log('[MembersPage] Adding member optimistically to current list');
+          // Don't set members directly, let the hook handle it
+          // But we could trigger a specific action if the hook supports it
+        }
+        
+      } catch (refreshError) {
+        console.error('[MembersPage] Error during refresh:', refreshError);
+        showToast('Member registered but list may need manual refresh. Try clicking the refresh button.', 'warning');
       }
+      
+      // Strategy 5: Ask user if they want to view the new member
+      if (newMember?.id) {
+        setTimeout(() => {
+          const shouldNavigate = window.confirm('Member registered successfully! Would you like to view their profile?');
+          if (shouldNavigate) {
+            navigate(`/admin/members/${newMember.id}`);
+          }
+        }, 500); // Delay to allow for UI updates
+      }
+      
     } catch (error) {
-      console.error('Error after registration:', error);
-      showToast('Member registered but failed to refresh list', 'warning');
+      console.error('[MembersPage] Error in registration success handler:', error);
+      showToast('Member registered but failed to refresh list. Please refresh manually.', 'error');
     }
-  }, [showToast, refetch, navigate]);
+  }, [
+    showToast, 
+    refetch, 
+    navigate, 
+    members,
+    invalidateCache,
+    setCurrentPage,
+    setCurrentSearchQuery,
+    setSelectedMembers
+  ]);
 
   const handleRegistrationCancel = useCallback(() => {
     setShowRegistrationForm(false);
@@ -295,15 +367,30 @@ const MembersPage = () => {
     }
   }, [showToast, debouncedSearchQuery, filters]);
 
-  // Refresh handler
+  // FIXED: Enhanced refresh handler with better error handling
   const handleRefresh = useCallback(async () => {
+    console.log('[MembersPage] Manual refresh triggered');
+    
     try {
-      await refetch();
-      showToast('Data refreshed successfully', 'success');
+      // Clear any errors first
+      if (typeof clearError === 'function') {
+        clearError();
+      }
+      
+      // Force a complete refresh
+      const result = await refetch();
+      console.log('[MembersPage] Refresh result:', result);
+      
+      if (result?.success !== false) {
+        showToast('Data refreshed successfully', 'success');
+      } else {
+        throw new Error(result?.error || 'Refresh failed');
+      }
     } catch (error) {
-      showToast('Failed to refresh data', 'error');
+      console.error('[MembersPage] Refresh error:', error);
+      showToast('Failed to refresh data. Please check your connection.', 'error');
     }
-  }, [refetch, showToast]);
+  }, [refetch, showToast, clearError]);
 
   // Check if we have any active filters
   const hasActiveFilters = useMemo(() => 

@@ -1,17 +1,16 @@
-// hooks/useMembers.js - Production Ready with advanced caching and state management
+// hooks/useMembers.js - FIXED VERSION
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import membersService from '../services/members';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
-import { useRealTimeUpdates } from './useRealTimeUpdates';
 
 /**
- * Production-ready members hook with caching, real-time updates, and optimized performance
+ * FIXED: Simplified but reliable members hook
  * @param {Object} options - Configuration options
  * @returns {Object} Members state and actions
  */
 export const useMembers = (options = {}) => {
-  const { isAuthenticated, hasPermission } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   // Memoize options to prevent infinite re-renders
   const memoizedOptions = useMemo(() => ({
@@ -20,36 +19,17 @@ export const useMembers = (options = {}) => {
     page: options.page || 1,
     limit: options.limit || 25,
     autoFetch: options.autoFetch !== false,
-    enableCache: options.enableCache !== false,
-    enableRealTime: options.enableRealTime !== false,
     debounceMs: options.debounceMs || 300,
-    cacheTime: options.cacheTime || 5 * 60 * 1000, // 5 minutes
-    staleTime: options.staleTime || 2 * 60 * 1000   // 2 minutes
   }), [
     options.search,
     JSON.stringify(options.filters || {}),
     options.page,
     options.limit,
     options.autoFetch,
-    options.enableCache,
-    options.enableRealTime,
-    options.debounceMs,
-    options.cacheTime,
-    options.staleTime
+    options.debounceMs
   ]);
 
-  const { 
-    search, 
-    filters, 
-    page, 
-    limit, 
-    autoFetch, 
-    enableCache, 
-    enableRealTime,
-    debounceMs,
-    cacheTime,
-    staleTime
-  } = memoizedOptions;
+  const { search, filters, page, limit, autoFetch, debounceMs } = memoizedOptions;
 
   // Core state
   const [members, setMembers] = useState([]);
@@ -61,22 +41,10 @@ export const useMembers = (options = {}) => {
   // Refs for managing state
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
-  const cacheRef = useRef({});
-  const lastFetchKeyRef = useRef(null);
+  const lastFetchRef = useRef(null);
 
   // Debounce search term
   const debouncedSearch = useDebounce(search, debounceMs);
-
-  // Generate cache key
-  const cacheKey = useMemo(() => 
-    JSON.stringify({ 
-      search: debouncedSearch, 
-      filters, 
-      page, 
-      limit 
-    }), 
-    [debouncedSearch, filters, page, limit]
-  );
 
   // Cleanup on unmount
   useEffect(() => {
@@ -88,85 +56,6 @@ export const useMembers = (options = {}) => {
     };
   }, []);
 
-  // Cache utilities
-  const getCachedData = useCallback((key) => {
-    if (!enableCache) return null;
-    
-    const cached = cacheRef.current[key];
-    if (!cached) return null;
-    
-    const now = Date.now();
-    const isStale = (now - cached.timestamp) > staleTime;
-    const isExpired = (now - cached.timestamp) > cacheTime;
-    
-    if (isExpired) {
-      delete cacheRef.current[key];
-      return null;
-    }
-    
-    return { ...cached, isStale };
-  }, [enableCache, staleTime, cacheTime]);
-
-  const setCachedData = useCallback((key, data) => {
-    if (!enableCache) return;
-    
-    cacheRef.current[key] = {
-      ...data,
-      timestamp: Date.now()
-    };
-  }, [enableCache]);
-
-  const invalidateCache = useCallback((pattern) => {
-    if (!enableCache) return;
-    
-    if (!pattern) {
-      cacheRef.current = {};
-      return;
-    }
-    
-    Object.keys(cacheRef.current).forEach(key => {
-      if (key.includes(pattern)) {
-        delete cacheRef.current[key];
-      }
-    });
-  }, [enableCache]);
-
-  // Real-time updates handler
-  const handleRealTimeUpdate = useCallback((type, data) => {
-    if (!mountedRef.current) return;
-
-    switch (type) {
-      case 'member_created':
-        setMembers(prev => [data, ...prev]);
-        setTotalMembers(prev => prev + 1);
-        invalidateCache('search=');
-        break;
-        
-      case 'member_updated':
-        setMembers(prev => prev.map(member => 
-          member.id === data.id ? { ...member, ...data } : member
-        ));
-        invalidateCache(data.id);
-        break;
-        
-      case 'member_deleted':
-        setMembers(prev => prev.filter(member => member.id !== data.id));
-        setTotalMembers(prev => Math.max(0, prev - 1));
-        invalidateCache();
-        break;
-        
-      default:
-        console.log('[useMembers] Unknown real-time update type:', type);
-    }
-  }, [invalidateCache]);
-
-  // Set up real-time updates
-  const { isConnected } = useRealTimeUpdates('members', {
-    onCreate: (data) => handleRealTimeUpdate('member_created', data),
-    onUpdate: (data) => handleRealTimeUpdate('member_updated', data),
-    onDelete: (data) => handleRealTimeUpdate('member_deleted', data)
-  });
-
   // Cancel ongoing requests
   const cancelRequests = useCallback(() => {
     if (abortControllerRef.current) {
@@ -176,17 +65,13 @@ export const useMembers = (options = {}) => {
     return abortControllerRef.current.signal;
   }, []);
 
-  // Fetch members with caching and error handling
-  const fetchMembers = useCallback(async (options = {}) => {
-    const { 
-      forceRefresh = false, 
-      silent = false,
-      customFilters = {},
-      customPage = page,
-      customLimit = limit
-    } = options;
+  // FIXED: Simplified fetch function with better error handling
+  const fetchMembers = useCallback(async (fetchOptions = {}) => {
+    const { forceRefresh = false, silent = false } = fetchOptions;
 
+    // Don't fetch if not authenticated
     if (!isAuthenticated) {
+      console.warn('[useMembers] Not authenticated, skipping fetch');
       if (mountedRef.current) {
         setError('Authentication required');
         setIsLoading(false);
@@ -194,77 +79,87 @@ export const useMembers = (options = {}) => {
       return { success: false, error: 'Authentication required' };
     }
 
+    // Generate fetch key to prevent duplicate requests
     const fetchKey = JSON.stringify({ 
       search: debouncedSearch, 
-      filters: { ...filters, ...customFilters }, 
-      page: customPage, 
-      limit: customLimit 
+      filters, 
+      page, 
+      limit,
+      timestamp: forceRefresh ? Date.now() : 0
     });
 
     // Prevent duplicate requests
-    if (!forceRefresh && lastFetchKeyRef.current === fetchKey) {
+    if (!forceRefresh && lastFetchRef.current === fetchKey) {
+      console.log('[useMembers] Preventing duplicate fetch');
       return { success: true, fromCache: false };
     }
 
     try {
-      // Check cache first
-      if (!forceRefresh) {
-        const cached = getCachedData(fetchKey);
-        if (cached && !cached.isStale) {
-          if (mountedRef.current) {
-            setMembers(cached.data || []);
-            setTotalMembers(cached.totalMembers || 0);
-            setPagination(cached.pagination);
-            setError(null);
-            setIsLoading(false);
-          }
-          return { success: true, fromCache: true };
-        }
-      }
-
       const signal = cancelRequests();
-      lastFetchKeyRef.current = fetchKey;
+      lastFetchRef.current = fetchKey;
 
       if (mountedRef.current && !silent) {
         setIsLoading(true);
         setError(null);
       }
 
+      console.log('[useMembers] Fetching members with params:', {
+        search: debouncedSearch,
+        filters,
+        page,
+        limit,
+        forceRefresh
+      });
+
       const result = await membersService.getMembers({
         search: debouncedSearch,
-        filters: { ...filters, ...customFilters },
-        page: customPage,
-        limit: customLimit,
+        filters,
+        page,
+        limit,
         signal,
         forceRefresh
       });
 
-      if (!mountedRef.current) return { success: false, error: 'Component unmounted' };
+      if (!mountedRef.current) {
+        console.log('[useMembers] Component unmounted, ignoring result');
+        return { success: false, error: 'Component unmounted' };
+      }
 
       if (result.success) {
         const safeMembers = Array.isArray(result.data) ? result.data : [];
         const safeTotalMembers = typeof result.totalMembers === 'number' ? result.totalMembers : 0;
         
-        // Update state
+        console.log('[useMembers] Successfully fetched:', {
+          membersCount: safeMembers.length,
+          totalMembers: safeTotalMembers,
+          page,
+          pagination: result.pagination
+        });
+
+        // FIXED: Update state reliably
         setMembers(safeMembers);
         setTotalMembers(safeTotalMembers);
         setPagination(result.pagination);
         setError(null);
 
-        // Cache the result
-        setCachedData(fetchKey, {
-          data: safeMembers,
+        return { 
+          success: true, 
+          data: safeMembers, 
           totalMembers: safeTotalMembers,
           pagination: result.pagination
-        });
-
-        return { success: true, data: safeMembers, totalMembers: safeTotalMembers };
+        };
       } else {
-        setError(result.error || 'Failed to fetch members');
+        console.error('[useMembers] Fetch failed:', result.error);
+        
+        if (mountedRef.current) {
+          setError(result.error || 'Failed to fetch members');
+        }
+        
         return { success: false, error: result.error };
       }
     } catch (err) {
       if (err.name === 'AbortError') {
+        console.log('[useMembers] Request was cancelled');
         return { success: false, error: 'Request cancelled' };
       }
 
@@ -272,6 +167,8 @@ export const useMembers = (options = {}) => {
                           err?.response?.data?.detail || 
                           err?.message || 
                           'Failed to fetch members';
+
+      console.error('[useMembers] Fetch error:', errorMessage, err);
 
       if (mountedRef.current) {
         setError(errorMessage);
@@ -289,28 +186,34 @@ export const useMembers = (options = {}) => {
     filters, 
     page, 
     limit, 
-    getCachedData, 
-    setCachedData, 
     cancelRequests
   ]);
 
-  // CRUD Operations with optimistic updates
+  // FIXED: CRUD Operations with immediate UI updates
   const createMember = useCallback(async (memberData) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
+      console.log('[useMembers] Creating member:', memberData);
       const result = await membersService.createMember(memberData);
       
       if (result.success) {
-        // Optimistic update
-        if (mountedRef.current) {
-          setMembers(prev => [result.data, ...prev]);
-          setTotalMembers(prev => prev + 1);
-        }
+        console.log('[useMembers] Member created successfully:', result.data);
         
-        // Invalidate cache
-        invalidateCache();
+        // FIXED: Force immediate refresh to get the latest data
+        // Don't do optimistic updates - just refresh to ensure data consistency
+        const refreshResult = await fetchMembers({ forceRefresh: true, silent: true });
+        
+        if (refreshResult.success) {
+          console.log('[useMembers] Data refreshed after create');
+        } else {
+          console.warn('[useMembers] Failed to refresh after create, but member was created');
+        }
         
         return result;
       } else {
@@ -322,6 +225,8 @@ export const useMembers = (options = {}) => {
                           err?.message || 
                           'Failed to create member';
       
+      console.error('[useMembers] Create member error:', errorMessage, err);
+      
       if (mountedRef.current) {
         setError(errorMessage);
       }
@@ -332,43 +237,32 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [invalidateCache]);
+  }, [isAuthenticated, fetchMembers]);
 
   const updateMember = useCallback(async (memberId, memberData) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      // Optimistic update
-      const originalMember = members.find(m => m.id === memberId);
-      if (mountedRef.current) {
-        setMembers(prev => prev.map(member => 
-          member.id === memberId ? { ...member, ...memberData } : member
-        ));
-      }
-
+      console.log('[useMembers] Updating member:', memberId, memberData);
       const result = await membersService.updateMember(memberId, memberData);
       
       if (result.success) {
-        // Update with actual result
+        console.log('[useMembers] Member updated successfully');
+        
+        // Update the specific member in the list
         if (mountedRef.current) {
           setMembers(prev => prev.map(member => 
             member.id === memberId ? { ...member, ...result.data } : member
           ));
         }
         
-        // Invalidate related cache
-        invalidateCache(memberId);
-        
         return result;
       } else {
-        // Revert optimistic update
-        if (mountedRef.current && originalMember) {
-          setMembers(prev => prev.map(member => 
-            member.id === memberId ? originalMember : member
-          ));
-        }
-        
         throw new Error(result.error || 'Failed to update member');
       }
     } catch (err) {
@@ -377,6 +271,8 @@ export const useMembers = (options = {}) => {
                           err?.message || 
                           'Failed to update member';
       
+      console.error('[useMembers] Update member error:', errorMessage);
+      
       if (mountedRef.current) {
         setError(errorMessage);
       }
@@ -387,36 +283,31 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [members, invalidateCache]);
+  }, [isAuthenticated]);
 
   const deleteMember = useCallback(async (memberId) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      // Optimistic update
-      const originalMembers = members;
-      const memberToDelete = members.find(m => m.id === memberId);
-      
-      if (mountedRef.current) {
-        setMembers(prev => prev.filter(member => member.id !== memberId));
-        setTotalMembers(prev => Math.max(0, prev - 1));
-      }
-
+      console.log('[useMembers] Deleting member:', memberId);
       const result = await membersService.deleteMember(memberId);
       
       if (result.success) {
-        // Invalidate cache
-        invalidateCache();
+        console.log('[useMembers] Member deleted successfully');
+        
+        // Remove from current list immediately
+        if (mountedRef.current) {
+          setMembers(prev => prev.filter(member => member.id !== memberId));
+          setTotalMembers(prev => Math.max(0, prev - 1));
+        }
         
         return result;
       } else {
-        // Revert optimistic update
-        if (mountedRef.current) {
-          setMembers(originalMembers);
-          setTotalMembers(prev => prev + 1);
-        }
-        
         throw new Error(result.error || 'Failed to delete member');
       }
     } catch (err) {
@@ -425,6 +316,8 @@ export const useMembers = (options = {}) => {
                           err?.message || 
                           'Failed to delete member';
       
+      console.error('[useMembers] Delete member error:', errorMessage);
+      
       if (mountedRef.current) {
         setError(errorMessage);
       }
@@ -435,15 +328,20 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [members, invalidateCache]);
+  }, [isAuthenticated]);
 
   // Batch operations
   const bulkUpdateMembers = useCallback(async (memberIds, updates) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const result = await membersService.bulkUpdateMembers(memberIds, updates);
+      console.log('[useMembers] Bulk updating members:', memberIds.length);
+      const result = await membersService.performBulkAction('update', memberIds, updates);
       
       if (result.success) {
         // Refresh data after bulk update
@@ -465,14 +363,19 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [fetchMembers]);
+  }, [isAuthenticated, fetchMembers]);
 
   const bulkDeleteMembers = useCallback(async (memberIds) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const result = await membersService.bulkDeleteMembers(memberIds);
+      console.log('[useMembers] Bulk deleting members:', memberIds.length);
+      const result = await membersService.performBulkAction('delete', memberIds);
       
       if (result.success) {
         // Remove from current list
@@ -480,9 +383,6 @@ export const useMembers = (options = {}) => {
           setMembers(prev => prev.filter(member => !memberIds.includes(member.id)));
           setTotalMembers(prev => Math.max(0, prev - memberIds.length));
         }
-        
-        // Invalidate cache
-        invalidateCache();
         
         return result;
       } else {
@@ -501,42 +401,24 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [invalidateCache]);
+  }, [isAuthenticated]);
 
-  // Search members
-  const searchMembers = useCallback(async (searchQuery, searchFilters = {}) => {
-    return fetchMembers({
-      customFilters: { ...filters, ...searchFilters },
-      forceRefresh: true
-    });
-  }, [fetchMembers, filters]);
-
-  // Export members
-  const exportMembers = useCallback(async (exportFilters = {}, format = 'csv') => {
-    try {
-      const result = await membersService.exportMembers({
-        search: debouncedSearch,
-        filters: { ...filters, ...exportFilters },
-        format
-      });
-      
-      if (result.success) {
-        return result;
-      } else {
-        throw new Error(result.error || 'Failed to export members');
-      }
-    } catch (err) {
-      const errorMessage = err?.message || 'Failed to export members';
-      throw new Error(errorMessage);
-    }
-  }, [debouncedSearch, filters]);
-
-  // Auto-fetch effect
+  // Auto-fetch effect - FIXED: Proper dependency management
   useEffect(() => {
-    if (!autoFetch || !isAuthenticated) return;
+    if (!autoFetch || !isAuthenticated) {
+      console.log('[useMembers] Auto-fetch disabled or not authenticated');
+      return;
+    }
+
+    console.log('[useMembers] Auto-fetch triggered', {
+      search: debouncedSearch,
+      filters,
+      page,
+      limit
+    });
 
     fetchMembers({ silent: true });
-  }, [autoFetch, isAuthenticated, cacheKey, fetchMembers]);
+  }, [autoFetch, isAuthenticated, debouncedSearch, JSON.stringify(filters), page, limit, fetchMembers]);
 
   // Computed values
   const computedValues = useMemo(() => {
@@ -564,10 +446,12 @@ export const useMembers = (options = {}) => {
   }, []);
 
   const refresh = useCallback(async (silent = false) => {
+    console.log('[useMembers] Manual refresh requested');
     return fetchMembers({ forceRefresh: true, silent });
   }, [fetchMembers]);
 
   const resetState = useCallback(() => {
+    console.log('[useMembers] Resetting state');
     if (mountedRef.current) {
       setMembers([]);
       setTotalMembers(0);
@@ -575,8 +459,14 @@ export const useMembers = (options = {}) => {
       setError(null);
       setIsLoading(false);
     }
-    invalidateCache();
-  }, [invalidateCache]);
+    lastFetchRef.current = null;
+  }, []);
+
+  // Invalidate cache function for compatibility
+  const invalidateCache = useCallback(() => {
+    console.log('[useMembers] Cache invalidated (forcing next fetch)');
+    lastFetchRef.current = null;
+  }, []);
 
   return {
     // Data
@@ -590,7 +480,6 @@ export const useMembers = (options = {}) => {
     // State
     isLoading,
     error,
-    isConnected: enableRealTime && isConnected,
     
     // Actions
     fetchMembers,
@@ -599,8 +488,6 @@ export const useMembers = (options = {}) => {
     deleteMember,
     bulkUpdateMembers,
     bulkDeleteMembers,
-    searchMembers,
-    exportMembers,
     
     // Utilities
     refresh,
@@ -608,11 +495,18 @@ export const useMembers = (options = {}) => {
     resetState,
     invalidateCache,
     
-    // Cache info
-    getCacheInfo: () => Object.keys(cacheRef.current).map(key => ({
-      key,
-      timestamp: cacheRef.current[key].timestamp,
-      age: Date.now() - cacheRef.current[key].timestamp
-    }))
+    // Additional methods for compatibility
+    refetch: refresh,
+    getMember: (id) => members.find(m => m.id === id),
+    searchMembers: (query, searchFilters = {}) => fetchMembers({
+      forceRefresh: true,
+      customFilters: { ...filters, ...searchFilters }
+    }),
+    exportMembers: async (exportFilters = {}) => {
+      return membersService.exportMembers({
+        search: debouncedSearch,
+        filters: { ...filters, ...exportFilters }
+      });
+    }
   };
 };

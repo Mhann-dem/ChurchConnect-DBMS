@@ -6,22 +6,15 @@ import {
   UserGroupIcon, 
   CurrencyDollarIcon, 
   DocumentChartBarIcon,
-  CogIcon,
-  QuestionMarkCircleIcon,
   ArrowLeftOnRectangleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
-  GlobeAltIcon,
-  PlusIcon,
-  BellIcon,
   UserPlusIcon,
-  ClipboardDocumentListIcon,
   CalendarDaysIcon,
-  BuildingOffice2Icon,
   BuildingOfficeIcon,
-  ChartPieIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
 import { useSettings } from '../../context/SettingsContext';
@@ -32,111 +25,114 @@ const navigationItems = [
     href: '/admin/dashboard',
     icon: HomeIcon,
     permission: 'view_dashboard',
-    badge: null,
-    description: 'Overview & Statistics'
+    description: 'Overview & Analytics'
   },
   {
     name: 'Members',
     href: '/admin/members',
     icon: UsersIcon,
     permission: 'view_members',
-    badge: null, // Will be populated dynamically
-    description: 'Church Member Management'
+    description: 'Church Members'
   },
   {
     name: 'Families',
     href: '/admin/families',
     icon: BuildingOfficeIcon,
     permission: 'view_families',
-    badge: null, // Will be populated dynamically
-    description: 'Family Management'
+    description: 'Family Units'
   },
   {
     name: 'Groups',
     href: '/admin/groups',
     icon: UserGroupIcon,
     permission: 'view_groups',
-    badge: null, // Will be populated dynamically
-    description: 'Ministry & Small Groups'
+    description: 'Ministry Groups'
   },
   {
     name: 'Events',
     href: '/admin/events',
     icon: CalendarDaysIcon,
     permission: 'view_events',
-    badge: null, // Will be populated dynamically
-    description: 'Church Events & Activities'
+    description: 'Church Events'
   },
   {
     name: 'Pledges',
     href: '/admin/pledges',
     icon: CurrencyDollarIcon,
     permission: 'view_pledges',
-    badge: null, // Will be populated dynamically
-    description: 'Donations & Financial Commitments'
+    description: 'Financial Pledges'
   },
   {
     name: 'Reports',
     href: '/admin/reports',
     icon: DocumentChartBarIcon,
     permission: 'view_reports',
-    badge: null,
-    description: 'Analytics & Insights'
+    description: 'Analytics & Reports'
   },
   {
     name: 'Settings',
     href: '/admin/settings',
     icon: Cog6ToothIcon,
     permission: 'admin_settings',
-    badge: null,
-    description: 'System Configuration'
+    description: 'System Settings'
   }
 ];
 
-// Quick action items with correct URLs
+// Enhanced quick action items - now includes Events
 const quickActionItems = [
   {
     name: 'Add Member',
     href: '/admin/members?action=create',
     icon: UserPlusIcon,
-    color: 'from-blue-500 to-indigo-500',
-    description: 'Register new member'
+    color: '#3b82f6',
+    bgGradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+    description: 'New member'
+  },
+  {
+    name: 'Create Event', // Events now included
+    href: '/admin/events?action=create',
+    icon: CalendarDaysIcon,
+    color: '#f59e0b',
+    bgGradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    description: 'New event'
   },
   {
     name: 'Add Family',
     href: '/admin/families?action=create',
     icon: BuildingOfficeIcon,
-    color: 'from-green-500 to-teal-500',
-    description: 'Create family unit'
+    color: '#10b981',
+    bgGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    description: 'New family'
   },
   {
     name: 'Create Group',
     href: '/admin/groups?action=create',
     icon: UserGroupIcon,
-    color: 'from-purple-500 to-violet-500',
-    description: 'Ministry/small group'
-  },
-  {
-    name: 'Create Event',
-    href: '/admin/events?action=create',
-    icon: CalendarDaysIcon,
-    color: 'from-orange-500 to-red-500',
-    description: 'Church activity'
+    color: '#8b5cf6',
+    bgGradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    description: 'New group'
   },
   {
     name: 'Record Pledge',
     href: '/admin/pledges?action=create',
     icon: CurrencyDollarIcon,
-    color: 'from-yellow-500 to-orange-500',
-    description: 'Financial commitment'
+    color: '#ef4444',
+    bgGradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    description: 'New pledge'
   }
 ];
 
-export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet }) => {
+export const Sidebar = ({ 
+  isOpen, 
+  onClose, 
+  onCollapseChange, 
+  isMobile, 
+  isCollapsed,
+  sidebarWidth = 280
+}) => {
   const { logout, hasPermission, user } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [stats, setStats] = useState({
     members: 0,
@@ -148,31 +144,10 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
 
   const isDark = settings?.theme === 'dark';
 
-  // Auto-collapse logic
-  useEffect(() => {
-    if (isTablet && !isMobile) {
-      setIsCollapsed(true);
-    } else if (!isTablet && !isMobile && window.innerWidth >= 1400) {
-      setIsCollapsed(false);
-    }
-  }, [isMobile, isTablet]);
-
-  useEffect(() => {
-    if (onCollapseChange) {
-      onCollapseChange(isCollapsed);
-    }
-  }, [isCollapsed, onCollapseChange]);
-
   // Fetch sidebar stats
   useEffect(() => {
-    // This would normally fetch from your dashboard service
-    // For now, using placeholder data
     const fetchStats = async () => {
       try {
-        // const statsData = await dashboardService.getSidebarStats();
-        // setStats(statsData);
-        
-        // Placeholder data
         setStats({
           members: 1248,
           families: 312,
@@ -197,12 +172,12 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
   };
 
   const toggleCollapse = () => {
-    if (!isMobile) {
-      setIsCollapsed(!isCollapsed);
+    if (!isMobile && onCollapseChange) {
+      onCollapseChange(!isCollapsed);
     }
   };
 
-  // Update navigation items with stats
+  // Update navigation items with stats badges
   const navigationItemsWithStats = navigationItems.map(item => ({
     ...item,
     badge: (() => {
@@ -214,11 +189,11 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
         case 'Groups':
           return stats.groups > 0 ? stats.groups.toString() : null;
         case 'Events':
-          return stats.events > 0 ? `${stats.events} upcoming` : null;
+          return stats.events > 0 ? `${stats.events}` : null;
         case 'Pledges':
-          return stats.pledges > 0 ? `${stats.pledges} active` : null;
+          return stats.pledges > 0 ? `${stats.pledges}` : null;
         default:
-          return item.badge;
+          return null;
       }
     })()
   }));
@@ -227,38 +202,41 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     !item.permission || hasPermission(item.permission)
   );
 
+  // Enhanced styles
   const sidebarStyle = {
     position: 'fixed',
     top: 0,
-    left: isMobile && !isOpen ? '-320px' : 0,
+    left: 0,
     height: '100vh',
-    width: isCollapsed && !isMobile ? '72px' : '320px',
-    background: isDark 
-      ? 'linear-gradient(180deg, #111827 0%, #030712 100%)'
-      : 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-    borderRight: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
+    width: isMobile ? '320px' : (isCollapsed ? '72px' : `${sidebarWidth}px`),
+    background: 'linear-gradient(180deg, #0f172a 0%, #020617 100%)',
+    borderRight: '1px solid rgba(148, 163, 184, 0.1)',
     display: 'flex',
     flexDirection: 'column',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    zIndex: 50,
-    boxShadow: isMobile ? '8px 0 32px rgba(0, 0, 0, 0.3)' : '4px 0 24px rgba(0, 0, 0, 0.12)',
-    backdropFilter: 'blur(20px)'
+    zIndex: isMobile ? 1000 : 50,
+    boxShadow: isMobile 
+      ? '8px 0 32px rgba(0, 0, 0, 0.4)' 
+      : isCollapsed 
+        ? '2px 0 8px rgba(0, 0, 0, 0.15)' 
+        : '4px 0 24px rgba(0, 0, 0, 0.15)',
+    transform: isMobile && !isOpen ? 'translateX(-100%)' : 'translateX(0)',
   };
 
   const headerStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: isCollapsed && !isMobile ? '20px 16px' : '24px 24px',
-    borderBottom: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
-    minHeight: '80px',
+    padding: isCollapsed && !isMobile ? '16px 12px' : '20px 24px',
+    borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+    minHeight: '72px',
     background: 'rgba(255, 255, 255, 0.02)'
   };
 
   const brandStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: isCollapsed && !isMobile ? '0' : '12px',
     color: 'white',
     textDecoration: 'none',
     transition: 'all 0.3s ease'
@@ -268,7 +246,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     width: '40px',
     height: '40px',
     background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    borderRadius: '12px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -276,33 +254,26 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     fontWeight: 'bold',
     color: 'white',
     boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
-    border: '2px solid rgba(59, 130, 246, 0.2)'
+    flexShrink: 0
   };
 
-  const textStyle = {
+  const textContainerStyle = {
     display: isCollapsed && !isMobile ? 'none' : 'flex',
     flexDirection: 'column',
-    gap: '4px'
+    gap: '2px'
   };
 
   const titleStyle = {
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '700',
     color: 'white',
-    lineHeight: '1.2',
-    letterSpacing: '-0.025em'
+    lineHeight: '1.2'
   };
 
   const subtitleStyle = {
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#94a3b8',
     fontWeight: '500'
-  };
-
-  const controlsStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
   };
 
   const controlButtonStyle = {
@@ -317,51 +288,71 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     justifyContent: 'center',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    backdropFilter: 'blur(8px)'
+    flexShrink: 0
   };
 
   const navStyle = {
     flex: 1,
-    padding: isCollapsed && !isMobile ? '20px 12px' : '24px 20px',
+    padding: isCollapsed && !isMobile ? '16px 8px' : '20px 16px',
     overflowY: 'auto',
-    overflowX: 'hidden',
-    scrollbarWidth: 'thin',
-    scrollbarColor: 'rgba(148, 163, 184, 0.3) transparent'
+    overflowX: 'hidden'
   };
 
-  const sectionStyle = {
-    marginBottom: '32px'
+  // Quick Actions - Always visible, different layouts for collapsed/expanded
+  const quickActionsStyle = {
+    marginBottom: isCollapsed && !isMobile ? '24px' : '28px'
   };
 
-  const sectionTitleStyle = {
-    fontSize: '11px',
+  const quickActionsSectionTitleStyle = {
+    fontSize: '10px',
     fontWeight: '600',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '12px',
-    paddingLeft: isCollapsed && !isMobile ? '0' : '16px',
-    display: isCollapsed && !isMobile ? 'none' : 'block'
+    paddingLeft: isCollapsed && !isMobile ? '0' : '12px',
+    textAlign: isCollapsed && !isMobile ? 'center' : 'left',
+    display: isCollapsed && !isMobile ? 'none' : 'block' // Hide title when collapsed
   };
 
-  const quickActionStyle = (color) => ({
+  // For collapsed state - show as icon grid
+  const collapsedQuickActionsStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '8px',
+    justifyItems: 'center'
+  };
+
+  const collapsedQuickActionStyle = (item) => ({
+    width: '28px',
+    height: '28px',
+    background: item.bgGradient,
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textDecoration: 'none',
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    cursor: 'pointer'
+  });
+
+  // For expanded state - show as buttons
+  const expandedQuickActionStyle = (item) => ({
     width: '100%',
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: isCollapsed && !isMobile ? '12px 8px' : '16px 20px',
-    background: `linear-gradient(135deg, ${color})`,
+    padding: '12px 16px',
+    background: item.bgGradient,
     color: 'white',
-    borderRadius: '12px',
+    borderRadius: '10px',
     textDecoration: 'none',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
     transition: 'all 0.3s ease',
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start',
-    marginBottom: '8px'
+    marginBottom: '6px',
+    cursor: 'pointer'
   });
 
   const navListStyle = {
@@ -370,15 +361,15 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     padding: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px'
+    gap: '3px'
   };
 
   const getNavItemStyle = (isActive) => ({
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-    padding: isCollapsed && !isMobile ? '16px 12px' : '16px 20px',
-    borderRadius: '12px',
+    gap: '12px',
+    padding: isCollapsed && !isMobile ? '12px 8px' : '12px 16px',
+    borderRadius: '10px',
     textDecoration: 'none',
     fontSize: '14px',
     fontWeight: '500',
@@ -388,96 +379,65 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
       : 'transparent',
     transition: 'all 0.3s ease',
     position: 'relative',
-    overflow: 'hidden',
+    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start',
     border: `1px solid ${isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'}`,
-    boxShadow: isActive ? '0 8px 24px rgba(59, 130, 246, 0.3)' : 'none',
-    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start'
+    boxShadow: isActive ? '0 4px 16px rgba(59, 130, 246, 0.2)' : 'none'
   });
 
   const iconStyle = {
-    width: '20px',
-    height: '20px',
+    width: '18px',
+    height: '18px',
     flexShrink: 0
   };
 
   const navContentStyle = {
     display: isCollapsed && !isMobile ? 'none' : 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    gap: '4px'
-  };
-
-  const labelContainerStyle = {
-    display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    flex: 1,
+    minWidth: 0
   };
 
   const badgeStyle = (badge) => ({
     fontSize: '10px',
     fontWeight: '600',
-    padding: '4px 8px',
-    borderRadius: '12px',
-    background: badge?.includes('upcoming') || badge?.includes('active')
-      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-      : 'rgba(255, 255, 255, 0.2)',
+    padding: '3px 8px',
+    borderRadius: '10px',
+    background: 'rgba(255, 255, 255, 0.2)',
     color: 'white',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
     whiteSpace: 'nowrap'
   });
 
-  const descriptionStyle = {
-    fontSize: '11px',
-    color: '#94a3b8',
-    fontWeight: '400'
-  };
-
   const tooltipStyle = {
     position: 'absolute',
-    left: '84px',
+    left: '80px',
     top: '50%',
     transform: 'translateY(-50%)',
-    background: '#1f2937',
+    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
     color: 'white',
-    padding: '12px 16px',
-    borderRadius: '12px',
+    padding: '8px 12px',
+    borderRadius: '8px',
     fontSize: '12px',
     whiteSpace: 'nowrap',
     zIndex: 1000,
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
     border: '1px solid rgba(75, 85, 99, 0.3)',
-    pointerEvents: 'none',
-    backdropFilter: 'blur(8px)'
+    pointerEvents: 'none'
   };
 
   const footerStyle = {
-    padding: isCollapsed && !isMobile ? '20px 12px' : '24px 20px',
-    borderTop: `1px solid ${isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(148, 163, 184, 0.1)'}`,
+    padding: isCollapsed && !isMobile ? '16px 8px' : '20px 16px',
+    borderTop: '1px solid rgba(148, 163, 184, 0.1)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-    background: 'rgba(255, 255, 255, 0.02)'
-  };
-
-  const footerLinkStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: isCollapsed && !isMobile ? '12px 8px' : '12px 20px',
-    borderRadius: '8px',
-    textDecoration: 'none',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#94a3b8',
-    transition: 'all 0.3s ease',
-    justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start'
+    gap: '12px'
   };
 
   const userSectionStyle = {
     display: isCollapsed && !isMobile ? 'none' : 'block',
-    padding: '16px 20px',
+    padding: '12px 16px',
     background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '12px',
+    borderRadius: '10px',
     marginBottom: '12px',
     border: '1px solid rgba(255, 255, 255, 0.1)'
   };
@@ -489,17 +449,17 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
   };
 
   const userAvatarStyle = {
-    width: '40px',
-    height: '40px',
+    width: '36px',
+    height: '36px',
     background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    borderRadius: '10px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: '600',
     color: 'white',
-    border: '2px solid rgba(139, 92, 246, 0.3)'
+    flexShrink: 0
   };
 
   const userDetailsStyle = {
@@ -508,44 +468,27 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
   };
 
   const userNameStyle = {
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
     color: 'white',
-    marginBottom: '4px'
+    marginBottom: '2px'
   };
 
   const userRoleStyle = {
-    fontSize: '12px',
-    color: '#94a3b8',
-    marginBottom: '6px'
-  };
-
-  const userStatusStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
     fontSize: '11px',
-    color: '#22c55e'
-  };
-
-  const statusIndicatorStyle = {
-    width: '8px',
-    height: '8px',
-    background: '#22c55e',
-    borderRadius: '50%',
-    animation: 'pulse 2s infinite'
+    color: '#94a3b8'
   };
 
   const logoutButtonStyle = {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-    padding: isCollapsed && !isMobile ? '16px 8px' : '16px 20px',
+    gap: '12px',
+    padding: isCollapsed && !isMobile ? '12px 8px' : '12px 16px',
     background: 'transparent',
     border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '12px',
-    fontSize: '14px',
+    borderRadius: '10px',
+    fontSize: '13px',
     fontWeight: '500',
     color: '#ef4444',
     cursor: 'pointer',
@@ -557,45 +500,11 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
     <div style={sidebarStyle}>
       {/* Header */}
       <div style={headerStyle}>
-        {(!isCollapsed || isMobile) && (
-          <Link to="/admin/dashboard" style={brandStyle}>
-            <div style={logoStyle}>
-              <img 
-                src="/logo.png" 
-                alt="ChurchConnect" 
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  objectFit: 'contain'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-              />
-              <span 
-                style={{
-                  display: 'none',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: 'white'
-                }}
-              >
-                CC
-              </span>
-            </div>
-            <div style={textStyle}>
-              <div style={titleStyle}>ChurchConnect</div>
-              <div style={subtitleStyle}>Admin Panel</div>
-            </div>
-          </Link>
-        )}
-        
-        {isCollapsed && !isMobile && (
-          <Link to="/admin/dashboard" style={{...logoStyle, textDecoration: 'none'}}>
+        <Link to="/admin/dashboard" style={brandStyle}>
+          <div style={logoStyle}>
             <img 
               src="/logo.png" 
-              alt="ChurchConnect" 
+              alt="CC" 
               style={{
                 width: '24px',
                 height: '24px',
@@ -603,23 +512,28 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
               }}
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
+                e.target.nextSibling.style.display = 'flex';
               }}
             />
-            <span 
+            <div 
               style={{
                 display: 'none',
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 color: 'white'
               }}
             >
               CC
-            </span>
-          </Link>
-        )}
+            </div>
+          </div>
+          
+          <div style={textContainerStyle}>
+            <div style={titleStyle}>ChurchConnect</div>
+            <div style={subtitleStyle}>Admin Panel</div>
+          </div>
+        </Link>
         
-        <div style={controlsStyle}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           {!isMobile && (
             <button
               onClick={toggleCollapse}
@@ -628,12 +542,10 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
               onMouseEnter={(e) => {
                 e.target.style.background = 'rgba(255, 255, 255, 0.2)';
                 e.target.style.color = 'white';
-                e.target.style.transform = 'scale(1.1)';
               }}
               onMouseLeave={(e) => {
                 e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                 e.target.style.color = '#94a3b8';
-                e.target.style.transform = 'scale(1)';
               }}
             >
               {isCollapsed ? (
@@ -665,45 +577,80 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
 
       {/* Navigation */}
       <nav style={navStyle}>
-        {/* Quick Actions Section */}
-        {(!isCollapsed || isMobile) && (
-          <div style={sectionStyle}>
-            <h3 style={sectionTitleStyle}>Quick Actions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {quickActionItems.map((action, index) => {
+        {/* Quick Actions - Always Visible */}
+        <div style={quickActionsStyle}>
+          <h3 style={quickActionsSectionTitleStyle}>Quick Actions</h3>
+          
+          {isCollapsed && !isMobile ? (
+            // Collapsed view - Icon grid with tooltips
+            <div style={collapsedQuickActionsStyle}>
+              {quickActionItems.slice(0, 4).map((action) => {
                 const Icon = action.icon;
                 return (
                   <Link 
                     key={action.name}
-                    to={action.href} 
-                    style={quickActionStyle(action.color)}
+                    to={action.href}
+                    style={collapsedQuickActionStyle(action)}
+                    title={`${action.name} - ${action.description}`}
                     onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.3)';
+                      e.target.style.transform = 'scale(1.1)';
+                      e.target.style.boxShadow = `0 4px 16px ${action.color}40`;
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = 'none';
                     }}
                   >
-                    <Icon style={iconStyle} />
-                    {(!isCollapsed || isMobile) && (
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span>{action.name}</span>
-                        <span style={{ fontSize: '11px', opacity: 0.8 }}>{action.description}</span>
-                      </div>
-                    )}
+                    <Icon style={{ width: '14px', height: '14px', color: 'white' }} />
                   </Link>
                 );
               })}
             </div>
-          </div>
-        )}
+          ) : (
+            // Expanded view - Full buttons
+            <div>
+              {quickActionItems.slice(0, 4).map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link 
+                    key={action.name}
+                    to={action.href}
+                    style={expandedQuickActionStyle(action)}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-1px)';
+                      e.target.style.boxShadow = `0 8px 24px ${action.color}40`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    <Icon style={{ width: '16px', height: '16px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600' }}>{action.name}</span>
+                      <span style={{ fontSize: '10px', opacity: 0.8 }}>{action.description}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Main Navigation */}
-        <div style={sectionStyle}>
+        <div>
           {(!isCollapsed || isMobile) && (
-            <h3 style={sectionTitleStyle}>Navigation</h3>
+            <h3 style={{
+              fontSize: '10px',
+              fontWeight: '600',
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              marginBottom: '12px',
+              paddingLeft: '12px'
+            }}>
+              Navigation
+            </h3>
           )}
           
           <ul style={navListStyle}>
@@ -724,7 +671,6 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
                       if (!isActive) {
                         e.target.style.background = 'rgba(255, 255, 255, 0.08)';
                         e.target.style.color = '#ffffff';
-                        e.target.style.transform = 'translateX(4px)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -732,33 +678,39 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
                       if (!isActive) {
                         e.target.style.background = 'transparent';
                         e.target.style.color = '#cbd5e1';
-                        e.target.style.transform = 'translateX(0)';
                       }
                     }}
                   >
                     <Icon style={iconStyle} />
-                    {(!isCollapsed || isMobile) && (
-                      <div style={navContentStyle}>
-                        <div style={labelContainerStyle}>
-                          <span>{item.name}</span>
-                          {item.badge && (
-                            <span style={badgeStyle(item.badge)}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <div style={descriptionStyle}>{item.description}</div>
-                      </div>
-                    )}
+                    <div style={navContentStyle}>
+                      <span>{item.name}</span>
+                      {item.badge && (
+                        <span style={badgeStyle(item.badge)}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
                   </NavLink>
                   
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && !isMobile && hoveredItem === item.name && (
                     <div style={tooltipStyle}>
-                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
-                      <div style={{ fontSize: '10px', color: '#d1d5db' }}>{item.description}</div>
+                      <div style={{ fontWeight: '600', fontSize: '12px', marginBottom: '4px' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#d1d5db' }}>
+                        {item.description}
+                      </div>
                       {item.badge && (
-                        <div style={{ marginTop: '4px', fontSize: '9px', color: '#22c55e' }}>
+                        <div style={{ 
+                          marginTop: '4px', 
+                          fontSize: '9px', 
+                          color: '#22c55e',
+                          padding: '2px 6px',
+                          background: 'rgba(34, 197, 94, 0.1)',
+                          borderRadius: '4px',
+                          display: 'inline-block'
+                        }}>
                           {item.badge}
                         </div>
                       )}
@@ -773,52 +725,6 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
 
       {/* Footer */}
       <div style={footerStyle}>
-        {/* Public Site Link */}
-        <Link 
-          to="/" 
-          style={footerLinkStyle}
-          title={isCollapsed && !isMobile ? 'Visit Public Site' : ''}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-            e.target.style.color = '#ffffff';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'transparent';
-            e.target.style.color = '#94a3b8';
-          }}
-        >
-          <GlobeAltIcon style={iconStyle} />
-          {(!isCollapsed || isMobile) && (
-            <div style={navContentStyle}>
-              <div>Public Site</div>
-              <div style={descriptionStyle}>Visit Homepage</div>
-            </div>
-          )}
-        </Link>
-
-        {/* Help Link */}
-        <Link 
-          to="/admin/help" 
-          style={footerLinkStyle}
-          title={isCollapsed && !isMobile ? 'Help & Support' : ''}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-            e.target.style.color = '#ffffff';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'transparent';
-            e.target.style.color = '#94a3b8';
-          }}
-        >
-          <QuestionMarkCircleIcon style={iconStyle} />
-          {(!isCollapsed || isMobile) && (
-            <div style={navContentStyle}>
-              <div>Help & Support</div>
-              <div style={descriptionStyle}>Get assistance</div>
-            </div>
-          )}
-        </Link>
-
         {/* User Section */}
         {(!isCollapsed || isMobile) && user && (
           <div style={userSectionStyle}>
@@ -827,11 +733,11 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
                 {user?.first_name?.[0]}{user?.last_name?.[0]}
               </div>
               <div style={userDetailsStyle}>
-                <div style={userNameStyle}>{user?.first_name} {user?.last_name}</div>
-                <div style={userRoleStyle}>{user?.role || 'Administrator'}</div>
-                <div style={userStatusStyle}>
-                  <div style={statusIndicatorStyle}></div>
-                  <span>Online</span>
+                <div style={userNameStyle}>
+                  {user?.first_name} {user?.last_name}
+                </div>
+                <div style={userRoleStyle}>
+                  {user?.role || 'Administrator'}
                 </div>
               </div>
             </div>
@@ -846,33 +752,22 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(239, 68, 68, 0.1)';
             e.target.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-            e.target.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
             e.target.style.background = 'transparent';
             e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-            e.target.style.transform = 'translateY(0)';
           }}
         >
           <ArrowLeftOnRectangleIcon style={iconStyle} />
           {(!isCollapsed || isMobile) && (
-            <div style={navContentStyle}>
-              <div>Sign Out</div>
-              <div style={descriptionStyle}>Logout securely</div>
-            </div>
+            <span>Sign Out</span>
           )}
         </button>
       </div>
 
       <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        
-        /* Custom scrollbar */
         nav::-webkit-scrollbar {
-          width: 6px;
+          width: 4px;
         }
         
         nav::-webkit-scrollbar-track {
@@ -881,7 +776,7 @@ export const Sidebar = ({ isOpen, onClose, onCollapseChange, isMobile, isTablet 
         
         nav::-webkit-scrollbar-thumb {
           background: rgba(148, 163, 184, 0.3);
-          border-radius: 3px;
+          border-radius: 2px;
         }
         
         nav::-webkit-scrollbar-thumb:hover {

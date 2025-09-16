@@ -2426,3 +2426,828 @@
     color: #000 !important;
   }
 }
+
+
+/* ==============================================
+   Admin Layout Styles - Enhanced and Fixed
+   ============================================== */
+
+/* CSS Custom Properties for dynamic sizing */
+.adminLayout {
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --header-height: 80px;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-duration: 0.3s;
+  
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.adminLayout.dark {
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+}
+
+/* ==============================================
+   Sidebar Wrapper - Fixed Positioning
+   ============================================== */
+
+.sidebarWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  z-index: 50;
+  transition: width var(--transition-duration) var(--transition-timing);
+}
+
+.adminLayout.sidebarCollapsed .sidebarWrapper {
+  width: var(--sidebar-collapsed-width);
+}
+
+.adminLayout.mobile .sidebarWrapper {
+  width: 320px;
+  transform: translateX(-100%);
+  transition: transform var(--transition-duration) var(--transition-timing);
+  z-index: 1000;
+}
+
+.adminLayout.mobile.sidebarOpen .sidebarWrapper {
+  transform: translateX(0);
+}
+
+/* ==============================================
+   Main Wrapper - Proper Content Positioning
+   ============================================== */
+
+.mainWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-duration) var(--transition-timing);
+  min-height: 100vh;
+  position: relative;
+}
+
+.adminLayout.sidebarCollapsed .mainWrapper {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.adminLayout.mobile .mainWrapper {
+  margin-left: 0;
+}
+
+.adminLayout.tablet .mainWrapper {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+/* ==============================================
+   Header Styles
+   ============================================== */
+
+.header {
+  position: sticky;
+  top: 0;
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 40;
+  transition: all var(--transition-duration) var(--transition-timing);
+}
+
+.header.admin {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  color: white;
+}
+
+.header.scrolled {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 24px;
+  max-width: none;
+}
+
+/* ==============================================
+   Main Content Area
+   ============================================== */
+
+.mainContent {
+  flex: 1;
+  padding: 24px;
+  background: transparent;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+}
+
+.adminLayout.mobile .mainContent {
+  padding: 16px;
+}
+
+/* ==============================================
+   Content Sections
+   ============================================== */
+
+.breadcrumbsContainer {
+  margin-bottom: 16px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.adminLayout.dark .pageHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pageTitleSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.adminLayout.dark .pageTitle {
+  color: white;
+}
+
+.pageDescription {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.adminLayout.dark .pageDescription {
+  color: #94a3b8;
+}
+
+.pageActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 24px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-duration) ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: none;
+}
+
+.actionButton.secondary {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.actionButton.secondary:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ==============================================
+   Content Card and Area
+   ============================================== */
+
+.contentArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentCard {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminLayout.dark .contentCard {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(148, 163, 184, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.contentLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  color: #64748b;
+  gap: 16px;
+}
+
+.adminLayout.dark .contentLoading {
+  color: #94a3b8;
+}
+
+/* ==============================================
+   Mobile Overlay
+   ============================================== */
+
+.mobileOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity var(--transition-duration) ease;
+  pointer-events: none;
+}
+
+.adminLayout.mobile.sidebarOpen .mobileOverlay {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ==============================================
+   Offline Indicator
+   ============================================== */
+
+.offlineIndicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.adminLayout.offline {
+  filter: grayscale(0.3);
+}
+
+/* ==============================================
+   Skip Link (Accessibility)
+   ============================================== */
+
+.skipLink {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  transition: top var(--transition-duration) ease;
+}
+
+.skipLink:focus {
+  top: 16px;
+}
+
+/* ==============================================
+   Focus Trap
+   ============================================== */
+
+.focusTrap {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==============================================
+   Error Boundary Styles
+   ============================================== */
+
+.errorBoundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  padding: 24px;
+}
+
+.adminLayout.dark .errorBoundary {
+  background: linear-gradient(135deg, #1f1f1f 0%, #2a1a1a 100%);
+}
+
+.errorContent {
+  text-align: center;
+  max-width: 600px;
+  background: white;
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.adminLayout.dark .errorContent {
+  background: #1f2937;
+  color: white;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 24px;
+}
+
+.errorContent h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0 0 16px 0;
+}
+
+.adminLayout.dark .errorContent h2 {
+  color: #ef4444;
+}
+
+.errorContent p {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+}
+
+.adminLayout.dark .errorContent p {
+  color: #94a3b8;
+}
+
+.errorDetails {
+  text-align: left;
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.adminLayout.dark .errorDetails {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.errorDetails pre {
+  font-size: 12px;
+  color: #dc2626;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 8px 0;
+}
+
+.adminLayout.dark .errorDetails pre {
+  color: #ef4444;
+}
+
+.errorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.errorButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-duration) ease;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.errorButton.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.errorButton.primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.errorButton.secondary {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.errorButton.secondary:hover {
+  background: rgba(100, 116, 139, 0.1);
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+/* ==============================================
+   Loading Screen Styles
+   ============================================== */
+
+.loadingContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.loadingLogo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoSpinner {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+  position: relative;
+  z-index: 2;
+}
+
+.logoText {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.loadingRings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ring {
+  position: absolute;
+  border: 2px solid transparent;
+  border-top-color: rgba(59, 130, 246, 0.6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.ring1 {
+  width: 100px;
+  height: 100px;
+  top: -50px;
+  left: -50px;
+  animation-duration: 1s;
+}
+
+.ring2 {
+  width: 120px;
+  height: 120px;
+  top: -60px;
+  left: -60px;
+  animation-duration: 1.5s;
+  border-top-color: rgba(59, 130, 246, 0.4);
+}
+
+.ring3 {
+  width: 140px;
+  height: 140px;
+  top: -70px;
+  left: -70px;
+  animation-duration: 2s;
+  border-top-color: rgba(59, 130, 246, 0.2);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  text-align: center;
+  color: white;
+}
+
+.loadingText h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.025em;
+}
+
+.loadingText p {
+  font-size: 16px;
+  color: #94a3b8;
+  margin: 0 0 24px 0;
+}
+
+.loadingProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 2px;
+  animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+    transform: translateX(-100%);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+.progressText {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+/* ==============================================
+   Responsive Design
+   ============================================== */
+
+@media (max-width: 1024px) {
+  .adminLayout.tablet .mainWrapper {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+  
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .pageActions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .adminLayout.mobile .mainWrapper {
+    margin-left: 0;
+  }
+  
+  .headerContainer {
+    padding: 0 16px;
+  }
+  
+  .mainContent {
+    padding: 16px;
+  }
+  
+  .pageHeader {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+  
+  .pageTitle {
+    font-size: 24px;
+  }
+  
+  .pageDescription {
+    font-size: 14px;
+  }
+  
+  .contentCard {
+    border-radius: 12px;
+  }
+  
+  .actionButton {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .errorContent {
+    padding: 32px 24px;
+  }
+  
+  .errorActions {
+    flex-direction: column;
+  }
+  
+  .errorButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .loadingText h1 {
+    font-size: 24px;
+  }
+  
+  .loadingProgress {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerContainer {
+    padding: 0 12px;
+  }
+  
+  .mainContent {
+    padding: 12px;
+  }
+  
+  .pageTitle {
+    font-size: 20px;
+  }
+  
+  .logoSpinner {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .logoText {
+    font-size: 18px;
+  }
+  
+  .ring1 {
+    width: 80px;
+    height: 80px;
+    top: -40px;
+    left: -40px;
+  }
+  
+  .ring2 {
+    width: 100px;
+    height: 100px;
+    top: -50px;
+    left: -50px;
+  }
+  
+  .ring3 {
+    width: 120px;
+    height: 120px;
+    top: -60px;
+    left: -60px;
+  }
+}
+
+/* ==============================================
+   High Contrast Mode Support
+   ============================================== */
+
+@media (prefers-contrast: high) {
+  .contentCard {
+    border-width: 2px;
+  }
+  
+  .actionButton {
+    border-width: 2px;
+  }
+  
+  .errorButton {
+    border-width: 2px;
+  }
+}
+
+/* ==============================================
+   Reduced Motion Support
+   ============================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .ring1,
+  .ring2,
+  .ring3 {
+    animation: none;
+  }
+  
+  .progressFill {
+    animation: none;
+    width: 70%;
+  }
+}
+
+/* ==============================================
+   Print Styles
+   ============================================== */
+
+@media print {
+  .adminLayout {
+    background: white !important;
+  }
+  
+  .sidebarWrapper,
+  .mobileOverlay,
+  .offlineIndicator,
+  .actionButton,
+  .focusTrap {
+    display: none !important;
+  }
+  
+  .mainWrapper {
+    margin-left: 0 !important;
+  }
+  
+  .header {
+    position: static !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+  
+  .contentCard {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+}

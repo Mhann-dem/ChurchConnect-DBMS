@@ -6,7 +6,12 @@ import MemberFilters from './MemberFilters';
 import BulkActions from './BulkActions';
 import styles from './Members.module.css';
 
-// Simple UI components
+// Import the REAL hooks instead of mock ones
+import { useMembers } from '../../../hooks/useMembers'; // Fix this import path
+import useAuth from '../../../hooks/useAuth'; // Fix this import path
+import { useToast } from '../../../hooks/useToast'; // Fix this import path
+
+// Simple UI components (keep these as they are)
 const Button = ({ children, variant = 'default', onClick, disabled = false, className = '', ...props }) => {
   const variantClasses = {
     default: styles.buttonDefault,
@@ -126,110 +131,6 @@ const EmptyState = ({ title, description, icon: Icon = Users, actions = null }) 
   </div>
 );
 
-// Mock hooks
-const useAuth = () => ({
-  isAuthenticated: true,
-  isLoading: false,
-  authChecked: true
-});
-
-const useMembers = ({ page, search, filters, autoFetch = true }) => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalMembers, setTotalMembers] = useState(0);
-
-  const mockMembers = [
-    {
-      id: 1,
-      first_name: 'John',
-      last_name: 'Doe',
-      email: 'john.doe@email.com',
-      phone: '5551234567',
-      status: 'active',
-      registration_date: '2023-01-15',
-      groups: [{ id: 1, name: 'Youth Ministry' }],
-      pledge_amount: 100,
-      pledge_frequency: 'monthly'
-    },
-    {
-      id: 2,
-      first_name: 'Jane',
-      last_name: 'Smith',
-      email: 'jane.smith@email.com',
-      phone: '5559876543',
-      status: 'active',
-      registration_date: '2023-02-20',
-      groups: [{ id: 2, name: 'Choir' }],
-      pledge_amount: 75,
-      pledge_frequency: 'monthly'
-    }
-  ];
-
-  const fetchMembers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Apply search filter if provided
-      let filteredMembers = mockMembers;
-      if (search) {
-        filteredMembers = mockMembers.filter(member =>
-          `${member.first_name} ${member.last_name}`.toLowerCase().includes(search.toLowerCase()) ||
-          member.email.toLowerCase().includes(search.toLowerCase())
-        );
-      }
-      
-      setMembers(filteredMembers);
-      setTotalMembers(filteredMembers.length);
-      setTotalPages(Math.ceil(filteredMembers.length / 10));
-    } catch (err) {
-      setError('Failed to fetch members');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, filters]);
-
-  const deleteMember = useCallback(async (memberId) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setMembers(prev => prev.filter(member => member.id !== memberId));
-    setTotalMembers(prev => prev - 1);
-  }, []);
-
-  const updateMemberStatus = useCallback(async (memberId, status) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setMembers(prev => prev.map(member =>
-      member.id === memberId ? { ...member, status } : member
-    ));
-  }, []);
-
-  const refetch = useCallback(() => {
-    return fetchMembers();
-  }, [fetchMembers]);
-
-  return {
-    members,
-    loading,
-    error,
-    totalPages,
-    totalMembers,
-    fetchMembers,
-    deleteMember,
-    updateMemberStatus,
-    refetch
-  };
-};
-
-const useToast = () => ({
-  showToast: (message, type) => {
-    console.log(`Toast: ${type} - ${message}`);
-  }
-});
-
 const MembersList = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -250,7 +151,6 @@ const MembersList = () => {
   // Refs to prevent infinite loops
   const searchTimeoutRef = useRef(null);
   const mountedRef = useRef(true);
-  const lastFetchRef = useRef(null);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -262,42 +162,47 @@ const MembersList = () => {
     };
   }, []);
 
+  // Use the REAL useMembers hook
   const {
     members,
-    loading: membersLoading,
+    isLoading: membersLoading,
     error,
     totalPages,
     totalMembers,
-    fetchMembers,
+    createMember,
+    updateMember,
     deleteMember,
-    updateMemberStatus,
-    refetch
+    bulkUpdateMembers,
+    bulkDeleteMembers,
+    refresh,
+    clearError
   } = useMembers({
     page: currentPage,
     search: searchQuery,
     filters,
-    autoFetch: false
+    autoFetch: true, // Enable auto-fetch
+    enableCache: true,
+    enableRealTime: false // Disable real-time for debugging
   });
 
-  // Fetch members when auth is ready and parameters change
+  // Debug logging
   useEffect(() => {
-    if (!authChecked || authLoading) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      navigate('/admin/login');
-      return;
-    }
-
-    const currentFetchKey = JSON.stringify({ currentPage, searchQuery, filters });
-    if (lastFetchRef.current !== currentFetchKey) {
-      lastFetchRef.current = currentFetchKey;
-      fetchMembers();
-    }
-  }, [authChecked, authLoading, isAuthenticated, currentPage, searchQuery, filters, navigate, fetchMembers]);
+    console.log('[MembersList] Debug info:', {
+      isAuthenticated,
+      authChecked,
+      authLoading,
+      membersLoading,
+      membersCount: members?.length,
+      error,
+      currentPage,
+      searchQuery,
+      filters
+    });
+  }, [isAuthenticated, authChecked, authLoading, membersLoading, members, error, currentPage, searchQuery, filters]);
 
   const handleSearch = useCallback((query) => {
+    console.log('[MembersList] Search query:', query);
+    
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -311,11 +216,13 @@ const MembersList = () => {
   }, []);
 
   const handleFilterChange = useCallback((newFilters) => {
+    console.log('[MembersList] Filter change:', newFilters);
     setFilters(newFilters);
     setCurrentPage(1);
   }, []);
 
   const handlePageChange = useCallback((page) => {
+    console.log('[MembersList] Page change:', page);
     setCurrentPage(page);
   }, []);
 
@@ -341,85 +248,84 @@ const MembersList = () => {
     }
 
     try {
-      await deleteMember(memberId);
-      showToast('Member deleted successfully', 'success');
-      setSelectedMembers(prev => prev.filter(id => id !== memberId));
+      const result = await deleteMember(memberId);
+      if (result.success) {
+        showToast('Member deleted successfully', 'success');
+        setSelectedMembers(prev => prev.filter(id => id !== memberId));
+      } else {
+        throw new Error(result.error || 'Delete failed');
+      }
     } catch (error) {
-      showToast('Failed to delete member', 'error');
+      console.error('[MembersList] Delete error:', error);
+      showToast(error.message || 'Failed to delete member', 'error');
     }
   }, [deleteMember, showToast]);
 
   const handleStatusChange = useCallback(async (memberId, newStatus) => {
     try {
-      await updateMemberStatus(memberId, newStatus);
-      showToast(`Member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`, 'success');
+      const result = await updateMember(memberId, { status: newStatus });
+      if (result.success) {
+        showToast(`Member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`, 'success');
+      } else {
+        throw new Error(result.error || 'Update failed');
+      }
     } catch (error) {
-      showToast('Failed to update member status', 'error');
+      console.error('[MembersList] Status change error:', error);
+      showToast(error.message || 'Failed to update member status', 'error');
     }
-  }, [updateMemberStatus, showToast]);
+  }, [updateMember, showToast]);
 
   const handleRefresh = useCallback(async () => {
     try {
-      await refetch();
-      showToast('Members list refreshed', 'success');
+      clearError(); // Clear any existing errors
+      const result = await refresh();
+      if (result?.success) {
+        showToast('Members list refreshed', 'success');
+      }
     } catch (error) {
+      console.error('[MembersList] Refresh error:', error);
       showToast('Failed to refresh members list', 'error');
     }
-  }, [refetch, showToast]);
+  }, [refresh, showToast, clearError]);
 
   const handleExport = useCallback(() => {
     showToast('Export functionality coming soon', 'info');
   }, [showToast]);
 
   const handleBulkAction = useCallback(async (action, memberIds, data = {}) => {
-    // Simulate bulk action
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    switch (action) {
-      case 'delete':
-        setSelectedMembers([]);
-        return { message: `Deleted ${memberIds.length} members` };
-      case 'export':
-        return { message: `Exported ${memberIds.length} members` };
-      case 'tag':
-        return { message: `Tagged ${memberIds.length} members` };
-      case 'email':
-        return { message: `Sent email to ${memberIds.length} members` };
-      case 'activate':
-        return { message: `Activated ${memberIds.length} members` };
-      case 'deactivate':
-        return { message: `Deactivated ${memberIds.length} members` };
-      default:
-        throw new Error('Unknown action');
+    try {
+      let result;
+      
+      switch (action) {
+        case 'delete':
+          result = await bulkDeleteMembers(memberIds);
+          setSelectedMembers([]);
+          break;
+        case 'export':
+          showToast('Export functionality coming soon', 'info');
+          return { message: `Export initiated for ${memberIds.length} members` };
+        case 'activate':
+          result = await bulkUpdateMembers(memberIds, { status: 'active' });
+          break;
+        case 'deactivate':
+          result = await bulkUpdateMembers(memberIds, { status: 'inactive' });
+          break;
+        default:
+          throw new Error('Unknown action');
+      }
+      
+      if (result?.success) {
+        showToast(result.message || `Action completed for ${memberIds.length} members`, 'success');
+        return result;
+      } else {
+        throw new Error(result?.error || 'Bulk action failed');
+      }
+    } catch (error) {
+      console.error('[MembersList] Bulk action error:', error);
+      showToast(error.message || 'Bulk action failed', 'error');
+      throw error;
     }
-  }, []);
-
-  const handleImportMembers = useCallback(async (memberData, options = {}) => {
-    // Simulate import
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const successful = memberData.length;
-    const skipped = 0;
-    
-    // Add imported members to the list
-    const newMembers = memberData.map((data, index) => ({
-      id: Date.now() + index,
-      first_name: data.firstName || 'Unknown',
-      last_name: data.lastName || 'User',
-      email: data.email || `user${index}@example.com`,
-      phone: data.phone || '555-0000',
-      status: 'active',
-      registration_date: new Date().toISOString(),
-      groups: [],
-      pledge_amount: data.pledgeAmount || 0,
-      pledge_frequency: data.pledgeFrequency || 'monthly'
-    }));
-    
-    setMembers(prev => [...newMembers, ...prev]);
-    setTotalMembers(prev => prev + successful);
-    
-    return { successful, skipped };
-  }, []);
+  }, [bulkDeleteMembers, bulkUpdateMembers, showToast]);
 
   // Show loading while auth is being checked
   if (!authChecked || authLoading) {
@@ -432,6 +338,8 @@ const MembersList = () => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
+    console.log('[MembersList] Not authenticated, redirecting to login');
+    navigate('/admin/login');
     return (
       <div className={styles.container}>
         <div className={styles.error}>
@@ -442,7 +350,7 @@ const MembersList = () => {
   }
 
   // Show loading for initial members fetch
-  if (membersLoading && !members.length) {
+  if (membersLoading && (!members || members.length === 0)) {
     return (
       <div className={styles.container}>
         <LoadingSpinner message="Loading members..." />
@@ -452,6 +360,7 @@ const MembersList = () => {
 
   // Show error state with retry option
   if (error) {
+    console.error('[MembersList] Error state:', error);
     return (
       <div className={styles.container}>
         <div className={styles.error}>
@@ -475,6 +384,8 @@ const MembersList = () => {
     );
   }
 
+  console.log('[MembersList] Rendering with members:', members?.length || 0);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -484,7 +395,7 @@ const MembersList = () => {
             Members
           </h1>
           <p className={styles.subtitle}>
-            {totalMembers} total members
+            {totalMembers || 0} total members
           </p>
         </div>
         <div className={styles.actions}>
@@ -536,8 +447,8 @@ const MembersList = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onClose={() => setShowFilters(false)}
-            totalMembers={totalMembers}
-            filteredCount={members.length}
+            totalMembers={totalMembers || 0}
+            filteredCount={members?.length || 0}
           />
         )}
 
@@ -546,15 +457,14 @@ const MembersList = () => {
             selectedMembers={selectedMembers}
             onClearSelection={() => setSelectedMembers([])}
             onBulkAction={handleBulkAction}
-            onImportMembers={handleImportMembers}
-            totalMembers={totalMembers}
-            allMembers={members}
+            totalMembers={totalMembers || 0}
+            allMembers={members || []}
           />
         )}
       </div>
 
       <div className={styles.content}>
-        {members.length === 0 ? (
+        {!members || members.length === 0 ? (
           <EmptyState
             title="No members found"
             description={
@@ -578,7 +488,7 @@ const MembersList = () => {
               <div className={styles.bulkSelect}>
                 <input
                   type="checkbox"
-                  checked={selectedMembers.length === members.length}
+                  checked={selectedMembers.length === members.length && members.length > 0}
                   onChange={handleSelectAll}
                   disabled={membersLoading}
                 />

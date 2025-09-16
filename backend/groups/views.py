@@ -1,4 +1,4 @@
-# backend/churchconnect/groups/views.py - COMPLETE FIX
+# backend/churchconnect/groups/views.py - COMPLETE FILE WITH FIXED STATISTICS
 
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
@@ -252,76 +252,102 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def statistics(self, request):
-        """Get comprehensive group statistics"""
+        """Get comprehensive group statistics - COMPLETELY FIXED"""
         try:
+            logger.info(f"[GroupViewSet] Statistics request from: {getattr(request.user, 'email', 'anonymous')}")
+            
             # Basic counts
             total_groups = Group.objects.count()
             active_groups = Group.objects.filter(is_active=True).count()
             public_groups = Group.objects.filter(is_public=True, is_active=True).count()
-            
+        
             # Total active memberships
             total_memberships = MemberGroupRelationship.objects.filter(
                 is_active=True,
                 status='active'
             ).count()
-            
-            # Average group size
-            avg_group_size = Group.objects.filter(is_active=True).annotate(
-                member_count=models.Count(
+        
+            # Average group size - Calculate properly
+            groups_with_member_counts = Group.objects.filter(is_active=True).annotate(
+                active_member_count=models.Count(
                     'memberships', 
                     filter=models.Q(memberships__is_active=True, memberships__status='active')
                 )
-            ).aggregate(avg_size=models.Avg('member_count'))['avg_size'] or 0
+            )
             
-            # Groups by category
-            categories_stats = GroupCategory.objects.filter(is_active=True).annotate(
-                group_count=models.Count(
-                    'groups__group', 
-                    filter=models.Q(groups__group__is_active=True)
-                )
-            ).values('name', 'group_count').order_by('name')
+            avg_size_aggregate = groups_with_member_counts.aggregate(
+                avg_size=models.Avg('active_member_count')
+            )
+            avg_group_size = avg_size_aggregate['avg_size'] or 0
 
-            # Largest group
-            largest_group_data = Group.objects.filter(is_active=True).annotate(
-                member_count=models.Count(
-                    'memberships', 
-                    filter=models.Q(memberships__is_active=True, memberships__status='active')
-                )
-            ).order_by('-member_count').first()
-            
+            # FIXED: Groups by category - Use correct relationship path
+            categories_stats = []
+            try:
+                # Get categories and count their groups through the relationship table
+                for category in GroupCategory.objects.filter(is_active=True):
+                    group_count = Group.objects.filter(
+                        categories__category=category,  # Through GroupCategoryRelationship
+                        is_active=True
+                    ).count()
+                    categories_stats.append({
+                        'name': category.name,
+                        'group_count': group_count
+                    })
+                
+                # Sort by name
+                categories_stats.sort(key=lambda x: x['name'])
+                
+            except Exception as e:
+                logger.error(f"Error calculating category stats: {str(e)}")
+                categories_stats = []
+
+            # Largest group - Get the group with most active members
             largest_group = None
-            if largest_group_data:
-                largest_group = {
-                    'name': largest_group_data.name,
-                    'member_count': largest_group_data.member_count
-                }
+            try:
+                largest_group_obj = groups_with_member_counts.order_by('-active_member_count').first()
+                
+                if largest_group_obj and largest_group_obj.active_member_count > 0:
+                    largest_group = {
+                        'name': largest_group_obj.name,
+                        'member_count': largest_group_obj.active_member_count
+                    }
+            except Exception as e:
+                logger.error(f"Error finding largest group: {str(e)}")
 
             # Newest groups (last 5)
-            newest_groups = Group.objects.filter(is_active=True).order_by('-created_at')[:5]
-            newest_groups_data = [{
-                'name': group.name,
-                'created_at': group.created_at,
-                'member_count': group.memberships.filter(is_active=True, status='active').count()
-            } for group in newest_groups]
+            newest_groups_data = []
+            try:
+                newest_groups = groups_with_member_counts.order_by('-created_at')[:5]
+                
+                newest_groups_data = [{
+                    'name': group.name,
+                    'created_at': group.created_at,
+                    'member_count': group.active_member_count
+                } for group in newest_groups]
+                
+            except Exception as e:
+                logger.error(f"Error getting newest groups: {str(e)}")
 
             stats_data = {
                 'total_groups': total_groups,
                 'active_groups': active_groups,
                 'public_groups': public_groups,
                 'total_memberships': total_memberships,
-                'average_group_size': round(avg_group_size, 1),
-                'categories': list(categories_stats),
+                'average_group_size': round(float(avg_group_size), 1),
+                'categories': categories_stats,
                 'largest_group': largest_group,
                 'newest_groups': newest_groups_data
             }
 
+            logger.info(f"[GroupViewSet] Statistics returned successfully: {total_groups} total groups, {active_groups} active")
+            
             serializer = GroupStatsSerializer(stats_data)
             return Response(serializer.data)
             
         except Exception as e:
-            logger.error(f"Error generating group statistics: {str(e)}")
+            logger.error(f"Error generating group statistics: {str(e)}", exc_info=True)
             return Response(
-                {'error': 'Error generating statistics'},
+                {'error': 'Error generating statistics', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
