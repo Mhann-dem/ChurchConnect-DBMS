@@ -41,7 +41,7 @@ export const eventsService = {
   getEvent: async (id) => {
     try {
       const response = await api.get(`/events/${id}/`);
-      return response.data;
+      return { data: response.data, success: true };
     } catch (error) {
       console.error('[EventsService] Error getting event:', error);
       throw error;
@@ -77,7 +77,7 @@ export const eventsService = {
       console.log('[EventsService] Deleting event:', id);
       const response = await api.delete(`/events/${id}/`);
       console.log('[EventsService] Event deleted:', response);
-      return response.data;
+      return { success: true, data: response.data };
     } catch (error) {
       console.error('[EventsService] Error deleting event:', error);
       throw error;
@@ -278,6 +278,18 @@ export const eventsService = {
     }
   },
 
+  // Categories endpoint (for EventForm)
+  getCategories: async (params = {}) => {
+    try {
+      const response = await api.get('/events/categories/', { params });
+      return response.data || { results: [] };
+    } catch (error) {
+      console.error('[EventsService] Error getting categories:', error);
+      // Return empty results for now
+      return { results: [] };
+    }
+  },
+
   // Helper methods for frontend
   formatEventForCalendar: (events) => {
     if (!Array.isArray(events)) return [];
@@ -385,3 +397,6 @@ export const eventsService = {
     };
   }
 };
+
+// Export as both named and default for compatibility
+export default eventsService;

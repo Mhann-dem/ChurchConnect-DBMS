@@ -47,6 +47,9 @@ const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 // FIXED: Add the missing AdminEventsPage import
 const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
 
+// NEW: Add FamiliesPage import
+const FamiliesPage = lazy(() => import('./pages/admin/FamiliesPage'));
+
 // Member login page
 const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
 
@@ -171,6 +174,9 @@ function App() {
             
             {/* FIXED: Add the missing events route */}
             <Route path="events" element={<AdminEventsPage />} />
+            
+            {/* NEW: Add Families Management */}
+            <Route path="families/*" element={<FamiliesPage />} />
             
             {/* Member Management */}
             <Route path="members" element={<MembersPage />} />

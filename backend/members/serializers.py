@@ -7,6 +7,8 @@ from datetime import date
 from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
 import phonenumbers
+from django.core.exceptions import ValidationError
+
 
 User = get_user_model()
 
@@ -223,33 +225,58 @@ class MemberAdminCreateSerializer(serializers.ModelSerializer):
             'import_batch_id', 'import_row_number'
         ]
     
-    def validate_email(self, value):
-        """Flexible email validation for admins"""
-        admin_override = self.context.get('admin_override', False)
+    def validate_phone(self, value):
+        """Enhanced phone validation"""
+        if not value:
+            return value
         
-        queryset = Member.objects.filter(email=value)
-        if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
-        
-        if queryset.exists() and not admin_override:
-            raise serializers.ValidationError("A member with this email already exists.")
-        
-        return value
+        try:
+            # Handle string input
+            phone_str = str(value)
+            
+            # If it doesn't start with +, add it
+            if not phone_str.startswith('+'):
+                # Clean digits only
+                cleaned = ''.join(filter(str.isdigit, phone_str))
+                if len(cleaned) == 10:
+                    phone_str = f"+1{cleaned}"
+                elif len(cleaned) == 11 and cleaned.startswith('1'):
+                    phone_str = f"+{cleaned}"
+                else:
+                    phone_str = f"+{cleaned}"
+            
+            # Parse and validate
+            parsed_number = phonenumbers.parse(phone_str, None)
+            
+            if not phonenumbers.is_valid_number(parsed_number):
+                raise serializers.ValidationError("Please enter a valid phone number.")
+            
+            return PhoneNumber.from_string(phone_str)
+            
+        except (NumberParseException, ValueError):
+            raise serializers.ValidationError("Invalid phone number format.")
     
-    def validate_date_of_birth(self, value):
-        """Flexible date validation for admins"""
-        admin_override = self.context.get('admin_override', False)
-        
-        if value > date.today() and not admin_override:
-            raise serializers.ValidationError("Date of birth cannot be in the future.")
-        return value
+    def validate_emergency_contact_phone(self, value):
+        """Same validation for emergency contact phone"""
+        if not value:
+            return value
+        return self.validate_phone(value)
+    
+    def validate_alternate_phone(self, value):
+        """Same validation for alternate phone"""
+        if not value:
+            return value
+        return self.validate_phone(value)
     
     def validate_privacy_policy_agreed(self, value):
         """Flexible privacy policy validation for admins"""
         admin_override = self.context.get('admin_override', False)
         
-        # Admins can register members without explicit consent (for existing members, etc.)
-        if not admin_override and not self.instance and not value:
+        # For admin mode, automatically agree to privacy policy
+        if admin_override or self.context.get('is_admin_creating', False):
+            return True
+            
+        if not value:
             raise serializers.ValidationError("Privacy policy must be agreed to register.")
         return value
     
@@ -258,13 +285,12 @@ class MemberAdminCreateSerializer(serializers.ModelSerializer):
         if not validated_data.get('registration_source'):
             validated_data['registration_source'] = 'admin_portal'
             
-        # Auto-agree privacy policy if admin is creating
+        # Auto-agree privacy policy for admin creation
         if not validated_data.get('privacy_policy_agreed'):
             validated_data['privacy_policy_agreed'] = True
             validated_data['privacy_policy_agreed_date'] = timezone.now()
             
         return super().create(validated_data)
-
 class MemberUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating members"""
     last_modified_by = serializers.HiddenField(default=serializers.CurrentUserDefault())

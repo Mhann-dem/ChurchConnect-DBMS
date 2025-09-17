@@ -4,9 +4,196 @@ import { format } from 'date-fns';
 import { X, Calendar, MapPin, Users, DollarSign, Tag, Clock } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import { eventsService } from '../../../services/events';
-import { groupsService } from '../../../services/groups';
+import groupsService from '../../../services/groups';
 import LoadingSpinner from '../../shared/LoadingSpinner';
-import styles from './Events.module.css';
+
+// Import styles as CSS module or create inline styles
+const styles = {
+  modal: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '20px'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '24px',
+    maxWidth: '800px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+    paddingBottom: '16px',
+    borderBottom: '1px solid #e5e7eb'
+  },
+  modalTitle: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#1f2937',
+    margin: 0
+  },
+  modalCloseButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '8px',
+    color: '#6b7280',
+    transition: 'background-color 0.2s'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px'
+  },
+  formGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px'
+  },
+  formSection: {
+    padding: '20px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb'
+  },
+  sectionTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: '16px'
+  },
+  formGroup: {
+    marginBottom: '16px'
+  },
+  formRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px'
+  },
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '4px'
+  },
+  input: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px',
+    transition: 'border-color 0.2s',
+    outline: 'none'
+  },
+  inputError: {
+    borderColor: '#ef4444'
+  },
+  textarea: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px',
+    transition: 'border-color 0.2s',
+    outline: 'none',
+    resize: 'vertical'
+  },
+  select: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px',
+    backgroundColor: 'white',
+    outline: 'none'
+  },
+  checkbox: {
+    marginRight: '8px',
+    width: '16px',
+    height: '16px'
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '14px',
+    color: '#374151',
+    cursor: 'pointer',
+    marginBottom: '8px'
+  },
+  checkboxGroup: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '8px',
+    padding: '12px',
+    backgroundColor: '#f3f4f6',
+    borderRadius: '6px'
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: '12px',
+    marginTop: '4px'
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '12px',
+    paddingTop: '24px',
+    borderTop: '1px solid #e5e7eb',
+    marginTop: '24px'
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    backgroundColor: 'white',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    color: '#374151',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  saveButton: {
+    padding: '10px 20px',
+    backgroundColor: '#3b82f6',
+    border: 'none',
+    borderRadius: '6px',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '48px',
+    gap: '16px'
+  }
+};
 
 const EventForm = ({ event, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
@@ -88,8 +275,14 @@ const EventForm = ({ event, onSave, onCancel }) => {
       setLoading(true);
       try {
         const [groupsResponse, categoriesResponse] = await Promise.all([
-          groupsService.getGroups(),
-          eventsService.getCategories()
+          groupsService.getGroups().catch(err => {
+            console.warn('Groups service failed:', err);
+            return { results: [] };
+          }),
+          eventsService.getCategories().catch(err => {
+            console.warn('Categories service failed:', err);
+            return { results: [] };
+          })
         ]);
         setGroups(groupsResponse.results || []);
         setCategories(categoriesResponse.results || []);

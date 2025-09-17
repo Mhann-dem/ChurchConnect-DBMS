@@ -11,4 +11,4 @@ export { useMembers } from './useMembers';
 export { useGroups } from './useGroups';
 export { usePledges } from './usePledges';
 export { useReports } from './useReports';
-
+export { default as useFamilies } from './useFamilies';

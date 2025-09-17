@@ -1,12 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
-import { formatPhoneForAPI, formatDateForAPI} from '../../utils/formatters';
+
 
 // Import the real services and hooks
 import membersService from '../../services/members';
 import { useToast } from '../../hooks/useToast';
 import useAuth from '../../hooks/useAuth';
+
+// Add these helper functions at the top of your MemberRegistrationForm.jsx file
+const formatPhoneForAPI = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  
+  // Remove all non-digit characters
+  const cleaned = phoneNumber.replace(/\D/g, '');
+  
+  // If it's a US number (10 digits), add +1 prefix
+  if (cleaned.length === 10) {
+    return `+1${cleaned}`;
+  }
+  
+  // If it already has country code (11 digits starting with 1), add +
+  if (cleaned.length === 11 && cleaned.startsWith('1')) {
+    return `+${cleaned}`;
+  }
+  
+  return cleaned.length > 0 ? `+${cleaned}` : '';
+};
 
 // Simple UI Components
 const Button = ({ children, variant = 'default', onClick, disabled = false, ...props }) => {
@@ -446,14 +466,14 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-// FIXED: Transform form data to match backend API expectations
+// Replace your existing transformFormDataForAPI function with this:
 const transformFormDataForAPI = (formData) => {
   const transformedData = {
     first_name: formData.firstName?.trim() || '',
     last_name: formData.lastName?.trim() || '',
     preferred_name: formData.preferredName?.trim() || '',
     email: formData.email?.trim() || '',
-    date_of_birth: formatDateForAPI(formData.dateOfBirth),
+    date_of_birth: formData.dateOfBirth || null,
     gender: formData.gender || '',
     phone: formatPhoneForAPI(formData.phone),
     alternate_phone: formatPhoneForAPI(formData.alternatePhone),
@@ -465,24 +485,9 @@ const transformFormDataForAPI = (formData) => {
     emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),
     notes: formData.prayerRequest?.trim() || formData.notes?.trim() || '',
     communication_opt_in: formData.communicationOptIn !== false,
-    privacy_policy_agreed: formData.privacyPolicyAgreed || false,
+    privacy_policy_agreed: formData.privacyPolicyAgreed === true, // Ensure it's explicitly true
     is_active: true,
     internal_notes: formData.internalNotes?.trim() || '',
-    
-    // Handle ministry interests if provided
-    ...(formData.ministryInterests?.length > 0 && {
-      ministry_interests: formData.ministryInterests
-    }),
-    
-    // Handle pledge data if provided
-    ...(formData.pledgeAmount && formData.pledgeFrequency && {
-      pledge_data: {
-        amount: parseFloat(formData.pledgeAmount),
-        frequency: formData.pledgeFrequency,
-        start_date: new Date().toISOString().split('T')[0],
-        status: 'active'
-      }
-    })
   };
 
   console.log('[Transform] Original form data:', formData);

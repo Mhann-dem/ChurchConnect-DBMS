@@ -9,6 +9,7 @@ export { default as members } from './members';
 export { default as groups } from './groups';
 export { default as pledges } from './pledges';
 export { default as reports } from './reports';
+export { default as familiesService } from './families';
 
 // Utility services
 export { default as exportService } from './export';

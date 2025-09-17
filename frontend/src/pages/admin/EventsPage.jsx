@@ -1,4 +1,4 @@
-// frontend/src/pages/admin/EventsPage.jsx - BACKEND COMPATIBLE VERSION
+// frontend/src/pages/admin/EventsPage.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -22,9 +22,15 @@ import {
   XCircle
 } from 'lucide-react';
 import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
-import { eventsService } from '../../services/events';
+// FIXED: Correct import structure
+import eventsService from '../../services/events';
 import useAuth from '../../hooks/useAuth';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../hooks/useToast';
+// FIXED: Import missing components
+import EventForm from '../../components/admin/Events/EventForm';
+import Modal from '../../components/shared/Modal';
+import ConfirmDialog from '../../components/shared/ConfirmDialog';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
 
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,6 +56,7 @@ const EventsPage = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState([]);
+  const [deleteEvent, setDeleteEvent] = useState(null); // FIXED: For delete confirmation
   const [filters, setFilters] = useState({
     status: initialStatus,
     event_type: initialType,
@@ -261,38 +268,65 @@ const EventsPage = () => {
     fetchEvents(updatedFilters);
   }, [filters, fetchEvents]);
 
+  // FIXED: Create event handler
   const handleCreateEvent = useCallback(() => {
+    console.log('[EventsPage] Create event clicked');
     setEditingEvent(null);
     setShowEventForm(true);
   }, []);
 
+  // FIXED: Edit event handler with proper navigation
   const handleEditEvent = useCallback((event) => {
+    console.log('[EventsPage] Edit event clicked:', event);
+    // Option 1: Use modal form
     setEditingEvent(event);
     setShowEventForm(true);
+    
+    // Option 2: Navigate to edit page (uncomment if you prefer this)
+    // navigate(`/admin/events/edit/${event.id}`, { state: { event } });
   }, []);
 
-  const handleDeleteEvent = useCallback(async (event) => {
-    if (!window.confirm(`Are you sure you want to delete "${event.title}"?`)) {
-      return;
-    }
+  // FIXED: View event details handler
+  const handleViewEvent = useCallback((event) => {
+    console.log('[EventsPage] View event clicked:', event);
+    navigate(`/admin/events/${event.id}`);
+  }, [navigate]);
+
+  // FIXED: Delete event handler with confirmation
+  const handleDeleteEvent = useCallback((event) => {
+    console.log('[EventsPage] Delete event clicked:', event);
+    setDeleteEvent(event);
+  }, []);
+
+  // FIXED: Confirm delete handler
+  const confirmDeleteEvent = useCallback(async () => {
+    if (!deleteEvent) return;
     
     try {
-      await eventsService.deleteEvent(event.id);
-      setEvents(prev => prev.filter(e => e.id !== event.id));
+      console.log('[EventsPage] Confirming delete for:', deleteEvent.id);
+      await eventsService.deleteEvent(deleteEvent.id);
+      setEvents(prev => prev.filter(e => e.id !== deleteEvent.id));
       showToast('Event deleted successfully', 'success');
+      setDeleteEvent(null);
+      
+      // Refresh stats
+      const updatedEvents = events.filter(e => e.id !== deleteEvent.id);
+      calculateStats(updatedEvents);
     } catch (err) {
       console.error('Error deleting event:', err);
-      showToast('Failed to delete event', 'error');
+      showToast(err.message || 'Failed to delete event', 'error');
     }
-  }, [showToast]);
+  }, [deleteEvent, eventsService, showToast, events, calculateStats]);
 
   const handleRefresh = useCallback(() => {
+    console.log('[EventsPage] Refresh clicked');
     setRefreshing(true);
     fetchEvents().finally(() => setRefreshing(false));
   }, [fetchEvents]);
 
   const handleExport = useCallback(async () => {
     try {
+      console.log('[EventsPage] Export clicked');
       const response = await eventsService.exportEvents(filters);
       const blob = new Blob([response], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -303,6 +337,7 @@ const EventsPage = () => {
       window.URL.revokeObjectURL(url);
       showToast('Events exported successfully', 'success');
     } catch (error) {
+      console.error('Export error:', error);
       showToast('Failed to export events', 'error');
     }
   }, [filters, showToast]);
@@ -318,6 +353,39 @@ const EventsPage = () => {
     setSearchTerm('');
     fetchEvents(clearedFilters);
   }, [fetchEvents]);
+
+  // FIXED: Form submit handlers
+  const handleFormSubmit = useCallback(async (formData) => {
+    try {
+      console.log('[EventsPage] Form submit:', formData);
+      
+      let response;
+      if (editingEvent) {
+        // Update existing event
+        response = await eventsService.updateEvent(editingEvent.id, formData);
+        showToast('Event updated successfully', 'success');
+      } else {
+        // Create new event
+        response = await eventsService.createEvent(formData);
+        showToast('Event created successfully', 'success');
+      }
+      
+      // Close form and refresh data
+      setShowEventForm(false);
+      setEditingEvent(null);
+      fetchEvents();
+      
+    } catch (error) {
+      console.error('Form submit error:', error);
+      showToast(error.message || 'Failed to save event', 'error');
+    }
+  }, [editingEvent, eventsService, showToast, fetchEvents]);
+
+  const handleFormCancel = useCallback(() => {
+    console.log('[EventsPage] Form cancelled');
+    setShowEventForm(false);
+    setEditingEvent(null);
+  }, []);
 
   // FIXED: Utility functions to handle your backend data structure
   const getEventStatusIcon = (event) => {
@@ -478,21 +546,8 @@ const EventsPage = () => {
         minHeight: '60vh',
         gap: '16px'
       }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '4px solid #e5e7eb',
-          borderTop: '4px solid #3b82f6',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
+        <LoadingSpinner size="lg" />
         <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events...</p>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -505,9 +560,6 @@ const EventsPage = () => {
       backgroundColor: '#f8fafc',
       minHeight: '100vh'
     }}>
-      {/* Rest of the component remains the same as the previous version */}
-      {/* Just showing the key differences here - the rest of the JSX is identical */}
-      
       {/* Enhanced Header */}
       <div style={{
         background: 'white',
@@ -610,6 +662,7 @@ const EventsPage = () => {
               Export
             </button>
             
+            {/* FIXED: Create Event Button */}
             <button
               onClick={handleCreateEvent}
               style={{
@@ -624,7 +677,16 @@ const EventsPage = () => {
                 fontSize: '14px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.3)';
               }}
             >
               <Plus size={16} />
@@ -634,7 +696,7 @@ const EventsPage = () => {
         </div>
       </div>
 
-      {/* Stats Dashboard - Continue with rest of component */}
+      {/* Stats Dashboard */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -642,98 +704,6 @@ const EventsPage = () => {
         marginBottom: '24px'
       }}>
         {/* Stats cards with proper event counts */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Calendar size={20} style={{ color: 'white' }} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Total Events</h3>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.total}</span>
-            </div>
-          </div>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '4px 8px',
-            background: eventStats.upcoming > 0 ? '#d1fae5' : '#fef3c7',
-            color: eventStats.upcoming > 0 ? '#065f46' : '#92400e',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: '600'
-          }}>
-            {eventStats.upcoming} upcoming
-          </div>
-        </div>
-
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <TrendingUp size={20} style={{ color: 'white' }} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>This Month</h3>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.thisMonth}</span>
-            </div>
-          </div>
-          <span style={{ fontSize: '12px', color: '#6b7280' }}>Events scheduled</span>
-        </div>
-
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Users size={20} style={{ color: 'white' }} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Registrations</h3>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.totalRegistrations}</span>
-            </div>
-          </div>
-          <span style={{ fontSize: '12px', color: '#6b7280' }}>Avg {eventStats.avgAttendance} per event</span>
-        </div>
-
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -935,7 +905,7 @@ const EventsPage = () => {
         )}
       </div>
 
-      {/* Events List - Simplified version showing data is loading */}
+      {/* Events List */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -1015,6 +985,24 @@ const EventsPage = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
+                        onClick={() => handleViewEvent(event)}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#dbeafe',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#1d4ed8',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title="View Details"
+                      >
+                        <Eye size={14} />
+                      </button>
+                      <button
                         onClick={() => handleEditEvent(event)}
                         style={{
                           padding: '6px 12px',
@@ -1023,8 +1011,12 @@ const EventsPage = () => {
                           borderRadius: '6px',
                           color: '#6b7280',
                           cursor: 'pointer',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }}
+                        title="Edit Event"
                       >
                         <Edit size={14} />
                       </button>
@@ -1037,8 +1029,12 @@ const EventsPage = () => {
                           borderRadius: '6px',
                           color: '#ef4444',
                           cursor: 'pointer',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }}
+                        title="Delete Event"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -1092,6 +1088,47 @@ const EventsPage = () => {
           </div>
         )}
       </div>
+
+      {/* FIXED: Event Form Modal */}
+      {showEventForm && (
+        <Modal
+          isOpen={showEventForm}
+          onClose={handleFormCancel}
+          title={editingEvent ? 'Edit Event' : 'Create New Event'}
+          size="lg"
+        >
+          <EventForm
+            event={editingEvent}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        </Modal>
+      )}
+
+      {/* FIXED: Delete Confirmation Dialog */}
+      {deleteEvent && (
+        <ConfirmDialog
+          isOpen={!!deleteEvent}
+          onClose={() => setDeleteEvent(null)}
+          onConfirm={confirmDeleteEvent}
+          title="Delete Event"
+          message={
+            <>
+              <p>Are you sure you want to delete "<strong>{deleteEvent.title}</strong>"?</p>
+              {(deleteEvent.registration_count || 0) > 0 && (
+                <p style={{ color: '#dc2626', marginTop: '8px' }}>
+                  This event has {deleteEvent.registration_count} registration(s). 
+                  All registration data will be permanently deleted.
+                </p>
+              )}
+              <p style={{ marginTop: '8px' }}>This action cannot be undone.</p>
+            </>
+          }
+          confirmText="Delete Event"
+          cancelText="Cancel"
+          variant="danger"
+        />
+      )}
     </div>
   );
 };

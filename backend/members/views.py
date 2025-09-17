@@ -173,7 +173,15 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             logger.info(f"[MemberViewSet] Admin member creation by: {request.user.email}")
             
-            serializer = self.get_serializer(data=request.data)
+            # Add admin context
+            serializer = self.get_serializer(
+                data=request.data,
+                context={
+                    'request': request,
+                    'is_admin_creating': True,
+                    'admin_override': True
+                }
+            )
             
             if serializer.is_valid():
                 member = serializer.save(
