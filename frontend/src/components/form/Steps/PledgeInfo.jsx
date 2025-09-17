@@ -1,5 +1,7 @@
 // frontend/src/components/form/Steps/PledgeInfo.jsx
 import React from 'react';
+import { DollarSign, Info } from 'lucide-react';
+import { Input, Select } from '../FormControls';
 import styles from '../Form.module.css';
 
 const PledgeInfo = ({ 
@@ -43,86 +45,97 @@ const PledgeInfo = ({
     handleSetFieldValue('pledgeFrequency', '');
   };
 
+  const formatCurrency = (amount) => {
+    if (!amount) return '';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const getFrequencyLabel = (frequency) => {
+    const option = frequencyOptions.find(f => f.value === frequency);
+    return option ? option.label : frequency;
+  };
+
   return (
     <div className={styles.stepContent}>
-      <h2 className={styles.stepTitle}>Pledge Information</h2>
-      <p className={styles.stepDescription}>
-        Your financial support helps us serve our community and grow together in faith. 
-        This information is completely optional and confidential.
-      </p>
-
-      <div className={styles.pledgeNotice}>
-        <div className={styles.noticeIcon}>💡</div>
+      <div className={styles.stepHeader}>
+        <DollarSign className={styles.stepIcon} size={24} />
         <div>
-          <h3>Why we ask about pledges:</h3>
-          <ul>
-            <li>Helps us plan ministry activities and budget</li>
-            <li>Completely voluntary - no pressure or obligation</li>
-            <li>Information kept strictly confidential</li>
-            <li>You can change or cancel anytime</li>
-          </ul>
+          <h2 className={styles.stepTitle}>Pledge Information</h2>
+          <p className={styles.stepDescription}>
+            Your financial support helps us serve our community and grow together in faith. 
+            This information is completely optional and confidential.
+          </p>
         </div>
       </div>
 
+      <div className={styles.pledgeNotice}>
+        <div className={styles.noticeHeader}>
+          <Info className={styles.noticeIcon} size={20} />
+          <h3>Why we ask about pledges:</h3>
+        </div>
+        <ul className={styles.noticeList}>
+          <li>Helps us plan ministry activities and budget</li>
+          <li>Completely voluntary - no pressure or obligation</li>
+          <li>Information kept strictly confidential</li>
+          <li>You can change or cancel anytime</li>
+        </ul>
+      </div>
+
       <div className={styles.formGrid}>
-        <div className={styles.formGroup}>
-          <label htmlFor="pledgeAmount">Pledge Amount (Optional)</label>
-          <div className={styles.inputWithPrefix}>
-            <span className={styles.inputPrefix}>$</span>
-            <input
-              id="pledgeAmount"
-              name="pledgeAmount"
-              type="text"
-              value={formData.pledgeAmount || ''}
-              onChange={handleAmountChange}
-              onBlur={handleBlur}
-              className={styles.input}
-              placeholder="0.00"
-            />
-          </div>
-          {errors.pledgeAmount && touched.pledgeAmount && (
-            <span className={styles.errorMessage}>{errors.pledgeAmount}</span>
-          )}
-          <div className={styles.helpText}>Enter amount without currency symbol</div>
+        <div className={styles.inputWithPrefix}>
+          <span className={styles.inputPrefix}>$</span>
+          <Input
+            name="pledgeAmount"
+            label="Pledge Amount (Optional)"
+            value={formData.pledgeAmount}
+            onChange={handleAmountChange}
+            onBlur={handleBlur}
+            error={errors.pledgeAmount}
+            touched={touched.pledgeAmount}
+            placeholder="0.00"
+            helpText="Enter amount without currency symbol"
+          />
         </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="pledgeFrequency">Pledge Frequency</label>
-          <select
-            id="pledgeFrequency"
-            name="pledgeFrequency"
-            value={formData.pledgeFrequency || ''}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={styles.select}
-            disabled={!formData.pledgeAmount}
-          >
-            {frequencyOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {errors.pledgeFrequency && touched.pledgeFrequency && (
-            <span className={styles.errorMessage}>{errors.pledgeFrequency}</span>
-          )}
-          <div className={styles.helpText}>Select how often you'd like to contribute</div>
-        </div>
+        <Select
+          name="pledgeFrequency"
+          label="Pledge Frequency"
+          value={formData.pledgeFrequency}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={errors.pledgeFrequency}
+          touched={touched.pledgeFrequency}
+          options={frequencyOptions}
+          disabled={!formData.pledgeAmount}
+          helpText="Select how often you'd like to contribute"
+        />
       </div>
 
       {formData.pledgeAmount && (
         <div className={styles.pledgeSummary}>
           <h4>Pledge Summary:</h4>
-          <p>
-            Amount: <strong>${formData.pledgeAmount}</strong>
+          <div className={styles.summaryContent}>
+            <div className={styles.summaryItem}>
+              <span className={styles.summaryLabel}>Amount:</span>
+              <span className={styles.summaryValue}>{formatCurrency(formData.pledgeAmount)}</span>
+            </div>
             {formData.pledgeFrequency && (
-              <span> ({frequencyOptions.find(f => f.value === formData.pledgeFrequency)?.label})</span>
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Frequency:</span>
+                <span className={styles.summaryValue}>{getFrequencyLabel(formData.pledgeFrequency)}</span>
+              </div>
             )}
-          </p>
-          <p className={styles.pledgeNote}>
-            Thank you for your generous heart! Your contribution makes a real difference 
-            in our church's ability to serve and grow.
-          </p>
+          </div>
+          <div className={styles.pledgeNote}>
+            <Info className={styles.pledgeNoteIcon} size={16} />
+            <p>
+              Thank you for your generous heart! Your contribution makes a real difference 
+              in our church's ability to serve and grow.
+            </p>
+          </div>
         </div>
       )}
 

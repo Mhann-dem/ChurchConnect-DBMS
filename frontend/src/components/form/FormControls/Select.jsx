@@ -2,80 +2,63 @@
 import React from 'react';
 import styles from '../Form.module.css';
 
-const Select = ({
-  name,
-  label,
-  value,
-  onChange,
-  onBlur,
-  error,
-  touched,
-  required = false,
+const Select = ({ 
+  name, 
+  label, 
+  value, 
+  onChange, 
+  onBlur, 
+  error, 
+  touched, 
   options = [],
-  placeholder = 'Select an option',
-  helpText = '',
+  placeholder,
+  helpText,
+  required = false,
   disabled = false,
-  className = '',
-  ...props
+  ...props 
 }) => {
-  const handleChange = (e) => {
-    if (onChange) {
-      onChange(e);
-    }
-  };
-
-  const handleBlur = (e) => {
-    if (onBlur) {
-      onBlur(e);
-    }
-  };
-
-  const selectId = `select-${name}`;
-  const hasError = touched && error;
-
+  const hasError = error && touched;
+  
   return (
-    <div className={`${styles.inputGroup} ${className}`}>
+    <div className={styles.formGroup}>
       {label && (
-        <label htmlFor={selectId} className={styles.inputLabel}>
+        <label htmlFor={name} className={styles.label}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
       )}
-      
-      <div className={`${styles.inputWrapper} ${hasError ? styles.hasError : ''} ${disabled ? styles.disabled : ''}`}>
-        <select
-          id={selectId}
-          name={name}
-          value={value || ''}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          disabled={disabled}
-          className={styles.select}
-          {...props}
-        >
-          {!value && placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      
+      <select
+        id={name}
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={disabled}
+        required={required}
+        className={`${styles.select} ${hasError ? styles.inputError : ''}`}
+        aria-describedby={hasError ? `${name}-error` : helpText ? `${name}-help` : undefined}
+        {...props}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
       {hasError && (
-        <div className={styles.errorMessage}>
+        <span id={`${name}-error`} className={styles.errorMessage} role="alert">
           {error}
-        </div>
+        </span>
       )}
-      
       {helpText && !hasError && (
-        <div className={styles.helpText}>
+        <span id={`${name}-help`} className={styles.helpText}>
           {helpText}
-        </div>
+        </span>
       )}
     </div>
   );

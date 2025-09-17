@@ -125,9 +125,9 @@ const ENDPOINTS = {
   dashboard: {
     overview: 'dashboard/overview/',
     stats: 'dashboard/stats/',
-    alerts: 'dashboard/alerts/',
+    alerts: 'core/dashboard/alerts/',
     config: (userId) => `dashboard/config/${userId}/`,
-    health: 'dashboard/health/'
+    health: 'core/dashboard/health/'
   }
 };
 

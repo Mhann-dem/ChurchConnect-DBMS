@@ -1,5 +1,7 @@
+// frontend/src/components/form/Steps/FamilyInfo.jsx
 import React, { useState } from 'react';
 import { Plus, Trash2, Users, User, Calendar, AlertCircle } from 'lucide-react';
+import { Input, Select, TextArea } from '../FormControls';
 import styles from '../Form.module.css';
 
 const FamilyInfo = ({ 
@@ -8,11 +10,13 @@ const FamilyInfo = ({
   touched = {}, 
   onChange, 
   onBlur, 
-  setFieldValue 
+  setFieldValue,
+  isAdminMode = false
 }) => {
   const [expandedMember, setExpandedMember] = useState(null);
 
   const relationshipOptions = [
+    { value: '', label: 'Select relationship' },
     { value: 'spouse', label: 'Spouse' },
     { value: 'child', label: 'Child' },
     { value: 'parent', label: 'Parent' },
@@ -25,10 +29,11 @@ const FamilyInfo = ({
   ];
 
   const genderOptions = [
+    { value: '', label: 'Select gender' },
     { value: 'male', label: 'Male' },
     { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
-    { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+    // { value: 'other', label: 'Other' },
+    // { value: 'prefer_not_to_say', label: 'Prefer not to say' }
   ];
 
   // Safe handlers with fallbacks
@@ -148,59 +153,46 @@ const FamilyInfo = ({
     return Object.keys(memberErrors).length > 0;
   };
 
-  // Handle emergency contact changes
-  const handleEmergencyContactChange = (e) => {
-    const { name, value } = e.target;
-    handleSetFieldValue(name, value);
-  };
-
   return (
     <div className={styles.stepContent}>
       <div className={styles.stepHeader}>
         <Users className={styles.stepIcon} size={24} />
-        <h2 className={styles.stepTitle}>Family Information</h2>
-        <p className={styles.stepDescription}>Add family members who will be part of your church family (optional)</p>
+        <div>
+          <h2 className={styles.stepTitle}>Family Information</h2>
+          <p className={styles.stepDescription}>
+            Add family members and emergency contact information
+          </p>
+        </div>
       </div>
 
       {/* Emergency Contact Section - Required */}
       <div className={styles.emergencyContactSection}>
-        <h3>Emergency Contact Information *</h3>
+        <h3 className={styles.sectionTitle}>Emergency Contact Information {!isAdminMode && '*'}</h3>
         <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label htmlFor="emergencyContactName">Emergency Contact Name *</label>
-            <input
-              id="emergencyContactName"
-              name="emergencyContactName"
-              type="text"
-              value={formData.emergencyContactName || ''}
-              onChange={handleEmergencyContactChange}
-              onBlur={handleBlur}
-              className={styles.input}
-              placeholder="Enter emergency contact name"
-              required
-            />
-            {errors.emergencyContactName && touched.emergencyContactName && (
-              <span className={styles.errorMessage}>{errors.emergencyContactName}</span>
-            )}
-          </div>
+          <Input
+            name="emergencyContactName"
+            label="Emergency Contact Name"
+            value={formData.emergencyContactName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.emergencyContactName}
+            touched={touched.emergencyContactName}
+            required={!isAdminMode}
+            placeholder="Enter emergency contact name"
+          />
 
-          <div className={styles.formGroup}>
-            <label htmlFor="emergencyContactPhone">Emergency Contact Phone *</label>
-            <input
-              id="emergencyContactPhone"
-              name="emergencyContactPhone"
-              type="tel"
-              value={formData.emergencyContactPhone || ''}
-              onChange={handleEmergencyContactChange}
-              onBlur={handleBlur}
-              className={styles.input}
-              placeholder="Enter emergency contact phone"
-              required
-            />
-            {errors.emergencyContactPhone && touched.emergencyContactPhone && (
-              <span className={styles.errorMessage}>{errors.emergencyContactPhone}</span>
-            )}
-          </div>
+          <Input
+            name="emergencyContactPhone"
+            type="tel"
+            label="Emergency Contact Phone"
+            value={formData.emergencyContactPhone}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.emergencyContactPhone}
+            touched={touched.emergencyContactPhone}
+            required={!isAdminMode}
+            placeholder="Enter emergency contact phone"
+          />
         </div>
       </div>
 
@@ -269,109 +261,77 @@ const FamilyInfo = ({
                 {expandedMember === member.id && (
                   <div className={styles.familyMemberForm}>
                     <div className={styles.formGrid}>
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`firstName-${member.id}`}>First Name *</label>
-                        <input
-                          id={`firstName-${member.id}`}
-                          type="text"
-                          value={member.firstName || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'firstName', e.target.value)}
-                          className={styles.input}
-                          placeholder="Enter first name"
-                        />
-                      </div>
+                      <Input
+                        name={`firstName-${member.id}`}
+                        label="First Name"
+                        value={member.firstName}
+                        onChange={(e) => updateFamilyMember(member.id, 'firstName', e.target.value)}
+                        placeholder="Enter first name"
+                        required
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`lastName-${member.id}`}>Last Name *</label>
-                        <input
-                          id={`lastName-${member.id}`}
-                          type="text"
-                          value={member.lastName || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'lastName', e.target.value)}
-                          className={styles.input}
-                          placeholder="Enter last name"
-                        />
-                      </div>
+                      <Input
+                        name={`lastName-${member.id}`}
+                        label="Last Name"
+                        value={member.lastName}
+                        onChange={(e) => updateFamilyMember(member.id, 'lastName', e.target.value)}
+                        placeholder="Enter last name"
+                        required
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`relationship-${member.id}`}>Relationship *</label>
-                        <select
-                          id={`relationship-${member.id}`}
-                          value={member.relationship || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'relationship', e.target.value)}
-                          className={styles.select}
-                        >
-                          <option value="">Select relationship</option>
-                          {relationshipOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <Select
+                        name={`relationship-${member.id}`}
+                        label="Relationship"
+                        value={member.relationship}
+                        onChange={(e) => updateFamilyMember(member.id, 'relationship', e.target.value)}
+                        options={relationshipOptions}
+                        required
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`dateOfBirth-${member.id}`}>Date of Birth *</label>
-                        <input
-                          id={`dateOfBirth-${member.id}`}
-                          type="date"
-                          value={member.dateOfBirth || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'dateOfBirth', e.target.value)}
-                          className={styles.input}
-                          max={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
+                      <Input
+                        name={`dateOfBirth-${member.id}`}
+                        type="date"
+                        label="Date of Birth"
+                        value={member.dateOfBirth}
+                        onChange={(e) => updateFamilyMember(member.id, 'dateOfBirth', e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                        required
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`gender-${member.id}`}>Gender</label>
-                        <select
-                          id={`gender-${member.id}`}
-                          value={member.gender || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'gender', e.target.value)}
-                          className={styles.select}
-                        >
-                          <option value="">Select gender</option>
-                          {genderOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <Select
+                        name={`gender-${member.id}`}
+                        label="Gender"
+                        value={member.gender}
+                        onChange={(e) => updateFamilyMember(member.id, 'gender', e.target.value)}
+                        options={genderOptions}
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`email-${member.id}`}>Email</label>
-                        <input
-                          id={`email-${member.id}`}
-                          type="email"
-                          value={member.email || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'email', e.target.value)}
-                          className={styles.input}
-                          placeholder="Enter email address"
-                        />
-                      </div>
+                      <Input
+                        name={`email-${member.id}`}
+                        type="email"
+                        label="Email"
+                        value={member.email}
+                        onChange={(e) => updateFamilyMember(member.id, 'email', e.target.value)}
+                        placeholder="Enter email address"
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`phone-${member.id}`}>Phone</label>
-                        <input
-                          id={`phone-${member.id}`}
-                          type="tel"
-                          value={member.phone || ''}
-                          onChange={(e) => updateFamilyMember(member.id, 'phone', e.target.value)}
-                          className={styles.input}
-                          placeholder="Enter phone number"
-                        />
-                      </div>
+                      <Input
+                        name={`phone-${member.id}`}
+                        type="tel"
+                        label="Phone"
+                        value={member.phone}
+                        onChange={(e) => updateFamilyMember(member.id, 'phone', e.target.value)}
+                        placeholder="Enter phone number"
+                      />
 
-                      <div className={styles.formGroup}>
-                        <label htmlFor={`notes-${member.id}`}>Notes</label>
-                        <textarea
-                          id={`notes-${member.id}`}
-                          value={member.notes || ''}
+                      <div className={styles.fullWidth}>
+                        <TextArea
+                          name={`notes-${member.id}`}
+                          label="Notes"
+                          value={member.notes}
                           onChange={(e) => updateFamilyMember(member.id, 'notes', e.target.value)}
-                          className={styles.textarea}
                           placeholder="Any additional notes about this family member"
-                          rows="2"
+                          rows={2}
                         />
                       </div>
                     </div>
@@ -407,7 +367,7 @@ const FamilyInfo = ({
           </button>
         </div>
 
-        {/* Family Privacy Notice */}
+        {/* Privacy Notice */}
         <div className={styles.privacyNotice}>
           <div className={styles.privacyHeader}>
             <AlertCircle className={styles.privacyIcon} size={16} />

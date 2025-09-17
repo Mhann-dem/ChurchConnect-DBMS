@@ -1,11 +1,18 @@
 // frontend/src/components/form/Steps/ContactInfo.jsx
 import React from 'react';
-import TextArea from '../FormControls/TextArea';
-import PhoneInput from '../FormControls/PhoneInput';
-import Select from '../FormControls/Select';
+import { Phone } from 'lucide-react';
+import { TextArea, PhoneInput, Select } from '../FormControls';
 import styles from '../Form.module.css';
 
-const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlur, setFieldValue }) => {
+const ContactInfo = ({ 
+  formData = {}, 
+  errors = {}, 
+  touched = {}, 
+  onChange, 
+  onBlur, 
+  setFieldValue,
+  isAdminMode = false 
+}) => {
   const contactMethodOptions = [
     { value: 'email', label: 'Email' },
     { value: 'phone', label: 'Phone Call' },
@@ -22,16 +29,12 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
   ];
 
   // Ensure handlers exist and provide fallbacks
-  const handleChange = onChange || ((e) => {
-    console.warn('onChange not provided', e.target.name, e.target.value);
-  });
-  
-  const handleBlur = onBlur || ((e) => {
-    console.warn('onBlur not provided', e.target.name);
-  });
-  
   const handleSetFieldValue = setFieldValue || ((field, value) => {
-    console.warn('setFieldValue not provided', field, value);
+    console.warn('setFieldValue not provided, falling back to onChange');
+    if (onChange) {
+      const mockEvent = { target: { name: field, value } };
+      onChange(mockEvent);
+    }
   });
 
   // Handle phone input changes
@@ -41,85 +44,83 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
 
   return (
     <div className={styles.stepContent}>
-      <h2 className={styles.stepTitle}>Contact Information</h2>
-      <p className={styles.stepDescription}>
-        How can we reach you? This helps us stay connected and provide better service.
-      </p>
+      <div className={styles.stepHeader}>
+        <Phone className={styles.stepIcon} size={24} />
+        <div>
+          <h2 className={styles.stepTitle}>Contact Information</h2>
+          <p className={styles.stepDescription}>
+            How can we reach you? This helps us stay connected and provide better service.
+          </p>
+        </div>
+      </div>
 
       <div className={styles.formGrid}>
-        <div className={styles.formGroup}>
-          <PhoneInput
-            name="phone"
-            label="Phone Number *"
-            value={formData.phone || ''}
-            onChange={(value) => handlePhoneChange('phone', value)}
-            onBlur={handleBlur}
-            error={errors.phone}
-            touched={touched.phone}
-            required
-            placeholder="(555) 123-4567"
-          />
-        </div>
+        <PhoneInput
+          name="phone"
+          label="Phone Number"
+          value={formData.phone}
+          onChange={(value) => handlePhoneChange('phone', value)}
+          onBlur={handleBlur}
+          error={errors.phone}
+          touched={touched.phone}
+          required={!isAdminMode}
+          placeholder="(555) 123-4567"
+        />
 
-        <div className={styles.formGroup}>
-          <PhoneInput
-            name="alternatePhone"
-            label="Alternate Phone"
-            value={formData.alternatePhone || ''}
-            onChange={(value) => handlePhoneChange('alternatePhone', value)}
-            onBlur={handleBlur}
-            error={errors.alternatePhone}
-            touched={touched.alternatePhone}
-            placeholder="(555) 987-6543"
-          />
-        </div>
+        <PhoneInput
+          name="alternatePhone"
+          label="Alternate Phone"
+          value={formData.alternatePhone}
+          onChange={(value) => handlePhoneChange('alternatePhone', value)}
+          onBlur={handleBlur}
+          error={errors.alternatePhone}
+          touched={touched.alternatePhone}
+          placeholder="(555) 987-6543"
+        />
 
-        <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <div className={styles.fullWidth}>
           <TextArea
             name="address"
             label="Address"
-            value={formData.address || ''}
+            value={formData.address}
             onChange={handleChange}
             onBlur={handleBlur}
             error={errors.address}
             touched={touched.address}
             placeholder="Street address, city, state, zip code"
             rows={3}
+            required={!isAdminMode}
             helpText="Optional - helps us understand our community better"
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <Select
-            name="preferredContactMethod"
-            label="Preferred Contact Method"
-            value={formData.preferredContactMethod || 'email'}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.preferredContactMethod}
-            touched={touched.preferredContactMethod}
-            options={contactMethodOptions}
-          />
-        </div>
+        <Select
+          name="preferredContactMethod"
+          label="Preferred Contact Method"
+          value={formData.preferredContactMethod || 'email'}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={errors.preferredContactMethod}
+          touched={touched.preferredContactMethod}
+          options={contactMethodOptions}
+        />
 
-        <div className={styles.formGroup}>
-          <Select
-            name="preferredLanguage"
-            label="Preferred Language"
-            value={formData.preferredLanguage || 'English'}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.preferredLanguage}
-            touched={touched.preferredLanguage}
-            options={languageOptions}
-          />
-        </div>
+        <Select
+          name="preferredLanguage"
+          label="Preferred Language"
+          value={formData.preferredLanguage || 'English'}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={errors.preferredLanguage}
+          touched={touched.preferredLanguage}
+          options={languageOptions}
+        />
 
-        <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <div className={styles.fullWidth}>
           <TextArea
             name="accessibilityNeeds"
             label="Accessibility Needs"
-            value={formData.accessibilityNeeds || ''}
+            value={formData.accessibilityNeeds}
             onChange={handleChange}
             onBlur={handleBlur}
             error={errors.accessibilityNeeds}

@@ -2,89 +2,76 @@
 import React from 'react';
 import styles from '../Form.module.css';
 
-const PhoneInput = ({
-  name,
-  label,
-  value,
-  onChange,
-  onBlur,
-  error,
-  touched,
+const PhoneInput = ({ 
+  name, 
+  label, 
+  value, 
+  onChange, 
+  onBlur, 
+  error, 
+  touched, 
+  placeholder = "(555) 123-4567",
+  helpText,
   required = false,
-  placeholder = '(555) 123-4567',
-  helpText = '',
   disabled = false,
-  className = '',
-  ...props
+  ...props 
 }) => {
-  const formatPhoneNumber = (input) => {
+  const hasError = error && touched;
+  
+  const formatPhoneNumber = (phoneNumber) => {
     // Remove all non-digit characters
-    const digits = input.replace(/\D/g, '');
+    const cleaned = phoneNumber.replace(/\D/g, '');
     
-    // Don't format if empty
-    if (!digits) return '';
-    
-    // Format based on length
-    if (digits.length <= 3) {
-      return `(${digits}`;
-    } else if (digits.length <= 6) {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    } else {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    // Apply formatting
+    if (cleaned.length >= 10) {
+      return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    } else if (cleaned.length >= 6) {
+      return cleaned.replace(/(\d{3})(\d{3})/, '($1) $2-');
+    } else if (cleaned.length >= 3) {
+      return cleaned.replace(/(\d{3})/, '($1) ');
     }
+    
+    return cleaned;
   };
-
+  
   const handleChange = (e) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const formattedValue = formatPhoneNumber(e.target.value);
     if (onChange) {
-      onChange(formatted);
+      onChange(formattedValue);
     }
   };
-
-  const handleBlur = (e) => {
-    if (onBlur) {
-      onBlur(e);
-    }
-  };
-
-  const phoneId = `phone-${name}`;
-  const hasError = touched && error;
-
+  
   return (
-    <div className={`${styles.inputGroup} ${className}`}>
+    <div className={styles.formGroup}>
       {label && (
-        <label htmlFor={phoneId} className={styles.inputLabel}>
+        <label htmlFor={name} className={styles.label}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
       )}
-      
-      <div className={`${styles.inputWrapper} ${hasError ? styles.hasError : ''} ${disabled ? styles.disabled : ''}`}>
-        <input
-          id={phoneId}
-          name={name}
-          type="tel"
-          value={value || ''}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={styles.input}
-          maxLength="14"
-          {...props}
-        />
-      </div>
-      
+      <input
+        id={name}
+        name={name}
+        type="tel"
+        value={value || ''}
+        onChange={handleChange}
+        onBlur={onBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        className={`${styles.input} ${hasError ? styles.inputError : ''}`}
+        aria-describedby={hasError ? `${name}-error` : helpText ? `${name}-help` : undefined}
+        {...props}
+      />
       {hasError && (
-        <div className={styles.errorMessage}>
+        <span id={`${name}-error`} className={styles.errorMessage} role="alert">
           {error}
-        </div>
+        </span>
       )}
-      
       {helpText && !hasError && (
-        <div className={styles.helpText}>
+        <span id={`${name}-help`} className={styles.helpText}>
           {helpText}
-        </div>
+        </span>
       )}
     </div>
   );

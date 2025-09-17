@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
 
-// FIXED: Import the real members service instead of using mock
+// Import the real services and hooks
 import membersService from '../../services/members';
-
-// FIXED: Import real hooks
 import { useToast } from '../../hooks/useToast';
 import useAuth from '../../hooks/useAuth';
 
-// Simple UI Components (keeping as-is)
+// Simple UI Components
 const Button = ({ children, variant = 'default', onClick, disabled = false, ...props }) => {
   const variantClasses = {
     default: styles.buttonDefault,
@@ -34,7 +32,7 @@ const LoadingSpinner = ({ size = 'sm' }) => (
   <span className={`${styles.spinner} ${styles[`spinner-${size}`]}`} />
 );
 
-// [Keep all the Step components exactly as they are - PersonalInfo, ContactInfo, etc.]
+// Step Components
 const StepIndicator = ({ steps, currentStep, completedSteps }) => (
   <div className={styles.stepIndicator}>
     {steps.map((step, index) => (
@@ -315,7 +313,7 @@ const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => 
   </div>
 );
 
-// Keep existing useForm hook as-is
+// Form hook
 const useForm = (initialData) => {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -360,6 +358,7 @@ const useForm = (initialData) => {
   };
 };
 
+// Constants
 const STEPS = [
   { id: 'personal', title: 'Personal Information', component: PersonalInfo },
   { id: 'contact', title: 'Contact Information', component: ContactInfo },
@@ -398,6 +397,7 @@ const INITIAL_FORM_DATA = {
   registrationContext: 'public'
 };
 
+// Validation function
 const validateStep = (stepId, formData, isAdminMode = false) => {
   const stepValidations = {
     personal: () => {
@@ -445,10 +445,9 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-// FIXED: Transform form data to match backend API expectations
+// Transform form data to match backend API expectations
 const transformFormDataForAPI = (formData) => {
   return {
-    // Map frontend field names to backend field names
     first_name: formData.firstName,
     last_name: formData.lastName,
     preferred_name: formData.preferredName || '',
@@ -466,7 +465,7 @@ const transformFormDataForAPI = (formData) => {
     ministry_interests: formData.ministryInterests || [],
     prayer_request: formData.prayerRequest || '',
     communication_opt_in: formData.communicationOptIn !== false,
-    is_active: true, // New members are active by default
+    is_active: true,
     registration_date: new Date().toISOString(),
     registered_by: formData.registeredBy || null,
     internal_notes: formData.internalNotes || '',
@@ -484,6 +483,7 @@ const transformFormDataForAPI = (formData) => {
   };
 };
 
+// Main Component
 const MemberRegistrationForm = ({ 
   isAdminMode = false, 
   onSuccess = null,
@@ -491,8 +491,8 @@ const MemberRegistrationForm = ({
   onCancel = null 
 }) => {
   const navigate = useNavigate();
-  const { showToast } = useToast(); // FIXED: Use real hook
-  const { user, isAuthenticated } = useAuth(); // FIXED: Use real hook
+  const { showToast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -517,7 +517,7 @@ const MemberRegistrationForm = ({
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
   });
 
-  // Auto-save functionality (using memory instead of localStorage)
+  // Auto-save functionality (using in-memory storage)
   useEffect(() => {
     const saveData = () => {
       const savedData = {
@@ -553,7 +553,6 @@ const MemberRegistrationForm = ({
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
 
-  // FIXED: Use real members service instead of mock
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
@@ -564,7 +563,7 @@ const MemberRegistrationForm = ({
       const apiData = transformFormDataForAPI(formData);
       console.log('[RegistrationForm] Transformed API data:', apiData);
 
-      // FIXED: Use real members service
+      // Use real members service
       const result = await membersService.createMember(apiData);
       console.log('[RegistrationForm] Create member result:', result);
       
@@ -593,7 +592,6 @@ const MemberRegistrationForm = ({
     } catch (error) {
       console.error('[RegistrationForm] Submit error:', error);
       
-      // Handle specific error types
       const errorMessage = error?.response?.data?.error || 
                           error?.response?.data?.detail ||
                           error?.validationErrors?.message ||
@@ -602,7 +600,6 @@ const MemberRegistrationForm = ({
                           
       showToast(errorMessage, 'error');
       
-      // Log validation errors for debugging
       if (error?.validationErrors) {
         console.error('[RegistrationForm] Validation errors:', error.validationErrors);
       }

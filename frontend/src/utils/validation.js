@@ -562,3 +562,13 @@ export const validateNumber = (value, { min, max } = {}) => {
   return true;
 };
 
+export const validateId = (id) => {
+  if (!id) return { isValid: false, error: 'ID is required' };
+  
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId) || numericId <= 0) {
+    return { isValid: false, error: 'ID must be a positive number' };
+  }
+  
+  return { isValid: true, error: null };
+};

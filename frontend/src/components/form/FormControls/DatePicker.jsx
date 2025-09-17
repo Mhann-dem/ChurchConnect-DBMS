@@ -2,81 +2,61 @@
 import React from 'react';
 import styles from '../Form.module.css';
 
-const DatePicker = ({
-  name,
-  label,
-  value,
-  onChange,
-  onBlur,
-  error,
-  touched,
+const DatePicker = ({ 
+  name, 
+  label, 
+  value, 
+  onChange, 
+  onBlur, 
+  error, 
+  touched, 
+  helpText,
   required = false,
+  disabled = false,
   minDate,
   maxDate,
-  helpText = '',
-  disabled = false,
-  className = '',
-  ...props
+  ...props 
 }) => {
+  const hasError = error && touched;
+  
   const handleChange = (e) => {
     if (onChange) {
       onChange(e.target.value);
     }
   };
-
-  const handleBlur = (e) => {
-    if (onBlur) {
-      onBlur(e);
-    }
-  };
-
-  const dateId = `date-${name}`;
-  const hasError = touched && error;
-
-  // Format dates for input constraints
-  const formatDateForInput = (date) => {
-    if (!date) return '';
-    if (date instanceof Date) {
-      return date.toISOString().split('T')[0];
-    }
-    return date;
-  };
-
+  
   return (
-    <div className={`${styles.inputGroup} ${className}`}>
+    <div className={styles.formGroup}>
       {label && (
-        <label htmlFor={dateId} className={styles.inputLabel}>
+        <label htmlFor={name} className={styles.label}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
       )}
-      
-      <div className={`${styles.inputWrapper} ${hasError ? styles.hasError : ''} ${disabled ? styles.disabled : ''}`}>
-        <input
-          id={dateId}
-          name={name}
-          type="date"
-          value={value || ''}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          min={formatDateForInput(minDate)}
-          max={formatDateForInput(maxDate)}
-          disabled={disabled}
-          className={styles.dateInput}
-          {...props}
-        />
-      </div>
-      
+      <input
+        id={name}
+        name={name}
+        type="date"
+        value={value || ''}
+        onChange={handleChange}
+        onBlur={onBlur}
+        disabled={disabled}
+        required={required}
+        min={minDate ? (typeof minDate === 'string' ? minDate : minDate.toISOString().split('T')[0]) : undefined}
+        max={maxDate ? (typeof maxDate === 'string' ? maxDate : maxDate.toISOString().split('T')[0]) : undefined}
+        className={`${styles.input} ${hasError ? styles.inputError : ''}`}
+        aria-describedby={hasError ? `${name}-error` : helpText ? `${name}-help` : undefined}
+        {...props}
+      />
       {hasError && (
-        <div className={styles.errorMessage}>
+        <span id={`${name}-error`} className={styles.errorMessage} role="alert">
           {error}
-        </div>
+        </span>
       )}
-      
       {helpText && !hasError && (
-        <div className={styles.helpText}>
+        <span id={`${name}-help`} className={styles.helpText}>
           {helpText}
-        </div>
+        </span>
       )}
     </div>
   );

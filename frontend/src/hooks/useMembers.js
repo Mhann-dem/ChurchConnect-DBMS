@@ -1,11 +1,11 @@
-// hooks/useMembers.js - FIXED VERSION
+// hooks/useMembers.js - Complete Updated Version
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import membersService from '../services/members';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
 
 /**
- * FIXED: Simplified but reliable members hook
+ * Updated and simplified members hook with better reliability
  * @param {Object} options - Configuration options
  * @returns {Object} Members state and actions
  */
@@ -65,11 +65,10 @@ export const useMembers = (options = {}) => {
     return abortControllerRef.current.signal;
   }, []);
 
-  // FIXED: Simplified fetch function with better error handling
+  // Main fetch function with simplified logic
   const fetchMembers = useCallback(async (fetchOptions = {}) => {
     const { forceRefresh = false, silent = false } = fetchOptions;
 
-    // Don't fetch if not authenticated
     if (!isAuthenticated) {
       console.warn('[useMembers] Not authenticated, skipping fetch');
       if (mountedRef.current) {
@@ -136,7 +135,7 @@ export const useMembers = (options = {}) => {
           pagination: result.pagination
         });
 
-        // FIXED: Update state reliably
+        // Update state reliably
         setMembers(safeMembers);
         setTotalMembers(safeTotalMembers);
         setPagination(result.pagination);
@@ -189,7 +188,7 @@ export const useMembers = (options = {}) => {
     cancelRequests
   ]);
 
-  // FIXED: CRUD Operations with immediate UI updates
+  // CRUD Operations with immediate UI updates
   const createMember = useCallback(async (memberData) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -205,8 +204,7 @@ export const useMembers = (options = {}) => {
       if (result.success) {
         console.log('[useMembers] Member created successfully:', result.data);
         
-        // FIXED: Force immediate refresh to get the latest data
-        // Don't do optimistic updates - just refresh to ensure data consistency
+        // Force immediate refresh to get the latest data
         const refreshResult = await fetchMembers({ forceRefresh: true, silent: true });
         
         if (refreshResult.success) {
@@ -403,7 +401,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
-  // Auto-fetch effect - FIXED: Proper dependency management
+  // Auto-fetch effect with proper dependency management
   useEffect(() => {
     if (!autoFetch || !isAuthenticated) {
       console.log('[useMembers] Auto-fetch disabled or not authenticated');

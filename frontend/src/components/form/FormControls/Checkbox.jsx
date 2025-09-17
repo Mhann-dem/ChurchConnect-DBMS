@@ -2,60 +2,48 @@
 import React from 'react';
 import styles from '../Form.module.css';
 
-const Checkbox = ({
-  name,
-  label,
-  checked = false,
-  onChange,
-  onBlur,
-  error,
-  touched,
+const Checkbox = ({ 
+  name, 
+  label, 
+  checked, 
+  onChange, 
+  error, 
+  touched, 
+  helpText,
   disabled = false,
-  className = '',
-  ...props
+  className,
+  ...props 
 }) => {
-  const handleChange = (e) => {
-    if (onChange) {
-      onChange(e.target.checked);
-    }
-  };
-
-  const handleBlur = (e) => {
-    if (onBlur) {
-      onBlur(e);
-    }
-  };
-
-  const checkboxId = `checkbox-${name}`;
-  const hasError = touched && error;
-
+  const hasError = error && touched;
+  
   return (
-    <div className={`${styles.checkboxGroup} ${className} ${hasError ? styles.hasError : ''}`}>
-      <div className={styles.checkboxWrapper}>
+    <div className={`${styles.formGroup} ${className || ''}`}>
+      <label 
+        className={`${styles.checkboxLabel} ${hasError ? styles.checkboxError : ''}`}
+        htmlFor={name}
+      >
         <input
-          id={checkboxId}
+          id={name}
           name={name}
           type="checkbox"
-          checked={checked}
-          onChange={handleChange}
-          onBlur={handleBlur}
+          checked={checked || false}
+          onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
-          className={styles.checkboxInput}
+          className={styles.checkbox}
+          aria-describedby={hasError ? `${name}-error` : helpText ? `${name}-help` : undefined}
           {...props}
         />
-        
-        <label htmlFor={checkboxId} className={styles.checkboxLabel}>
-          <span className={styles.checkboxCustom}>
-            {checked && <span className={styles.checkmark}>✓</span>}
-          </span>
-          <span className={styles.checkboxText}>{label}</span>
-        </label>
-      </div>
-      
+        <span className={styles.checkboxText}>{label}</span>
+      </label>
       {hasError && (
-        <div className={styles.errorMessage}>
+        <span id={`${name}-error`} className={styles.errorMessage} role="alert">
           {error}
-        </div>
+        </span>
+      )}
+      {helpText && !hasError && (
+        <span id={`${name}-help`} className={styles.helpText}>
+          {helpText}
+        </span>
       )}
     </div>
   );
