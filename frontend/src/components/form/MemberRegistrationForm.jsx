@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
+import { formatPhoneForAPI, formatDateForAPI} from '../../utils/formatters';
 
 // Import the real services and hooks
 import membersService from '../../services/members';
@@ -445,43 +446,51 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-// Transform form data to match backend API expectations
+// FIXED: Transform form data to match backend API expectations
 const transformFormDataForAPI = (formData) => {
-  return {
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-    preferred_name: formData.preferredName || '',
-    email: formData.email,
-    date_of_birth: formData.dateOfBirth || null,
-    gender: formData.gender || null,
-    phone: formData.phone || '',
-    alternate_phone: formData.alternatePhone || '',
-    address: formData.address || '',
+  const transformedData = {
+    first_name: formData.firstName?.trim() || '',
+    last_name: formData.lastName?.trim() || '',
+    preferred_name: formData.preferredName?.trim() || '',
+    email: formData.email?.trim() || '',
+    date_of_birth: formatDateForAPI(formData.dateOfBirth),
+    gender: formData.gender || '',
+    phone: formatPhoneForAPI(formData.phone),
+    alternate_phone: formatPhoneForAPI(formData.alternatePhone),
+    address: formData.address?.trim() || '',
     preferred_contact_method: formData.preferredContactMethod || 'email',
     preferred_language: formData.preferredLanguage || 'English',
-    accessibility_needs: formData.accessibilityNeeds || '',
-    emergency_contact_name: formData.emergencyContactName || '',
-    emergency_contact_phone: formData.emergencyContactPhone || '',
-    ministry_interests: formData.ministryInterests || [],
-    prayer_request: formData.prayerRequest || '',
+    accessibility_needs: formData.accessibilityNeeds?.trim() || '',
+    emergency_contact_name: formData.emergencyContactName?.trim() || '',
+    emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),
+    notes: formData.prayerRequest?.trim() || formData.notes?.trim() || '',
     communication_opt_in: formData.communicationOptIn !== false,
+    privacy_policy_agreed: formData.privacyPolicyAgreed || false,
     is_active: true,
-    registration_date: new Date().toISOString(),
-    registered_by: formData.registeredBy || null,
-    internal_notes: formData.internalNotes || '',
-    tags: formData.tags || [],
+    internal_notes: formData.internalNotes?.trim() || '',
+    
+    // Handle ministry interests if provided
+    ...(formData.ministryInterests?.length > 0 && {
+      ministry_interests: formData.ministryInterests
+    }),
     
     // Handle pledge data if provided
     ...(formData.pledgeAmount && formData.pledgeFrequency && {
       pledge_data: {
         amount: parseFloat(formData.pledgeAmount),
         frequency: formData.pledgeFrequency,
-        start_date: new Date().toISOString(),
+        start_date: new Date().toISOString().split('T')[0],
         status: 'active'
       }
     })
   };
+
+  console.log('[Transform] Original form data:', formData);
+  console.log('[Transform] Transformed API data:', transformedData);
+  
+  return transformedData;
 };
+
 
 // Main Component
 const MemberRegistrationForm = ({ 

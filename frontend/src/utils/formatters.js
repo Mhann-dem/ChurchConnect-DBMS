@@ -27,6 +27,228 @@ export const formatPhoneNumber = (phone) => {
   return phone; // Return original if can't format
 };
 
+// Add these utility functions to your utils/formatters.js or directly in MemberRegistrationForm.jsx
+
+// Phone number formatter for Django PhoneNumberField
+const formatPhoneForAPI = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  
+  // Remove all non-digit characters
+  const cleaned = phoneNumber.replace(/\D/g, '');
+  
+  // If it's a US number (10 digits), add +1 prefix
+  if (cleaned.length === 10) {
+    return `+1${cleaned}`;
+  }
+  
+  // If it already has country code (11 digits starting with 1), add +
+  if (cleaned.length === 11 && cleaned.startsWith('1')) {
+    return `+${cleaned}`;
+  }
+  
+  // For other formats, add + if not present
+  if (cleaned.length > 10 && !phoneNumber.startsWith('+')) {
+    return `+${cleaned}`;
+  }
+  
+  return phoneNumber;
+};
+
+// Date formatter for Django DateField
+const formatDateForAPI = (dateString) => {
+  if (!dateString) return null;
+  
+  // If it's already in YYYY-MM-DD format, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString;
+  }
+  
+  // Try to parse and format the date
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', dateString);
+      return null;
+    }
+    
+    // Format as YYYY-MM-DD
+    return date.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return null;
+  }
+};
+
+// FIXED: Transform form data to match backend API expectations
+const transformFormDataForAPI = (formData) => {
+  const transformedData = {
+    first_name: formData.firstName?.trim() || '',
+    last_name: formData.lastName?.trim() || '',
+    preferred_name: formData.preferredName?.trim() || '',
+    email: formData.email?.trim() || '',
+    date_of_birth: formatDateForAPI(formData.dateOfBirth),
+    gender: formData.gender || '',
+    phone: formatPhoneForAPI(formData.phone),
+    alternate_phone: formatPhoneForAPI(formData.alternatePhone),
+    address: formData.address?.trim() || '',
+    preferred_contact_method: formData.preferredContactMethod || 'email',
+    preferred_language: formData.preferredLanguage || 'English',
+    accessibility_needs: formData.accessibilityNeeds?.trim() || '',
+    emergency_contact_name: formData.emergencyContactName?.trim() || '',
+    emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),
+    notes: formData.prayerRequest?.trim() || formData.notes?.trim() || '',
+    communication_opt_in: formData.communicationOptIn !== false,
+    privacy_policy_agreed: formData.privacyPolicyAgreed || false,
+    is_active: true,
+    internal_notes: formData.internalNotes?.trim() || '',
+    
+    // Handle ministry interests if provided
+    ...(formData.ministryInterests?.length > 0 && {
+      ministry_interests: formData.ministryInterests
+    }),
+    
+    // Handle pledge data if provided
+    ...(formData.pledgeAmount && formData.pledgeFrequency && {
+      pledge_data: {
+        amount: parseFloat(formData.pledgeAmount),
+        frequency: formData.pledgeFrequency,
+        start_date: new Date().toISOString().split('T')[0],
+        status: 'active'
+      }
+    })
+  };
+
+  console.log('[Transform] Original form data:', formData);
+  console.log('[Transform] Transformed API data:', transformedData);
+  
+  return transformedData;
+};
+
+// FIXED: Enhanced phone input validation
+const validatePhoneNumber = (phone) => {
+  if (!phone) return null;
+  
+  const cleaned = phone.replace(/\D/g, '');
+  
+  if (cleaned.length < 10) {
+    return 'Phone number must be at least 10 digits';
+  }
+  
+  if (cleaned.length > 15) {
+    return 'Phone number is too long';
+  }
+  
+  return null;
+};
+
+// FIXED: Enhanced date validation
+const validateDateOfBirth = (dateString, isRequired = true) => {
+  if (!dateString) {
+    return isRequired ? 'Date of birth is required' : null;
+  }
+  
+  try {
+    const date = new Date(dateString);
+    
+    if (isNaN(date.getTime())) {
+      return 'Please enter a valid date';
+    }
+    
+    const today = new Date();
+    if (date > today) {
+      return 'Date of birth cannot be in the future';
+    }
+    
+    // Check if person is too old (over 150 years)
+    const age = today.getFullYear() - date.getFullYear();
+    if (age > 150) {
+      return 'Please enter a valid date of birth';
+    }
+    
+    // Check if person is too young (under 13) for independent registration
+    if (age < 13) {
+      return 'Members must be at least 13 years old to register independently';
+    }
+    
+    return null;
+  } catch (error) {
+    return 'Please enter a valid date';
+  }
+};
+
+// FIXED: Updated validation function for the form
+const validateStep = (stepId, formData, isAdminMode = false) => {
+  const errors = {};
+  
+  switch (stepId) {
+    case 'personal':
+      if (!formData.firstName?.trim()) {
+        errors.firstName = 'First name is required';
+      }
+      
+      if (!formData.lastName?.trim()) {
+        errors.lastName = 'Last name is required';
+      }
+      
+      if (!formData.email?.trim()) {
+        errors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        errors.email = 'Please enter a valid email address';
+      }
+      
+      if (!isAdminMode || !formData.skipValidation) {
+        const dateError = validateDateOfBirth(formData.dateOfBirth, true);
+        if (dateError) {
+          errors.dateOfBirth = dateError;
+        }
+        
+        if (!formData.gender) {
+          errors.gender = 'Gender is required';
+        }
+      }
+      break;
+      
+    case 'contact':
+      if (!isAdminMode || !formData.skipValidation) {
+        const phoneError = validatePhoneNumber(formData.phone);
+        if (phoneError) {
+          errors.phone = phoneError;
+        }
+        
+        if (!formData.address?.trim()) {
+          errors.address = 'Address is required';
+        }
+      }
+      break;
+      
+    case 'family':
+      if (!isAdminMode || !formData.skipValidation) {
+        if (!formData.emergencyContactName?.trim()) {
+          errors.emergencyContactName = 'Emergency contact name is required';
+        }
+        
+        const emergencyPhoneError = validatePhoneNumber(formData.emergencyContactPhone);
+        if (emergencyPhoneError) {
+          errors.emergencyContactPhone = emergencyPhoneError;
+        }
+      }
+      break;
+      
+    case 'confirmation':
+      if (!formData.privacyPolicyAgreed && (!isAdminMode || !formData.skipValidation)) {
+        errors.privacyPolicyAgreed = 'You must agree to the privacy policy';
+      }
+      break;
+      
+    default:
+      // No validation needed for ministry and pledge steps
+      break;
+  }
+  
+  return errors;
+};
+
+
 /**
  * Format currency amount
  * @param {number|string} amount - Amount to format
@@ -331,4 +553,14 @@ export const formatDate = (dateString, options = {}) => {
   };
   
   return date.toLocaleDateString('en-US', { ...defaultOptions, ...options });
+};
+
+
+export {
+  formatPhoneForAPI,
+  formatDateForAPI,
+  transformFormDataForAPI,
+  validatePhoneNumber,
+  validateDateOfBirth,
+  validateStep
 };

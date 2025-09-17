@@ -10,6 +10,7 @@ app_name = 'events'
 
 # Create router and register viewsets
 router = DefaultRouter()
+
 router.register(r'events', EventViewSet, basename='event')
 router.register(r'registrations', EventRegistrationViewSet, basename='event-registration')
 router.register(r'reminders', EventReminderViewSet, basename='event-reminder')

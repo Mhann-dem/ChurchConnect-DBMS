@@ -1,95 +1,294 @@
-// frontend/src/services/events.js
+// frontend/src/services/events.js - BACKEND COMPATIBLE VERSION
 import api from './api';
 
 export const eventsService = {
-  // Events CRUD
-  getEvents: (params = {}) => api.get('/events/events/', { params }),
-  getEvent: (id) => api.get(`/events/events/${id}/`),
-  createEvent: (data) => api.post('/events/events/', data),
-  updateEvent: (id, data) => api.put(`/events/events/${id}/`, data),
-  deleteEvent: (id) => api.delete(`/events/events/${id}/`),
+  // Events CRUD - Matching your backend exactly
+  getEvents: async (params = {}) => {
+    try {
+      console.log('[EventsService] Getting events with params:', params);
+      const response = await api.get('/events/', { params });
+      console.log('[EventsService] Events response:', response);
+      
+      // FIXED: Handle Django REST pagination structure
+      if (response.data && response.data.results) {
+        // DRF pagination response
+        return {
+          data: {
+            results: response.data.results,
+            count: response.data.count,
+            next: response.data.next,
+            previous: response.data.previous
+          }
+        };
+      } else if (Array.isArray(response.data)) {
+        // Simple array response
+        return {
+          data: {
+            results: response.data,
+            count: response.data.length
+          }
+        };
+      } else {
+        // Single object or other format
+        return response;
+      }
+    } catch (error) {
+      console.error('[EventsService] Error getting events:', error);
+      throw error;
+    }
+  },
+  
+  getEvent: async (id) => {
+    try {
+      const response = await api.get(`/events/${id}/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting event:', error);
+      throw error;
+    }
+  },
+  
+  createEvent: async (data) => {
+    try {
+      console.log('[EventsService] Creating event:', data);
+      const response = await api.post('/events/', data);
+      console.log('[EventsService] Event created:', response);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error creating event:', error);
+      throw error;
+    }
+  },
+  
+  updateEvent: async (id, data) => {
+    try {
+      console.log('[EventsService] Updating event:', id, data);
+      const response = await api.put(`/events/${id}/`, data);
+      console.log('[EventsService] Event updated:', response);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error updating event:', error);
+      throw error;
+    }
+  },
+  
+  deleteEvent: async (id) => {
+    try {
+      console.log('[EventsService] Deleting event:', id);
+      const response = await api.delete(`/events/${id}/`);
+      console.log('[EventsService] Event deleted:', response);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error deleting event:', error);
+      throw error;
+    }
+  },
 
-  // Event-specific endpoints
-  getUpcomingEvents: (days = 30, limit = 50) => 
-    api.get(`/events/events/upcoming/?days=${days}&limit=${limit}`),
-  getCalendarEvents: (params = {}) => 
-    api.get('/events/events/calendar/', { params }),
-  getEventStatistics: () => 
-    api.get('/events/events/statistics/'),
-  exportEvents: (params = {}) => 
-    api.get('/events/events/export/', { params, responseType: 'blob' }),
+  // Event-specific endpoints matching your backend views
+  getUpcomingEvents: async (days = 30, limit = 50) => {
+    try {
+      const response = await api.get(`/events/events/upcoming/`, { 
+        params: { days, limit } 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting upcoming events:', error);
+      throw error;
+    }
+  },
+    
+  getCalendarEvents: async (params = {}) => {
+    try {
+      const response = await api.get('/events/calendar/', { params });
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting calendar events:', error);
+      throw error;
+    }
+  },
+    
+  getEventStatistics: async () => {
+    try {
+      const response = await api.get('/events/statistics/');
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting statistics:', error);
+      // Return fallback stats if API fails
+      return {
+        summary: {
+          total_events: 0,
+          published_events: 0,
+          upcoming_events: 0,
+          past_events: 0,
+          total_registrations: 0,
+          confirmed_registrations: 0
+        },
+        breakdown: { by_status: {}, by_type: {} },
+        monthly_stats: []
+      };
+    }
+  },
+  
+  exportEvents: async (params = {}) => {
+    try {
+      const response = await api.get('/events/export/', { 
+        params, 
+        responseType: 'blob' 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error exporting events:', error);
+      throw error;
+    }
+  },
 
   // Event registration endpoints
-  registerForEvent: (eventId, data) => 
-    api.post(`/events/events/${eventId}/register/`, data),
-  getEventRegistrations: (eventId) => 
-    api.get(`/events/events/${eventId}/registrations/`),
-  getEventVolunteers: (eventId) => 
-    api.get(`/events/events/${eventId}/volunteers/`),
-  duplicateEvent: (eventId, data) => 
-    api.post(`/events/events/${eventId}/duplicate/`, data),
+  registerForEvent: async (eventId, data) => {
+    try {
+      const response = await api.post(`/events/events/${eventId}/register/`, data);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error registering for event:', error);
+      throw error;
+    }
+  },
+    
+  getEventRegistrations: async (eventId) => {
+    try {
+      const response = await api.get(`/events/events/${eventId}/registrations/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting registrations:', error);
+      throw error;
+    }
+  },
+    
+  getEventVolunteers: async (eventId) => {
+    try {
+      const response = await api.get(`/events/events/${eventId}/volunteers/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting volunteers:', error);
+      throw error;
+    }
+  },
+    
+  duplicateEvent: async (eventId, data) => {
+    try {
+      const response = await api.post(`/events/events/${eventId}/duplicate/`, data);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error duplicating event:', error);
+      throw error;
+    }
+  },
 
   // Bulk operations
-  bulkAction: (data) => 
-    api.post('/events/events/bulk_action/', data),
+  bulkAction: async (data) => {
+    try {
+      const response = await api.post('/events/bulk_action/', data);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error performing bulk action:', error);
+      throw error;
+    }
+  },
   
   // Registration management
-  getRegistrations: (params = {}) => 
-    api.get('/events/registrations/', { params }),
-  getRegistration: (id) => 
-    api.get(`/events/registrations/${id}/`),
-  updateRegistration: (id, data) => 
-    api.put(`/events/registrations/${id}/`, data),
-  deleteRegistration: (id) => 
-    api.delete(`/events/registrations/${id}/`),
-  confirmRegistration: (id) => 
-    api.post(`/events/registrations/${id}/confirm/`),
-  cancelRegistration: (id) => 
-    api.post(`/events/registrations/${id}/cancel/`),
-  markAttended: (id) => 
-    api.post(`/events/registrations/${id}/mark_attended/`),
-  exportRegistrations: (params = {}) => 
-    api.get('/events/registrations/export/', { params, responseType: 'blob' }),
-
-  // Event reminders
-  getReminders: (params = {}) => 
-    api.get('/events/reminders/', { params }),
-  createReminder: (data) => 
-    api.post('/events/reminders/', data),
-  updateReminder: (id, data) => 
-    api.put(`/events/reminders/${id}/`, data),
-  deleteReminder: (id) => 
-    api.delete(`/events/reminders/${id}/`),
-
-  // Event categories
-  getCategories: (params = {}) => 
-    api.get('/events/categories/', { params }),
-  createCategory: (data) => 
-    api.post('/events/categories/', data),
-  updateCategory: (id, data) => 
-    api.put(`/events/categories/${id}/`, data),
-  deleteCategory: (id) => 
-    api.delete(`/events/categories/${id}/`),
-
-  // Event volunteers
-  getVolunteers: (params = {}) => 
-    api.get('/events/volunteers/', { params }),
-  createVolunteer: (data) => 
-    api.post('/events/volunteers/', data),
-  updateVolunteer: (id, data) => 
-    api.put(`/events/volunteers/${id}/`, data),
-  deleteVolunteer: (id) => 
-    api.delete(`/events/volunteers/${id}/`),
+  getRegistrations: async (params = {}) => {
+    try {
+      const response = await api.get('/events/registrations/', { params });
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting registrations:', error);
+      throw error;
+    }
+  },
+    
+  getRegistration: async (id) => {
+    try {
+      const response = await api.get(`/events/registrations/${id}/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error getting registration:', error);
+      throw error;
+    }
+  },
+    
+  updateRegistration: async (id, data) => {
+    try {
+      const response = await api.put(`/events/registrations/${id}/`, data);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error updating registration:', error);
+      throw error;
+    }
+  },
+    
+  deleteRegistration: async (id) => {
+    try {
+      const response = await api.delete(`/events/registrations/${id}/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error deleting registration:', error);
+      throw error;
+    }
+  },
+    
+  confirmRegistration: async (id) => {
+    try {
+      const response = await api.post(`/events/registrations/${id}/confirm/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error confirming registration:', error);
+      throw error;
+    }
+  },
+    
+  cancelRegistration: async (id) => {
+    try {
+      const response = await api.post(`/events/registrations/${id}/cancel/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error cancelling registration:', error);
+      throw error;
+    }
+  },
+    
+  markAttended: async (id) => {
+    try {
+      const response = await api.post(`/events/registrations/${id}/mark_attended/`);
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error marking attendance:', error);
+      throw error;
+    }
+  },
+    
+  exportRegistrations: async (params = {}) => {
+    try {
+      const response = await api.get('/events/registrations/export/', { 
+        params, 
+        responseType: 'blob' 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[EventsService] Error exporting registrations:', error);
+      throw error;
+    }
+  },
 
   // Helper methods for frontend
   formatEventForCalendar: (events) => {
+    if (!Array.isArray(events)) return [];
+    
     return events.map(event => ({
       id: event.id,
       title: event.title,
       start: event.start_datetime,
       end: event.end_datetime,
-      backgroundColor: event.color || '#3498db',
-      borderColor: event.color || '#3498db',
+      backgroundColor: eventsService.getEventTypeColor(event.event_type),
+      borderColor: eventsService.getEventTypeColor(event.event_type),
       textColor: '#ffffff',
       extendedProps: {
         description: event.description,

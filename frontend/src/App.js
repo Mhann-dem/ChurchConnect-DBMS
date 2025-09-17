@@ -44,6 +44,9 @@ const PledgesPage = lazy(() => import('./pages/admin/PledgesPage'));
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 
+// FIXED: Add the missing AdminEventsPage import
+const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
+
 // Member login page
 const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
 
@@ -165,6 +168,9 @@ function App() {
           }>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+            
+            {/* FIXED: Add the missing events route */}
+            <Route path="events" element={<AdminEventsPage />} />
             
             {/* Member Management */}
             <Route path="members" element={<MembersPage />} />

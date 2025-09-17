@@ -1,4 +1,4 @@
-// frontend/src/components/form/FormControls/PhoneInput.jsx
+// frontend/src/components/form/FormControls/PhoneInput.jsx - UPDATED
 import React from 'react';
 import styles from '../Form.module.css';
 
@@ -11,7 +11,7 @@ const PhoneInput = ({
   error, 
   touched, 
   placeholder = "(555) 123-4567",
-  helpText,
+  helpText = "Enter your phone number (US numbers will be formatted automatically)",
   required = false,
   disabled = false,
   ...props 
@@ -22,7 +22,7 @@ const PhoneInput = ({
     // Remove all non-digit characters
     const cleaned = phoneNumber.replace(/\D/g, '');
     
-    // Apply formatting
+    // Apply formatting for display (but remember we'll convert to +1XXXXXXXXXX for API)
     if (cleaned.length >= 10) {
       return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
     } else if (cleaned.length >= 6) {
@@ -37,7 +37,26 @@ const PhoneInput = ({
   const handleChange = (e) => {
     const formattedValue = formatPhoneNumber(e.target.value);
     if (onChange) {
-      onChange(formattedValue);
+      // For React forms, we need to create a synthetic event
+      const syntheticEvent = {
+        target: {
+          name: name,
+          value: formattedValue
+        }
+      };
+      onChange(syntheticEvent);
+    }
+  };
+  
+  const handleBlur = (e) => {
+    if (onBlur) {
+      const syntheticEvent = {
+        target: {
+          name: name,
+          value: e.target.value
+        }
+      };
+      onBlur(syntheticEvent);
     }
   };
   
@@ -55,12 +74,13 @@ const PhoneInput = ({
         type="tel"
         value={value || ''}
         onChange={handleChange}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         placeholder={placeholder}
         disabled={disabled}
         required={required}
         className={`${styles.input} ${hasError ? styles.inputError : ''}`}
         aria-describedby={hasError ? `${name}-error` : helpText ? `${name}-help` : undefined}
+        maxLength="14" // (555) 123-4567 format
         {...props}
       />
       {hasError && (

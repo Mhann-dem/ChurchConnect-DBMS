@@ -666,7 +666,7 @@ const Dashboard = () => {
                 { 
                   name: 'Create Event', 
                   icon: CalendarIcon, 
-                  href: '/admin/events/new', 
+                  href: '/admin/events?action=create', 
                   color: 'green',
                   description: 'Schedule church event'
                 },

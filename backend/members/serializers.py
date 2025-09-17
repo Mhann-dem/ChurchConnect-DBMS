@@ -4,6 +4,9 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from datetime import date
+from phonenumber_field.phonenumber import PhoneNumber
+from phonenumbers import NumberParseException
+import phonenumbers
 
 User = get_user_model()
 
@@ -122,9 +125,10 @@ class MemberDetailSerializer(serializers.ModelSerializer):
 # Rename the second MemberSerializer to avoid conflicts
 MemberSerializer = MemberDetailSerializer
 
+# Update your MemberCreateSerializer class
 class MemberCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating members (public form)"""
-    confirm_email = serializers.EmailField(write_only=True)
+    """Enhanced serializer for creating members with better validation"""
+    confirm_email = serializers.EmailField(write_only=True, required=False)
     
     class Meta:
         model = Member
@@ -136,49 +140,71 @@ class MemberCreateSerializer(serializers.ModelSerializer):
             'communication_opt_in', 'privacy_policy_agreed'
         ]
     
-    def validate(self, data):
-        """Validate email confirmation matches"""
-        if data.get('email') != data.get('confirm_email'):
-            raise serializers.ValidationError({
-                'confirm_email': 'Email addresses must match.'
-            })
-        return data
+    def validate_phone(self, value):
+        """Validate main phone number"""
+        return validate_phone_number(value)
     
-    def validate_email(self, value):
-        """Ensure email is unique"""
-        if Member.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A member with this email already exists.")
-        return value
+    def validate_alternate_phone(self, value):
+        """Validate alternate phone number"""
+        if not value:  # Allow empty alternate phone
+            return value
+        return validate_phone_number(value)
+    
+    def validate_emergency_contact_phone(self, value):
+        """Validate emergency contact phone number"""
+        if not value:  # Allow empty emergency contact phone in some cases
+            return value
+        return validate_phone_number(value)
     
     def validate_date_of_birth(self, value):
-        """Validate date of birth"""
+        """Enhanced date of birth validation"""
+        if value is None:
+            raise serializers.ValidationError("Date of birth is required.")
+            
         if value > date.today():
             raise serializers.ValidationError("Date of birth cannot be in the future.")
         
-        # Check if person is too young (under 13) for data collection
+        # Calculate age
         age = date.today().year - value.year - (
             (date.today().month, date.today().day) < (value.month, value.day)
         )
+        
         if age < 13:
             raise serializers.ValidationError(
                 "Members must be at least 13 years old to register independently."
             )
         
+        if age > 150:  # Reasonable upper limit
+            raise serializers.ValidationError("Please enter a valid date of birth.")
+        
         return value
     
-    def validate_privacy_policy_agreed(self, value):
-        """Ensure privacy policy is agreed"""
-        if not value:
-            raise serializers.ValidationError("Privacy policy must be agreed to register.")
-        return value
+    def validate(self, data):
+        """Cross-field validation"""
+        # Email confirmation check (if provided)
+        if data.get('confirm_email'):
+            if data.get('email') != data.get('confirm_email'):
+                raise serializers.ValidationError({
+                    'confirm_email': 'Email addresses must match.'
+                })
+        
+        # Privacy policy agreement
+        if not data.get('privacy_policy_agreed', False):
+            raise serializers.ValidationError({
+                'privacy_policy_agreed': 'Privacy policy must be agreed to register.'
+            })
+        
+        return data
     
     def create(self, validated_data):
-        """Create member instance"""
-        # Remove confirm_email from validated_data
+        """Create member with proper defaults"""
+        # Remove confirm_email if present
         validated_data.pop('confirm_email', None)
         
-        # Set registration source
-        validated_data['registration_source'] = 'public_form'
+        # Set defaults
+        validated_data.setdefault('registration_source', 'public_form')
+        validated_data.setdefault('is_active', True)
+        validated_data.setdefault('communication_opt_in', True)
         
         return super().create(validated_data)
 
@@ -336,3 +362,38 @@ class MemberStatsSerializer(serializers.Serializer):
     demographics = serializers.DictField()
     preferences = serializers.DictField()
     growth = serializers.DictField()
+
+def validate_phone_number(value):
+    """Enhanced phone number validation"""
+    if not value:
+        return value
+    
+    try:
+        # If it's already a PhoneNumber object, return it
+        if isinstance(value, PhoneNumber):
+            return value
+            
+        # Clean the input - remove formatting characters
+        cleaned_value = ''.join(filter(str.isdigit, str(value)))
+        
+        # If it looks like a US number without country code, add +1
+        if len(cleaned_value) == 10:
+            phone_str = f"+1{cleaned_value}"
+        elif len(cleaned_value) == 11 and cleaned_value.startswith('1'):
+            phone_str = f"+{cleaned_value}"
+        else:
+            phone_str = str(value)
+            if not phone_str.startswith('+'):
+                phone_str = f"+{phone_str}"
+        
+        # Parse and validate
+        parsed_number = phonenumbers.parse(phone_str, None)
+        
+        if not phonenumbers.is_valid_number(parsed_number):
+            raise ValidationError("Please enter a valid phone number.")
+        
+        return PhoneNumber.from_string(phone_str)
+        
+    except (NumberParseException, ValueError) as e:
+        raise ValidationError(f"Invalid phone number format: {str(e)}")
+

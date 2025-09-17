@@ -29,6 +29,7 @@ api_v1_patterns = [
     path('pledges/', include('pledges.urls')),
     path('reports/', include('reports.urls')),
     path('core/', include('core.urls')),
+    path('events/', include('events.urls')),
 ]
 
 urlpatterns = [
@@ -46,7 +47,7 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    path('', include('events.urls')),
+    # path('', include('events.urls')),
     
     # Legacy API endpoints (for backward compatibility)
     # # Uncomment these if you want to support both /api/ and /api/v1/ paths
