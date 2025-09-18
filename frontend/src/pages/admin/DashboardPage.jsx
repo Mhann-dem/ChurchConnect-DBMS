@@ -32,6 +32,7 @@ import {
   GiftIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
+import { useFamilies } from '../../hooks/useFamilies';
 import dashboardService from '../../services/dashboardService';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -40,6 +41,7 @@ const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
   const { settings } = useSettings();
+  const { getFamilyStatistics } = useFamilies();
   const navigate = useNavigate();
   
   // State management
@@ -63,6 +65,7 @@ const DashboardPage = () => {
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [familyStats, setFamilyStats] = useState(null);
 
   const isDark = settings?.theme === 'dark';
 
@@ -81,6 +84,22 @@ const DashboardPage = () => {
     const searchParams = new URLSearchParams(params);
     navigate(`/admin/members?${searchParams.toString()}`);
   }, [navigate]);
+
+  // Load family statistics using the useFamilies hook
+  useEffect(() => {
+    const loadFamilyStats = async () => {
+      try {
+        const stats = await getFamilyStatistics();
+        setFamilyStats(stats);
+      } catch (error) {
+        console.error('Error loading family statistics:', error);
+      }
+    };
+    
+    if (isAuthenticated) {
+      loadFamilyStats();
+    }
+  }, [getFamilyStatistics, isAuthenticated]);
 
   // Update time every minute
   useEffect(() => {
@@ -108,7 +127,7 @@ const DashboardPage = () => {
         memberStats,
         pledgeStats,
         groupStats,
-        familyStats,
+        familyStatsFromService,
         eventStats,
         recentMembers,
         recentPledges,
@@ -141,6 +160,22 @@ const DashboardPage = () => {
         }
       };
 
+      // Merge family stats from both sources
+      const serviceFamilyStats = processResult(familyStatsFromService, { 
+        total_families: 0, 
+        new_families: 0, 
+        growth_rate: 0 
+      });
+      
+      const mergedFamilyStats = familyStats ? {
+        ...serviceFamilyStats,
+        ...familyStats,
+        // Prefer hook data where available, fall back to service data
+        total_families: familyStats.total_families || serviceFamilyStats.total_families,
+        new_families: familyStats.new_families || serviceFamilyStats.new_families,
+        growth_rate: familyStats.growth_rate || serviceFamilyStats.growth_rate
+      } : serviceFamilyStats;
+
       const newDashboardData = {
         stats: processResult(systemStats, { 
           total_members: 0, 
@@ -167,11 +202,7 @@ const DashboardPage = () => {
           active_groups: 0, 
           growth_rate: 0 
         }),
-        familyStats: processResult(familyStats, { 
-          total_families: 0, 
-          new_families: 0, 
-          growth_rate: 0 
-        }),
+        familyStats: mergedFamilyStats,
         eventStats: processResult(eventStats, { 
           total_events: 0, 
           upcoming_events: 0, 
@@ -200,7 +231,7 @@ const DashboardPage = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [showToast]);
+  }, [showToast, familyStats]);
 
   // Initial data fetch
   useEffect(() => {
@@ -210,8 +241,24 @@ const DashboardPage = () => {
   }, [isAuthenticated, fetchDashboardData]);
 
   // Manual refresh handler
-  const handleRefresh = () => {
-    fetchDashboardData(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Refresh both data sources
+      await Promise.all([
+        fetchDashboardData(false),
+        (async () => {
+          try {
+            const stats = await getFamilyStatistics();
+            setFamilyStats(stats);
+          } catch (error) {
+            console.error('Error refreshing family statistics:', error);
+          }
+        })()
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Reusable components with inline styles

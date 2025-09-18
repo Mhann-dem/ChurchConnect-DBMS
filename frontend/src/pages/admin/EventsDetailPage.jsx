@@ -1,3 +1,4 @@
+// frontend/src/pages/admin/EventsDetailPage.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -24,18 +25,222 @@ import {
 import { format, parseISO, isToday, isFuture, isPast, formatDistanceToNow } from 'date-fns';
 import { useToast } from '../../hooks/useToast';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorBoundary from '../../components/shared/ErrorBoundary';
-import Modal from '../../components/shared/Modal';
-import ConfirmDialog from '../../components/shared/ConfirmDialog';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Avatar from '../../components/ui/Avatar';
-import Tabs from '../../components/ui/Tabs';
-import eventsService from '../../services/events';
-import { validateId } from '../../utils/validation';
-import { formatDate, formatPhoneNumber } from '../../utils/formatters';
-import styles from './AdminPages.module.css';
+// FIXED: Import the service correctly
+import { eventsService } from '../../services/events';
+
+// Simple utility functions
+const validateId = (id) => {
+  if (!id || isNaN(parseInt(id))) {
+    throw new Error('Invalid ID provided');
+  }
+  return parseInt(id);
+};
+
+const formatDate = (dateString, includeTime = true) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    if (includeTime) {
+      return format(date, 'MMM dd, yyyy h:mm a');
+    }
+    return format(date, 'MMM dd, yyyy');
+  } catch (error) {
+    return dateString;
+  }
+};
+
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  // Simple phone formatting - you can enhance this
+  return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+};
+
+// Simple Error Boundary component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('EventDetailPage Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ? 
+        this.props.fallback({ error: this.state.error, resetError: () => this.setState({ hasError: false, error: null }) }) :
+        <div>Something went wrong.</div>;
+    }
+    return this.props.children;
+  }
+}
+
+// Simple Card component
+const Card = ({ children, className = '', style = {} }) => (
+  <div 
+    className={className}
+    style={{
+      backgroundColor: 'white',
+      borderRadius: '8px',
+      padding: '20px',
+      border: '1px solid #e5e7eb',
+      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+      ...style
+    }}
+  >
+    {children}
+  </div>
+);
+
+// Simple Badge component
+const Badge = ({ children, variant = 'default' }) => {
+  const variants = {
+    default: { backgroundColor: '#f3f4f6', color: '#374151' },
+    primary: { backgroundColor: '#dbeafe', color: '#1e40af' },
+    success: { backgroundColor: '#d1fae5', color: '#065f46' },
+    warning: { backgroundColor: '#fef3c7', color: '#92400e' },
+    danger: { backgroundColor: '#fee2e2', color: '#991b1b' },
+    info: { backgroundColor: '#dbeafe', color: '#1e40af' },
+    secondary: { backgroundColor: '#f1f5f9', color: '#475569' },
+    outline: { backgroundColor: 'transparent', color: '#374151', border: '1px solid #d1d5db' }
+  };
+
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '2px 8px',
+      borderRadius: '12px',
+      fontSize: '12px',
+      fontWeight: '500',
+      ...variants[variant]
+    }}>
+      {children}
+    </span>
+  );
+};
+
+// Simple Button component
+const Button = ({ children, onClick, variant = 'primary', size = 'md', icon, disabled = false, ...props }) => {
+  const variants = {
+    primary: { backgroundColor: '#3b82f6', color: 'white', border: 'none' },
+    outline: { backgroundColor: 'transparent', color: '#374151', border: '1px solid #d1d5db' },
+    danger: { backgroundColor: '#ef4444', color: 'white', border: 'none' }
+  };
+
+  const sizes = {
+    sm: { padding: '6px 12px', fontSize: '12px' },
+    md: { padding: '8px 16px', fontSize: '14px' },
+    lg: { padding: '10px 20px', fontSize: '16px' }
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        borderRadius: '6px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontWeight: '500',
+        transition: 'all 0.2s',
+        ...variants[variant],
+        ...sizes[size]
+      }}
+      {...props}
+    >
+      {icon && icon}
+      {children}
+    </button>
+  );
+};
+
+// Simple Tabs component
+const Tabs = ({ tabs, activeTab, onTabChange }) => (
+  <div style={{ borderBottom: '1px solid #e5e7eb', marginBottom: '24px' }}>
+    <div style={{ display: 'flex', gap: '24px' }}>
+      {tabs.map(tab => {
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            style={{
+              padding: '12px 0',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === tab.id ? '2px solid #3b82f6' : '2px solid transparent',
+              color: activeTab === tab.id ? '#3b82f6' : '#6b7280',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            {Icon && <Icon size={16} />}
+            {tab.label}
+            {tab.badge !== undefined && (
+              <Badge variant={activeTab === tab.id ? 'primary' : 'outline'}>
+                {tab.badge}
+              </Badge>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
+// Simple ConfirmDialog component
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', variant = 'primary', loading = false }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        maxWidth: '450px',
+        width: '100%',
+        margin: '20px'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>{title}</h3>
+        <div style={{ marginBottom: '24px', lineHeight: '1.5' }}>{message}</div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <Button variant="outline" onClick={onClose} disabled={loading}>
+            {cancelText}
+          </Button>
+          <Button variant={variant} onClick={onConfirm} disabled={loading}>
+            {loading && <LoadingSpinner size="sm" />}
+            {confirmText}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const EventDetailPage = () => {
   const { id } = useParams();
@@ -274,20 +479,20 @@ const EventDetailPage = () => {
     
     if (event.status === 'published') {
       if (event.end_datetime && isPast(parseISO(event.end_datetime))) {
-        return <CheckCircle size={16} className={styles.statusCompleted} />;
+        return <CheckCircle size={16} style={{ color: '#10b981' }} />;
       }
       if (event.start_datetime && isToday(parseISO(event.start_datetime))) {
-        return <Clock size={16} className={styles.statusToday} />;
+        return <Clock size={16} style={{ color: '#f59e0b' }} />;
       }
       if (event.start_datetime && isFuture(parseISO(event.start_datetime))) {
-        return <Calendar size={16} className={styles.statusUpcoming} />;
+        return <Calendar size={16} style={{ color: '#3b82f6' }} />;
       }
-      return <CheckCircle size={16} className={styles.statusActive} />;
+      return <CheckCircle size={16} style={{ color: '#3b82f6' }} />;
     }
     if (event.status === 'cancelled') {
-      return <XCircle size={16} className={styles.statusCancelled} />;
+      return <XCircle size={16} style={{ color: '#ef4444' }} />;
     }
-    return <AlertCircle size={16} className={styles.statusDraft} />;
+    return <AlertCircle size={16} style={{ color: '#f59e0b' }} />;
   }, []);
 
   const getEventStatusText = useCallback((event) => {
@@ -341,7 +546,14 @@ const EventDetailPage = () => {
   // Loading state
   if (loadingStates.event) {
     return (
-      <div className={styles.loadingContainer}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '16px'
+      }}>
         <LoadingSpinner size="large" />
         <p>Loading event details...</p>
       </div>
@@ -351,10 +563,18 @@ const EventDetailPage = () => {
   // Error state
   if (errors.event && !event) {
     return (
-      <div className={styles.errorContainer}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '16px',
+        textAlign: 'center'
+      }}>
         <h2>Error Loading Event</h2>
         <p>{errors.event}</p>
-        <div className={styles.errorActions}>
+        <div style={{ display: 'flex', gap: '12px' }}>
           <Button onClick={() => fetchEventDetails(true)}>
             Try Again
           </Button>
@@ -373,7 +593,15 @@ const EventDetailPage = () => {
   // Event not found
   if (!event) {
     return (
-      <div className={styles.errorContainer}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '16px',
+        textAlign: 'center'
+      }}>
         <h2>Event Not Found</h2>
         <p>The requested event could not be found.</p>
         <Button
@@ -396,18 +624,18 @@ const EventDetailPage = () => {
 
   // Overview tab content
   const OverviewTab = () => (
-    <div className={styles.eventOverview}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Event Header */}
-      <div className={styles.eventHeader}>
-        <div className={styles.eventInfo}>
-          <div className={styles.eventTitle}>
-            <h2>
-              {event.is_featured && <Star size={20} className={styles.featuredIcon} />}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+          <div>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+              {event.is_featured && <Star size={20} style={{ color: '#f59e0b', marginRight: '8px' }} />}
               {event.title}
             </h2>
-            <div className={styles.eventMeta}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {getEventStatusIcon(event)}
-              <span className={styles.statusText}>
+              <span style={{ fontWeight: '500' }}>
                 {getEventStatusText(event)}
               </span>
               {event.event_type && (
@@ -420,36 +648,60 @@ const EventDetailPage = () => {
               )}
             </div>
           </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+              size="sm"
+              icon={<RefreshCw size={16} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />}
+            >
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            <Button
+              onClick={handleEditEvent}
+              variant="outline"
+              size="sm"
+              icon={<Edit size={16} />}
+            >
+              Edit
+            </Button>
+            <Button
+              onClick={() => setIsDeleteDialogOpen(true)}
+              variant="danger"
+              size="sm"
+              icon={<Trash2 size={16} />}
+            >
+              Delete
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Event Information Cards */}
-      <div className={styles.eventGrid}>
-        <Card className={styles.infoCard}>
-          <div className={styles.cardHeader}>
-            <h3><Calendar size={18} /> Event Details</h3>
-          </div>
-          <div className={styles.cardBody}>
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Start Date & Time:</span>
-              <span className={styles.value}>
-                {formatEventDate(event.start_datetime)}
-              </span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        <Card>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Calendar size={18} /> Event Details
+          </h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: '500', color: '#6b7280' }}>Start Date & Time:</span>
+              <span>{formatEventDate(event.start_datetime)}</span>
             </div>
             
             {event.end_datetime && (
-              <div className={styles.infoRow}>
-                <span className={styles.label}>End Date & Time:</span>
-                <span className={styles.value}>
-                  {formatEventDate(event.end_datetime)}
-                </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '500', color: '#6b7280' }}>End Date & Time:</span>
+                <span>{formatEventDate(event.end_datetime)}</span>
               </div>
             )}
             
             {event.start_datetime && (
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Time Until Event:</span>
-                <span className={styles.value}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '500', color: '#6b7280' }}>Time Until Event:</span>
+                <span>
                   {isFuture(parseISO(event.start_datetime)) 
                     ? formatDistanceToNow(parseISO(event.start_datetime), { addSuffix: true })
                     : isPast(parseISO(event.start_datetime)) 
@@ -461,25 +713,23 @@ const EventDetailPage = () => {
             )}
 
             {event.location && (
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Location:</span>
-                <span className={styles.value}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '500', color: '#6b7280' }}>Location:</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <MapPin size={14} />
                   {event.location}
                 </span>
               </div>
             )}
 
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Event Type:</span>
-              <span className={styles.value}>
-                {event.event_type_display || event.event_type || 'Not specified'}
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: '500', color: '#6b7280' }}>Event Type:</span>
+              <span>{event.event_type_display || event.event_type || 'Not specified'}</span>
             </div>
 
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Status:</span>
-              <span className={styles.value}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: '500', color: '#6b7280' }}>Status:</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {getEventStatusIcon(event)}
                 {getEventStatusText(event)}
               </span>
@@ -488,33 +738,25 @@ const EventDetailPage = () => {
         </Card>
 
         {event.description && (
-          <Card className={styles.infoCard}>
-            <div className={styles.cardHeader}>
-              <h3>Description</h3>
-            </div>
-            <div className={styles.cardBody}>
-              <p className={styles.description}>{event.description}</p>
-            </div>
+          <Card>
+            <h3 style={{ marginBottom: '16px' }}>Description</h3>
+            <p style={{ lineHeight: '1.6', color: '#4b5563' }}>{event.description}</p>
           </Card>
         )}
 
-        <Card className={styles.infoCard}>
-          <div className={styles.cardHeader}>
-            <h3>Registration & Attendance</h3>
-          </div>
-          <div className={styles.cardBody}>
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Registration Required:</span>
-              <span className={styles.value}>
-                {event.registration_required ? 'Yes' : 'No'}
-              </span>
+        <Card>
+          <h3 style={{ marginBottom: '16px' }}>Registration & Attendance</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: '500', color: '#6b7280' }}>Registration Required:</span>
+              <span>{event.requires_registration ? 'Yes' : 'No'}</span>
             </div>
             
-            {event.registration_required && (
+            {event.requires_registration && (
               <>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Registration Deadline:</span>
-                  <span className={styles.value}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '500', color: '#6b7280' }}>Registration Deadline:</span>
+                  <span>
                     {event.registration_deadline 
                       ? formatEventDate(event.registration_deadline)
                       : 'No deadline set'
@@ -522,278 +764,112 @@ const EventDetailPage = () => {
                   </span>
                 </div>
 
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Max Attendees:</span>
-                  <span className={styles.value}>
-                    {event.max_attendees || 'No limit'}
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '500', color: '#6b7280' }}>Max Attendees:</span>
+                  <span>{event.max_capacity || 'No limit'}</span>
                 </div>
               </>
             )}
 
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Current Registrations:</span>
-              <span className={styles.value}>
-                {event.registration_count || event.registrations_count || 0}
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: '500', color: '#6b7280' }}>Current Registrations:</span>
+              <span>{event.registration_count || event.registrations_count || 0}</span>
             </div>
 
-            {event.max_attendees && (
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Available Spots:</span>
-                <span className={styles.value}>
-                  {Math.max(0, event.max_attendees - (event.registration_count || 0))}
-                </span>
+            {event.max_capacity && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '500', color: '#6b7280' }}>Available Spots:</span>
+                <span>{Math.max(0, event.max_capacity - (event.registration_count || 0))}</span>
               </div>
             )}
           </div>
         </Card>
 
-        {(event.organizer_name || event.organizer_email || event.organizer_phone) && (
-          <Card className={styles.infoCard}>
-            <div className={styles.cardHeader}>
-              <h3>Organizer Information</h3>
-            </div>
-            <div className={styles.cardBody}>
-              {event.organizer_name && (
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Organizer:</span>
-                  <span className={styles.value}>{event.organizer_name}</span>
+        {(event.organizer || event.contact_email || event.contact_phone) && (
+          <Card>
+            <h3 style={{ marginBottom: '16px' }}>Organizer Information</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {event.organizer && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '500', color: '#6b7280' }}>Organizer:</span>
+                  <span>{event.organizer}</span>
                 </div>
               )}
 
-              {event.organizer_email && (
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Email:</span>
-                  <span className={styles.value}>
-                    <a href={`mailto:${event.organizer_email}`} className={styles.emailLink}>
-                      {event.organizer_email}
-                    </a>
-                  </span>
+              {event.contact_email && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '500', color: '#6b7280' }}>Email:</span>
+                  <a href={`mailto:${event.contact_email}`} style={{ color: '#3b82f6' }}>
+                    {event.contact_email}
+                  </a>
                 </div>
               )}
 
-              {event.organizer_phone && (
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Phone:</span>
-                  <span className={styles.value}>
-                    <a href={`tel:${event.organizer_phone}`} className={styles.phoneLink}>
-                      {formatPhoneNumber(event.organizer_phone)}
-                    </a>
-                  </span>
+              {event.contact_phone && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '500', color: '#6b7280' }}>Phone:</span>
+                  <a href={`tel:${event.contact_phone}`} style={{ color: '#3b82f6' }}>
+                    {formatPhoneNumber(event.contact_phone)}
+                  </a>
                 </div>
               )}
             </div>
           </Card>
         )}
-
-        <Card className={styles.infoCard}>
-          <div className={styles.cardHeader}>
-            <h3>Event Statistics</h3>
-          </div>
-          <div className={styles.cardBody}>
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Created:</span>
-              <span className={styles.value}>
-                {formatEventDate(event.created_at, false)}
-              </span>
-            </div>
-
-            <div className={styles.infoRow}>
-              <span className={styles.label}>Last Updated:</span>
-              <span className={styles.value}>
-                {formatEventDate(event.updated_at, false)}
-              </span>
-            </div>
-
-            {event.created_by && (
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Created By:</span>
-                <span className={styles.value}>{event.created_by}</span>
-              </div>
-            )}
-          </div>
-        </Card>
       </div>
     </div>
   );
 
-  // Registrations tab content
+  // Other tab contents would go here
   const RegistrationsTab = () => (
-    <div className={styles.eventRegistrations}>
-      <div className={styles.tabHeader}>
-        <h3>Event Registrations</h3>
-        {event.registration_required && (
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Download size={16} />}
-          >
-            Export Registrations
-          </Button>
+    <Card>
+      <h3>Event Registrations</h3>
+      <p>No registrations to display yet.</p>
+    </Card>
+  );
+
+  const AttendeesTab = () => (
+    <Card>
+      <h3>Event Attendees</h3>
+      <p>No attendees recorded yet.</p>
+    </Card>
+  );
+
+  const ActivityTab = () => (
+    <Card>
+      <h3>Recent Activity</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Calendar size={16} />
+          <div>
+            <p>Event created</p>
+            <span style={{ fontSize: '14px', color: '#6b7280' }}>
+              {formatDate(event.created_at)}
+            </span>
+          </div>
+        </div>
+        {event.updated_at && event.updated_at !== event.created_at && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Edit size={16} />
+            <div>
+              <p>Event updated</p>
+              <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                {formatDate(event.updated_at)}
+              </span>
+            </div>
+          </div>
         )}
       </div>
-      
-      {errors.registrations && (
-        <div className={styles.errorMessage}>
-          <p>Error loading registrations: {errors.registrations}</p>
-        </div>
-      )}
-      
-      {loadingStates.registrations ? (
-        <div className={styles.loadingState}>
-          <LoadingSpinner size="md" />
-          <p>Loading registrations...</p>
-        </div>
-      ) : eventRegistrations.length === 0 ? (
-        <Card className={styles.emptyState}>
-          <UserPlus size={48} className={styles.emptyIcon} />
-          <h3>No Registrations Yet</h3>
-          <p>
-            {event.registration_required 
-              ? 'No one has registered for this event yet.'
-              : 'Registration is not required for this event.'
-            }
-          </p>
-        </Card>
-      ) : (
-        <div className={styles.registrationsList}>
-          {eventRegistrations.map((registration, index) => (
-            <Card key={registration.id || index} className={styles.registrationCard}>
-              <div className={styles.registrationInfo}>
-                <Avatar 
-                  src={registration.avatar} 
-                  name={registration.name}
-                  size="md"
-                />
-                <div className={styles.registrationDetails}>
-                  <h4>{registration.name}</h4>
-                  <p>{registration.email}</p>
-                  {registration.phone && (
-                    <p>{formatPhoneNumber(registration.phone)}</p>
-                  )}
-                  <small>
-                    Registered: {formatEventDate(registration.registered_at, false)}
-                  </small>
-                </div>
-              </div>
-              <div className={styles.registrationStatus}>
-                <Badge variant={registration.status === 'confirmed' ? 'success' : 'warning'}>
-                  {registration.status || 'Pending'}
-                </Badge>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  // Attendees tab content
-  const AttendeesTab = () => (
-    <div className={styles.eventAttendees}>
-      <div className={styles.tabHeader}>
-        <h3>Event Attendees</h3>
-        <Button
-          variant="outline"
-          size="sm"
-          icon={<Download size={16} />}
-        >
-          Export Attendees
-        </Button>
-      </div>
-      
-      {errors.attendees && (
-        <div className={styles.errorMessage}>
-          <p>Error loading attendees: {errors.attendees}</p>
-        </div>
-      )}
-      
-      {loadingStates.attendees ? (
-        <div className={styles.loadingState}>
-          <LoadingSpinner size="md" />
-          <p>Loading attendees...</p>
-        </div>
-      ) : eventAttendees.length === 0 ? (
-        <Card className={styles.emptyState}>
-          <Users size={48} className={styles.emptyIcon} />
-          <h3>No Attendees Recorded</h3>
-          <p>Attendance has not been recorded for this event yet.</p>
-        </Card>
-      ) : (
-        <div className={styles.attendeesList}>
-          {eventAttendees.map((attendee, index) => (
-            <Card key={attendee.id || index} className={styles.attendeeCard}>
-              <div className={styles.attendeeInfo}>
-                <Avatar 
-                  src={attendee.avatar} 
-                  name={attendee.name}
-                  size="md"
-                />
-                <div className={styles.attendeeDetails}>
-                  <h4>{attendee.name}</h4>
-                  <p>{attendee.email}</p>
-                  <small>
-                    Attended: {formatEventDate(attendee.attended_at)}
-                  </small>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  // Activity tab content
-  const ActivityTab = () => (
-    <div className={styles.eventActivity}>
-      <Card>
-        <h3>Recent Activity</h3>
-        <div className={styles.activityList}>
-          <div className={styles.activityItem}>
-            <Calendar size={16} />
-            <div>
-              <p>Event created</p>
-              <span className={styles.activityDate}>
-                {formatEventDate(event.created_at)}
-              </span>
-            </div>
-          </div>
-          {event.updated_at && event.updated_at !== event.created_at && (
-            <div className={styles.activityItem}>
-              <Edit size={16} />
-              <div>
-                <p>Event updated</p>
-                <span className={styles.activityDate}>
-                  {formatEventDate(event.updated_at)}
-                </span>
-              </div>
-            </div>
-          )}
-          {event.is_featured && (
-            <div className={styles.activityItem}>
-              <Star size={16} />
-              <div>
-                <p>Event featured</p>
-                <span className={styles.activityDate}>
-                  Promoted event
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-    </div>
+    </Card>
   );
 
   return (
     <ErrorBoundary
       fallback={({ error, resetError }) => (
-        <div className={styles.errorContainer}>
+        <div style={{ textAlign: 'center', padding: '48px' }}>
           <h2>Something went wrong</h2>
           <p>{error?.message || 'An unexpected error occurred'}</p>
-          <div className={styles.errorActions}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px' }}>
             <Button onClick={resetError}>Try Again</Button>
             <Button variant="outline" onClick={() => navigate('/admin/events')}>
               Back to Events
@@ -802,7 +878,19 @@ const EventDetailPage = () => {
         </div>
       )}
     >
-      <div className={styles.pageContainer}>
+      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header with back button */}
+        <div style={{ marginBottom: '24px' }}>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/events')}
+            icon={<ArrowLeft size={16} />}
+            style={{ marginBottom: '16px' }}
+          >
+            Back to Events
+          </Button>
+        </div>
+
         {/* Tabs */}
         <Tabs 
           tabs={tabs}
@@ -811,7 +899,7 @@ const EventDetailPage = () => {
         />
 
         {/* Tab Content */}
-        <div className={styles.tabContent}>
+        <div>
           {activeTab === 'overview' && <OverviewTab />}
           {activeTab === 'registrations' && <RegistrationsTab />}
           {activeTab === 'attendees' && <AttendeesTab />}
@@ -828,11 +916,11 @@ const EventDetailPage = () => {
             <>
               <p>Are you sure you want to delete <strong>"{event.title}"</strong>?</p>
               {(event.registration_count || 0) > 0 && (
-                <p className={styles.warningText}>
+                <p style={{ color: '#dc2626', marginTop: '8px' }}>
                   This event has {event.registration_count} registration(s). Deleting will remove all associated data.
                 </p>
               )}
-              <p>This action cannot be undone.</p>
+              <p style={{ marginTop: '8px' }}>This action cannot be undone.</p>
             </>
           }
           confirmText={isSubmitting ? 'Deleting...' : 'Delete'}

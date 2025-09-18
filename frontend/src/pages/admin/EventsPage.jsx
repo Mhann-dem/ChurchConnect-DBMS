@@ -23,20 +23,135 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
 // FIXED: Correct import structure
-import eventsService from '../../services/events';
-import useAuth from '../../hooks/useAuth';
+import { eventsService } from '../../services/events';
 import { useToast } from '../../hooks/useToast';
-// FIXED: Import missing components
+// FIXED: Create these missing components
 import EventForm from '../../components/admin/Events/EventForm';
-import Modal from '../../components/shared/Modal';
-import ConfirmDialog from '../../components/shared/ConfirmDialog';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+
+// Simple Modal component since it's missing
+const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  if (!isOpen) return null;
+
+  const modalStyles = {
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    },
+    content: {
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      padding: '0',
+      maxWidth: size === 'lg' ? '900px' : '600px',
+      width: '100%',
+      maxHeight: '90vh',
+      overflowY: 'auto',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+    }
+  };
+
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// Simple ConfirmDialog component since it's missing
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', variant = 'primary' }) => {
+  if (!isOpen) return null;
+
+  const dialogStyles = {
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1050,
+      padding: '20px'
+    },
+    content: {
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      padding: '24px',
+      maxWidth: '450px',
+      width: '100%',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+    },
+    title: {
+      fontSize: '18px',
+      fontWeight: 'bold',
+      color: '#1f2937',
+      marginBottom: '16px'
+    },
+    message: {
+      color: '#6b7280',
+      marginBottom: '24px',
+      lineHeight: '1.5'
+    },
+    actions: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '12px'
+    },
+    cancelButton: {
+      padding: '8px 16px',
+      backgroundColor: 'white',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      color: '#374151',
+      cursor: 'pointer',
+      fontSize: '14px'
+    },
+    confirmButton: {
+      padding: '8px 16px',
+      backgroundColor: variant === 'danger' ? '#ef4444' : '#3b82f6',
+      border: 'none',
+      borderRadius: '6px',
+      color: 'white',
+      cursor: 'pointer',
+      fontSize: '14px'
+    }
+  };
+
+  return (
+    <div style={dialogStyles.overlay} onClick={onClose}>
+      <div style={dialogStyles.content} onClick={(e) => e.stopPropagation()}>
+        <h3 style={dialogStyles.title}>{title}</h3>
+        <div style={dialogStyles.message}>{message}</div>
+        <div style={dialogStyles.actions}>
+          <button style={dialogStyles.cancelButton} onClick={onClose}>
+            {cancelText}
+          </button>
+          <button style={dialogStyles.confirmButton} onClick={onConfirm}>
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { user } = useAuth();
   
   // Get initial state from URL params (dashboard integration)
   const initialTab = searchParams.get('view') || 'list';
@@ -1099,7 +1214,7 @@ const EventsPage = () => {
         >
           <EventForm
             event={editingEvent}
-            onSubmit={handleFormSubmit}
+            onSave={handleFormSubmit}
             onCancel={handleFormCancel}
           />
         </Modal>

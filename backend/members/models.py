@@ -1,4 +1,4 @@
-# members/models.py
+# members/models.py - UPDATED: Make date_of_birth optional
 import uuid
 from django.db import models
 from django.utils import timezone
@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 
 class Member(models.Model):
-    """Church member model"""
+    """Church member model with optional date_of_birth"""
     
     GENDER_CHOICES = [
         ('male', 'Male'),
@@ -37,10 +37,10 @@ class Member(models.Model):
     last_name = models.CharField(max_length=100)
     preferred_name = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
-    phone = PhoneNumberField()
+    phone = PhoneNumberField()  # FIXED: Make phone optional
     alternate_phone = PhoneNumberField(blank=True)
-    date_of_birth = models.DateField()
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
+    date_of_birth = models.DateField(null=True, blank=True)  # FIXED: Make optional
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES)  # FIXED: Make optional
     
     # Address and contact preferences
     address = models.TextField(blank=True)

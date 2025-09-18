@@ -481,9 +481,9 @@ const EventForm = ({ event, onSave, onCancel }) => {
 
   if (loading) {
     return (
-      <div className={styles.modal}>
-        <div className={styles.modalContent}>
-          <div className={styles.loadingContainer}>
+      <div style={styles.modal}>
+        <div style={styles.modalContent}>
+          <div style={styles.loadingContainer}>
             <LoadingSpinner />
             <p>Loading form data...</p>
           </div>
@@ -493,73 +493,82 @@ const EventForm = ({ event, onSave, onCancel }) => {
   }
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>
+    <div style={styles.modal}>
+      <div style={styles.modalContent}>
+        <div style={styles.modalHeader}>
+          <h2 style={styles.modalTitle}>
             {event ? 'Edit Event' : 'Create New Event'}
           </h2>
           <button 
             onClick={onCancel}
-            className={styles.modalCloseButton}
+            style={styles.modalCloseButton}
             disabled={saving}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGrid}>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.formGrid}>
             {/* Basic Information */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>
                 <Tag className="w-4 h-4" />
                 Basic Information
               </h3>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Event Title *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.title ? styles.inputError : {})
+                  }}
                   placeholder="Enter event title"
                   disabled={saving}
                 />
                 {errors.title && (
-                  <span className={styles.errorText}>{errors.title}</span>
+                  <span style={styles.errorText}>{errors.title}</span>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                  className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.textarea,
+                    ...(errors.description ? styles.inputError : {})
+                  }}
                   placeholder="Describe the event"
                   rows={4}
                   disabled={saving}
                 />
                 {errors.description && (
-                  <span className={styles.errorText}>{errors.description}</span>
+                  <span style={styles.errorText}>{errors.description}</span>
                 )}
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Event Type *
                   </label>
                   <select
                     value={formData.event_type}
                     onChange={(e) => handleInputChange('event_type', e.target.value)}
-                    className={`${styles.select} ${errors.event_type ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.select,
+                      ...(errors.event_type ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   >
                     {eventTypeOptions.map(option => (
@@ -569,18 +578,21 @@ const EventForm = ({ event, onSave, onCancel }) => {
                     ))}
                   </select>
                   {errors.event_type && (
-                    <span className={styles.errorText}>{errors.event_type}</span>
+                    <span style={styles.errorText}>{errors.event_type}</span>
                   )}
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Category
                   </label>
                   <select
                     value={formData.category_id}
                     onChange={(e) => handleInputChange('category_id', e.target.value)}
-                    className={`${styles.select} ${errors.category_id ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.select,
+                      ...(errors.category_id ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   >
                     <option value="">No category</option>
@@ -591,126 +603,141 @@ const EventForm = ({ event, onSave, onCancel }) => {
                     ))}
                   </select>
                   {errors.category_id && (
-                    <span className={styles.errorText}>{errors.category_id}</span>
+                    <span style={styles.errorText}>{errors.category_id}</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Date and Time */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>
                 <Calendar className="w-4 h-4" />
                 Date & Time
               </h3>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Start Date & Time *
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.start_datetime}
                     onChange={(e) => handleInputChange('start_datetime', e.target.value)}
-                    className={`${styles.input} ${errors.start_datetime ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.start_datetime ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   />
                   {errors.start_datetime && (
-                    <span className={styles.errorText}>{errors.start_datetime}</span>
+                    <span style={styles.errorText}>{errors.start_datetime}</span>
                   )}
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     End Date & Time *
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.end_datetime}
                     onChange={(e) => handleInputChange('end_datetime', e.target.value)}
-                    className={`${styles.input} ${errors.end_datetime ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.end_datetime ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   />
                   {errors.end_datetime && (
-                    <span className={styles.errorText}>{errors.end_datetime}</span>
+                    <span style={styles.errorText}>{errors.end_datetime}</span>
                   )}
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Registration Deadline
                 </label>
                 <input
                   type="datetime-local"
                   value={formData.registration_deadline}
                   onChange={(e) => handleInputChange('registration_deadline', e.target.value)}
-                  className={`${styles.input} ${errors.registration_deadline ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.registration_deadline ? styles.inputError : {})
+                  }}
                   disabled={saving}
                 />
                 {errors.registration_deadline && (
-                  <span className={styles.errorText}>{errors.registration_deadline}</span>
+                  <span style={styles.errorText}>{errors.registration_deadline}</span>
                 )}
               </div>
             </div>
 
             {/* Location */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>
                 <MapPin className="w-4 h-4" />
                 Location
               </h3>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Event Location
                 </label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  className={`${styles.input} ${errors.location ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.location ? styles.inputError : {})
+                  }}
                   placeholder="Event location or address"
                   disabled={saving}
                 />
                 {errors.location && (
-                  <span className={styles.errorText}>{errors.location}</span>
+                  <span style={styles.errorText}>{errors.location}</span>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Location Details
                 </label>
                 <textarea
                   value={formData.location_details}
                   onChange={(e) => handleInputChange('location_details', e.target.value)}
-                  className={`${styles.textarea} ${errors.location_details ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.textarea,
+                    ...(errors.location_details ? styles.inputError : {})
+                  }}
                   placeholder="Additional location information, directions, room number, etc."
                   rows={3}
                   disabled={saving}
                 />
                 {errors.location_details && (
-                  <span className={styles.errorText}>{errors.location_details}</span>
+                  <span style={styles.errorText}>{errors.location_details}</span>
                 )}
               </div>
             </div>
 
             {/* Registration */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>
                 <Users className="w-4 h-4" />
                 Registration
               </h3>
 
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
+              <div style={styles.formGroup}>
+                <label style={styles.checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={formData.requires_registration}
                     onChange={(e) => handleInputChange('requires_registration', e.target.checked)}
-                    className={styles.checkbox}
+                    style={styles.checkbox}
                     disabled={saving}
                   />
                   Requires Registration
@@ -719,9 +746,9 @@ const EventForm = ({ event, onSave, onCancel }) => {
 
               {formData.requires_registration && (
                 <>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
+                  <div style={styles.formRow}>
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>
                         Maximum Capacity
                       </label>
                       <input
@@ -729,17 +756,20 @@ const EventForm = ({ event, onSave, onCancel }) => {
                         min="1"
                         value={formData.max_capacity}
                         onChange={(e) => handleInputChange('max_capacity', e.target.value)}
-                        className={`${styles.input} ${errors.max_capacity ? styles.inputError : ''}`}
+                        style={{
+                          ...styles.input,
+                          ...(errors.max_capacity ? styles.inputError : {})
+                        }}
                         placeholder="Leave blank for unlimited"
                         disabled={saving}
                       />
                       {errors.max_capacity && (
-                        <span className={styles.errorText}>{errors.max_capacity}</span>
+                        <span style={styles.errorText}>{errors.max_capacity}</span>
                       )}
                     </div>
 
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>
                         <DollarSign className="w-4 h-4 inline mr-1" />
                         Registration Fee
                       </label>
@@ -749,29 +779,35 @@ const EventForm = ({ event, onSave, onCancel }) => {
                         step="0.01"
                         value={formData.registration_fee}
                         onChange={(e) => handleInputChange('registration_fee', e.target.value)}
-                        className={`${styles.input} ${errors.registration_fee ? styles.inputError : ''}`}
+                        style={{
+                          ...styles.input,
+                          ...(errors.registration_fee ? styles.inputError : {})
+                        }}
                         disabled={saving}
                       />
                       {errors.registration_fee && (
-                        <span className={styles.errorText}>{errors.registration_fee}</span>
+                        <span style={styles.errorText}>{errors.registration_fee}</span>
                       )}
                     </div>
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>
                       External Registration URL
                     </label>
                     <input
                       type="url"
                       value={formData.external_registration_url}
                       onChange={(e) => handleInputChange('external_registration_url', e.target.value)}
-                      className={`${styles.input} ${errors.external_registration_url ? styles.inputError : ''}`}
+                      style={{
+                        ...styles.input,
+                        ...(errors.external_registration_url ? styles.inputError : {})
+                      }}
                       placeholder="Optional external registration link"
                       disabled={saving}
                     />
                     {errors.external_registration_url && (
-                      <span className={styles.errorText}>{errors.external_registration_url}</span>
+                      <span style={styles.errorText}>{errors.external_registration_url}</span>
                     )}
                   </div>
                 </>
@@ -779,79 +815,88 @@ const EventForm = ({ event, onSave, onCancel }) => {
             </div>
 
             {/* Organization */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>Organization</h3>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>Organization</h3>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Organizer
                 </label>
                 <input
                   type="text"
                   value={formData.organizer}
                   onChange={(e) => handleInputChange('organizer', e.target.value)}
-                  className={`${styles.input} ${errors.organizer ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.organizer ? styles.inputError : {})
+                  }}
                   placeholder="Event organizer name"
                   disabled={saving}
                 />
                 {errors.organizer && (
-                  <span className={styles.errorText}>{errors.organizer}</span>
+                  <span style={styles.errorText}>{errors.organizer}</span>
                 )}
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Contact Email
                   </label>
                   <input
                     type="email"
                     value={formData.contact_email}
                     onChange={(e) => handleInputChange('contact_email', e.target.value)}
-                    className={`${styles.input} ${errors.contact_email ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.contact_email ? styles.inputError : {})
+                    }}
                     placeholder="Contact email for questions"
                     disabled={saving}
                   />
                   {errors.contact_email && (
-                    <span className={styles.errorText}>{errors.contact_email}</span>
+                    <span style={styles.errorText}>{errors.contact_email}</span>
                   )}
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Contact Phone
                   </label>
                   <input
                     type="tel"
                     value={formData.contact_phone}
                     onChange={(e) => handleInputChange('contact_phone', e.target.value)}
-                    className={`${styles.input} ${errors.contact_phone ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.contact_phone ? styles.inputError : {})
+                    }}
                     placeholder="Contact phone number"
                     disabled={saving}
                   />
                   {errors.contact_phone && (
-                    <span className={styles.errorText}>{errors.contact_phone}</span>
+                    <span style={styles.errorText}>{errors.contact_phone}</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Target Audience */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>Target Audience</h3>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>Target Audience</h3>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Target Groups
                 </label>
-                <div className={styles.checkboxGroup}>
+                <div style={styles.checkboxGroup}>
                   {groups.map(group => (
-                    <label key={group.id} className={styles.checkboxLabel}>
+                    <label key={group.id} style={styles.checkboxLabel}>
                       <input
                         type="checkbox"
                         checked={formData.target_group_ids.includes(group.id)}
                         onChange={(e) => handleMultiSelectChange('target_group_ids', group.id, e.target.checked)}
-                        className={styles.checkbox}
+                        style={styles.checkbox}
                         disabled={saving}
                       />
                       {group.name}
@@ -860,9 +905,9 @@ const EventForm = ({ event, onSave, onCancel }) => {
                 </div>
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Minimum Age
                   </label>
                   <input
@@ -871,16 +916,19 @@ const EventForm = ({ event, onSave, onCancel }) => {
                     max="120"
                     value={formData.age_min}
                     onChange={(e) => handleInputChange('age_min', e.target.value)}
-                    className={`${styles.input} ${errors.age_min ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.age_min ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   />
                   {errors.age_min && (
-                    <span className={styles.errorText}>{errors.age_min}</span>
+                    <span style={styles.errorText}>{errors.age_min}</span>
                   )}
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Maximum Age
                   </label>
                   <input
@@ -889,29 +937,35 @@ const EventForm = ({ event, onSave, onCancel }) => {
                     max="120"
                     value={formData.age_max}
                     onChange={(e) => handleInputChange('age_max', e.target.value)}
-                    className={`${styles.input} ${errors.age_max ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.input,
+                      ...(errors.age_max ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   />
                   {errors.age_max && (
-                    <span className={styles.errorText}>{errors.age_max}</span>
+                    <span style={styles.errorText}>{errors.age_max}</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Additional Settings */}
-            <div className={styles.formSection}>
-              <h3 className={styles.sectionTitle}>Additional Settings</h3>
+            <div style={styles.formSection}>
+              <h3 style={styles.sectionTitle}>Additional Settings</h3>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>
                     Status
                   </label>
                   <select
                     value={formData.status}
                     onChange={(e) => handleInputChange('status', e.target.value)}
-                    className={`${styles.select} ${errors.status ? styles.inputError : ''}`}
+                    style={{
+                      ...styles.select,
+                      ...(errors.status ? styles.inputError : {})
+                    }}
                     disabled={saving}
                   >
                     <option value="draft">Draft</option>
@@ -920,103 +974,112 @@ const EventForm = ({ event, onSave, onCancel }) => {
                     <option value="postponed">Postponed</option>
                   </select>
                   {errors.status && (
-                    <span className={styles.errorText}>{errors.status}</span>
+                    <span style={styles.errorText}>{errors.status}</span>
                   )}
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
+              <div style={styles.formGroup}>
+                <label style={styles.checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={formData.is_public}
                     onChange={(e) => handleInputChange('is_public', e.target.checked)}
-                    className={styles.checkbox}
+                    style={styles.checkbox}
                     disabled={saving}
                   />
                   Show on public calendar
                 </label>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
+              <div style={styles.formGroup}>
+                <label style={styles.checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={formData.is_featured}
                     onChange={(e) => handleInputChange('is_featured', e.target.checked)}
-                    className={styles.checkbox}
+                    style={styles.checkbox}
                     disabled={saving}
                   />
                   Feature this event prominently
                 </label>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Prerequisites
                 </label>
                 <textarea
                   value={formData.prerequisites}
                   onChange={(e) => handleInputChange('prerequisites', e.target.value)}
-                  className={`${styles.textarea} ${errors.prerequisites ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.textarea,
+                    ...(errors.prerequisites ? styles.inputError : {})
+                  }}
                   placeholder="Requirements, items to bring, or preparation needed"
                   rows={3}
                   disabled={saving}
                 />
                 {errors.prerequisites && (
-                  <span className={styles.errorText}>{errors.prerequisites}</span>
+                  <span style={styles.errorText}>{errors.prerequisites}</span>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Tags
                 </label>
                 <input
                   type="text"
                   value={formData.tags}
                   onChange={(e) => handleInputChange('tags', e.target.value)}
-                  className={`${styles.input} ${errors.tags ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.tags ? styles.inputError : {})
+                  }}
                   placeholder="Comma-separated tags for categorization"
                   disabled={saving}
                 />
                 {errors.tags && (
-                  <span className={styles.errorText}>{errors.tags}</span>
+                  <span style={styles.errorText}>{errors.tags}</span>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
                   Event Image URL
                 </label>
                 <input
                   type="url"
                   value={formData.image_url}
                   onChange={(e) => handleInputChange('image_url', e.target.value)}
-                  className={`${styles.input} ${errors.image_url ? styles.inputError : ''}`}
+                  style={{
+                    ...styles.input,
+                    ...(errors.image_url ? styles.inputError : {})
+                  }}
                   placeholder="URL to event poster or promotional image"
                   disabled={saving}
                 />
                 {errors.image_url && (
-                  <span className={styles.errorText}>{errors.image_url}</span>
+                  <span style={styles.errorText}>{errors.image_url}</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Form Actions */}
-          <div className={styles.modalActions}>
+          <div style={styles.modalActions}>
             <button
               type="button"
               onClick={onCancel}
-              className={styles.cancelButton}
+              style={styles.cancelButton}
               disabled={saving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className={styles.saveButton}
+              style={styles.saveButton}
               disabled={saving}
             >
               {saving && <LoadingSpinner size="small" />}

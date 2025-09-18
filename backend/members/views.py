@@ -1,6 +1,7 @@
 # members/views.py - UPDATED VERSION - Added missing recent endpoint
 
 import csv
+from io import StringIO
 import json
 from datetime import date, datetime, timedelta
 from django.utils import timezone
@@ -567,6 +568,140 @@ class MemberViewSet(viewsets.ModelViewSet):
             logger.error(f"[MemberViewSet] Error in bulk action: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Bulk action failed'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+    @action(detail=False, methods=['get'], url_path='bulk-import-template')
+    def bulk_import_template(self, request):
+        """Generate a bulk import template - Admin only"""
+        if not self._is_admin_user():
+            return Response(
+                {'error': 'Admin privileges required'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            logger.info(f"[MemberViewSet] Bulk import template request from: {request.user.email}")
+            
+            # Validate query parameters
+            serializer = BulkImportTemplateSerializer(data=request.query_params)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            template_format = serializer.validated_data.get('format', 'csv')
+            headers = serializer.get_template_headers()
+            example_rows = serializer.get_example_rows()
+            
+            if template_format == 'csv':
+                import csv
+                from io import StringIO
+                
+                output = StringIO()
+                writer = csv.DictWriter(output, fieldnames=headers)
+                
+                # Write headers
+                writer.writeheader()
+                
+                # Write example rows if requested
+                for row in example_rows:
+                    # Only include fields that are in headers
+                    filtered_row = {k: v for k, v in row.items() if k in headers}
+                    writer.writerow(filtered_row)
+                
+                response = HttpResponse(output.getvalue(), content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="member_import_template.csv"'
+                
+                logger.info(f"[MemberViewSet] CSV template generated with {len(headers)} columns")
+                return response
+                
+            elif template_format == 'xlsx':
+                try:
+                    import openpyxl
+                    from openpyxl import Workbook
+                    from io import BytesIO
+                    
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Member Import Template"
+                    
+                    # Write headers
+                    for col, header in enumerate(headers, 1):
+                        ws.cell(row=1, column=col, value=header)
+                    
+                    # Write example rows
+                    for row_idx, row_data in enumerate(example_rows, 2):
+                        for col, header in enumerate(headers, 1):
+                            value = row_data.get(header, '')
+                            ws.cell(row=row_idx, column=col, value=value)
+                    
+                    # Create instructions sheet
+                    instructions_ws = wb.create_sheet("Instructions")
+                    instructions = [
+                        "BULK MEMBER IMPORT TEMPLATE",
+                        "",
+                        "REQUIRED FIELDS:",
+                        "- first_name: Member's first name",
+                        "- last_name: Member's last name", 
+                        "- email: Unique email address",
+                        "",
+                        "OPTIONAL FIELDS:",
+                        "- preferred_name: Nickname or preferred name",
+                        "- phone: Phone number (format: +1234567890)",
+                        "- alternate_phone: Secondary phone number",
+                        "- date_of_birth: Birth date (format: YYYY-MM-DD)",
+                        "- gender: male, female, other, prefer_not_to_say",
+                        "- address: Full address",
+                        "- preferred_contact_method: email, phone, sms, mail, no_contact",
+                        "- preferred_language: Default is English",
+                        "- accessibility_needs: Any special needs",
+                        "- emergency_contact_name: Emergency contact name",
+                        "- emergency_contact_phone: Emergency contact phone",
+                        "- notes: Additional notes",
+                        "- communication_opt_in: true/false (default: true)",
+                        "- is_active: true/false (default: true)",
+                        "",
+                        "NOTES:",
+                        "- Do not modify the header row",
+                        "- Email addresses must be unique",
+                        "- Phone numbers should include country code",
+                        "- Boolean fields accept: true/false, 1/0, yes/no",
+                        "- Empty cells are treated as blank/null values"
+                    ]
+                    
+                    for row, instruction in enumerate(instructions, 1):
+                        instructions_ws.cell(row=row, column=1, value=instruction)
+                    
+                    # Save to BytesIO
+                    output = BytesIO()
+                    wb.save(output)
+                    output.seek(0)
+                    
+                    response = HttpResponse(
+                        output.getvalue(),
+                        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    )
+                    response['Content-Disposition'] = 'attachment; filename="member_import_template.xlsx"'
+                    
+                    logger.info(f"[MemberViewSet] Excel template generated with {len(headers)} columns")
+                    return response
+                    
+                except ImportError:
+                    logger.error("[MemberViewSet] openpyxl not installed, cannot generate Excel template")
+                    return Response(
+                        {'error': 'Excel format not supported. Please install openpyxl or use CSV format.'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            else:
+                return Response(
+                    {'error': 'Invalid format. Use csv or xlsx.'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Error generating bulk import template: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Failed to generate template'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

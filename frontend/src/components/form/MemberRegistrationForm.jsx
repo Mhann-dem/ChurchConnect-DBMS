@@ -1,19 +1,22 @@
+// MemberRegistrationForm.jsx - UPDATED: Fixed validation for optional fields
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
-
 
 // Import the real services and hooks
 import membersService from '../../services/members';
 import { useToast } from '../../hooks/useToast';
 import useAuth from '../../hooks/useAuth';
 
-// Add these helper functions at the top of your MemberRegistrationForm.jsx file
+// Phone formatting helper - cleaner implementation
 const formatPhoneForAPI = (phoneNumber) => {
-  if (!phoneNumber) return '';
+  if (!phoneNumber || phoneNumber.trim() === '') return '';
   
   // Remove all non-digit characters
   const cleaned = phoneNumber.replace(/\D/g, '');
+  
+  // If empty after cleaning, return empty string
+  if (!cleaned) return '';
   
   // If it's a US number (10 digits), add +1 prefix
   if (cleaned.length === 10) {
@@ -25,7 +28,27 @@ const formatPhoneForAPI = (phoneNumber) => {
     return `+${cleaned}`;
   }
   
-  return cleaned.length > 0 ? `+${cleaned}` : '';
+  // For other lengths, just add + prefix
+  return `+${cleaned}`;
+};
+
+// Validation helper - more flexible
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return email && emailRegex.test(email.trim());
+};
+
+const isValidPhone = (phone) => {
+  if (!phone || phone.trim() === '') return true; // Optional field
+  const cleaned = phone.replace(/\D/g, '');
+  return cleaned.length >= 10;
+};
+
+const isValidDateOfBirth = (date) => {
+  if (!date) return true; // Optional field now
+  const today = new Date();
+  const birthDate = new Date(date);
+  return birthDate <= today && birthDate >= new Date('1900-01-01');
 };
 
 // Simple UI Components
@@ -128,7 +151,7 @@ const PersonalInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBl
       </div>
 
       <div className={styles.formGroup}>
-        <label>Date of Birth {!isAdminMode ? '*' : ''}</label>
+        <label>Date of Birth {isAdminMode ? '(Optional)' : ''}</label>
         <input
           type="date"
           name="dateOfBirth"
@@ -136,24 +159,25 @@ const PersonalInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBl
           onChange={onChange}
           onBlur={onBlur}
           className={errors.dateOfBirth && touched.dateOfBirth ? styles.inputError : styles.input}
-          required={!isAdminMode}
         />
         {errors.dateOfBirth && touched.dateOfBirth && (
           <span className={styles.errorText}>{errors.dateOfBirth}</span>
         )}
+        <small className={styles.helpText}>
+          Optional - helps us understand our community better
+        </small>
       </div>
 
       <div className={styles.formGroup}>
-        <label>Gender {!isAdminMode ? '*' : ''}</label>
+        <label>Gender {isAdminMode ? '(Optional)' : ''}</label>
         <select
           name="gender"
           value={formData.gender || ''}
           onChange={onChange}
           onBlur={onBlur}
           className={errors.gender && touched.gender ? styles.inputError : styles.select}
-          required={!isAdminMode}
         >
-          <option value="">Select Gender</option>
+          <option value="">Select Gender (Optional)</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
           <option value="other">Other</option>
@@ -172,7 +196,7 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
     <h2 className={styles.stepTitle}>Contact Information</h2>
     <div className={styles.formGrid}>
       <div className={styles.formGroup}>
-        <label>Phone Number {!isAdminMode ? '*' : ''}</label>
+        <label>Phone Number {isAdminMode ? '(Optional)' : ''}</label>
         <input
           type="tel"
           name="phone"
@@ -180,15 +204,18 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
           onChange={onChange}
           onBlur={onBlur}
           className={errors.phone && touched.phone ? styles.inputError : styles.input}
-          required={!isAdminMode}
+          placeholder="(555) 123-4567"
         />
         {errors.phone && touched.phone && (
           <span className={styles.errorText}>{errors.phone}</span>
         )}
+        <small className={styles.helpText}>
+          Optional - helps us stay connected
+        </small>
       </div>
 
       <div className={styles.formGroup}>
-        <label>Address {!isAdminMode ? '*' : ''}</label>
+        <label>Address {isAdminMode ? '(Optional)' : ''}</label>
         <textarea
           name="address"
           value={formData.address || ''}
@@ -196,11 +223,14 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
           onBlur={onBlur}
           className={errors.address && touched.address ? styles.inputError : styles.textarea}
           rows={3}
-          required={!isAdminMode}
+          placeholder="Street address, city, state, zip code"
         />
         {errors.address && touched.address && (
           <span className={styles.errorText}>{errors.address}</span>
         )}
+        <small className={styles.helpText}>
+          Optional - helps us understand our community better
+        </small>
       </div>
     </div>
   </div>
@@ -222,7 +252,10 @@ const MinistryInterests = ({ formData = {}, onChange, setFieldValue }) => {
 
   return (
     <div className={styles.stepContent}>
-      <h2 className={styles.stepTitle}>Ministry Interests</h2>
+      <h2 className={styles.stepTitle}>Ministry Interests (Optional)</h2>
+      <p className={styles.stepDescription}>
+        Select any ministries you'd be interested in learning more about or participating in.
+      </p>
       <div className={styles.checkboxGrid}>
         {ministryOptions.map(ministry => (
           <label key={ministry} className={styles.checkboxItem}>
@@ -242,6 +275,9 @@ const MinistryInterests = ({ formData = {}, onChange, setFieldValue }) => {
 const PledgeInfo = ({ formData = {}, onChange }) => (
   <div className={styles.stepContent}>
     <h2 className={styles.stepTitle}>Pledge Information (Optional)</h2>
+    <p className={styles.stepDescription}>
+      If you'd like to make a financial commitment, you can specify it here. This is completely optional.
+    </p>
     <div className={styles.formGrid}>
       <div className={styles.formGroup}>
         <label>Pledge Amount</label>
@@ -253,7 +289,11 @@ const PledgeInfo = ({ formData = {}, onChange }) => (
           className={styles.input}
           min="0"
           step="0.01"
+          placeholder="0.00"
         />
+        <small className={styles.helpText}>
+          Optional - any amount is appreciated
+        </small>
       </div>
 
       <div className={styles.formGroup}>
@@ -277,30 +317,39 @@ const PledgeInfo = ({ formData = {}, onChange }) => (
 
 const FamilyInfo = ({ formData = {}, onChange, isAdminMode = false }) => (
   <div className={styles.stepContent}>
-    <h2 className={styles.stepTitle}>Family Information</h2>
+    <h2 className={styles.stepTitle}>Family Information (Optional)</h2>
+    <p className={styles.stepDescription}>
+      Emergency contact information helps us reach someone if needed.
+    </p>
     <div className={styles.formGrid}>
       <div className={styles.formGroup}>
-        <label>Emergency Contact Name {!isAdminMode ? '*' : ''}</label>
+        <label>Emergency Contact Name</label>
         <input
           type="text"
           name="emergencyContactName"
           value={formData.emergencyContactName || ''}
           onChange={onChange}
           className={styles.input}
-          required={!isAdminMode}
+          placeholder="Contact person name"
         />
+        <small className={styles.helpText}>
+          Optional - someone we can contact in case of emergency
+        </small>
       </div>
 
       <div className={styles.formGroup}>
-        <label>Emergency Contact Phone {!isAdminMode ? '*' : ''}</label>
+        <label>Emergency Contact Phone</label>
         <input
           type="tel"
           name="emergencyContactPhone"
           value={formData.emergencyContactPhone || ''}
           onChange={onChange}
           className={styles.input}
-          required={!isAdminMode}
+          placeholder="(555) 123-4567"
         />
+        <small className={styles.helpText}>
+          Optional - emergency contact's phone number
+        </small>
       </div>
     </div>
   </div>
@@ -312,10 +361,19 @@ const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => 
     <div className={styles.confirmationSummary}>
       <div className={styles.summarySection}>
         <h3>Personal Information</h3>
-        <p>Name: {formData.firstName} {formData.lastName}</p>
-        <p>Email: {formData.email}</p>
-        <p>Phone: {formData.phone}</p>
+        <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
+        <p><strong>Email:</strong> {formData.email}</p>
+        {formData.phone && <p><strong>Phone:</strong> {formData.phone}</p>}
+        {formData.dateOfBirth && <p><strong>Date of Birth:</strong> {formData.dateOfBirth}</p>}
+        {formData.gender && <p><strong>Gender:</strong> {formData.gender}</p>}
       </div>
+      
+      {(formData.ministryInterests && formData.ministryInterests.length > 0) && (
+        <div className={styles.summarySection}>
+          <h3>Ministry Interests</h3>
+          <p>{formData.ministryInterests.join(', ')}</p>
+        </div>
+      )}
     </div>
 
     {!isAdminMode && (
@@ -334,7 +392,7 @@ const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => 
   </div>
 );
 
-// Form hook
+// Form hook - enhanced for better validation
 const useForm = (initialData) => {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -346,6 +404,11 @@ const useForm = (initialData) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleBlur = (e) => {
@@ -355,6 +418,9 @@ const useForm = (initialData) => {
 
   const setFieldValue = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const setFieldError = (name, error) => {
@@ -418,45 +484,38 @@ const INITIAL_FORM_DATA = {
   registrationContext: 'public'
 };
 
-// Validation function
+// Updated validation - more flexible
 const validateStep = (stepId, formData, isAdminMode = false) => {
   const stepValidations = {
     personal: () => {
       const errors = {};
       if (!formData.firstName?.trim()) errors.firstName = 'First name is required';
       if (!formData.lastName?.trim()) errors.lastName = 'Last name is required';
-      if (!formData.email?.trim()) errors.email = 'Email is required';
-      if (!isAdminMode || !formData.skipValidation) {
-        if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
-        if (!formData.gender) errors.gender = 'Gender is required';
+      if (!formData.email?.trim()) {
+        errors.email = 'Email is required';
+      } else if (!isValidEmail(formData.email)) {
+        errors.email = 'Please enter a valid email address';
+      }
+      // Date of birth and gender are now optional
+      if (formData.dateOfBirth && !isValidDateOfBirth(formData.dateOfBirth)) {
+        errors.dateOfBirth = 'Please enter a valid date of birth';
       }
       return errors;
     },
     contact: () => {
       const errors = {};
-      if (!isAdminMode || !formData.skipValidation) {
-        if (!formData.phone?.trim()) errors.phone = 'Phone number is required';
-        if (!formData.address?.trim()) errors.address = 'Address is required';
+      // Phone is now optional
+      if (formData.phone && !isValidPhone(formData.phone)) {
+        errors.phone = 'Please enter a valid phone number';
       }
       return errors;
     },
-    ministry: () => ({}),
-    pledge: () => ({}),
-    family: () => {
-      const errors = {};
-      if (!isAdminMode || !formData.skipValidation) {
-        if (!formData.emergencyContactName?.trim()) {
-          errors.emergencyContactName = 'Emergency contact name is required';
-        }
-        if (!formData.emergencyContactPhone?.trim()) {
-          errors.emergencyContactPhone = 'Emergency contact phone is required';
-        }
-      }
-      return errors;
-    },
+    ministry: () => ({}), // Always valid
+    pledge: () => ({}), // Always valid
+    family: () => ({}), // Always valid now
     confirmation: () => {
       const errors = {};
-      if (!formData.privacyPolicyAgreed && (!isAdminMode || !formData.skipValidation)) {
+      if (!formData.privacyPolicyAgreed && !isAdminMode) {
         errors.privacyPolicyAgreed = 'You must agree to the privacy policy';
       }
       return errors;
@@ -466,16 +525,16 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-// Replace your existing transformFormDataForAPI function with this:
+// Updated API transformation
 const transformFormDataForAPI = (formData) => {
   const transformedData = {
     first_name: formData.firstName?.trim() || '',
     last_name: formData.lastName?.trim() || '',
     preferred_name: formData.preferredName?.trim() || '',
-    email: formData.email?.trim() || '',
-    date_of_birth: formData.dateOfBirth || null,
-    gender: formData.gender || '',
-    phone: formatPhoneForAPI(formData.phone),
+    email: formData.email?.trim().toLowerCase() || '',
+    date_of_birth: formData.dateOfBirth || null, // Allow null
+    gender: formData.gender || '', // Allow empty
+    phone: formatPhoneForAPI(formData.phone), // Allow empty
     alternate_phone: formatPhoneForAPI(formData.alternatePhone),
     address: formData.address?.trim() || '',
     preferred_contact_method: formData.preferredContactMethod || 'email',
@@ -485,7 +544,7 @@ const transformFormDataForAPI = (formData) => {
     emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),
     notes: formData.prayerRequest?.trim() || formData.notes?.trim() || '',
     communication_opt_in: formData.communicationOptIn !== false,
-    privacy_policy_agreed: formData.privacyPolicyAgreed === true, // Ensure it's explicitly true
+    privacy_policy_agreed: formData.privacyPolicyAgreed === true,
     is_active: true,
     internal_notes: formData.internalNotes?.trim() || '',
   };
@@ -495,7 +554,6 @@ const transformFormDataForAPI = (formData) => {
   
   return transformedData;
 };
-
 
 // Main Component
 const MemberRegistrationForm = ({ 
@@ -531,7 +589,7 @@ const MemberRegistrationForm = ({
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
   });
 
-  // Auto-save functionality (using in-memory storage)
+  // Auto-save functionality
   useEffect(() => {
     const saveData = () => {
       const savedData = {
@@ -577,8 +635,29 @@ const MemberRegistrationForm = ({
       const apiData = transformFormDataForAPI(formData);
       console.log('[RegistrationForm] Transformed API data:', apiData);
 
-      // Use real members service
-      const result = await membersService.createMember(apiData);
+      // Use the correct endpoint based on admin mode
+      let result;
+      if (effectiveAdminMode) {
+        // Admin creating member
+        result = await membersService.createMember(apiData);
+      } else {
+        // Public registration - use public endpoint
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/members/register/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+        
+        result = { success: true, data: await response.json() };
+      }
+      
       console.log('[RegistrationForm] Create member result:', result);
       
       if (!result.success) {
@@ -608,14 +687,13 @@ const MemberRegistrationForm = ({
       
       const errorMessage = error?.response?.data?.error || 
                           error?.response?.data?.detail ||
-                          error?.validationErrors?.message ||
                           error?.message || 
                           'An error occurred. Please try again.';
                           
       showToast(errorMessage, 'error');
       
-      if (error?.validationErrors) {
-        console.error('[RegistrationForm] Validation errors:', error.validationErrors);
+      if (error?.response?.data) {
+        console.error('[RegistrationForm] Validation errors:', error.response.data);
       }
     } finally {
       setIsSubmitting(false);
@@ -687,6 +765,9 @@ const MemberRegistrationForm = ({
             'Adding a new member to the church database' :
             'Join our church family - we\'re excited to get to know you!'
           }
+        </p>
+        <p className={styles.optionalNote}>
+          Most fields are optional - provide as much or as little information as you're comfortable sharing.
         </p>
       </div>
 

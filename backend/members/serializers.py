@@ -1,4 +1,4 @@
-# members/serializers.py
+# members/serializers.py - UPDATED: Fixed validation for optional fields
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -8,19 +8,296 @@ from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
 import phonenumbers
 from django.core.exceptions import ValidationError
+import logging
 
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-class MemberSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = '__all__'
+def validate_phone_number(value):
+    """Enhanced phone number validation with flexible formatting"""
+    if not value or value == '':
+        return ''  # Allow empty values
+    
+    try:
+        # Handle string input
+        phone_str = str(value).strip()
+        
+        if not phone_str:
+            return ''
+        
+        # Clean the input - remove formatting characters but keep + 
+        if phone_str.startswith('+'):
+            # If it already has +, just clean extra characters
+            cleaned = '+' + ''.join(filter(str.isdigit, phone_str[1:]))
+        else:
+            # Clean digits only
+            cleaned = ''.join(filter(str.isdigit, phone_str))
+            
+            # Add country code if it looks like a US number
+            if len(cleaned) == 10:
+                cleaned = f"+1{cleaned}"
+            elif len(cleaned) == 11 and cleaned.startswith('1'):
+                cleaned = f"+{cleaned}"
+            else:
+                cleaned = f"+{cleaned}"
+        
+        # Parse and validate using phonenumbers
+        try:
+            parsed_number = phonenumbers.parse(cleaned, None)
+            
+            if not phonenumbers.is_valid_number(parsed_number):
+                logger.warning(f"Invalid phone number: {cleaned}")
+                raise serializers.ValidationError("Please enter a valid phone number.")
+            
+            return PhoneNumber.from_string(cleaned)
+            
+        except NumberParseException as e:
+            logger.warning(f"Phone parsing failed for {cleaned}: {e}")
+            # If parsing fails but the number looks reasonable, try to salvage it
+            if len(cleaned.replace('+', '').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')) >= 10:
+                # Return as-is for basic validation
+                return cleaned
+            raise serializers.ValidationError(f"Invalid phone number format: {phone_str}")
+            
+    except Exception as e:
+        logger.error(f"Phone validation error for {value}: {e}")
+        raise serializers.ValidationError("Please enter a valid phone number.")
 
-class MemberListSerializer(serializers.ModelSerializer):
+class MemberCreateSerializer(serializers.ModelSerializer):
+    """Enhanced serializer for creating members with flexible validation"""
+    confirm_email = serializers.EmailField(write_only=True, required=False)
+    
     class Meta:
         model = Member
-        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'registration_date', 'is_active']
+        fields = [
+            'first_name', 'last_name', 'preferred_name', 'email', 'confirm_email',
+            'phone', 'alternate_phone', 'date_of_birth', 'gender', 'address',
+            'preferred_contact_method', 'preferred_language', 'accessibility_needs',
+            'emergency_contact_name', 'emergency_contact_phone', 'notes',
+            'communication_opt_in', 'privacy_policy_agreed'
+        ]
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone': {'required': False, 'allow_blank': True},  # Make optional
+            'date_of_birth': {'required': False, 'allow_null': True},  # Make optional
+            'gender': {'required': False, 'allow_blank': True},  # Make optional
+            'address': {'required': False, 'allow_blank': True},
+            'emergency_contact_name': {'required': False, 'allow_blank': True},
+            'emergency_contact_phone': {'required': False, 'allow_blank': True},
+        }
+    
+    def validate_phone(self, value):
+        """Validate main phone number - now optional"""
+        if not value:
+            return ''  # Allow empty phone numbers
+        return validate_phone_number(value)
+    
+    def validate_alternate_phone(self, value):
+        """Validate alternate phone number"""
+        if not value:
+            return ''
+        return validate_phone_number(value)
+    
+    def validate_emergency_contact_phone(self, value):
+        """Validate emergency contact phone number"""
+        if not value:
+            return ''
+        return validate_phone_number(value)
+    
+    def validate_date_of_birth(self, value):
+        """Enhanced date of birth validation - now optional"""
+        if value is None or value == '':
+            return None  # Allow null/empty date of birth
+            
+        if value > date.today():
+            raise serializers.ValidationError("Date of birth cannot be in the future.")
+        
+        # Calculate age for reasonable bounds checking
+        try:
+            age = date.today().year - value.year - (
+                (date.today().month, date.today().day) < (value.month, value.day)
+            )
+            
+            if age > 150:  # Reasonable upper limit
+                raise serializers.ValidationError("Please enter a valid date of birth.")
+                
+        except Exception as e:
+            logger.warning(f"Date of birth validation warning: {e}")
+        
+        return value
+    
+    def validate_email(self, value):
+        """Enhanced email validation"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Email address is required.")
+        
+        email = value.strip().lower()
+        
+        # Check if email already exists
+        if Member.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError("A member with this email address already exists.")
+        
+        return email
+    
+    def validate(self, data):
+        """Cross-field validation with more flexible rules"""
+        # Email confirmation check (if provided)
+        if data.get('confirm_email'):
+            if data.get('email', '').lower() != data.get('confirm_email', '').lower():
+                raise serializers.ValidationError({
+                    'confirm_email': 'Email addresses must match.'
+                })
+        
+        # Privacy policy agreement - flexible for admin mode
+        is_admin_creating = self.context.get('is_admin_creating', False)
+        admin_override = self.context.get('admin_override', False)
+        
+        if not is_admin_creating and not admin_override:
+            if not data.get('privacy_policy_agreed', False):
+                raise serializers.ValidationError({
+                    'privacy_policy_agreed': 'Privacy policy must be agreed to register.'
+                })
+        
+        # Log the validation for debugging
+        logger.info(f"Member validation passed: {data.get('email')}")
+        
+        return data
+    
+    def create(self, validated_data):
+        """Create member with proper defaults"""
+        # Remove confirm_email if present
+        validated_data.pop('confirm_email', None)
+        
+        # Set defaults
+        validated_data.setdefault('registration_source', 'public_form')
+        validated_data.setdefault('is_active', True)
+        validated_data.setdefault('communication_opt_in', True)
+        
+        # Auto-agree privacy policy if not explicitly set (for admin creation)
+        if not validated_data.get('privacy_policy_agreed'):
+            is_admin_creating = self.context.get('is_admin_creating', False)
+            if is_admin_creating:
+                validated_data['privacy_policy_agreed'] = True
+                validated_data['privacy_policy_agreed_date'] = timezone.now()
+        
+        logger.info(f"Creating member: {validated_data.get('email')}")
+        return super().create(validated_data)
+
+class MemberAdminCreateSerializer(serializers.ModelSerializer):
+    """Serializer for admin creating members - very flexible validation"""
+    
+    class Meta:
+        model = Member
+        fields = [
+            'first_name', 'last_name', 'preferred_name', 'email',
+            'phone', 'alternate_phone', 'date_of_birth', 'gender', 'address',
+            'preferred_contact_method', 'preferred_language', 'accessibility_needs',
+            'emergency_contact_name', 'emergency_contact_phone', 'notes',
+            'communication_opt_in', 'privacy_policy_agreed', 'is_active',
+            'internal_notes', 'registration_source',
+            'import_batch_id', 'import_row_number'
+        ]
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            # All other fields are optional for admin creation
+            'phone': {'required': False, 'allow_blank': True},
+            'date_of_birth': {'required': False, 'allow_null': True},
+            'gender': {'required': False, 'allow_blank': True},
+            'address': {'required': False, 'allow_blank': True},
+            'emergency_contact_name': {'required': False, 'allow_blank': True},
+            'emergency_contact_phone': {'required': False, 'allow_blank': True},
+            'notes': {'required': False, 'allow_blank': True},
+            'internal_notes': {'required': False, 'allow_blank': True},
+        }
+    
+    def validate_phone(self, value):
+        """Very flexible phone validation for admin"""
+        if not value:
+            return ''
+        return validate_phone_number(value)
+    
+    def validate_alternate_phone(self, value):
+        """Flexible alternate phone validation"""
+        if not value:
+            return ''
+        return validate_phone_number(value)
+    
+    def validate_emergency_contact_phone(self, value):
+        """Flexible emergency contact phone validation"""
+        if not value:
+            return ''
+        return validate_phone_number(value)
+    
+    def validate_date_of_birth(self, value):
+        """Very flexible date of birth validation for admin"""
+        if value is None or value == '':
+            return None
+            
+        if value > date.today():
+            raise serializers.ValidationError("Date of birth cannot be in the future.")
+        
+        return value
+    
+    def validate_email(self, value):
+        """Email validation for admin creation"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Email address is required.")
+        
+        email = value.strip().lower()
+        
+        # Check if email already exists
+        if Member.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError("A member with this email address already exists.")
+        
+        return email
+    
+    def validate_privacy_policy_agreed(self, value):
+        """Flexible privacy policy validation for admins"""
+        # Admin can override privacy policy requirement
+        return True  # Always allow admin to create members
+    
+    def create(self, validated_data):
+        """Create member with admin context"""
+        if not validated_data.get('registration_source'):
+            validated_data['registration_source'] = 'admin_portal'
+            
+        # Auto-agree privacy policy for admin creation
+        if not validated_data.get('privacy_policy_agreed'):
+            validated_data['privacy_policy_agreed'] = True
+            validated_data['privacy_policy_agreed_date'] = timezone.now()
+            
+        # Set admin user if provided in context
+        if 'request' in self.context and hasattr(self.context['request'], 'user'):
+            validated_data.setdefault('registered_by', self.context['request'].user)
+            validated_data.setdefault('last_modified_by', self.context['request'].user)
+            
+        logger.info(f"Admin creating member: {validated_data.get('email')}")
+        return super().create(validated_data)
+
+# Keep the other serializers mostly the same but update key ones:
+
+class MemberSummarySerializer(serializers.ModelSerializer):
+    """Lightweight serializer for member lists"""
+    age = serializers.SerializerMethodField()
+    full_name = serializers.ReadOnlyField()
+    display_name = serializers.ReadOnlyField()
+    age_group = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Member
+        fields = [
+            'id', 'first_name', 'last_name', 'full_name', 'display_name',
+            'email', 'phone', 'age', 'age_group', 'gender', 'is_active',
+            'registration_date',
+        ]
+    
+    def get_age(self, obj):
+        return obj.age
 
 class MemberTagSerializer(serializers.ModelSerializer):
     """Serializer for member tags"""
@@ -52,26 +329,8 @@ class MemberNoteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at', 'created_by']
 
-class MemberSummarySerializer(serializers.ModelSerializer):
-    """Lightweight serializer for member lists"""
-    age = serializers.SerializerMethodField()
-    full_name = serializers.ReadOnlyField()
-    display_name = serializers.ReadOnlyField()
-    age_group = serializers.ReadOnlyField()
-    
-    class Meta:
-        model = Member
-        fields = [
-            'id', 'first_name', 'last_name', 'full_name', 'display_name',
-            'email', 'phone', 'age', 'age_group', 'gender', 'is_active',
-            'registration_date',
-        ]
-    
-    def get_age(self, obj):
-        return obj.age
-
 class FamilySummarySerializer(serializers.Serializer):
-    """Placeholder for family summary - implement when families app is created"""
+    """Placeholder for family summary"""
     id = serializers.UUIDField()
     family_name = serializers.CharField()
     
@@ -124,173 +383,9 @@ class MemberDetailSerializer(serializers.ModelSerializer):
             for assignment in obj.tag_assignments.all()
         ]
 
-# Rename the second MemberSerializer to avoid conflicts
+# Use MemberDetailSerializer as the main MemberSerializer
 MemberSerializer = MemberDetailSerializer
 
-# Update your MemberCreateSerializer class
-class MemberCreateSerializer(serializers.ModelSerializer):
-    """Enhanced serializer for creating members with better validation"""
-    confirm_email = serializers.EmailField(write_only=True, required=False)
-    
-    class Meta:
-        model = Member
-        fields = [
-            'first_name', 'last_name', 'preferred_name', 'email', 'confirm_email',
-            'phone', 'alternate_phone', 'date_of_birth', 'gender', 'address',
-            'preferred_contact_method', 'preferred_language', 'accessibility_needs',
-            'emergency_contact_name', 'emergency_contact_phone', 'notes',
-            'communication_opt_in', 'privacy_policy_agreed'
-        ]
-    
-    def validate_phone(self, value):
-        """Validate main phone number"""
-        return validate_phone_number(value)
-    
-    def validate_alternate_phone(self, value):
-        """Validate alternate phone number"""
-        if not value:  # Allow empty alternate phone
-            return value
-        return validate_phone_number(value)
-    
-    def validate_emergency_contact_phone(self, value):
-        """Validate emergency contact phone number"""
-        if not value:  # Allow empty emergency contact phone in some cases
-            return value
-        return validate_phone_number(value)
-    
-    def validate_date_of_birth(self, value):
-        """Enhanced date of birth validation"""
-        if value is None:
-            raise serializers.ValidationError("Date of birth is required.")
-            
-        if value > date.today():
-            raise serializers.ValidationError("Date of birth cannot be in the future.")
-        
-        # Calculate age
-        age = date.today().year - value.year - (
-            (date.today().month, date.today().day) < (value.month, value.day)
-        )
-        
-        if age < 13:
-            raise serializers.ValidationError(
-                "Members must be at least 13 years old to register independently."
-            )
-        
-        if age > 150:  # Reasonable upper limit
-            raise serializers.ValidationError("Please enter a valid date of birth.")
-        
-        return value
-    
-    def validate(self, data):
-        """Cross-field validation"""
-        # Email confirmation check (if provided)
-        if data.get('confirm_email'):
-            if data.get('email') != data.get('confirm_email'):
-                raise serializers.ValidationError({
-                    'confirm_email': 'Email addresses must match.'
-                })
-        
-        # Privacy policy agreement
-        if not data.get('privacy_policy_agreed', False):
-            raise serializers.ValidationError({
-                'privacy_policy_agreed': 'Privacy policy must be agreed to register.'
-            })
-        
-        return data
-    
-    def create(self, validated_data):
-        """Create member with proper defaults"""
-        # Remove confirm_email if present
-        validated_data.pop('confirm_email', None)
-        
-        # Set defaults
-        validated_data.setdefault('registration_source', 'public_form')
-        validated_data.setdefault('is_active', True)
-        validated_data.setdefault('communication_opt_in', True)
-        
-        return super().create(validated_data)
-
-class MemberAdminCreateSerializer(serializers.ModelSerializer):
-    """Serializer for admin creating members - more flexible validation"""
-    
-    class Meta:
-        model = Member
-        fields = [
-            'first_name', 'last_name', 'preferred_name', 'email',
-            'phone', 'alternate_phone', 'date_of_birth', 'gender', 'address',
-            'preferred_contact_method', 'preferred_language', 'accessibility_needs',
-            'emergency_contact_name', 'emergency_contact_phone', 'notes',
-            'communication_opt_in', 'privacy_policy_agreed', 'is_active',
-            'internal_notes', 'registration_source', 'registered_by',
-            'import_batch_id', 'import_row_number'
-        ]
-    
-    def validate_phone(self, value):
-        """Enhanced phone validation"""
-        if not value:
-            return value
-        
-        try:
-            # Handle string input
-            phone_str = str(value)
-            
-            # If it doesn't start with +, add it
-            if not phone_str.startswith('+'):
-                # Clean digits only
-                cleaned = ''.join(filter(str.isdigit, phone_str))
-                if len(cleaned) == 10:
-                    phone_str = f"+1{cleaned}"
-                elif len(cleaned) == 11 and cleaned.startswith('1'):
-                    phone_str = f"+{cleaned}"
-                else:
-                    phone_str = f"+{cleaned}"
-            
-            # Parse and validate
-            parsed_number = phonenumbers.parse(phone_str, None)
-            
-            if not phonenumbers.is_valid_number(parsed_number):
-                raise serializers.ValidationError("Please enter a valid phone number.")
-            
-            return PhoneNumber.from_string(phone_str)
-            
-        except (NumberParseException, ValueError):
-            raise serializers.ValidationError("Invalid phone number format.")
-    
-    def validate_emergency_contact_phone(self, value):
-        """Same validation for emergency contact phone"""
-        if not value:
-            return value
-        return self.validate_phone(value)
-    
-    def validate_alternate_phone(self, value):
-        """Same validation for alternate phone"""
-        if not value:
-            return value
-        return self.validate_phone(value)
-    
-    def validate_privacy_policy_agreed(self, value):
-        """Flexible privacy policy validation for admins"""
-        admin_override = self.context.get('admin_override', False)
-        
-        # For admin mode, automatically agree to privacy policy
-        if admin_override or self.context.get('is_admin_creating', False):
-            return True
-            
-        if not value:
-            raise serializers.ValidationError("Privacy policy must be agreed to register.")
-        return value
-    
-    def create(self, validated_data):
-        """Create member with admin context"""
-        if not validated_data.get('registration_source'):
-            validated_data['registration_source'] = 'admin_portal'
-            
-        # Auto-agree privacy policy for admin creation
-        if not validated_data.get('privacy_policy_agreed'):
-            validated_data['privacy_policy_agreed'] = True
-            validated_data['privacy_policy_agreed_date'] = timezone.now()
-            
-        return super().create(validated_data)
 class MemberUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating members"""
     last_modified_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -305,9 +400,21 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
             'notes', 'is_active', 'communication_opt_in', 'internal_notes',
             'last_modified_by'
         ]
+        extra_kwargs = {
+            'phone': {'required': False, 'allow_blank': True},
+            'date_of_birth': {'required': False, 'allow_null': True},
+            'gender': {'required': False, 'allow_blank': True},
+        }
+    
+    def validate_phone(self, value):
+        if not value:
+            return ''
+        return validate_phone_number(value)
     
     def validate_date_of_birth(self, value):
         """Validate date of birth is not in the future"""
+        if value is None:
+            return None
         if value > date.today():
             raise serializers.ValidationError("Date of birth cannot be in the future.")
         return value
@@ -329,6 +436,7 @@ class MemberExportSerializer(serializers.ModelSerializer):
     def get_family_name(self, obj):
         return obj.family.family_name if obj.family else None
 
+# Keep other serializers the same...
 class BulkImportErrorSerializer(serializers.ModelSerializer):
     """Serializer for bulk import errors"""
     class Meta:
@@ -362,25 +470,14 @@ class BulkImportRequestSerializer(serializers.Serializer):
     
     def validate_file(self, value):
         """Validate uploaded file"""
-        # Check file size (max 10MB)
         if value.size > 10 * 1024 * 1024:
             raise serializers.ValidationError("File size too large. Maximum size is 10MB.")
         
-        # Check file format
         allowed_extensions = ['.csv', '.xlsx', '.xls']
         if not any(value.name.lower().endswith(ext) for ext in allowed_extensions):
             raise serializers.ValidationError("Invalid file format. Please upload CSV or Excel files only.")
         
         return value
-
-class BulkImportTemplateSerializer(serializers.Serializer):
-    """Serializer for bulk import template information"""
-    required_columns = serializers.ListField(child=serializers.CharField())
-    optional_columns = serializers.ListField(child=serializers.CharField())
-    gender_options = serializers.ListField(child=serializers.CharField())
-    contact_method_options = serializers.ListField(child=serializers.CharField())
-    date_format_examples = serializers.ListField(child=serializers.CharField())
-    boolean_format_examples = serializers.ListField(child=serializers.CharField())
 
 class MemberStatsSerializer(serializers.Serializer):
     """Serializer for member statistics"""
@@ -389,37 +486,82 @@ class MemberStatsSerializer(serializers.Serializer):
     preferences = serializers.DictField()
     growth = serializers.DictField()
 
-def validate_phone_number(value):
-    """Enhanced phone number validation"""
-    if not value:
-        return value
-    
-    try:
-        # If it's already a PhoneNumber object, return it
-        if isinstance(value, PhoneNumber):
-            return value
-            
-        # Clean the input - remove formatting characters
-        cleaned_value = ''.join(filter(str.isdigit, str(value)))
-        
-        # If it looks like a US number without country code, add +1
-        if len(cleaned_value) == 10:
-            phone_str = f"+1{cleaned_value}"
-        elif len(cleaned_value) == 11 and cleaned_value.startswith('1'):
-            phone_str = f"+{cleaned_value}"
-        else:
-            phone_str = str(value)
-            if not phone_str.startswith('+'):
-                phone_str = f"+{phone_str}"
-        
-        # Parse and validate
-        parsed_number = phonenumbers.parse(phone_str, None)
-        
-        if not phonenumbers.is_valid_number(parsed_number):
-            raise ValidationError("Please enter a valid phone number.")
-        
-        return PhoneNumber.from_string(phone_str)
-        
-    except (NumberParseException, ValueError) as e:
-        raise ValidationError(f"Invalid phone number format: {str(e)}")
+class BulkImportTemplateSerializer(serializers.Serializer):
+    """Serializer for bulk import template generation"""
+    format = serializers.ChoiceField(
+        choices=[('csv', 'CSV'), ('xlsx', 'Excel')], 
+        default='csv',
+        help_text="Format for the template file"
+    )
+    include_examples = serializers.BooleanField(
+        default=True,
+        help_text="Include example rows in the template"
+    )
+    include_optional_fields = serializers.BooleanField(
+        default=True,
+        help_text="Include optional fields in the template"
+    )
 
+    def get_template_headers(self):
+        """Get the headers for the bulk import template"""
+        required_headers = [
+            'first_name',
+            'last_name', 
+            'email'
+        ]
+        
+        optional_headers = [
+            'preferred_name',
+            'phone',
+            'alternate_phone',
+            'date_of_birth',  # Format: YYYY-MM-DD
+            'gender',
+            'address',
+            'preferred_contact_method',
+            'preferred_language',
+            'accessibility_needs',
+            'emergency_contact_name',
+            'emergency_contact_phone',
+            'notes',
+            'communication_opt_in',  # true/false
+            'is_active'  # true/false
+        ]
+        
+        if self.validated_data.get('include_optional_fields', True):
+            return required_headers + optional_headers
+        return required_headers
+
+    def get_example_rows(self):
+        """Get example rows for the template"""
+        if not self.validated_data.get('include_examples', True):
+            return []
+            
+        return [
+            {
+                'first_name': 'John',
+                'last_name': 'Doe',
+                'email': 'john.doe@example.com',
+                'preferred_name': 'Johnny',
+                'phone': '+1234567890',
+                'date_of_birth': '1985-06-15',
+                'gender': 'male',
+                'address': '123 Main St, City, State 12345',
+                'preferred_contact_method': 'email',
+                'preferred_language': 'English',
+                'emergency_contact_name': 'Jane Doe',
+                'emergency_contact_phone': '+1234567891',
+                'communication_opt_in': 'true',
+                'is_active': 'true'
+            },
+            {
+                'first_name': 'Mary',
+                'last_name': 'Smith',
+                'email': 'mary.smith@example.com',
+                'phone': '+1987654321',
+                'date_of_birth': '1992-03-22',
+                'gender': 'female',
+                'preferred_contact_method': 'phone',
+                'communication_opt_in': 'true',
+                'is_active': 'true'
+            }
+        ]
