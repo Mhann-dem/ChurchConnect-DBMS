@@ -118,7 +118,7 @@ class DashboardService {
   async getStats() {
     const cacheKey = this.getCacheKey('dashboard_stats');
     return await this.makeRequest(
-      () => apiMethods.dashboard.getStats(),
+      () => apiMethods.get('core/dashboard/stats/'), // Changed to correct endpoint
       cacheKey,
       true,
       { 
@@ -136,7 +136,7 @@ class DashboardService {
   async getMemberStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('member_stats', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.members.getStats(timeRange),
+      () => apiMethods.get(`members/statistics/?range=${timeRange}`), // Use existing endpoint
       cacheKey,
       true,
       { 
@@ -268,15 +268,36 @@ class DashboardService {
 
   // Get system health status
   async getSystemHealth() {
-    // Don't cache health data - it should be real-time
     return await this.makeRequest(
-      () => apiMethods.dashboard ? apiMethods.dashboard.getSystemHealth() : Promise.resolve({ 
-        status: 'healthy', 
-        uptime: '99.9%' 
-      }),
+      () => apiMethods.get('core/dashboard/health/'), // Use the new endpoint
       null,
       false,
       { status: 'healthy', uptime: '99.9%' }
+    );
+  }
+
+
+  // Add this new method for the comprehensive endpoint
+  async getDashboardOverview() {
+    const cacheKey = this.getCacheKey('dashboard_overview');
+    return await this.makeRequest(
+      () => apiMethods.get('core/dashboard/overview/'),
+      cacheKey,
+      true,
+      {
+        stats: { 
+          total_members: 0, 
+          total_groups: 0, 
+          total_pledges: 0,
+          total_families: 0,
+          total_events: 0,
+          monthly_revenue: 0 
+        },
+        recent_members: [],
+        recent_pledges: [],
+        system_health: { status: 'healthy' },
+        alerts: []
+      }
     );
   }
 
@@ -284,7 +305,7 @@ class DashboardService {
   async getAlerts() {
     const cacheKey = this.getCacheKey('alerts');
     return await this.makeRequest(
-      () => apiMethods.dashboard ? apiMethods.dashboard.getAlerts() : Promise.resolve({ results: [] }),
+      () => apiMethods.get('core/dashboard/alerts/'), // Use the new endpoint
       cacheKey,
       true,
       { results: [] }

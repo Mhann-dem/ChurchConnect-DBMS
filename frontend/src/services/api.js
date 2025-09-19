@@ -1,13 +1,11 @@
-// services/api.js - Enhanced version with proper Django REST Framework integration
+// services/api.js - CORRECTED VERSION - Fixed endpoint mappings to match your backend
 import axios from 'axios';
 
-// Configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const API_VERSION = 'v1';
 
 console.log('[API] Base URL configured as:', `${API_BASE_URL}/api/${API_VERSION}/`);
 
-// Create axios instance with enhanced configuration
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/${API_VERSION}/`,
   timeout: 30000,
@@ -17,9 +15,8 @@ const api = axios.create({
   },
 });
 
-// Enhanced API endpoint mappings
+// CORRECTED ENDPOINTS - Fixed to match your actual backend implementation
 const ENDPOINTS = {
-  // Authentication endpoints
   auth: {
     login: 'auth/login/',
     logout: 'auth/logout/',
@@ -30,28 +27,27 @@ const ENDPOINTS = {
     changePassword: 'auth/change-password/'
   },
   
-  // Member endpoints
   members: {
     list: 'members/',
     create: 'members/',
     detail: (id) => `members/${id}/`,
     update: (id) => `members/${id}/`,
     delete: (id) => `members/${id}/`,
-    stats: 'members/statistics/',
+    // FIXED: These endpoints go to MemberStatisticsViewSet, not MemberViewSet
+    statistics: 'members/statistics/', // This goes to MemberStatisticsViewSet.list()
+    recent: 'members/recent/', // This goes to MemberViewSet.recent() action
+    search: 'members/search/', // This goes to MemberViewSet.search() action
+    birthdays: 'members/birthdays/', // This goes to MemberViewSet.birthdays() action
     export: 'members/export/',
     tags: 'members/tags/',
     importLogs: 'members/import-logs/',
     publicRegister: 'members/register/',
-    search: 'members/search/',
-    recent: 'members/recent/',
-    birthdays: 'members/birthdays/',
-    demographics: {
-      age: 'members/demographics/age/',
-      gender: 'members/demographics/gender/'
-    }
+    bulkActions: 'members/bulk_actions/',
+    bulkImport: 'members/bulk_import/',
+    importTemplate: 'members/import_template/',
+    // Remove demographics endpoints - these don't exist in your backend
   },
   
-  // Family endpoints
   families: {
     list: 'families/',
     create: 'families/',
@@ -61,10 +57,13 @@ const ENDPOINTS = {
     addMember: (id) => `families/${id}/add-member/`,
     removeMember: (id, memberId) => `families/${id}/remove-member/${memberId}/`,
     members: (id) => `families/${id}/members/`,
-    statistics: 'families/statistics/'
+    statistics: 'families/statistics/', // Make sure this endpoint exists in your backend
+    recent: 'families/recent-families/', // Add if needed
+    setPrimaryContact: (id) => `families/${id}/set-primary-contact/`,
+    bulkOperations: 'families/bulk-operations/',
+    needingAttention: 'families/families-needing-attention/'
   },
   
-  // Group endpoints
   groups: {
     list: 'groups/',
     create: 'groups/',
@@ -72,64 +71,66 @@ const ENDPOINTS = {
     update: (id) => `groups/${id}/`,
     delete: (id) => `groups/${id}/`,
     join: (id) => `groups/${id}/join/`,
-    leave: (id) => `groups/${id}/leave/`,
     removeMember: (id, memberId) => `groups/${id}/remove-member/${memberId}/`,
+    approveMember: (id, memberId) => `groups/${id}/approve-member/${memberId}/`,
+    declineMember: (id, memberId) => `groups/${id}/decline-member/${memberId}/`,
+    updateMembership: (id, memberId) => `groups/${id}/update-membership/${memberId}/`,
     members: (id) => `groups/${id}/members/`,
-    statistics: 'groups/statistics/',
+    export: (id) => `groups/${id}/export/`,
+    statistics: 'groups/statistics/', // This exists and works
+    public: 'groups/public/',
     categories: 'groups/categories/',
     memberships: 'groups/memberships/'
   },
   
-  // Pledge endpoints
   pledges: {
     list: 'pledges/',
     create: 'pledges/',
     detail: (id) => `pledges/${id}/`,
     update: (id) => `pledges/${id}/`,
     delete: (id) => `pledges/${id}/`,
-    stats: 'pledges/statistics/',
+    statistics: 'pledges/statistics/', // Check if this exists in your backend
     export: 'pledges/export/',
-    overdue: 'pledges/overdue/',
-    upcomingPayments: 'pledges/upcoming-payments/',
-    bulkAction: 'pledges/bulk-action/',
-    payments: 'pledges/payments/',
-    reminders: 'pledges/reminders/',
-    recent: 'pledges/recent/',
-    trends: 'pledges/trends/'
+    recent: 'pledges/recent/', // Check if this exists in your backend
+    // Remove endpoints that don't exist in your backend
+    // overdue: 'pledges/overdue/',
+    // upcomingPayments: 'pledges/upcoming-payments/',
+    // bulkAction: 'pledges/bulk-action/',
+    // payments: 'pledges/payments/',
+    // reminders: 'pledges/reminders/',
+    // trends: 'pledges/trends/'
   },
   
-  // Report endpoints
-  reports: {
-    list: 'reports/',
-    create: 'reports/',
-    detail: (id) => `reports/${id}/`,
-    generate: (id) => `reports/${id}/generate/`,
-    stats: 'reports/stats/',
-    runs: 'reports/runs/',
-    templates: 'reports/templates/',
-    download: (runId) => `reports/download/${runId}/`,
-    membersCsv: 'reports/members/csv/',
-    pledgesCsv: 'reports/pledges/csv/',
-    dashboard: 'reports/dashboard/',
-    activity: 'reports/activity/'
+  events: {
+    list: 'events/',
+    create: 'events/',
+    detail: (id) => `events/${id}/`,
+    update: (id) => `events/${id}/`,
+    delete: (id) => `events/${id}/`,
+    statistics: 'events/statistics/', // Add if needed
+    recent: 'events/recent/' // Add if needed
   },
   
-  // Core endpoints
+  // Remove reports endpoints if they don't exist yet
+  // reports: {
+  //   ...
+  // },
+  
   core: {
-    health: 'core/health/',
-    status: 'core/status/',
-    version: 'core/version/'
+    health: 'core/health/', // This exists and works
+    status: 'core/status/', // This exists and works
+    version: 'core/version/' // This exists and works
   },
 
-  // Dashboard specific endpoints
   dashboard: {
-    overview: 'dashboard/overview/',
-    stats: 'dashboard/stats/',
-    alerts: 'core/dashboard/alerts/',
-    config: (userId) => `dashboard/config/${userId}/`,
-    health: 'core/dashboard/health/'
+    overview: 'core/dashboard/overview/', // This exists and works
+    stats: 'core/dashboard/stats/', // This exists and works
+    health: 'core/dashboard/health/', // This exists and works
+    alerts: 'core/dashboard/alerts/', // This exists and works
+    config: (userId) => `core/dashboard/config/${userId}/` // This exists and works
   }
 };
+
 
 // Request interceptor with enhanced auth handling
 api.interceptors.request.use(
@@ -366,19 +367,19 @@ const apiMethods = {
     },
 
     getStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.reports.stats);
+      const response = await apiMethods.get(ENDPOINTS.dashboard.stats);
       return response.data;
     },
 
     getMemberStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.members.stats, { 
+      const response = await apiMethods.get(ENDPOINTS.members.statistics, { 
         params: { range } 
       });
       return response.data;
     },
 
     getPledgeStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.pledges.stats, { 
+      const response = await apiMethods.get(ENDPOINTS.pledges.statistics, { 
         params: { range } 
       });
       return response.data;
@@ -386,6 +387,11 @@ const apiMethods = {
 
     getGroupStats: async () => {
       const response = await apiMethods.get(ENDPOINTS.groups.statistics);
+      return response.data;
+    },
+
+    getFamilyStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.families.statistics);
       return response.data;
     },
 
@@ -506,7 +512,7 @@ const apiMethods = {
     },
 
     getStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.members.stats, {
+      const response = await apiMethods.get(ENDPOINTS.members.statistics, {
         params: { range }
       });
       return response.data;
@@ -624,7 +630,7 @@ const apiMethods = {
     },
 
     getStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.pledges.stats, {
+      const response = await apiMethods.get(ENDPOINTS.pledges.statistics, {
         params: { range }
       });
       return response.data;
@@ -654,6 +660,54 @@ const apiMethods = {
       const response = await apiMethods.get(ENDPOINTS.pledges.trends, {
         params: { range }
       });
+      return response.data;
+    }
+  },
+
+  // Family API methods
+  families: {
+    list: async (params = {}) => {
+      const response = await apiMethods.get(ENDPOINTS.families.list, { params });
+      return response.data;
+    },
+
+    create: async (familyData) => {
+      const response = await apiMethods.post(ENDPOINTS.families.create, familyData);
+      return response.data;
+    },
+
+    get: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.families.detail(id));
+      return response.data;
+    },
+
+    update: async (id, familyData) => {
+      const response = await apiMethods.put(ENDPOINTS.families.update(id), familyData);
+      return response.data;
+    },
+
+    delete: async (id) => {
+      const response = await apiMethods.delete(ENDPOINTS.families.delete(id));
+      return response.data;
+    },
+
+    getMembers: async (id) => {
+      const response = await apiMethods.get(ENDPOINTS.families.members(id));
+      return response.data;
+    },
+
+    addMember: async (familyId, memberData) => {
+      const response = await apiMethods.post(ENDPOINTS.families.addMember(familyId), memberData);
+      return response.data;
+    },
+
+    removeMember: async (familyId, memberId) => {
+      const response = await apiMethods.delete(ENDPOINTS.families.removeMember(familyId, memberId));
+      return response.data;
+    },
+
+    getStats: async () => {
+      const response = await apiMethods.get(ENDPOINTS.families.statistics);
       return response.data;
     }
   },

@@ -37,10 +37,10 @@ class Member(models.Model):
     last_name = models.CharField(max_length=100)
     preferred_name = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
-    phone = PhoneNumberField()  # FIXED: Make phone optional
+    phone = PhoneNumberField(blank=True)  # FIXED: Make phone optional
     alternate_phone = PhoneNumberField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)  # FIXED: Make optional
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES)  # FIXED: Make optional
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)  # FIXED: Make optional
     
     # Address and contact preferences
     address = models.TextField(blank=True)

@@ -1,4 +1,4 @@
-# backend/churchconnect/settings.py - COMPLETE FIX
+# backend/churchconnect/settings.py - TIMEZONE FIXES APPLIED
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -147,12 +147,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
+# FIXED: Internationalization with proper timezone handling
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = config('TIME_ZONE', default='UTC')
 USE_I18N = True
-USE_TZ = True
+USE_TZ = True  # This ensures Django uses timezone-aware datetime objects
 
+# FIXED: Add timezone settings to prevent warnings
+import zoneinfo
+try:
+    # Validate the timezone
+    zoneinfo.ZoneInfo(TIME_ZONE)
+except Exception:
+    # Fallback to UTC if invalid timezone
+    TIME_ZONE = 'UTC'
+    
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -389,6 +398,7 @@ CACHES = {
         },
     }
 }
+
 # Church-specific settings
 CHURCH_NAME = config('CHURCH_NAME', default='Your Church Name')
 CHURCH_EMAIL = config('CHURCH_EMAIL', default='')
