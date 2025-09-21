@@ -1,4 +1,4 @@
-// MemberRegistrationForm.jsx - UPDATED: Fixed validation for optional fields
+// MemberRegistrationForm.jsx - FIXED: Proper API integration and success feedback
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Form.module.css';
@@ -8,51 +8,37 @@ import membersService from '../../services/members';
 import { useToast } from '../../hooks/useToast';
 import useAuth from '../../hooks/useAuth';
 
-// Phone formatting helper - cleaner implementation
+// Phone formatting helper
 const formatPhoneForAPI = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.trim() === '') return '';
-  
-  // Remove all non-digit characters
   const cleaned = phoneNumber.replace(/\D/g, '');
-  
-  // If empty after cleaning, return empty string
   if (!cleaned) return '';
-  
-  // If it's a US number (10 digits), add +1 prefix
-  if (cleaned.length === 10) {
-    return `+1${cleaned}`;
-  }
-  
-  // If it already has country code (11 digits starting with 1), add +
-  if (cleaned.length === 11 && cleaned.startsWith('1')) {
-    return `+${cleaned}`;
-  }
-  
-  // For other lengths, just add + prefix
+  if (cleaned.length === 10) return `+1${cleaned}`;
+  if (cleaned.length === 11 && cleaned.startsWith('1')) return `+${cleaned}`;
   return `+${cleaned}`;
 };
 
-// Validation helper - more flexible
+// Validation helpers
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return email && emailRegex.test(email.trim());
 };
 
 const isValidPhone = (phone) => {
-  if (!phone || phone.trim() === '') return true; // Optional field
+  if (!phone || phone.trim() === '') return true;
   const cleaned = phone.replace(/\D/g, '');
   return cleaned.length >= 10;
 };
 
 const isValidDateOfBirth = (date) => {
-  if (!date) return true; // Optional field now
+  if (!date) return true;
   const today = new Date();
   const birthDate = new Date(date);
   return birthDate <= today && birthDate >= new Date('1900-01-01');
 };
 
 // Simple UI Components
-const Button = ({ children, variant = 'default', onClick, disabled = false, ...props }) => {
+const Button = ({ children, variant = 'default', onClick, disabled = false, type = 'button', ...props }) => {
   const variantClasses = {
     default: styles.buttonDefault,
     primary: styles.buttonPrimary,
@@ -62,6 +48,7 @@ const Button = ({ children, variant = 'default', onClick, disabled = false, ...p
   
   return (
     <button 
+      type={type}
       className={`${styles.button} ${variantClasses[variant]}`}
       onClick={onClick}
       disabled={disabled}
@@ -163,9 +150,6 @@ const PersonalInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBl
         {errors.dateOfBirth && touched.dateOfBirth && (
           <span className={styles.errorText}>{errors.dateOfBirth}</span>
         )}
-        <small className={styles.helpText}>
-          Optional - helps us understand our community better
-        </small>
       </div>
 
       <div className={styles.formGroup}>
@@ -183,9 +167,6 @@ const PersonalInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBl
           <option value="other">Other</option>
           <option value="prefer_not_to_say">Prefer not to say</option>
         </select>
-        {errors.gender && touched.gender && (
-          <span className={styles.errorText}>{errors.gender}</span>
-        )}
       </div>
     </div>
   </div>
@@ -209,9 +190,6 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
         {errors.phone && touched.phone && (
           <span className={styles.errorText}>{errors.phone}</span>
         )}
-        <small className={styles.helpText}>
-          Optional - helps us stay connected
-        </small>
       </div>
 
       <div className={styles.formGroup}>
@@ -225,12 +203,6 @@ const ContactInfo = ({ formData = {}, errors = {}, touched = {}, onChange, onBlu
           rows={3}
           placeholder="Street address, city, state, zip code"
         />
-        {errors.address && touched.address && (
-          <span className={styles.errorText}>{errors.address}</span>
-        )}
-        <small className={styles.helpText}>
-          Optional - helps us understand our community better
-        </small>
       </div>
     </div>
   </div>
@@ -253,9 +225,6 @@ const MinistryInterests = ({ formData = {}, onChange, setFieldValue }) => {
   return (
     <div className={styles.stepContent}>
       <h2 className={styles.stepTitle}>Ministry Interests (Optional)</h2>
-      <p className={styles.stepDescription}>
-        Select any ministries you'd be interested in learning more about or participating in.
-      </p>
       <div className={styles.checkboxGrid}>
         {ministryOptions.map(ministry => (
           <label key={ministry} className={styles.checkboxItem}>
@@ -275,9 +244,6 @@ const MinistryInterests = ({ formData = {}, onChange, setFieldValue }) => {
 const PledgeInfo = ({ formData = {}, onChange }) => (
   <div className={styles.stepContent}>
     <h2 className={styles.stepTitle}>Pledge Information (Optional)</h2>
-    <p className={styles.stepDescription}>
-      If you'd like to make a financial commitment, you can specify it here. This is completely optional.
-    </p>
     <div className={styles.formGrid}>
       <div className={styles.formGroup}>
         <label>Pledge Amount</label>
@@ -291,9 +257,6 @@ const PledgeInfo = ({ formData = {}, onChange }) => (
           step="0.01"
           placeholder="0.00"
         />
-        <small className={styles.helpText}>
-          Optional - any amount is appreciated
-        </small>
       </div>
 
       <div className={styles.formGroup}>
@@ -318,9 +281,6 @@ const PledgeInfo = ({ formData = {}, onChange }) => (
 const FamilyInfo = ({ formData = {}, onChange, isAdminMode = false }) => (
   <div className={styles.stepContent}>
     <h2 className={styles.stepTitle}>Family Information (Optional)</h2>
-    <p className={styles.stepDescription}>
-      Emergency contact information helps us reach someone if needed.
-    </p>
     <div className={styles.formGrid}>
       <div className={styles.formGroup}>
         <label>Emergency Contact Name</label>
@@ -332,9 +292,6 @@ const FamilyInfo = ({ formData = {}, onChange, isAdminMode = false }) => (
           className={styles.input}
           placeholder="Contact person name"
         />
-        <small className={styles.helpText}>
-          Optional - someone we can contact in case of emergency
-        </small>
       </div>
 
       <div className={styles.formGroup}>
@@ -347,9 +304,6 @@ const FamilyInfo = ({ formData = {}, onChange, isAdminMode = false }) => (
           className={styles.input}
           placeholder="(555) 123-4567"
         />
-        <small className={styles.helpText}>
-          Optional - emergency contact's phone number
-        </small>
       </div>
     </div>
   </div>
@@ -392,7 +346,7 @@ const Confirmation = ({ formData = {}, setFieldValue, isAdminMode = false }) => 
   </div>
 );
 
-// Form hook - enhanced for better validation
+// Form hook
 const useForm = (initialData) => {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -405,7 +359,6 @@ const useForm = (initialData) => {
       [name]: type === 'checkbox' ? checked : value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -427,12 +380,6 @@ const useForm = (initialData) => {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const resetForm = () => {
-    setFormData(initialData);
-    setErrors({});
-    setTouched({});
-  };
-
   return {
     formData,
     errors,
@@ -440,8 +387,7 @@ const useForm = (initialData) => {
     handleChange,
     handleBlur,
     setFieldValue,
-    setFieldError,
-    resetForm
+    setFieldError
   };
 };
 
@@ -484,7 +430,7 @@ const INITIAL_FORM_DATA = {
   registrationContext: 'public'
 };
 
-// Updated validation - more flexible
+// Validation
 const validateStep = (stepId, formData, isAdminMode = false) => {
   const stepValidations = {
     personal: () => {
@@ -496,7 +442,6 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
       } else if (!isValidEmail(formData.email)) {
         errors.email = 'Please enter a valid email address';
       }
-      // Date of birth and gender are now optional
       if (formData.dateOfBirth && !isValidDateOfBirth(formData.dateOfBirth)) {
         errors.dateOfBirth = 'Please enter a valid date of birth';
       }
@@ -504,15 +449,14 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
     },
     contact: () => {
       const errors = {};
-      // Phone is now optional
       if (formData.phone && !isValidPhone(formData.phone)) {
         errors.phone = 'Please enter a valid phone number';
       }
       return errors;
     },
-    ministry: () => ({}), // Always valid
-    pledge: () => ({}), // Always valid
-    family: () => ({}), // Always valid now
+    ministry: () => ({}),
+    pledge: () => ({}),
+    family: () => ({}),
     confirmation: () => {
       const errors = {};
       if (!formData.privacyPolicyAgreed && !isAdminMode) {
@@ -525,16 +469,16 @@ const validateStep = (stepId, formData, isAdminMode = false) => {
   return stepValidations[stepId] ? stepValidations[stepId]() : {};
 };
 
-// Updated API transformation
+// API transformation
 const transformFormDataForAPI = (formData) => {
   const transformedData = {
     first_name: formData.firstName?.trim() || '',
     last_name: formData.lastName?.trim() || '',
     preferred_name: formData.preferredName?.trim() || '',
     email: formData.email?.trim().toLowerCase() || '',
-    date_of_birth: formData.dateOfBirth || null, // Allow null
-    gender: formData.gender || '', // Allow empty
-    phone: formatPhoneForAPI(formData.phone), // Allow empty
+    date_of_birth: formData.dateOfBirth || null,
+    gender: formData.gender || '',
+    phone: formatPhoneForAPI(formData.phone),
     alternate_phone: formatPhoneForAPI(formData.alternatePhone),
     address: formData.address?.trim() || '',
     preferred_contact_method: formData.preferredContactMethod || 'email',
@@ -547,10 +491,10 @@ const transformFormDataForAPI = (formData) => {
     privacy_policy_agreed: formData.privacyPolicyAgreed === true,
     is_active: true,
     internal_notes: formData.internalNotes?.trim() || '',
+    ministry_interests: formData.ministryInterests || [],
+    pledge_amount: formData.pledgeAmount ? parseFloat(formData.pledgeAmount) : null,
+    pledge_frequency: formData.pledgeFrequency || null,
   };
-
-  console.log('[Transform] Original form data:', formData);
-  console.log('[Transform] Transformed API data:', transformedData);
   
   return transformedData;
 };
@@ -568,8 +512,8 @@ const MemberRegistrationForm = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
 
-  // Determine if user is admin
   const isAdmin = isAuthenticated && ['admin', 'super_admin'].includes(user?.role);
   const effectiveAdminMode = isAdminMode && isAdmin;
 
@@ -580,31 +524,13 @@ const MemberRegistrationForm = ({
     handleChange,
     handleBlur,
     setFieldValue,
-    setFieldError,
-    resetForm
+    setFieldError
   } = useForm({
     ...INITIAL_FORM_DATA,
     ...initialData,
     registeredBy: effectiveAdminMode ? user?.id : null,
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
   });
-
-  // Auto-save functionality
-  useEffect(() => {
-    const saveData = () => {
-      const savedData = {
-        ...formData,
-        currentStep,
-        timestamp: new Date().toISOString(),
-        isAdminMode: effectiveAdminMode
-      };
-      
-      window.formDataCache = savedData;
-    };
-
-    const timeoutId = setTimeout(saveData, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [formData, currentStep, effectiveAdminMode]);
 
   const handleNext = async () => {
     const stepId = STEPS[currentStep].id;
@@ -627,52 +553,54 @@ const MemberRegistrationForm = ({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitStatus({ type: '', message: '' });
     
     try {
       console.log('[RegistrationForm] Submitting form data:', formData);
       
-      // Transform the form data to match API expectations
       const apiData = transformFormDataForAPI(formData);
       console.log('[RegistrationForm] Transformed API data:', apiData);
 
-      // Use the correct endpoint based on admin mode
       let result;
+      
       if (effectiveAdminMode) {
-        // Admin creating member
+        // Admin creating member - use the members service directly
         result = await membersService.createMember(apiData);
       } else {
-        // Public registration - use public endpoint
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/members/register/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(apiData)
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}`);
-        }
-        
-        result = { success: true, data: await response.json() };
+        // Public registration - use registration endpoint
+        result = await membersService.registerMember(apiData);
       }
       
-      console.log('[RegistrationForm] Create member result:', result);
+      console.log('[RegistrationForm] API result:', result);
       
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create member');
+      if (!result || !result.success) {
+        throw new Error(result?.error || result?.message || 'Registration failed');
       }
 
-      // Clear saved data
-      delete window.formDataCache;
+      // Set success status
+      setSubmitStatus({ 
+        type: 'success', 
+        message: `${result.data?.first_name || 'Member'} registered successfully!` 
+      });
 
-      if (effectiveAdminMode && onSuccess) {
-        console.log('[RegistrationForm] Calling onSuccess callback');
-        onSuccess(result.data);
-        showToast(`${result.data?.first_name || 'Member'} registered successfully!`, 'success');
-      } else {
-        showToast('Registration submitted successfully!', 'success');
+      // Show success toast
+      showToast(
+        effectiveAdminMode 
+          ? `${result.data?.first_name || 'Member'} registered successfully!`
+          : 'Registration submitted successfully!',
+        'success'
+      );
+
+      // Handle success callback for admin mode
+      if (effectiveAdminMode && typeof onSuccess === 'function') {
+        console.log('[RegistrationForm] Calling onSuccess callback with:', result.data);
+        
+        // Add a small delay to ensure the toast shows
+        setTimeout(() => {
+          onSuccess(result.data);
+        }, 500);
+      } else if (!effectiveAdminMode) {
+        // Navigate to thank you page for public registration
         navigate('/thank-you', { 
           state: { 
             memberData: { 
@@ -689,11 +617,14 @@ const MemberRegistrationForm = ({
                           error?.response?.data?.detail ||
                           error?.message || 
                           'An error occurred. Please try again.';
-                          
+      
+      setSubmitStatus({ type: 'error', message: errorMessage });
       showToast(errorMessage, 'error');
       
-      if (error?.response?.data) {
-        console.error('[RegistrationForm] Validation errors:', error.response.data);
+      if (error?.response?.data?.field_errors) {
+        Object.entries(error.response.data.field_errors).forEach(([field, fieldError]) => {
+          setFieldError(field, Array.isArray(fieldError) ? fieldError[0] : fieldError);
+        });
       }
     } finally {
       setIsSubmitting(false);
@@ -766,10 +697,14 @@ const MemberRegistrationForm = ({
             'Join our church family - we\'re excited to get to know you!'
           }
         </p>
-        <p className={styles.optionalNote}>
-          Most fields are optional - provide as much or as little information as you're comfortable sharing.
-        </p>
       </div>
+
+      {/* Status Messages */}
+      {submitStatus.type && (
+        <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
+          {submitStatus.message}
+        </div>
+      )}
 
       <AdminEnhancements />
 
@@ -831,12 +766,6 @@ const MemberRegistrationForm = ({
           )}
         </div>
       </div>
-
-      {!effectiveAdminMode && (
-        <div className={styles.autoSaveIndicator}>
-          <span>✓ Progress automatically saved</span>
-        </div>
-      )}
 
       {effectiveAdminMode && (
         <div className={styles.adminFooter}>

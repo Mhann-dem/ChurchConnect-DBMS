@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isToday, isFuture, isPast, formatDistanceToNow } from 'date-fns';
 import { useToast } from '../../hooks/useToast';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import LoadingSpinner from '../../components/LoadingSpinner';
 // FIXED: Import the service correctly
 import { eventsService } from '../../services/events';
 

@@ -44,6 +44,276 @@ class MembersServiceBridge {
     }
   }
 
+  // Add these methods to your existing MembersServiceBridge class
+
+  /**
+   * Register member - wrapper for compatibility with new registration form
+   */
+  async registerMember(memberData) {
+    // Determine if admin or public registration
+    if (memberData.registrationContext === 'admin_portal') {
+      return this.createMember(memberData);
+    } else {
+      return this.publicRegister(memberData);
+    }
+  }
+
+  /**
+   * Import members from CSV - needed for bulk import
+   */
+  async importMembers(membersData, options = {}) {
+    try {
+      console.log('[Members Service] Importing members:', {
+        count: membersData.length,
+        options
+      });
+
+      const requestData = {
+        members: membersData,
+        options: {
+          duplicate_strategy: options.duplicateStrategy || 'skip',
+          send_welcome_emails: options.sendWelcomeEmails || false,
+          auto_assign_tags: options.addTags || [],
+          skip_validation: options.skipValidation || false,
+          ...options
+        }
+      };
+
+      const response = await apiMethods.post('members/import/', requestData);
+
+      if (response.status === 200 || response.status === 201) {
+        // Clear cache after import
+        this._clearCache();
+        
+        return {
+          success: true,
+          data: {
+            imported: response.data.imported || 0,
+            updated: response.data.updated || 0,
+            skipped: response.data.skipped || 0,
+            failed: response.data.failed || 0,
+            errors: response.data.errors || []
+          },
+          message: response.data.message || `Import completed successfully`
+        };
+      } else {
+        throw new Error('Import failed');
+      }
+
+    } catch (error) {
+      console.error('[Members Service] Import error:', error);
+      
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Import failed',
+        data: {
+          imported: 0,
+          updated: 0,
+          skipped: 0,
+          failed: membersData.length,
+          errors: [error.message]
+        }
+      };
+    }
+  }
+
+  /**
+   * Send bulk email - needed for bulk actions
+   */
+  async sendBulkEmail(memberIds, emailData) {
+    try {
+      console.log('[Members Service] Sending bulk email:', memberIds.length, 'recipients');
+      
+      const response = await apiMethods.post('communications/bulk-email/', {
+        recipient_ids: memberIds,
+        subject: emailData.subject,
+        message: emailData.message,
+        template: emailData.template || 'custom'
+      });
+
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: response.data.message || `Email sent to ${memberIds.length} members`
+        };
+      } else {
+        throw new Error('Failed to send bulk email');
+      }
+
+    } catch (error) {
+      console.error('[Members Service] Bulk email error:', error);
+      
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Failed to send bulk email'
+      };
+    }
+  }
+
+  /**
+   * Enhanced bulk actions with all action types
+   */
+  async performBulkAction(action, memberIds, actionData = {}, options = {}) {
+    try {
+      console.log('[Members Service] Enhanced bulk action:', { action, count: memberIds.length });
+
+      let result;
+      
+      switch (action) {
+        case 'delete':
+          result = await this._bulkDelete(memberIds);
+          break;
+        
+        case 'activate':
+          result = await this._bulkUpdate(memberIds, { is_active: true });
+          break;
+        
+        case 'deactivate':
+          result = await this._bulkUpdate(memberIds, { is_active: false });
+          break;
+        
+        case 'tag':
+          result = await this._bulkUpdate(memberIds, { add_tags: actionData.tags });
+          break;
+        
+        case 'export':
+          result = await this.exportMembers({
+            format: actionData.format || 'csv',
+            member_ids: memberIds
+          });
+          break;
+        
+        case 'email':
+          result = await this.sendBulkEmail(memberIds, actionData);
+          break;
+        
+        default:
+          // Fall back to original implementation
+          return super.performBulkAction(action, memberIds, actionData, options);
+      }
+
+      return result;
+
+    } catch (error) {
+      console.error('[Members Service] Enhanced bulk action error:', error);
+      
+      return {
+        success: false,
+        error: error.message || 'Bulk action failed'
+      };
+    }
+  }
+
+  /**
+   * Helper methods for bulk actions
+   */
+  async _bulkDelete(memberIds) {
+    const response = await apiMethods.post('members/members/bulk_delete/', {
+      member_ids: memberIds
+    });
+
+    if (response.status === 200) {
+      this._clearCache();
+      return {
+        success: true,
+        message: `Successfully deleted ${memberIds.length} members`
+      };
+    } else {
+      throw new Error('Bulk delete failed');
+    }
+  }
+
+  async _bulkUpdate(memberIds, updateData) {
+    const response = await apiMethods.post('members/members/bulk_update/', {
+      member_ids: memberIds,
+      update_data: updateData
+    });
+
+    if (response.status === 200) {
+      this._clearCache();
+      return {
+        success: true,
+        message: `Successfully updated ${memberIds.length} members`
+      };
+    } else {
+      throw new Error('Bulk update failed');
+    }
+  }
+
+  /**
+   * Form progress management (for multi-step forms)
+   */
+  async saveFormProgress(formData) {
+    try {
+      const progressId = `form_progress_${Date.now()}`;
+      const progressData = {
+        id: progressId,
+        data: formData,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Store locally first
+      localStorage.setItem(`member_form_${progressId}`, JSON.stringify(progressData));
+      
+      // Try to save to backend
+      try {
+        await apiMethods.post('members/form-progress/', progressData);
+      } catch (backendError) {
+        console.warn('[Members Service] Backend form save failed, using localStorage only');
+      }
+      
+      return { success: true, id: progressId };
+    } catch (error) {
+      console.error('[Members Service] Save form progress error:', error);
+      throw error;
+    }
+  }
+
+  async getSavedForm(formId) {
+    try {
+      // Try backend first
+      try {
+        const response = await apiMethods.get(`members/form-progress/${formId}/`);
+        if (response.status === 200) {
+          return response.data.data;
+        }
+      } catch (backendError) {
+        console.warn('[Members Service] Backend form retrieval failed, trying localStorage');
+      }
+      
+      // Fallback to localStorage
+      const saved = localStorage.getItem(`member_form_${formId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.data;
+      }
+      
+      throw new Error('Saved form not found');
+    } catch (error) {
+      console.error('[Members Service] Get saved form error:', error);
+      throw error;
+    }
+  }
+
+  async deleteSavedForm(formId) {
+    try {
+      // Remove from localStorage
+      localStorage.removeItem(`member_form_${formId}`);
+      
+      // Try to remove from backend
+      try {
+        await apiMethods.delete(`members/form-progress/${formId}/`);
+      } catch (backendError) {
+        console.warn('[Members Service] Backend form deletion failed');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[Members Service] Delete saved form error:', error);
+      throw error;
+    }
+  }
+
   // Prevent duplicate requests
   async _executeRequest(key, requestFn) {
     if (this.requestQueue.has(key)) {

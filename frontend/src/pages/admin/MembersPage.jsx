@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Filter, Users, UserPlus, Download, RefreshCw, X } from 'lucide-react';
+import { Plus, Search, Filter, Users, UserPlus, Download, RefreshCw, X, AlertCircle } from 'lucide-react';
 import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
 import BulkActions from '../../components/admin/Members/BulkActions';
 import MembersList from '../../components/admin/Members/MembersList';
@@ -23,6 +23,7 @@ const MembersPage = () => {
   // Refs for cleanup
   const abortControllerRef = useRef();
   const timeoutRef = useRef();
+  const refreshTimeoutRef = useRef();
 
   // UI State
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
@@ -47,7 +48,7 @@ const MembersPage = () => {
         ageRange: searchParams.get('ageRange') || MEMBER_FILTERS_DEFAULTS.ageRange,
         pledgeStatus: searchParams.get('pledgeStatus') || MEMBER_FILTERS_DEFAULTS.pledgeStatus,
         registrationDateRange: searchParams.get('registrationDateRange') || MEMBER_FILTERS_DEFAULTS.registrationDateRange,
-        isActive: searchParams.get('isActive') !== 'false', // default to true
+        isActive: searchParams.get('isActive') !== 'false',
         ministryId: searchParams.get('ministryId') || MEMBER_FILTERS_DEFAULTS.ministryId,
         joinDateRange: searchParams.get('joinDateRange') || MEMBER_FILTERS_DEFAULTS.joinDateRange,
       };
@@ -60,7 +61,7 @@ const MembersPage = () => {
   // Debounced search query
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // Memoized hook options to prevent unnecessary re-renders
+  // Memoized hook options
   const hookOptions = useMemo(() => {
     const validatedFilters = validateFilters(filters);
     const validatedSearch = validateSearchQuery(debouncedSearchQuery);
@@ -73,10 +74,9 @@ const MembersPage = () => {
     };
   }, [debouncedSearchQuery, filters, currentPage, membersPerPage]);
 
-  // Members hook with error boundary
+  // Members hook
   const membersHook = useMembers(hookOptions);
   
-  // Safely destructure with defaults
   const {
     members = [],
     totalMembers = 0,
@@ -85,7 +85,6 @@ const MembersPage = () => {
     refetch = () => Promise.resolve(),
     invalidateCache,
     clearError,
-    createMember,
     deleteMember,
     updateMemberStatus,
     totalPages = 1,
@@ -125,7 +124,6 @@ const MembersPage = () => {
       }
     };
 
-    // Debounce URL updates
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -148,75 +146,62 @@ const MembersPage = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
     };
   }, []);
 
-  // Debugging effect to monitor state changes
-  useEffect(() => {
-    console.log('[MembersPage] useMembers state changed:', {
-      membersCount: members?.length,
-      isLoading,
-      error,
-      totalMembers,
-      currentPage,
-      searchQuery: debouncedSearchQuery,
-      hasActiveFilters: Object.entries(filters).some(([key, value]) => 
-        value !== MEMBER_FILTERS_DEFAULTS[key] && 
-        value !== '' && 
-        value !== null && 
-        value !== undefined
-      )
-    });
-  }, [members, isLoading, error, totalMembers, currentPage, debouncedSearchQuery, filters]);
-
-  // Enhanced registration success handler
+  // Enhanced registration success handler with better feedback
   const handleRegistrationSuccess = useCallback(async (newMember) => {
-    console.log('[MembersPage] Registration success called with:', newMember);
+    console.log('[MembersPage] Registration success:', newMember);
     
     try {
       setShowRegistrationForm(false);
       
-      const memberName = `${newMember.first_name || newMember.firstName || 'Unknown'} ${newMember.last_name || newMember.lastName || ''}`.trim();
-      showToast(`${memberName} registered successfully!`, 'success');
+      const memberName = `${newMember.first_name || newMember.firstName || 'Member'} ${newMember.last_name || newMember.lastName || ''}`.trim();
+      
+      // Show immediate success feedback
+      showToast(
+        `${memberName} registered successfully! Refreshing member list...`, 
+        'success',
+        5000 // Show for 5 seconds
+      );
       
       // Enhanced refresh strategy
       try {
-        console.log('[MembersPage] Forcing data refresh...');
-        
-        // Clear filters and reset to first page to see the new member
+        // Clear selection and filters to show the new member
+        setSelectedMembers(new Set());
         setCurrentPage(1);
         setCurrentSearchQuery('');
-        setSelectedMembers(new Set());
         
-        // Wait for state updates
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Force refresh the members list
-        if (typeof refetch === 'function') {
-          console.log('[MembersPage] Calling refetch...');
-          const refreshResult = await refetch();
-          console.log('[MembersPage] Refetch result:', refreshResult);
-        }
-        
-        // Invalidate cache if available
+        // Invalidate cache first if available
         if (typeof invalidateCache === 'function') {
           console.log('[MembersPage] Invalidating cache...');
           invalidateCache();
         }
         
+        // Wait a moment for the backend to process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Force refresh the members list
+        if (typeof refetch === 'function') {
+          console.log('[MembersPage] Refreshing member list...');
+          const refreshResult = await refetch();
+          console.log('[MembersPage] Refresh result:', refreshResult);
+          
+          if (refreshResult?.success) {
+            showToast(`${memberName} has been added to the member list.`, 'success');
+          }
+        }
+        
       } catch (refreshError) {
         console.error('[MembersPage] Error during refresh:', refreshError);
-        showToast('Member registered but list may need manual refresh. Try clicking the refresh button.', 'warning');
-      }
-      
-      // Ask user if they want to view the new member
-      if (newMember?.id) {
-        setTimeout(() => {
-          const shouldNavigate = window.confirm('Member registered successfully! Would you like to view their profile?');
-          if (shouldNavigate) {
-            navigate(`/admin/members/${newMember.id}`);
-          }
-        }, 500);
+        showToast(
+          `${memberName} was registered successfully, but the list couldn't be refreshed automatically. Please click the refresh button.`, 
+          'warning',
+          8000
+        );
       }
       
     } catch (error) {
@@ -226,7 +211,6 @@ const MembersPage = () => {
   }, [
     showToast, 
     refetch, 
-    navigate, 
     invalidateCache,
     setCurrentPage,
     setCurrentSearchQuery,
@@ -237,13 +221,15 @@ const MembersPage = () => {
     setShowRegistrationForm(false);
   }, []);
 
-  // Bulk actions handler
+  // Enhanced bulk actions handler
   const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
       if (!memberIds?.length) {
         showToast('No members selected', 'warning');
         return;
       }
+
+      console.log('[MembersPage] Bulk action:', action, 'for', memberIds.length, 'members');
 
       // Cancel any pending requests
       if (abortControllerRef.current) {
@@ -276,11 +262,47 @@ const MembersPage = () => {
         showToast('Action cancelled', 'info');
         return;
       }
-      console.error('Bulk action error:', error);
+      console.error('[MembersPage] Bulk action error:', error);
       showToast(error?.message || 'Bulk action failed', 'error');
       throw error;
     }
   }, [refetch, showToast]);
+
+  // Import completion handler
+  const handleImportComplete = useCallback(async (importResult) => {
+    console.log('[MembersPage] Import completed:', importResult);
+    
+    try {
+      const { imported = 0, updated = 0, skipped = 0 } = importResult;
+      
+      showToast(
+        `Import completed! ${imported} members imported, ${updated} updated, ${skipped} skipped.`,
+        'success',
+        6000
+      );
+      
+      // Reset to show imported members
+      setSelectedMembers(new Set());
+      setCurrentPage(1);
+      setCurrentSearchQuery('');
+      
+      // Refresh the member list
+      if (typeof invalidateCache === 'function') {
+        invalidateCache();
+      }
+      
+      // Wait a moment then refresh
+      setTimeout(async () => {
+        if (typeof refetch === 'function') {
+          await refetch();
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('[MembersPage] Import completion error:', error);
+      showToast('Import completed but failed to refresh list. Please refresh manually.', 'warning');
+    }
+  }, [refetch, invalidateCache, showToast]);
 
   // Member selection handlers
   const handleMemberSelection = useCallback((memberId, isSelected) => {
@@ -311,15 +333,15 @@ const MembersPage = () => {
   // Search handler
   const handleSearch = useCallback((query) => {
     setCurrentSearchQuery(query || '');
-    setCurrentPage(1); // Reset to first page when searching
-    setSelectedMembers(new Set()); // Clear selection when searching
+    setCurrentPage(1);
+    setSelectedMembers(new Set());
   }, []);
 
   // Filter handlers
   const handleFilterChange = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    setCurrentPage(1); // Reset to first page when filtering
-    setSelectedMembers(new Set()); // Clear selection when filtering
+    setCurrentPage(1);
+    setSelectedMembers(new Set());
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -332,16 +354,14 @@ const MembersPage = () => {
   // Pagination handlers
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
-    setSelectedMembers(new Set()); // Clear selection when changing pages
-    
-    // Scroll to top when page changes
+    setSelectedMembers(new Set());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handlePerPageChange = useCallback((perPage) => {
     setMembersPerPage(Number(perPage));
-    setCurrentPage(1); // Reset to first page
-    setSelectedMembers(new Set()); // Clear selection
+    setCurrentPage(1);
+    setSelectedMembers(new Set());
   }, []);
 
   // Export handler
@@ -359,14 +379,14 @@ const MembersPage = () => {
       await membersService.exportMembers(exportOptions);
       showToast('Export completed successfully. File will download shortly.', 'success');
     } catch (error) {
-      console.error('Export error:', error);
+      console.error('[MembersPage] Export error:', error);
       showToast(error?.message || 'Export failed', 'error');
     } finally {
       setIsExporting(false);
     }
   }, [showToast, debouncedSearchQuery, filters]);
 
-  // Enhanced refresh handler with better error handling
+  // Enhanced refresh handler
   const handleRefresh = useCallback(async () => {
     console.log('[MembersPage] Manual refresh triggered');
     
@@ -376,12 +396,15 @@ const MembersPage = () => {
         clearError();
       }
       
+      // Show loading feedback
+      showToast('Refreshing member list...', 'info', 2000);
+      
       // Force a complete refresh
       const result = await refetch();
       console.log('[MembersPage] Refresh result:', result);
       
       if (result?.success !== false) {
-        showToast('Data refreshed successfully', 'success');
+        showToast('Member list refreshed successfully', 'success');
       } else {
         throw new Error(result?.error || 'Refresh failed');
       }
@@ -443,7 +466,7 @@ const MembersPage = () => {
   const ErrorFallback = useCallback(({ error, resetError }) => (
     <div className={styles.errorContainer}>
       <div className={styles.errorContent}>
-        <Users size={48} className={styles.errorIcon} />
+        <AlertCircle size={48} className={styles.errorIcon} />
         <h2 className={styles.errorTitle}>Something went wrong</h2>
         <p className={styles.errorMessage}>{error?.message || 'An unexpected error occurred'}</p>
         <div className={styles.errorActions}>
@@ -608,6 +631,7 @@ const MembersPage = () => {
             selectedMembers={selectedMembers}
             onClearSelection={handleClearSelection}
             onBulkAction={handleBulkAction}
+            onImportComplete={handleImportComplete}
             totalMembers={totalMembers}
             allMembers={members}
             disabled={isLoading}

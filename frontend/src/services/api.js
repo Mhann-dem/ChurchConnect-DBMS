@@ -89,16 +89,21 @@ const ENDPOINTS = {
     detail: (id) => `pledges/${id}/`,
     update: (id) => `pledges/${id}/`,
     delete: (id) => `pledges/${id}/`,
-    statistics: 'pledges/statistics/', // Check if this exists in your backend
-    export: 'pledges/export/',
-    recent: 'pledges/recent/', // Check if this exists in your backend
-    // Remove endpoints that don't exist in your backend
-    // overdue: 'pledges/overdue/',
-    // upcomingPayments: 'pledges/upcoming-payments/',
-    // bulkAction: 'pledges/bulk-action/',
-    // payments: 'pledges/payments/',
-    // reminders: 'pledges/reminders/',
-    // trends: 'pledges/trends/'
+    
+    // FIXED: Match actual backend endpoints
+    statistics: 'pledges/stats/',        // ✅ Matches backend
+    export: 'pledges/export/',           // ✅ Matches backend
+    recent: 'pledges/recent/',           // ✅ Added to backend
+    trends: 'pledges/trends/',           // ✅ Added to backend
+    overdue: 'pledges/overdue/',
+    upcomingPayments: 'pledges/upcoming_payments/',
+    bulkAction: 'pledges/bulk_action/',
+    summaryReport: 'pledges/summary_report/',
+    
+    // Payment endpoints
+    payments: 'pledges/payments/',
+    addPayment: (pledgeId) => `pledges/${pledgeId}/add_payment/`,
+    paymentHistory: (pledgeId) => `pledges/${pledgeId}/payment_history/`,
   },
   
   events: {
@@ -278,6 +283,131 @@ api.interceptors.response.use(
     return Promise.reject(enhancedError);
   }
 );
+
+// Enhanced pledges API methods with better error handling
+const pledgesApi = {
+  // Get pledges with enhanced error handling
+  async list(params = {}) {
+    try {
+      console.log('[API] Fetching pledges with params:', params);
+      const response = await api.get(ENDPOINTS.pledges.list, { params });
+      
+      // Handle both paginated and non-paginated responses
+      if (response.data.results) {
+        return {
+          success: true,
+          data: response.data.results,
+          pagination: {
+            count: response.data.count,
+            next: response.data.next,
+            previous: response.data.previous,
+            totalPages: Math.ceil(response.data.count / (params.limit || 25)),
+            currentPage: params.page || 1
+          }
+        };
+      } else if (Array.isArray(response.data)) {
+        return {
+          success: true,
+          data: response.data,
+          pagination: {
+            count: response.data.length,
+            totalPages: 1,
+            currentPage: 1
+          }
+        };
+      } else {
+        return { success: true, data: response.data };
+      }
+    } catch (error) {
+      console.error('[API] Error fetching pledges:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch pledges',
+        data: []
+      };
+    }
+  },
+
+  // Create pledge with validation
+  async create(pledgeData) {
+    try {
+      console.log('[API] Creating pledge:', pledgeData);
+      
+      // Validate required fields
+      if (!pledgeData.member_id) {
+        throw new Error('Member ID is required');
+      }
+      if (!pledgeData.amount || pledgeData.amount <= 0) {
+        throw new Error('Valid amount is required');
+      }
+
+      const response = await api.post(ENDPOINTS.pledges.create, pledgeData);
+      console.log('[API] Pledge created successfully:', response.data);
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error creating pledge:', error);
+      
+      // Handle validation errors
+      if (error.response?.status === 400) {
+        const validationErrors = error.response.data;
+        const errorMessage = Object.values(validationErrors).flat()[0] || 'Validation failed';
+        return {
+          success: false,
+          error: errorMessage,
+          validationErrors
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.message || 'Failed to create pledge'
+      };
+    }
+  },
+
+  // Get statistics with fallback
+  async getStatistics(params = {}) {
+    try {
+      console.log('[API] Fetching pledge statistics:', params);
+      const response = await api.get(ENDPOINTS.pledges.statistics, { params });
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error fetching statistics:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch statistics',
+        data: {}
+      };
+    }
+  },
+
+  // Update pledge
+  async update(id, pledgeData) {
+    try {
+      console.log('[API] Updating pledge:', id, pledgeData);
+      const response = await api.put(ENDPOINTS.pledges.update(id), pledgeData);
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error updating pledge:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to update pledge'
+      };
+    }
+  }
+};
 
 // Helper functions
 const clearAuthData = () => {
@@ -934,5 +1064,6 @@ export {
   clearAuthData,
   redirectToLogin,
   batchRequests,
-  requestQueue
+  requestQueue,
+  pledgesApi
 };

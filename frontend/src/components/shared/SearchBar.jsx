@@ -114,9 +114,9 @@ const SearchBar = ({
   );
 };
 
-// Add PropTypes validation (right before the export)
+// Change onSearch to not be required since we're handling its absence
 SearchBar.propTypes = {
-  onSearch: PropTypes.func.isRequired,
+  onSearch: PropTypes.func, // Remove .isRequired
   placeholder: PropTypes.string,
   debounceMs: PropTypes.number,
   showFilters: PropTypes.bool,
@@ -138,10 +138,11 @@ SearchBar.propTypes = {
   value: PropTypes.string
 };
 
-// Add defaultProps (optional but recommended)
+// Add defaultProps for onSearch
 SearchBar.defaultProps = {
+  onSearch: () => {}, // Add default empty function
   filters: [],
-  onFilterChange: () => {} // Default empty function
+  onFilterChange: () => {}
 };
 
 export default SearchBar;

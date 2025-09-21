@@ -1,199 +1,11 @@
-// frontend/src/components/admin/Events/EventForm.jsx
+// frontend/src/components/admin/Events/EventForm.jsx - Enhanced with proper database integration
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { X, Calendar, MapPin, Users, DollarSign, Tag, Clock } from 'lucide-react';
+import { X, Calendar, MapPin, Users, DollarSign, Tag, Clock, Save, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import { eventsService } from '../../../services/events';
 import groupsService from '../../../services/groups';
 import LoadingSpinner from '../../shared/LoadingSpinner';
-
-// Import styles as CSS module or create inline styles
-const styles = {
-  modal: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '20px'
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '24px',
-    maxWidth: '800px',
-    width: '100%',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  },
-  modalHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid #e5e7eb'
-  },
-  modalTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    margin: 0
-  },
-  modalCloseButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '8px',
-    color: '#6b7280',
-    transition: 'background-color 0.2s'
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px'
-  },
-  formGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px'
-  },
-  formSection: {
-    padding: '20px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px',
-    border: '1px solid #e5e7eb'
-  },
-  sectionTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: '16px'
-  },
-  formGroup: {
-    marginBottom: '16px'
-  },
-  formRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: '4px'
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    fontSize: '14px',
-    transition: 'border-color 0.2s',
-    outline: 'none'
-  },
-  inputError: {
-    borderColor: '#ef4444'
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    fontSize: '14px',
-    transition: 'border-color 0.2s',
-    outline: 'none',
-    resize: 'vertical'
-  },
-  select: {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    fontSize: '14px',
-    backgroundColor: 'white',
-    outline: 'none'
-  },
-  checkbox: {
-    marginRight: '8px',
-    width: '16px',
-    height: '16px'
-  },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: '14px',
-    color: '#374151',
-    cursor: 'pointer',
-    marginBottom: '8px'
-  },
-  checkboxGroup: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '8px',
-    padding: '12px',
-    backgroundColor: '#f3f4f6',
-    borderRadius: '6px'
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: '12px',
-    marginTop: '4px'
-  },
-  modalActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '12px',
-    paddingTop: '24px',
-    borderTop: '1px solid #e5e7eb',
-    marginTop: '24px'
-  },
-  cancelButton: {
-    padding: '10px 20px',
-    backgroundColor: 'white',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    color: '#374151',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  saveButton: {
-    padding: '10px 20px',
-    backgroundColor: '#3b82f6',
-    border: 'none',
-    borderRadius: '6px',
-    color: 'white',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '48px',
-    gap: '16px'
-  }
-};
 
 const EventForm = ({ event, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
@@ -201,10 +13,12 @@ const EventForm = ({ event, onSave, onCancel }) => {
   const [groups, setGroups] = useState([]);
   const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
+  const [formTouched, setFormTouched] = useState({});
+  const [saveProgress, setSaveProgress] = useState(0);
   
-  const { showToast } = useToast();
+  const { formSuccess, formError, loading: loadingToast, updateProgress } = useToast ();
 
-  // Form state
+  // Enhanced form state with validation tracking
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -233,9 +47,10 @@ const EventForm = ({ event, onSave, onCancel }) => {
     external_registration_url: ''
   });
 
-  // Initialize form data
+  // Initialize form data with enhanced error tracking
   useEffect(() => {
     if (event) {
+      console.log('[EventForm] Initializing with event:', event);
       setFormData({
         title: event.title || '',
         description: event.description || '',
@@ -266,46 +81,142 @@ const EventForm = ({ event, onSave, onCancel }) => {
         image_url: event.image_url || '',
         external_registration_url: event.external_registration_url || ''
       });
+    } else {
+      // Set default values for new events
+      const now = new Date();
+      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+      
+      setFormData(prev => ({
+        ...prev,
+        start_datetime: format(now, "yyyy-MM-dd'T'HH:mm"),
+        end_datetime: format(oneHourLater, "yyyy-MM-dd'T'HH:mm"),
+        organizer: 'Church Administrator' // Default organizer
+      }));
     }
   }, [event]);
 
-  // Load groups and categories
+  // Load groups and categories with enhanced error handling
   useEffect(() => {
-    const loadData = async () => {
+    const loadFormData = async () => {
       setLoading(true);
+      const loadingToastId = loadingToast('Loading form data...');
+
       try {
-        const [groupsResponse, categoriesResponse] = await Promise.all([
-          groupsService.getGroups().catch(err => {
-            console.warn('Groups service failed:', err);
-            return { results: [] };
-          }),
-          eventsService.getCategories().catch(err => {
-            console.warn('Categories service failed:', err);
-            return { results: [] };
-          })
+        updateProgress(loadingToastId, 25, 'Loading groups...');
+        
+        const [groupsResponse, categoriesResponse] = await Promise.allSettled([
+          groupsService?.getGroups?.() || Promise.resolve({ results: [] }),
+          eventsService.getCategories?.() || Promise.resolve({ results: [] })
         ]);
-        setGroups(groupsResponse.results || []);
-        setCategories(categoriesResponse.results || []);
+
+        updateProgress(loadingToastId, 75, 'Processing data...');
+
+        // Handle groups response
+        if (groupsResponse.status === 'fulfilled') {
+          setGroups(groupsResponse.value.results || []);
+        } else {
+          console.warn('Groups service failed:', groupsResponse.reason);
+          setGroups([]);
+        }
+
+        // Handle categories response
+        if (categoriesResponse.status === 'fulfilled') {
+          setCategories(categoriesResponse.value.results || []);
+        } else {
+          console.warn('Categories service failed:', categoriesResponse.reason);
+          setCategories([]);
+        }
+
+        updateProgress(loadingToastId, 100, 'Form data loaded');
+        setTimeout(() => {
+          // Remove loading toast
+          const { removeToast } = useToast ();
+          removeToast(loadingToastId);
+        }, 500);
+
       } catch (err) {
         console.error('Error loading form data:', err);
-        showToast('Failed to load form data', 'error');
+        formError('load', 'form data', err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [showToast]);
+    loadFormData();
+  }, []);
 
+  // Enhanced input change handler with validation
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setFormTouched(prev => ({ ...prev, [field]: true }));
     
     // Clear field error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+
+    // Real-time validation for certain fields
+    validateField(field, value);
   };
 
+  // Real-time field validation
+  const validateField = (field, value) => {
+    const newErrors = { ...errors };
+
+    switch (field) {
+      case 'title':
+        if (!value?.trim()) {
+          newErrors.title = 'Event title is required';
+        } else if (value.length < 3) {
+          newErrors.title = 'Title must be at least 3 characters';
+        } else {
+          delete newErrors.title;
+        }
+        break;
+
+      case 'contact_email':
+        if (value && !isValidEmail(value)) {
+          newErrors.contact_email = 'Please enter a valid email address';
+        } else {
+          delete newErrors.contact_email;
+        }
+        break;
+
+      case 'start_datetime':
+      case 'end_datetime':
+        if (formData.start_datetime && formData.end_datetime) {
+          const startDate = new Date(formData.start_datetime);
+          const endDate = new Date(formData.end_datetime);
+          
+          if (startDate >= endDate) {
+            newErrors.end_datetime = 'End time must be after start time';
+          } else {
+            delete newErrors.end_datetime;
+          }
+        }
+        break;
+
+      case 'registration_fee':
+        if (value && (isNaN(value) || parseFloat(value) < 0)) {
+          newErrors.registration_fee = 'Fee must be a valid positive number';
+        } else {
+          delete newErrors.registration_fee;
+        }
+        break;
+
+      case 'max_capacity':
+        if (value && (isNaN(value) || parseInt(value) < 1)) {
+          newErrors.max_capacity = 'Capacity must be at least 1';
+        } else {
+          delete newErrors.max_capacity;
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+  };
+
+  // Multi-select change handler
   const handleMultiSelectChange = (field, value, checked) => {
     setFormData(prev => ({
       ...prev,
@@ -313,23 +224,20 @@ const EventForm = ({ event, onSave, onCancel }) => {
         ? [...prev[field], value]
         : prev[field].filter(item => item !== value)
     }));
+    setFormTouched(prev => ({ ...prev, [field]: true }));
   };
 
+  // Comprehensive form validation
   const validateForm = () => {
     const newErrors = {};
 
-    // Required fields
-    if (!formData.title?.trim()) {
-      newErrors.title = 'Event title is required';
-    }
-
-    if (!formData.start_datetime) {
-      newErrors.start_datetime = 'Start date and time is required';
-    }
-
-    if (!formData.end_datetime) {
-      newErrors.end_datetime = 'End date and time is required';
-    }
+    // Required fields validation
+    const requiredFields = ['title', 'start_datetime', 'end_datetime'];
+    requiredFields.forEach(field => {
+      if (!formData[field]?.toString().trim()) {
+        newErrors[field] = `${field.replace('_', ' ')} is required`;
+      }
+    });
 
     // Date validation
     if (formData.start_datetime && formData.end_datetime) {
@@ -338,6 +246,11 @@ const EventForm = ({ event, onSave, onCancel }) => {
       
       if (startDate >= endDate) {
         newErrors.end_datetime = 'End time must be after start time';
+      }
+
+      // Check if dates are in the past (for new events)
+      if (!event && startDate < new Date()) {
+        newErrors.start_datetime = 'Start time cannot be in the past';
       }
     }
 
@@ -389,6 +302,7 @@ const EventForm = ({ event, onSave, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Utility functions
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -403,18 +317,29 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   };
 
+  // Enhanced form submission with progress tracking
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('[EventForm] Form submission started', { event: !!event, formData });
+    
     if (!validateForm()) {
-      showToast('Please fix the errors in the form', 'error');
+      formError('validate', 'event form', 'Please fix the validation errors');
       return;
     }
 
     setSaving(true);
+    setSaveProgress(0);
     setErrors({});
 
+    // Show progress toast
+    const progressToastId = loadingToast(
+      event ? 'Updating event...' : 'Creating event...'
+    );
+
     try {
+      updateProgress(progressToastId, 20, 'Preparing data...');
+
       // Prepare data for submission
       const submitData = {
         ...formData,
@@ -433,31 +358,143 @@ const EventForm = ({ event, onSave, onCancel }) => {
         }
       });
 
+      updateProgress(progressToastId, 40, 'Submitting to server...');
+
       let savedEvent;
       if (event) {
+        console.log('[EventForm] Updating event', event.id);
+        updateProgress(progressToastId, 60, 'Updating event...');
         savedEvent = await eventsService.updateEvent(event.id, submitData);
+        updateProgress(progressToastId, 80, 'Event updated successfully');
       } else {
+        console.log('[EventForm] Creating new event');
+        updateProgress(progressToastId, 60, 'Creating event...');
         savedEvent = await eventsService.createEvent(submitData);
+        updateProgress(progressToastId, 80, 'Event created successfully');
       }
 
-      onSave(savedEvent);
+      updateProgress(progressToastId, 100, 'Finalizing...');
+
+      console.log('[EventForm] Save successful:', savedEvent);
+
+      // Remove progress toast
+      const { removeToast } = useToast ();
+      setTimeout(() => removeToast(progressToastId), 500);
+
+      // Show success message
+      formSuccess(
+        event ? 'update' : 'create', 
+        'Event',
+        {
+          title: event ? 'Event Updated!' : 'Event Created!',
+          message: `"${savedEvent.title}" has been ${event ? 'updated' : 'created'} successfully.`
+        }
+      );
+
+      // Call parent callback
+      if (onSave) {
+        onSave(savedEvent);
+      }
+
     } catch (err) {
-      console.error('Error saving event:', err);
+      console.error('[EventForm] Save error:', err);
       
-      // Handle validation errors from backend
-      if (err.response?.data) {
+      // Remove progress toast
+      const { removeToast } = useToast ();
+      removeToast(progressToastId);
+      
+      // Handle different types of errors
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (err.response?.status === 400 && err.response?.data) {
+        // Validation errors from backend
         const backendErrors = err.response.data;
         setErrors(backendErrors);
+        errorMessage = 'Please fix the validation errors';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'You do not have permission to perform this action';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Event not found';
+      } else if (err.response?.status >= 500) {
+        errorMessage = 'Server error. Please try again later';
+      } else if (!err.response) {
+        errorMessage = 'Network error. Please check your connection';
+      } else {
+        errorMessage = err.message || 'Failed to save event';
       }
       
-      showToast(
-        event ? 'Failed to update event' : 'Failed to create event', 
-        'error'
+      formError(
+        event ? 'update' : 'create',
+        'event',
+        errorMessage,
+        {
+          onRetry: () => handleSubmit(e)
+        }
       );
     } finally {
       setSaving(false);
+      setSaveProgress(0);
     }
   };
+
+  // Form field component with enhanced validation display
+  const FormField = ({ 
+    label, 
+    field, 
+    type = 'text', 
+    required = false, 
+    children,
+    description = null
+  }) => (
+    <div style={{ marginBottom: '16px' }}>
+      <label style={{
+        display: 'block',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: '4px'
+      }}>
+        {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
+      </label>
+      {description && (
+        <p style={{
+          fontSize: '12px',
+          color: '#6b7280',
+          marginBottom: '4px',
+          fontStyle: 'italic'
+        }}>
+          {description}
+        </p>
+      )}
+      {children}
+      {errors[field] && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          marginTop: '4px',
+          color: '#ef4444',
+          fontSize: '12px'
+        }}>
+          <AlertCircle size={12} />
+          {errors[field]}
+        </div>
+      )}
+      {formTouched[field] && !errors[field] && formData[field] && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          marginTop: '4px',
+          color: '#10b981',
+          fontSize: '12px'
+        }}>
+          <CheckCircle size={12} />
+          Valid
+        </div>
+      )}
+    </div>
+  );
 
   const eventTypeOptions = [
     { value: 'service', label: 'Church Service' },
@@ -479,11 +516,182 @@ const EventForm = ({ event, onSave, onCancel }) => {
     { value: 'other', label: 'Other' }
   ];
 
+  const modalStyles = {
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    },
+    content: {
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      padding: '0',
+      maxWidth: '900px',
+      width: '100%',
+      maxHeight: '90vh',
+      overflowY: 'auto',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '24px 24px 16px',
+      borderBottom: '1px solid #e5e7eb'
+    },
+    title: {
+      fontSize: '24px',
+      fontWeight: 'bold',
+      color: '#1f2937',
+      margin: 0
+    },
+    closeButton: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '8px',
+      borderRadius: '8px',
+      color: '#6b7280',
+      transition: 'all 0.2s'
+    },
+    form: {
+      padding: '24px'
+    },
+    section: {
+      marginBottom: '32px',
+      padding: '20px',
+      backgroundColor: '#f9fafb',
+      borderRadius: '8px',
+      border: '1px solid #e5e7eb'
+    },
+    sectionTitle: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontSize: '18px',
+      fontWeight: '600',
+      color: '#1f2937',
+      marginBottom: '16px'
+    },
+    formRow: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '16px'
+    },
+    input: {
+      width: '100%',
+      padding: '10px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      transition: 'border-color 0.2s',
+      outline: 'none'
+    },
+    inputError: {
+      borderColor: '#ef4444',
+      boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)'
+    },
+    inputSuccess: {
+      borderColor: '#10b981',
+      boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.1)'
+    },
+    textarea: {
+      width: '100%',
+      padding: '10px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      transition: 'border-color 0.2s',
+      outline: 'none',
+      resize: 'vertical',
+      minHeight: '100px'
+    },
+    select: {
+      width: '100%',
+      padding: '10px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      backgroundColor: 'white',
+      outline: 'none'
+    },
+    checkboxGroup: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '8px',
+      padding: '12px',
+      backgroundColor: '#f3f4f6',
+      borderRadius: '6px'
+    },
+    checkboxLabel: {
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: '14px',
+      color: '#374151',
+      cursor: 'pointer',
+      marginBottom: '8px'
+    },
+    checkbox: {
+      marginRight: '8px',
+      width: '16px',
+      height: '16px',
+      accentColor: '#3b82f6'
+    },
+    actions: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '12px',
+      paddingTop: '24px',
+      borderTop: '1px solid #e5e7eb',
+      marginTop: '24px'
+    },
+    cancelButton: {
+      padding: '10px 20px',
+      backgroundColor: 'white',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      color: '#374151',
+      fontSize: '14px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    },
+    saveButton: {
+      padding: '10px 20px',
+      backgroundColor: '#3b82f6',
+      border: 'none',
+      borderRadius: '6px',
+      color: 'white',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    }
+  };
+
   if (loading) {
     return (
-      <div style={styles.modal}>
-        <div style={styles.modalContent}>
-          <div style={styles.loadingContainer}>
+      <div style={modalStyles.overlay}>
+        <div style={modalStyles.content}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '48px',
+            gap: '16px' 
+          }}>
             <LoadingSpinner />
             <p>Loading form data...</p>
           </div>
@@ -493,286 +701,242 @@ const EventForm = ({ event, onSave, onCancel }) => {
   }
 
   return (
-    <div style={styles.modal}>
-      <div style={styles.modalContent}>
-        <div style={styles.modalHeader}>
-          <h2 style={styles.modalTitle}>
+    <div style={modalStyles.overlay}>
+      <div style={modalStyles.content}>
+        <div style={modalStyles.header}>
+          <h2 style={modalStyles.title}>
             {event ? 'Edit Event' : 'Create New Event'}
           </h2>
           <button 
             onClick={onCancel}
-            style={styles.modalCloseButton}
+            style={modalStyles.closeButton}
             disabled={saving}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
           >
-            <X className="w-5 h-5" />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGrid}>
-            {/* Basic Information */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>
-                <Tag className="w-4 h-4" />
-                Basic Information
-              </h3>
+        <form onSubmit={handleSubmit} style={modalStyles.form}>
+          {/* Basic Information */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>
+              <Tag size={20} />
+              Basic Information
+            </h3>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Event Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+            <FormField label="Event Title" field="title" required>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.title ? modalStyles.inputError : {}),
+                  ...(formTouched.title && !errors.title && formData.title ? modalStyles.inputSuccess : {})
+                }}
+                placeholder="Enter event title"
+                disabled={saving}
+              />
+            </FormField>
+
+            <FormField label="Description" field="description">
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                style={{
+                  ...modalStyles.textarea,
+                  ...(errors.description ? modalStyles.inputError : {})
+                }}
+                placeholder="Describe the event"
+                rows={4}
+                disabled={saving}
+              />
+            </FormField>
+
+            <div style={modalStyles.formRow}>
+              <FormField label="Event Type" field="event_type" required>
+                <select
+                  value={formData.event_type}
+                  onChange={(e) => handleInputChange('event_type', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.title ? styles.inputError : {})
+                    ...modalStyles.select,
+                    ...(errors.event_type ? modalStyles.inputError : {})
                   }}
-                  placeholder="Enter event title"
                   disabled={saving}
-                />
-                {errors.title && (
-                  <span style={styles.errorText}>{errors.title}</span>
-                )}
-              </div>
+                >
+                  {eventTypeOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Description
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+              <FormField label="Category" field="category_id">
+                <select
+                  value={formData.category_id}
+                  onChange={(e) => handleInputChange('category_id', e.target.value)}
                   style={{
-                    ...styles.textarea,
-                    ...(errors.description ? styles.inputError : {})
+                    ...modalStyles.select,
+                    ...(errors.category_id ? modalStyles.inputError : {})
                   }}
-                  placeholder="Describe the event"
-                  rows={4}
                   disabled={saving}
-                />
-                {errors.description && (
-                  <span style={styles.errorText}>{errors.description}</span>
-                )}
-              </div>
-
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Event Type *
-                  </label>
-                  <select
-                    value={formData.event_type}
-                    onChange={(e) => handleInputChange('event_type', e.target.value)}
-                    style={{
-                      ...styles.select,
-                      ...(errors.event_type ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  >
-                    {eventTypeOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.event_type && (
-                    <span style={styles.errorText}>{errors.event_type}</span>
-                  )}
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Category
-                  </label>
-                  <select
-                    value={formData.category_id}
-                    onChange={(e) => handleInputChange('category_id', e.target.value)}
-                    style={{
-                      ...styles.select,
-                      ...(errors.category_id ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="">No category</option>
-                    {categories.map(category => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category_id && (
-                    <span style={styles.errorText}>{errors.category_id}</span>
-                  )}
-                </div>
-              </div>
+                >
+                  <option value="">No category</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
             </div>
+          </div>
 
-            {/* Date and Time */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>
-                <Calendar className="w-4 h-4" />
-                Date & Time
-              </h3>
+          {/* Date and Time */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>
+              <Calendar size={20} />
+              Date & Time
+            </h3>
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Start Date & Time *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.start_datetime}
-                    onChange={(e) => handleInputChange('start_datetime', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.start_datetime ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  />
-                  {errors.start_datetime && (
-                    <span style={styles.errorText}>{errors.start_datetime}</span>
-                  )}
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    End Date & Time *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.end_datetime}
-                    onChange={(e) => handleInputChange('end_datetime', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.end_datetime ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  />
-                  {errors.end_datetime && (
-                    <span style={styles.errorText}>{errors.end_datetime}</span>
-                  )}
-                </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Registration Deadline
-                </label>
+            <div style={modalStyles.formRow}>
+              <FormField label="Start Date & Time" field="start_datetime" required>
                 <input
                   type="datetime-local"
-                  value={formData.registration_deadline}
-                  onChange={(e) => handleInputChange('registration_deadline', e.target.value)}
+                  value={formData.start_datetime}
+                  onChange={(e) => handleInputChange('start_datetime', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.registration_deadline ? styles.inputError : {})
+                    ...modalStyles.input,
+                    ...(errors.start_datetime ? modalStyles.inputError : {}),
+                    ...(formTouched.start_datetime && !errors.start_datetime && formData.start_datetime ? modalStyles.inputSuccess : {})
                   }}
                   disabled={saving}
                 />
-                {errors.registration_deadline && (
-                  <span style={styles.errorText}>{errors.registration_deadline}</span>
-                )}
-              </div>
-            </div>
+              </FormField>
 
-            {/* Location */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>
-                <MapPin className="w-4 h-4" />
-                Location
-              </h3>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Event Location
-                </label>
+              <FormField label="End Date & Time" field="end_datetime" required>
                 <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  type="datetime-local"
+                  value={formData.end_datetime}
+                  onChange={(e) => handleInputChange('end_datetime', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.location ? styles.inputError : {})
+                    ...modalStyles.input,
+                    ...(errors.end_datetime ? modalStyles.inputError : {}),
+                    ...(formTouched.end_datetime && !errors.end_datetime && formData.end_datetime ? modalStyles.inputSuccess : {})
                   }}
-                  placeholder="Event location or address"
                   disabled={saving}
                 />
-                {errors.location && (
-                  <span style={styles.errorText}>{errors.location}</span>
-                )}
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Location Details
-                </label>
-                <textarea
-                  value={formData.location_details}
-                  onChange={(e) => handleInputChange('location_details', e.target.value)}
-                  style={{
-                    ...styles.textarea,
-                    ...(errors.location_details ? styles.inputError : {})
-                  }}
-                  placeholder="Additional location information, directions, room number, etc."
-                  rows={3}
-                  disabled={saving}
-                />
-                {errors.location_details && (
-                  <span style={styles.errorText}>{errors.location_details}</span>
-                )}
-              </div>
+              </FormField>
             </div>
 
-            {/* Registration */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>
-                <Users className="w-4 h-4" />
-                Registration
-              </h3>
+            <FormField 
+              label="Registration Deadline" 
+              field="registration_deadline"
+              description="Optional deadline for registrations"
+            >
+              <input
+                type="datetime-local"
+                value={formData.registration_deadline}
+                onChange={(e) => handleInputChange('registration_deadline', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.registration_deadline ? modalStyles.inputError : {})
+                }}
+                disabled={saving}
+              />
+            </FormField>
+          </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_registration}
-                    onChange={(e) => handleInputChange('requires_registration', e.target.checked)}
-                    style={styles.checkbox}
-                    disabled={saving}
-                  />
-                  Requires Registration
-                </label>
-              </div>
+          {/* Location */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>
+              <MapPin size={20} />
+              Location
+            </h3>
 
-              {formData.requires_registration && (
-                <>
-                  <div style={styles.formRow}>
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>
-                        Maximum Capacity
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.max_capacity}
-                        onChange={(e) => handleInputChange('max_capacity', e.target.value)}
-                        style={{
-                          ...styles.input,
-                          ...(errors.max_capacity ? styles.inputError : {})
-                        }}
-                        placeholder="Leave blank for unlimited"
-                        disabled={saving}
-                      />
-                      {errors.max_capacity && (
-                        <span style={styles.errorText}>{errors.max_capacity}</span>
-                      )}
-                    </div>
+            <FormField label="Event Location" field="location">
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.location ? modalStyles.inputError : {})
+                }}
+                placeholder="Event location or address"
+                disabled={saving}
+              />
+            </FormField>
 
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>
-                        <DollarSign className="w-4 h-4 inline mr-1" />
-                        Registration Fee
-                      </label>
+            <FormField 
+              label="Location Details" 
+              field="location_details"
+              description="Additional directions, room numbers, parking info"
+            >
+              <textarea
+                value={formData.location_details}
+                onChange={(e) => handleInputChange('location_details', e.target.value)}
+                style={{
+                  ...modalStyles.textarea,
+                  ...(errors.location_details ? modalStyles.inputError : {})
+                }}
+                placeholder="Additional location information"
+                rows={3}
+                disabled={saving}
+              />
+            </FormField>
+          </div>
+
+          {/* Registration */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>
+              <Users size={20} />
+              Registration
+            </h3>
+
+            <FormField field="requires_registration">
+              <label style={modalStyles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={formData.requires_registration}
+                  onChange={(e) => handleInputChange('requires_registration', e.target.checked)}
+                  style={modalStyles.checkbox}
+                  disabled={saving}
+                />
+                Requires Registration
+              </label>
+            </FormField>
+
+            {formData.requires_registration && (
+              <>
+                <div style={modalStyles.formRow}>
+                  <FormField label="Maximum Capacity" field="max_capacity">
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.max_capacity}
+                      onChange={(e) => handleInputChange('max_capacity', e.target.value)}
+                      style={{
+                        ...modalStyles.input,
+                        ...(errors.max_capacity ? modalStyles.inputError : {})
+                      }}
+                      placeholder="Leave blank for unlimited"
+                      disabled={saving}
+                    />
+                  </FormField>
+
+                  <FormField label="Registration Fee" field="registration_fee">
+                    <div style={{ position: 'relative' }}>
+                      <DollarSign size={16} style={{
+                        position: 'absolute',
+                        left: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#6b7280'
+                      }} />
                       <input
                         type="number"
                         min="0"
@@ -780,309 +944,266 @@ const EventForm = ({ event, onSave, onCancel }) => {
                         value={formData.registration_fee}
                         onChange={(e) => handleInputChange('registration_fee', e.target.value)}
                         style={{
-                          ...styles.input,
-                          ...(errors.registration_fee ? styles.inputError : {})
+                          ...modalStyles.input,
+                          paddingLeft: '28px',
+                          ...(errors.registration_fee ? modalStyles.inputError : {})
                         }}
                         disabled={saving}
                       />
-                      {errors.registration_fee && (
-                        <span style={styles.errorText}>{errors.registration_fee}</span>
-                      )}
                     </div>
-                  </div>
+                  </FormField>
+                </div>
 
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>
-                      External Registration URL
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.external_registration_url}
-                      onChange={(e) => handleInputChange('external_registration_url', e.target.value)}
-                      style={{
-                        ...styles.input,
-                        ...(errors.external_registration_url ? styles.inputError : {})
-                      }}
-                      placeholder="Optional external registration link"
-                      disabled={saving}
-                    />
-                    {errors.external_registration_url && (
-                      <span style={styles.errorText}>{errors.external_registration_url}</span>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+                <FormField 
+                  label="External Registration URL" 
+                  field="external_registration_url"
+                  description="Optional link to external registration system"
+                >
+                  <input
+                    type="url"
+                    value={formData.external_registration_url}
+                    onChange={(e) => handleInputChange('external_registration_url', e.target.value)}
+                    style={{
+                      ...modalStyles.input,
+                      ...(errors.external_registration_url ? modalStyles.inputError : {})
+                    }}
+                    placeholder="https://..."
+                    disabled={saving}
+                  />
+                </FormField>
+              </>
+            )}
+          </div>
 
-            {/* Organization */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>Organization</h3>
+          {/* Organization */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>Organization</h3>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Organizer
-                </label>
+            <FormField label="Organizer" field="organizer">
+              <input
+                type="text"
+                value={formData.organizer}
+                onChange={(e) => handleInputChange('organizer', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.organizer ? modalStyles.inputError : {})
+                }}
+                placeholder="Event organizer name"
+                disabled={saving}
+              />
+            </FormField>
+
+            <div style={modalStyles.formRow}>
+              <FormField label="Contact Email" field="contact_email">
                 <input
-                  type="text"
-                  value={formData.organizer}
-                  onChange={(e) => handleInputChange('organizer', e.target.value)}
+                  type="email"
+                  value={formData.contact_email}
+                  onChange={(e) => handleInputChange('contact_email', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.organizer ? styles.inputError : {})
+                    ...modalStyles.input,
+                    ...(errors.contact_email ? modalStyles.inputError : {}),
+                    ...(formTouched.contact_email && !errors.contact_email && formData.contact_email ? modalStyles.inputSuccess : {})
                   }}
-                  placeholder="Event organizer name"
+                  placeholder="Contact email"
                   disabled={saving}
                 />
-                {errors.organizer && (
-                  <span style={styles.errorText}>{errors.organizer}</span>
-                )}
-              </div>
+              </FormField>
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Contact Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.contact_email}
-                    onChange={(e) => handleInputChange('contact_email', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.contact_email ? styles.inputError : {})
-                    }}
-                    placeholder="Contact email for questions"
-                    disabled={saving}
-                  />
-                  {errors.contact_email && (
-                    <span style={styles.errorText}>{errors.contact_email}</span>
-                  )}
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.contact_phone}
-                    onChange={(e) => handleInputChange('contact_phone', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.contact_phone ? styles.inputError : {})
-                    }}
-                    placeholder="Contact phone number"
-                    disabled={saving}
-                  />
-                  {errors.contact_phone && (
-                    <span style={styles.errorText}>{errors.contact_phone}</span>
-                  )}
-                </div>
-              </div>
+              <FormField label="Contact Phone" field="contact_phone">
+                <input
+                  type="tel"
+                  value={formData.contact_phone}
+                  onChange={(e) => handleInputChange('contact_phone', e.target.value)}
+                  style={{
+                    ...modalStyles.input,
+                    ...(errors.contact_phone ? modalStyles.inputError : {})
+                  }}
+                  placeholder="Contact phone"
+                  disabled={saving}
+                />
+              </FormField>
             </div>
+          </div>
 
-            {/* Target Audience */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>Target Audience</h3>
+          {/* Target Audience */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>Target Audience</h3>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Target Groups
-                </label>
-                <div style={styles.checkboxGroup}>
+            {groups.length > 0 && (
+              <FormField label="Target Groups" field="target_group_ids">
+                <div style={modalStyles.checkboxGroup}>
                   {groups.map(group => (
-                    <label key={group.id} style={styles.checkboxLabel}>
+                    <label key={group.id} style={modalStyles.checkboxLabel}>
                       <input
                         type="checkbox"
                         checked={formData.target_group_ids.includes(group.id)}
                         onChange={(e) => handleMultiSelectChange('target_group_ids', group.id, e.target.checked)}
-                        style={styles.checkbox}
+                        style={modalStyles.checkbox}
                         disabled={saving}
                       />
                       {group.name}
                     </label>
                   ))}
                 </div>
-              </div>
+              </FormField>
+            )}
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Minimum Age
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="120"
-                    value={formData.age_min}
-                    onChange={(e) => handleInputChange('age_min', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.age_min ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  />
-                  {errors.age_min && (
-                    <span style={styles.errorText}>{errors.age_min}</span>
-                  )}
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Maximum Age
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="120"
-                    value={formData.age_max}
-                    onChange={(e) => handleInputChange('age_max', e.target.value)}
-                    style={{
-                      ...styles.input,
-                      ...(errors.age_max ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  />
-                  {errors.age_max && (
-                    <span style={styles.errorText}>{errors.age_max}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Settings */}
-            <div style={styles.formSection}>
-              <h3 style={styles.sectionTitle}>Additional Settings</h3>
-
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Status
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    style={{
-                      ...styles.select,
-                      ...(errors.status ? styles.inputError : {})
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="postponed">Postponed</option>
-                  </select>
-                  {errors.status && (
-                    <span style={styles.errorText}>{errors.status}</span>
-                  )}
-                </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={formData.is_public}
-                    onChange={(e) => handleInputChange('is_public', e.target.checked)}
-                    style={styles.checkbox}
-                    disabled={saving}
-                  />
-                  Show on public calendar
-                </label>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={formData.is_featured}
-                    onChange={(e) => handleInputChange('is_featured', e.target.checked)}
-                    style={styles.checkbox}
-                    disabled={saving}
-                  />
-                  Feature this event prominently
-                </label>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Prerequisites
-                </label>
-                <textarea
-                  value={formData.prerequisites}
-                  onChange={(e) => handleInputChange('prerequisites', e.target.value)}
-                  style={{
-                    ...styles.textarea,
-                    ...(errors.prerequisites ? styles.inputError : {})
-                  }}
-                  placeholder="Requirements, items to bring, or preparation needed"
-                  rows={3}
-                  disabled={saving}
-                />
-                {errors.prerequisites && (
-                  <span style={styles.errorText}>{errors.prerequisites}</span>
-                )}
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Tags
-                </label>
+            <div style={modalStyles.formRow}>
+              <FormField label="Minimum Age" field="age_min">
                 <input
-                  type="text"
-                  value={formData.tags}
-                  onChange={(e) => handleInputChange('tags', e.target.value)}
+                  type="number"
+                  min="0"
+                  max="120"
+                  value={formData.age_min}
+                  onChange={(e) => handleInputChange('age_min', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.tags ? styles.inputError : {})
+                    ...modalStyles.input,
+                    ...(errors.age_min ? modalStyles.inputError : {})
                   }}
-                  placeholder="Comma-separated tags for categorization"
                   disabled={saving}
                 />
-                {errors.tags && (
-                  <span style={styles.errorText}>{errors.tags}</span>
-                )}
-              </div>
+              </FormField>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Event Image URL
-                </label>
+              <FormField label="Maximum Age" field="age_max">
                 <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => handleInputChange('image_url', e.target.value)}
+                  type="number"
+                  min="0"
+                  max="120"
+                  value={formData.age_max}
+                  onChange={(e) => handleInputChange('age_max', e.target.value)}
                   style={{
-                    ...styles.input,
-                    ...(errors.image_url ? styles.inputError : {})
+                    ...modalStyles.input,
+                    ...(errors.age_max ? modalStyles.inputError : {})
                   }}
-                  placeholder="URL to event poster or promotional image"
                   disabled={saving}
                 />
-                {errors.image_url && (
-                  <span style={styles.errorText}>{errors.image_url}</span>
-                )}
-              </div>
+              </FormField>
             </div>
           </div>
 
+          {/* Additional Settings */}
+          <div style={modalStyles.section}>
+            <h3 style={modalStyles.sectionTitle}>Additional Settings</h3>
+
+            <div style={modalStyles.formRow}>
+              <FormField label="Status" field="status" required>
+                <select
+                  value={formData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  style={{
+                    ...modalStyles.select,
+                    ...(errors.status ? modalStyles.inputError : {})
+                  }}
+                  disabled={saving}
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="postponed">Postponed</option>
+                </select>
+              </FormField>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+              <label style={modalStyles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_public}
+                  onChange={(e) => handleInputChange('is_public', e.target.checked)}
+                  style={modalStyles.checkbox}
+                  disabled={saving}
+                />
+                Show on public calendar
+              </label>
+
+              <label style={modalStyles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_featured}
+                  onChange={(e) => handleInputChange('is_featured', e.target.checked)}
+                  style={modalStyles.checkbox}
+                  disabled={saving}
+                />
+                Feature this event prominently
+              </label>
+            </div>
+
+            <FormField 
+              label="Prerequisites" 
+              field="prerequisites"
+              description="Requirements, items to bring, or preparation needed"
+            >
+              <textarea
+                value={formData.prerequisites}
+                onChange={(e) => handleInputChange('prerequisites', e.target.value)}
+                style={{
+                  ...modalStyles.textarea,
+                  ...(errors.prerequisites ? modalStyles.inputError : {})
+                }}
+                placeholder="Any requirements or things to bring"
+                rows={3}
+                disabled={saving}
+              />
+            </FormField>
+
+            <FormField 
+              label="Tags" 
+              field="tags"
+              description="Comma-separated tags for categorization"
+            >
+              <input
+                type="text"
+                value={formData.tags}
+                onChange={(e) => handleInputChange('tags', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.tags ? modalStyles.inputError : {})
+                }}
+                placeholder="youth, music, outreach"
+                disabled={saving}
+              />
+            </FormField>
+
+            <FormField label="Event Image URL" field="image_url">
+              <input
+                type="url"
+                value={formData.image_url}
+                onChange={(e) => handleInputChange('image_url', e.target.value)}
+                style={{
+                  ...modalStyles.input,
+                  ...(errors.image_url ? modalStyles.inputError : {})
+                }}
+                placeholder="https://..."
+                disabled={saving}
+              />
+            </FormField>
+          </div>
+
           {/* Form Actions */}
-          <div style={styles.modalActions}>
+          <div style={modalStyles.actions}>
             <button
               type="button"
               onClick={onCancel}
-              style={styles.cancelButton}
+              style={modalStyles.cancelButton}
               disabled={saving}
+              onMouseEnter={(e) => !saving && (e.target.style.backgroundColor = '#f3f4f6')}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = 'white')}
             >
               Cancel
             </button>
             <button
               type="submit"
-              style={styles.saveButton}
+              style={{
+                ...modalStyles.saveButton,
+                opacity: saving ? 0.7 : 1,
+                cursor: saving ? 'not-allowed' : 'pointer'
+              }}
               disabled={saving}
+              onMouseEnter={(e) => !saving && (e.target.style.backgroundColor = '#2563eb')}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = '#3b82f6')}
             >
-              {saving && <LoadingSpinner size="small" />}
+              {saving && <Loader size={16} className="animate-spin" />}
+              <Save size={16} />
               {event ? 'Update Event' : 'Create Event'}
             </button>
           </div>

@@ -17,17 +17,23 @@ import {
   AlertTriangle,
   RefreshCw
 } from 'lucide-react';
-import { parseCSV, validateImportData } from '../../../utils/importUtils';
+import membersService from '../../../services/members';
+import { useToast } from '../../../hooks/useToast';
+import { parseCSV, validateImportData, autoDetectFieldMapping } from '../../../utils/importUtils';
 import styles from './Members.module.css';
 
 const BulkActions = ({ 
   selectedMembers = [], 
   onClearSelection, 
   onBulkAction,
-  onImportMembers,
+  onImportComplete,
   totalMembers = 0,
   allMembers = []
 }) => {
+  const { showToast } = useToast();
+  const fileInputRef = useRef(null);
+
+  // UI State
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [actionType, setActionType] = useState('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -45,8 +51,11 @@ const BulkActions = ({
   const [importStep, setImportStep] = useState('upload');
   const [fieldMapping, setFieldMapping] = useState({});
   const [duplicateStrategy, setDuplicateStrategy] = useState('skip');
-  
-  const fileInputRef = useRef(null);
+  const [importOptions, setImportOptions] = useState({
+    sendWelcomeEmails: false,
+    addTags: ['Imported'],
+    skipValidation: false
+  });
 
   // Tag management state
   const [selectedTags, setSelectedTags] = useState([]);
@@ -108,7 +117,7 @@ Church Administration Team`
     { key: 'firstName', label: 'First Name', required: true },
     { key: 'lastName', label: 'Last Name', required: true },
     { key: 'email', label: 'Email', required: true },
-    { key: 'phone', label: 'Phone', required: true },
+    { key: 'phone', label: 'Phone', required: false },
     { key: 'dateOfBirth', label: 'Date of Birth', required: false },
     { key: 'gender', label: 'Gender', required: false },
     { key: 'address', label: 'Address', required: false },
@@ -117,6 +126,7 @@ Church Administration Team`
     { key: 'pledgeAmount', label: 'Pledge Amount', required: false }
   ];
 
+  // Clear selection when no members are selected
   useEffect(() => {
     if (selectedMembers.length === 0) {
       setShowActionMenu(false);
@@ -128,6 +138,7 @@ Church Administration Team`
     const file = event.target.files[0];
     if (!file) return;
 
+    console.log('[BulkActions] File upload started:', file.name);
     setImportFile(file);
     setImportErrors([]);
     setIsProcessing(true);
@@ -136,23 +147,7 @@ Church Administration Team`
       let data;
       if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
         const text = await file.text();
-        // Simple CSV parsing for demonstration
-        const lines = text.split('\n').filter(line => line.trim());
-        if (lines.length < 2) {
-          throw new Error('CSV must have at least a header row and one data row');
-        }
-        
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        data = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-          const row = {};
-          headers.forEach((header, index) => {
-            row[header] = values[index] || '';
-          });
-          return row;
-        });
-      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        throw new Error('Excel import coming soon. Please use CSV format.');
+        data = parseCSV(text);
       } else {
         throw new Error('Unsupported file format. Please use CSV files.');
       }
@@ -161,19 +156,17 @@ Church Administration Team`
         throw new Error('The file appears to be empty or invalid.');
       }
 
-      // Auto-detect field mapping
+      console.log('[BulkActions] CSV parsed successfully:', data.length, 'rows');
+
+      // Auto-detect field mapping using the utility function
       const headers = Object.keys(data[0]);
-      const autoMapping = {};
-      headers.forEach(header => {
-        const normalized = header.toLowerCase().replace(/[^a-z]/g, '');
-        const match = expectedFields.find(field => 
-          field.label.toLowerCase().replace(/[^a-z]/g, '').includes(normalized) ||
-          field.key.toLowerCase().includes(normalized)
-        );
-        if (match) {
-          autoMapping[header] = match.key;
-        }
-      });
+      const autoMapping = autoDetectFieldMapping(headers, expectedFields);
+
+      console.log('[BulkActions] Auto-mapping detected:', autoMapping);
+
+      // Validate the data with field mapping
+      const validationErrors = validateImportData(data, autoMapping);
+      setImportErrors(validationErrors);
 
       setFieldMapping(autoMapping);
       setImportData(data);
@@ -181,13 +174,16 @@ Church Administration Team`
       setImportStep('preview');
 
     } catch (error) {
+      console.error('[BulkActions] File upload error:', error);
       setImportErrors([error.message]);
+      showToast(error.message, 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleImportConfirm = async () => {
+    console.log('[BulkActions] Import confirmation started');
     setIsProcessing(true);
     
     try {
@@ -201,13 +197,15 @@ Church Administration Team`
         throw new Error(`Missing required fields: ${missingRequired.map(f => f.label).join(', ')}`);
       }
 
-      // Transform and validate data
+      // Transform data according to field mapping
       const transformedData = importData.map((row, index) => {
         const transformed = {};
         Object.keys(fieldMapping).forEach(csvField => {
           const targetField = fieldMapping[csvField];
           if (targetField && row[csvField]) {
-            transformed[targetField] = row[csvField];
+            // Convert field names to API format
+            const apiFieldName = convertToApiFieldName(targetField);
+            transformed[apiFieldName] = row[csvField];
           }
         });
 
@@ -218,49 +216,85 @@ Church Administration Team`
         return { ...transformed, _originalRowIndex: index };
       });
 
-      // Basic validation
+      // Basic validation - filter out invalid records
       const validData = transformedData.filter(row => 
-        row.firstName && row.lastName && row.email
+        row.first_name && row.last_name && row.email
       );
 
       if (validData.length === 0) {
         throw new Error('No valid records found in the import data');
       }
 
-      if (typeof onImportMembers === 'function') {
-        const result = await onImportMembers(validData, {
-          duplicateStrategy,
-          addTags: ['Imported']
-        });
+      console.log('[BulkActions] Transformed data for import:', validData.length, 'records');
 
-        setProcessingResult({
-          type: 'success',
-          message: `Successfully imported ${result.successful || validData.length} members. ${result.skipped || 0} duplicates skipped.`
-        });
-      } else {
-        // Fallback if onImportMembers is not provided
-        setProcessingResult({
-          type: 'success',
-          message: `Successfully processed ${validData.length} member records.`
-        });
+      // Call the import service
+      const result = await membersService.importMembers(validData, {
+        duplicateStrategy,
+        sendWelcomeEmails: importOptions.sendWelcomeEmails,
+        addTags: importOptions.addTags,
+        skipValidation: importOptions.skipValidation
+      });
+
+      console.log('[BulkActions] Import result:', result);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Import failed');
+      }
+
+      setProcessingResult({
+        type: 'success',
+        message: `Successfully imported ${result.data?.imported || validData.length} members. ${result.data?.skipped || 0} duplicates skipped.`
+      });
+
+      showToast(
+        `Import completed! ${result.data?.imported || validData.length} members imported.`,
+        'success'
+      );
+
+      // Notify parent component about successful import
+      if (typeof onImportComplete === 'function') {
+        onImportComplete(result.data);
       }
 
       // Reset import state after a delay
       setTimeout(() => {
         setShowImportDialog(false);
-        setImportStep('upload');
-        setImportFile(null);
-        setImportData([]);
-        setImportPreview([]);
-        setFieldMapping({});
-        setProcessingResult(null);
+        resetImportState();
       }, 3000);
 
     } catch (error) {
+      console.error('[BulkActions] Import error:', error);
       setImportErrors([error.message || 'Import failed']);
+      showToast(error.message || 'Import failed', 'error');
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const resetImportState = () => {
+    setImportStep('upload');
+    setImportFile(null);
+    setImportData([]);
+    setImportPreview([]);
+    setFieldMapping({});
+    setImportErrors([]);
+    setProcessingResult(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Convert frontend field names to API field names
+  const convertToApiFieldName = (fieldName) => {
+    const fieldMap = {
+      'firstName': 'first_name',
+      'lastName': 'last_name',
+      'dateOfBirth': 'date_of_birth',
+      'preferredContactMethod': 'preferred_contact_method',
+      'ministryInterests': 'ministry_interests',
+      'pledgeAmount': 'pledge_amount'
+    };
+    return fieldMap[fieldName] || fieldName;
   };
 
   const handleBulkAction = async (action) => {
@@ -277,6 +311,8 @@ Church Administration Team`
       if (typeof onBulkAction !== 'function') {
         throw new Error('Bulk action handler not provided');
       }
+      
+      console.log('[BulkActions] Performing action:', action, 'on', selectedMembers.length, 'members');
       
       switch (action) {
         case 'delete':
@@ -307,10 +343,17 @@ Church Administration Team`
           throw new Error('Unknown action');
       }
 
+      console.log('[BulkActions] Action result:', result);
+
       setProcessingResult({
         type: 'success',
         message: result?.message || `Successfully processed ${selectedMembers.length} members`
       });
+      
+      showToast(
+        result?.message || `Action completed for ${selectedMembers.length} members`,
+        'success'
+      );
       
       setTimeout(() => {
         if (typeof onClearSelection === 'function') {
@@ -322,10 +365,12 @@ Church Administration Team`
       }, 2000);
 
     } catch (error) {
+      console.error('[BulkActions] Action error:', error);
       setProcessingResult({
         type: 'error',
         message: error.message || 'An error occurred while processing the action'
       });
+      showToast(error.message || 'Action failed', 'error');
     } finally {
       setIsProcessing(false);
       setShowConfirmDialog(false);
@@ -387,6 +432,22 @@ Church Administration Team`
     }).slice(0, 10).join(', ') + (selectedMembers.length > 10 ? '...' : '');
   };
 
+  const downloadTemplate = () => {
+    const headers = expectedFields.map(f => f.label).join(',');
+    const sampleRow = 'John,Doe,john@example.com,555-0123,1990-01-15,Male,123 Main St,email,Choir;Youth,50';
+    const template = headers + '\n' + sampleRow;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'member_import_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Render import preview table
   const ImportPreviewTable = () => (
     <div className={styles.importPreview}>
@@ -416,53 +477,80 @@ Church Administration Team`
         ))}
       </div>
       
-      <div className={styles.duplicateStrategy}>
-        <h5>Duplicate Handling</h5>
-        <label>
-          <input
-            type="radio"
-            value="skip"
-            checked={duplicateStrategy === 'skip'}
-            onChange={(e) => setDuplicateStrategy(e.target.value)}
-          />
-          Skip duplicates (by email)
-        </label>
-        <label>
-          <input
-            type="radio"
-            value="update"
-            checked={duplicateStrategy === 'update'}
-            onChange={(e) => setDuplicateStrategy(e.target.value)}
-          />
-          Update existing records
-        </label>
+      <div className={styles.importOptions}>
+        <h5>Import Options</h5>
+        <div className={styles.optionsGrid}>
+          <label className={styles.optionItem}>
+            <input
+              type="radio"
+              value="skip"
+              checked={duplicateStrategy === 'skip'}
+              onChange={(e) => setDuplicateStrategy(e.target.value)}
+            />
+            Skip duplicates (by email)
+          </label>
+          <label className={styles.optionItem}>
+            <input
+              type="radio"
+              value="update"
+              checked={duplicateStrategy === 'update'}
+              onChange={(e) => setDuplicateStrategy(e.target.value)}
+            />
+            Update existing records
+          </label>
+          <label className={styles.optionItem}>
+            <input
+              type="checkbox"
+              checked={importOptions.sendWelcomeEmails}
+              onChange={(e) => setImportOptions(prev => ({
+                ...prev,
+                sendWelcomeEmails: e.target.checked
+              }))}
+            />
+            Send welcome emails
+          </label>
+          <label className={styles.optionItem}>
+            <input
+              type="checkbox"
+              checked={importOptions.skipValidation}
+              onChange={(e) => setImportOptions(prev => ({
+                ...prev,
+                skipValidation: e.target.checked
+              }))}
+            />
+            Skip strict validation
+          </label>
+        </div>
       </div>
 
       {importPreview.length > 0 && (
-        <table className={styles.previewTable}>
-          <thead>
-            <tr>
-              {Object.keys(fieldMapping).map(csvField => (
-                fieldMapping[csvField] && (
-                  <th key={csvField}>
-                    {expectedFields.find(f => f.key === fieldMapping[csvField])?.label}
-                  </th>
-                )
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {importPreview.map((row, index) => (
-              <tr key={index}>
+        <div className={styles.previewTable}>
+          <h5>Data Preview</h5>
+          <table>
+            <thead>
+              <tr>
                 {Object.keys(fieldMapping).map(csvField => (
                   fieldMapping[csvField] && (
-                    <td key={csvField}>{row[csvField]}</td>
+                    <th key={csvField}>
+                      {expectedFields.find(f => f.key === fieldMapping[csvField])?.label}
+                    </th>
                   )
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {importPreview.map((row, index) => (
+                <tr key={index}>
+                  {Object.keys(fieldMapping).map(csvField => (
+                    fieldMapping[csvField] && (
+                      <td key={csvField}>{row[csvField]}</td>
+                    )
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -600,7 +688,10 @@ Church Administration Team`
               <h3>Import Members</h3>
               <button
                 className={styles.modalClose}
-                onClick={() => setShowImportDialog(false)}
+                onClick={() => {
+                  setShowImportDialog(false);
+                  resetImportState();
+                }}
                 disabled={isProcessing}
               >
                 <X size={20} />
@@ -647,25 +738,15 @@ Church Administration Team`
                   <h5>CSV Format Guidelines:</h5>
                   <ul>
                     <li>Include headers in the first row</li>
-                    <li>Required fields: First Name, Last Name, Email, Phone</li>
-                    <li>Optional: Date of Birth, Gender, Address, etc.</li>
+                    <li>Required fields: First Name, Last Name, Email</li>
+                    <li>Optional: Phone, Date of Birth, Gender, Address, etc.</li>
                     <li>Use standard date format (YYYY-MM-DD)</li>
                     <li>Separate multiple ministry interests with semicolons</li>
                   </ul>
                   
                   <button
                     className={styles.downloadTemplate}
-                    onClick={() => {
-                      const template = expectedFields.map(f => f.label).join(',') + '\n' +
-                        'John,Doe,john@example.com,555-0123,1990-01-15,Male,123 Main St,email,Choir;Youth,50';
-                      const blob = new Blob([template], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'member_import_template.csv';
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}
+                    onClick={downloadTemplate}
                   >
                     <Download size={16} />
                     Download Template
@@ -700,11 +781,22 @@ Church Administration Team`
                     <strong>{Object.values(fieldMapping).filter(v => v).length}</strong> fields mapped
                   </div>
                 </div>
+
+                {processingResult && (
+                  <div className={`${styles.importResult} ${styles[processingResult.type]}`}>
+                    {processingResult.type === 'success' ? (
+                      <CheckCircle size={16} />
+                    ) : (
+                      <AlertCircle size={16} />
+                    )}
+                    <span>{processingResult.message}</span>
+                  </div>
+                )}
               </div>
             )}
             
             <div className={styles.modalActions}>
-              {importStep === 'preview' && (
+              {importStep === 'preview' && !processingResult && (
                 <button
                   className={styles.secondaryButton}
                   onClick={() => {
@@ -721,13 +813,16 @@ Church Administration Team`
               
               <button
                 className={styles.cancelButton}
-                onClick={() => setShowImportDialog(false)}
+                onClick={() => {
+                  setShowImportDialog(false);
+                  resetImportState();
+                }}
                 disabled={isProcessing}
               >
-                Cancel
+                {processingResult ? 'Close' : 'Cancel'}
               </button>
               
-              {importStep === 'preview' && (
+              {importStep === 'preview' && !processingResult && (
                 <button
                   className={styles.primaryButton}
                   onClick={handleImportConfirm}
