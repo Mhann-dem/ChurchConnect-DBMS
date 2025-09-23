@@ -1,5 +1,396 @@
 /* frontend/src/components/admin/Pledges/Pledges.module.css */
 
+/* Enhanced CSS additions for better visual feedback */
+.successMessage {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.successIcon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.successContent {
+  flex: 1;
+}
+
+.successTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.successText {
+  font-size: 0.875rem;
+  margin: 0 0 0.25rem 0;
+  opacity: 0.95;
+}
+
+.successSubtext {
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.errorMessage {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: shake 0.5s ease-out;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.errorContent {
+  flex: 1;
+}
+
+.errorTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.errorText {
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
+  opacity: 0.95;
+}
+
+.errorDetails {
+  margin-top: 0.5rem;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+
+.errorDetails pre {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.loadingContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Bulk Import Styles */
+.bulkImportContainer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.bulkImportCard {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.bulkImportHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bulkImportTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.uploadStep, .validateStep, .processStep, .completeStep {
+  padding: 1rem 0;
+}
+
+.uploadInstructions {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.uploadIcon {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.csvRequirements, .csvOptional {
+  text-align: left;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.csvRequirements h4, .csvOptional h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.csvRequirements ul, .csvOptional ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.csvRequirements li, .csvOptional li {
+  padding: 0.25rem 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.csvRequirements code, .csvOptional code {
+  background: #e5e7eb;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #374151;
+}
+
+.uploadActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.processingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.validationResults {
+  margin: 1rem 0;
+}
+
+.validationErrors {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.errorHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.errorIcon {
+  color: #dc2626;
+}
+
+.errorList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.errorItem {
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.validationActions {
+  display: flex;
+  justify-content: center;
+}
+
+.validationSuccess {
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.successHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.successIcon {
+  color: #10b981;
+}
+
+.previewTable {
+  margin: 1.5rem 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.previewTableElement {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.previewTableElement th {
+  background: #f9fafb;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.previewTableElement td {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.errorRow {
+  background: #fef2f2;
+}
+
+.errorRow td {
+  color: #dc2626;
+}
+
+.processActions, .validationActions, .completeActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.resultsHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.resultsIcon {
+  color: #10b981;
+  margin-bottom: 1rem;
+}
+
+.resultsStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.resultsStat {
+  text-align: center;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.statsNumber {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.statsLabel {
+  display: block;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.importErrors {
+  margin: 2rem 0;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.errorsList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.moreErrors {
+  font-style: italic;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Animations */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Container and Layout */
 .pledgesContainer {
   padding: 1.5rem;

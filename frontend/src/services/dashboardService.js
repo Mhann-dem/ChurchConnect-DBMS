@@ -1,4 +1,4 @@
-// services/dashboardService.js - Enhanced version with proper Django backend integration
+// services/dashboardService.js - COMPLETE FIXED VERSION
 import apiMethods from './api';
 
 class DashboardService {
@@ -7,7 +7,7 @@ class DashboardService {
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
     this.retryConfig = {
       maxRetries: 3,
-      retryDelay: 1000, // 1 second
+      retryDelay: 1000,
       backoffMultiplier: 2
     };
   }
@@ -42,7 +42,6 @@ class DashboardService {
 
   clearCache(pattern = null) {
     if (pattern) {
-      // Clear cache entries matching pattern
       const keysToDelete = Array.from(this.cache.keys()).filter(key => 
         key.includes(pattern)
       );
@@ -66,16 +65,13 @@ class DashboardService {
           throw error;
         }
         
-        // Wait before retry with exponential backoff
         const delay = this.retryConfig.retryDelay * Math.pow(this.retryConfig.backoffMultiplier, attempt - 1);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
 
-  // Enhanced API request with caching, retry, and error handling
   async makeRequest(requestFn, cacheKey = null, useCache = true, fallbackData = null) {
-    // Check cache first
     if (useCache && cacheKey) {
       const cached = this.getCachedData(cacheKey);
       if (cached) {
@@ -86,7 +82,6 @@ class DashboardService {
     try {
       const data = await this.retryRequest(requestFn);
       
-      // Cache successful response
       if (useCache && cacheKey) {
         this.setCachedData(cacheKey, data);
       }
@@ -95,7 +90,6 @@ class DashboardService {
     } catch (error) {
       console.error(`[DashboardService] Request failed after retries:`, error.message);
       
-      // Return stale cache if available
       if (cacheKey) {
         const staleCache = this.cache.get(cacheKey);
         if (staleCache) {
@@ -104,7 +98,6 @@ class DashboardService {
         }
       }
       
-      // Return fallback data if provided
       if (fallbackData !== null) {
         console.warn(`[DashboardService] Returning fallback data`);
         return fallbackData;
@@ -118,7 +111,7 @@ class DashboardService {
   async getStats() {
     const cacheKey = this.getCacheKey('dashboard_stats');
     return await this.makeRequest(
-      () => apiMethods.get('core/dashboard/stats/'), // Changed to correct endpoint
+      () => apiMethods.dashboard.getStats(),
       cacheKey,
       true,
       { 
@@ -136,13 +129,16 @@ class DashboardService {
   async getMemberStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('member_stats', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.get(`members/statistics/?range=${timeRange}`), // Use existing endpoint
+      () => apiMethods.dashboard.getMemberStats(timeRange),
       cacheKey,
       true,
       { 
-        total_members: 0, 
-        new_members: 0, 
-        active_members: 0,
+        summary: {
+          total_members: 0, 
+          active_members: 0, 
+          inactive_members: 0
+        },
+        new_members: 0,
         growth_rate: 0,
         retention_rate: 0
       }
@@ -153,7 +149,7 @@ class DashboardService {
   async getPledgeStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('pledge_stats', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.pledges.getStats(timeRange),
+      () => apiMethods.dashboard.getPledgeStats(timeRange),
       cacheKey,
       true,
       { 
@@ -170,7 +166,7 @@ class DashboardService {
   async getGroupStats() {
     const cacheKey = this.getCacheKey('group_stats');
     return await this.makeRequest(
-      () => apiMethods.groups.getStats(),
+      () => apiMethods.dashboard.getGroupStats(),
       cacheKey,
       true,
       { 
@@ -182,15 +178,11 @@ class DashboardService {
     );
   }
 
-  // FIXED: Added missing getFamilyStats method
+  // Get family statistics
   async getFamilyStats() {
     const cacheKey = this.getCacheKey('family_stats');
     return await this.makeRequest(
-      () => apiMethods.families ? apiMethods.families.getStats() : Promise.resolve({ 
-        total_families: 0, 
-        new_families: 0, 
-        growth_rate: 0 
-      }),
+      () => apiMethods.dashboard.getFamilyStats(),
       cacheKey,
       true,
       { 
@@ -202,7 +194,7 @@ class DashboardService {
     );
   }
 
-  // FIXED: Added missing getEventStats method
+  // Get event statistics
   async getEventStats() {
     const cacheKey = this.getCacheKey('event_stats');
     return await this.makeRequest(
@@ -222,33 +214,39 @@ class DashboardService {
     );
   }
 
-  // FIXED: Added missing getRecentEvents method
-  async getRecentEvents(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_events', { limit });
-    return await this.makeRequest(
-      () => apiMethods.events ? apiMethods.events.getRecent(limit) : Promise.resolve({ results: [] }),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // FIXED: Added missing getRecentFamilies method
-  async getRecentFamilies(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_families', { limit });
-    return await this.makeRequest(
-      () => apiMethods.families ? apiMethods.families.getRecent(limit) : Promise.resolve({ results: [] }),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Get recent member registrations
+  // FIXED: Get recent members using the corrected API method
   async getRecentMembers(limit = 10) {
     const cacheKey = this.getCacheKey('recent_members', { limit });
     return await this.makeRequest(
-      () => apiMethods.dashboard.getRecentMembers(limit),
+      async () => {
+        console.log('[DashboardService] Fetching recent members...');
+        
+        // FIXED: Use apiMethods.dashboard.getRecentMembers instead of undefined membersService
+        const result = await apiMethods.dashboard.getRecentMembers(limit);
+        
+        console.log('[DashboardService] Recent members API response:', result);
+        
+        // Handle different response formats from the API
+        if (Array.isArray(result)) {
+          return {
+            results: result,
+            count: result.length
+          };
+        } else if (result && result.results) {
+          return result;
+        } else if (result && result.data) {
+          return {
+            results: result.data,
+            count: result.data.length
+          };
+        } else {
+          console.warn('[DashboardService] Unexpected recent members response format:', result);
+          return {
+            results: [],
+            count: 0
+          };
+        }
+      },
       cacheKey,
       true,
       { results: [] }
@@ -266,38 +264,35 @@ class DashboardService {
     );
   }
 
-  // Get system health status
-  async getSystemHealth() {
+  // Get recent events
+  async getRecentEvents(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_events', { limit });
     return await this.makeRequest(
-      () => apiMethods.get('core/dashboard/health/'), // Use the new endpoint
-      null,
-      false,
-      { status: 'healthy', uptime: '99.9%' }
+      () => apiMethods.events ? apiMethods.events.getRecent(limit) : Promise.resolve({ results: [] }),
+      cacheKey,
+      true,
+      { results: [] }
     );
   }
 
-
-  // Add this new method for the comprehensive endpoint
-  async getDashboardOverview() {
-    const cacheKey = this.getCacheKey('dashboard_overview');
+  // Get recent families
+  async getRecentFamilies(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_families', { limit });
     return await this.makeRequest(
-      () => apiMethods.get('core/dashboard/overview/'),
+      () => apiMethods.families ? apiMethods.families.getRecent(limit) : Promise.resolve({ results: [] }),
       cacheKey,
       true,
-      {
-        stats: { 
-          total_members: 0, 
-          total_groups: 0, 
-          total_pledges: 0,
-          total_families: 0,
-          total_events: 0,
-          monthly_revenue: 0 
-        },
-        recent_members: [],
-        recent_pledges: [],
-        system_health: { status: 'healthy' },
-        alerts: []
-      }
+      { results: [] }
+    );
+  }
+
+  // Get system health status
+  async getSystemHealth() {
+    return await this.makeRequest(
+      () => apiMethods.dashboard.getSystemHealth(),
+      null,
+      false,
+      { status: 'healthy', uptime: '99.9%' }
     );
   }
 
@@ -305,7 +300,7 @@ class DashboardService {
   async getAlerts() {
     const cacheKey = this.getCacheKey('alerts');
     return await this.makeRequest(
-      () => apiMethods.get('core/dashboard/alerts/'), // Use the new endpoint
+      () => apiMethods.dashboard.getAlerts(),
       cacheKey,
       true,
       { results: [] }
@@ -386,7 +381,7 @@ class DashboardService {
   async getActivitySummary(timeRange = '7d') {
     const cacheKey = this.getCacheKey('activity_summary', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.reports.getActivity(timeRange),
+      () => apiMethods.reports?.getActivity ? apiMethods.reports.getActivity(timeRange) : Promise.resolve({ activities: [], summary: {} }),
       cacheKey,
       true,
       { activities: [], summary: {} }
@@ -403,18 +398,17 @@ class DashboardService {
         this.clearCache();
       }
       
-      // Execute requests with proper error handling
       const requests = [
         this.getStats(),
         this.getMemberStats(timeRange),
         this.getPledgeStats(timeRange),
         this.getGroupStats(),
-        this.getFamilyStats(),  // Now properly available
-        this.getEventStats(),   // Now properly available
+        this.getFamilyStats(),
+        this.getEventStats(),
         this.getRecentMembers(5),
         this.getRecentPledges(5),
-        this.getRecentEvents(5),   // Now properly available
-        this.getRecentFamilies(5), // Now properly available
+        this.getRecentEvents(5),
+        this.getRecentFamilies(5),
         this.getSystemHealth(),
         this.getAlerts()
       ];
@@ -434,7 +428,6 @@ class DashboardService {
         alerts
       ] = await Promise.allSettled(requests);
 
-      // Process results with proper error handling
       const processResult = (result, fallback = {}) => {
         if (result.status === 'fulfilled') {
           return result.value;
@@ -453,7 +446,11 @@ class DashboardService {
           total_events: 0
         }),
         memberStats: processResult(memberStats, { 
-          total_members: 0, 
+          summary: {
+            total_members: 0, 
+            active_members: 0, 
+            inactive_members: 0
+          },
           new_members: 0, 
           growth_rate: 0 
         }),
@@ -525,8 +522,7 @@ class DashboardService {
   }
 
   calculateCacheHitRate() {
-    // This is a simplified version - in production you'd track hits/misses
-    return this.cache.size > 0 ? 0.75 : 0; // Assume 75% hit rate when cache has data
+    return this.cache.size > 0 ? 0.75 : 0;
   }
 
   // Export dashboard data

@@ -1,4 +1,4 @@
-# members/models.py - UPDATED: Make date_of_birth optional
+# members/models.py - TIMEZONE FIX for registration_date
 import uuid
 from django.db import models
 from django.utils import timezone
@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 
 class Member(models.Model):
-    """Church member model with optional date_of_birth"""
+    """Church member model with timezone-aware registration_date"""
     
     GENDER_CHOICES = [
         ('male', 'Male'),
@@ -37,10 +37,10 @@ class Member(models.Model):
     last_name = models.CharField(max_length=100)
     preferred_name = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
-    phone = PhoneNumberField(blank=True)  # FIXED: Make phone optional
+    phone = PhoneNumberField(blank=True)
     alternate_phone = PhoneNumberField(blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)  # FIXED: Make optional
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)  # FIXED: Make optional
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
     
     # Address and contact preferences
     address = models.TextField(blank=True)
@@ -57,7 +57,7 @@ class Member(models.Model):
     # Profile and media
     photo_url = models.URLField(blank=True)
     
-    # Family relationship - make it optional for now
+    # Family relationship
     family = models.ForeignKey(
         'families.Family',
         on_delete=models.SET_NULL,
@@ -70,8 +70,8 @@ class Member(models.Model):
     emergency_contact_name = models.CharField(max_length=255, blank=True)
     emergency_contact_phone = PhoneNumberField(blank=True)
     
-    # Administrative fields
-    registration_date = models.DateTimeField(auto_now_add=True)
+    # Administrative fields - FIXED: Use timezone-aware default
+    registration_date = models.DateTimeField(default=timezone.now)  # FIXED!
     last_updated = models.DateTimeField(auto_now=True)
     last_contact_date = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True)

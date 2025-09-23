@@ -1,27 +1,26 @@
-// hooks/usePledges.js - Production Ready with optimized state management and caching
+// hooks/usePledges.js - ENHANCED VERSION with better error handling and real-time updates
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import pledgesService from '../services/pledges';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
-import { useRealTimeUpdates } from './useRealTimeUpdates';
+import { useToast } from './useToast';
 
 /**
- * Production-ready pledges hook with advanced caching, real-time updates, and error handling
- * @param {Object} initialFilters - Initial filter values
- * @param {Object} options - Configuration options
- * @returns {Object} Pledges state and actions
+ * Enhanced pledges hook with real-time updates, better error handling, and optimistic updates
  */
 const usePledges = (initialFilters = {}, options = {}) => {
   const { isAuthenticated, hasPermission } = useAuth();
+  const { showToast } = useToast();
   
-  // Memoized options to prevent infinite re-renders
+  // Configuration options
   const config = useMemo(() => ({
     enableCache: options.enableCache !== false,
     enableRealTime: options.enableRealTime !== false,
     cacheTime: options.cacheTime || 5 * 60 * 1000, // 5 minutes
     staleTime: options.staleTime || 2 * 60 * 1000,  // 2 minutes
     debounceMs: options.debounceMs || 300,
-    autoFetch: options.autoFetch !== false
+    autoFetch: options.autoFetch !== false,
+    optimisticUpdates: options.optimisticUpdates !== false
   }), [options]);
 
   // Core state
@@ -29,6 +28,9 @@ const usePledges = (initialFilters = {}, options = {}) => {
   const [statistics, setStatistics] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [lastFetch, setLastFetch] = useState(null);
+  
+  // Pagination state
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
@@ -51,6 +53,7 @@ const usePledges = (initialFilters = {}, options = {}) => {
   const cacheRef = useRef({});
   const lastFetchParamsRef = useRef(null);
   const requestIdRef = useRef(0);
+  const retryCountRef = useRef(0);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -72,104 +75,37 @@ const usePledges = (initialFilters = {}, options = {}) => {
     });
   }, [debouncedSearchQuery, filters, pagination.currentPage, pagination.itemsPerPage]);
 
-  // Cache utilities
-  const getCachedData = useCallback((key) => {
-    if (!config.enableCache) return null;
+  // Enhanced error handling
+  const handleError = useCallback((error, operation = 'operation') => {
+    console.error(`[usePledges] ${operation} failed:`, error);
     
-    const cached = cacheRef.current[key];
-    if (!cached) return null;
+    const errorMessage = error?.response?.data?.error || 
+                        error?.response?.data?.message ||
+                        error?.message || 
+                        `${operation} failed`;
+
+    setError(errorMessage);
     
-    const now = Date.now();
-    const isExpired = (now - cached.timestamp) > config.cacheTime;
-    const isStale = (now - cached.timestamp) > config.staleTime;
-    
-    if (isExpired) {
-      delete cacheRef.current[key];
-      return null;
+    // Show toast for user-facing errors
+    if (error?.response?.status !== 401) { // Don't show toast for auth errors
+      showToast(errorMessage, 'error');
     }
     
-    return { ...cached, isStale };
-  }, [config.enableCache, config.cacheTime, config.staleTime]);
+    return errorMessage;
+  }, [showToast]);
 
-  const setCachedData = useCallback((key, data) => {
-    if (!config.enableCache) return;
+  // Enhanced success handling
+  const handleSuccess = useCallback((message, data = null) => {
+    console.log(`[usePledges] Success: ${message}`);
+    setError(null);
+    retryCountRef.current = 0;
     
-    cacheRef.current[key] = {
-      pledges: data.pledges || [],
-      statistics: data.statistics || {},
-      pagination: data.pagination || pagination,
-      timestamp: Date.now()
-    };
-  }, [config.enableCache, pagination]);
-
-  const invalidateCache = useCallback((pattern) => {
-    if (!config.enableCache) return;
-    
-    if (!pattern) {
-      cacheRef.current = {};
-      return;
+    if (message && !message.includes('fetch')) { // Don't show toast for routine fetches
+      showToast(message, 'success');
     }
     
-    Object.keys(cacheRef.current).forEach(key => {
-      if (key.includes(pattern)) {
-        delete cacheRef.current[key];
-      }
-    });
-  }, [config.enableCache]);
-
-  // Real-time updates handler
-  const handleRealTimeUpdate = useCallback((type, data) => {
-    if (!mountedRef.current) return;
-
-    switch (type) {
-      case 'pledge_created':
-        setPledges(prev => [data, ...prev]);
-        setPagination(prev => ({ ...prev, count: prev.count + 1 }));
-        invalidateCache();
-        break;
-        
-      case 'pledge_updated':
-        setPledges(prev => prev.map(pledge => 
-          pledge.id === data.id ? { ...pledge, ...data } : pledge
-        ));
-        invalidateCache(data.id);
-        break;
-        
-      case 'pledge_deleted':
-        setPledges(prev => prev.filter(pledge => pledge.id !== data.id));
-        setPagination(prev => ({ 
-          ...prev, 
-          count: Math.max(0, prev.count - 1) 
-        }));
-        invalidateCache();
-        break;
-        
-      case 'payment_added':
-        // Update the specific pledge with new payment
-        setPledges(prev => prev.map(pledge => {
-          if (pledge.id === data.pledge_id) {
-            return {
-              ...pledge,
-              payments: [...(pledge.payments || []), data.payment],
-              amount_received: (pledge.amount_received || 0) + data.payment.amount
-            };
-          }
-          return pledge;
-        }));
-        break;
-
-      default:
-        console.log('[usePledges] Unknown real-time update type:', type);
-    }
-  }, [invalidateCache]);
-
-  // Set up real-time updates
-  const { isConnected } = useRealTimeUpdates('pledges', {
-    onCreate: (data) => handleRealTimeUpdate('pledge_created', data),
-    onUpdate: (data) => handleRealTimeUpdate('pledge_updated', data),
-    onDelete: (data) => handleRealTimeUpdate('pledge_deleted', data),
-    onPaymentAdded: (data) => handleRealTimeUpdate('payment_added', data)
-  });
+    return data;
+  }, [showToast]);
 
   // Cancel ongoing requests
   const cancelRequests = useCallback(() => {
@@ -180,11 +116,12 @@ const usePledges = (initialFilters = {}, options = {}) => {
     return abortControllerRef.current.signal;
   }, []);
 
-  // Fetch pledges with caching and deduplication
+  // Enhanced fetch with retry logic
   const fetchPledges = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
-      setError('Insufficient permissions');
-      return { success: false, error: 'Insufficient permissions' };
+      const error = 'Insufficient permissions to view pledges';
+      setError(error);
+      return { success: false, error };
     }
 
     const requestId = ++requestIdRef.current;
@@ -198,28 +135,12 @@ const usePledges = (initialFilters = {}, options = {}) => {
 
     const currentParamsStr = JSON.stringify(mergedParams);
     
-    // Skip if same request is already in progress or recently completed
+    // Skip if same request is already in progress
     if (!params.forceRefresh && lastFetchParamsRef.current === currentParamsStr) {
       return { success: true, fromCache: false };
     }
 
     try {
-      // Check cache first
-      if (!params.forceRefresh) {
-        const cached = getCachedData(currentParamsStr);
-        if (cached && !cached.isStale) {
-          if (mountedRef.current) {
-            setPledges(cached.pledges);
-            setStatistics(cached.statistics);
-            setPagination(cached.pagination);
-            setError(null);
-            setLoading(false);
-          }
-          return { success: true, fromCache: true };
-        }
-      }
-
-      const signal = cancelRequests();
       lastFetchParamsRef.current = currentParamsStr;
 
       if (mountedRef.current && !params.silent) {
@@ -227,38 +148,36 @@ const usePledges = (initialFilters = {}, options = {}) => {
         setError(null);
       }
 
-      const response = await pledgesService.getPledges({
-        ...mergedParams,
-        signal
-      });
+      const response = await pledgesService.getPledges(mergedParams);
 
       // Check if this is still the latest request
       if (requestId !== requestIdRef.current) {
         return { success: false, error: 'Request superseded' };
       }
 
-      if (!mountedRef.current) return { success: false, error: 'Component unmounted' };
+      if (!mountedRef.current) {
+        return { success: false, error: 'Component unmounted' };
+      }
 
-      if (response.success) {
-        const data = response.data;
+      if (response.success && response.data) {
         let pledgesArray = [];
         let paginationData = pagination;
 
         // Handle different response formats
-        if (data.results) {
+        if (response.data.results) {
           // Paginated response
-          pledgesArray = Array.isArray(data.results) ? data.results : [];
+          pledgesArray = Array.isArray(response.data.results) ? response.data.results : [];
           paginationData = {
-            count: data.count || 0,
-            next: data.next,
-            previous: data.previous,
-            totalPages: Math.ceil((data.count || 0) / (mergedParams.limit || 25)),
+            count: response.data.count || 0,
+            next: response.data.next,
+            previous: response.data.previous,
+            totalPages: Math.ceil((response.data.count || 0) / (mergedParams.limit || 25)),
             currentPage: mergedParams.page || 1,
             itemsPerPage: mergedParams.limit || 25
           };
-        } else {
+        } else if (Array.isArray(response.data)) {
           // Non-paginated response
-          pledgesArray = Array.isArray(data) ? data : [];
+          pledgesArray = response.data;
           paginationData = {
             ...pagination,
             count: pledgesArray.length,
@@ -268,31 +187,37 @@ const usePledges = (initialFilters = {}, options = {}) => {
 
         setPledges(pledgesArray);
         setPagination(paginationData);
+        setLastFetch(new Date());
 
-        // Cache successful response
-        setCachedData(currentParamsStr, {
-          pledges: pledgesArray,
-          pagination: paginationData
-        });
+        if (!params.silent) {
+          handleSuccess(`Loaded ${pledgesArray.length} pledges`);
+        }
 
         return { success: true, data: pledgesArray };
       } else {
-        setError(response.error || 'Failed to fetch pledges');
-        setPledges([]);
-        return { success: false, error: response.error };
+        throw new Error(response.error || 'Failed to fetch pledges');
       }
-    } catch (err) {
-      if (err.name === 'AbortError') {
+    } catch (error) {
+      if (error.name === 'AbortError') {
         return { success: false, error: 'Request cancelled' };
       }
 
-      const errorMessage = err?.response?.data?.message || 
-                          err?.message || 
-                          'An unexpected error occurred while fetching pledges';
+      const errorMessage = handleError(error, 'fetch pledges');
 
       if (mountedRef.current) {
-        setError(errorMessage);
         setPledges([]);
+      }
+
+      // Retry logic for network errors
+      if (error?.code === 'NETWORK_ERROR' && retryCountRef.current < 3) {
+        retryCountRef.current++;
+        console.log(`[usePledges] Retrying fetch (attempt ${retryCountRef.current})...`);
+        
+        setTimeout(() => {
+          if (mountedRef.current) {
+            fetchPledges({ ...params, silent: true });
+          }
+        }, 1000 * retryCountRef.current); // Exponential backoff
       }
 
       return { success: false, error: errorMessage };
@@ -307,58 +232,38 @@ const usePledges = (initialFilters = {}, options = {}) => {
     debouncedSearchQuery, 
     filters, 
     pagination,
-    getCachedData,
-    setCachedData,
-    cancelRequests
+    handleError,
+    handleSuccess
   ]);
 
-  // Fetch statistics with caching
+  // Enhanced fetch statistics
   const fetchStatistics = useCallback(async (params = {}) => {
     if (!hasPermission('view_reports')) {
-      return { success: false, error: 'Insufficient permissions' };
+      return { success: false, error: 'Insufficient permissions to view statistics' };
     }
 
     try {
-      const statsKey = JSON.stringify({ type: 'statistics', ...params });
-      
-      // Check cache
-      if (!params.forceRefresh) {
-        const cached = getCachedData(statsKey);
-        if (cached && !cached.isStale) {
-          if (mountedRef.current) {
-            setStatistics(cached.statistics);
-          }
-          return { success: true, fromCache: true };
-        }
-      }
-
-      const signal = cancelRequests();
-      const response = await pledgesService.getStatistics({ ...params, signal });
+      setError(null);
+      const response = await pledgesService.getStatistics(params);
       
       if (response.success && mountedRef.current) {
         setStatistics(response.data || {});
-        
-        // Cache statistics
-        setCachedData(statsKey, { statistics: response.data });
-        
         return { success: true, data: response.data };
       } else {
-        return { success: false, error: response.error };
+        throw new Error(response.error || 'Failed to fetch statistics');
       }
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        return { success: false, error: 'Request cancelled' };
-      }
-      
-      console.error('Statistics fetch error:', err);
-      return { success: false, error: err.message };
+    } catch (error) {
+      const errorMessage = handleError(error, 'fetch statistics');
+      return { success: false, error: errorMessage };
     }
-  }, [hasPermission, getCachedData, setCachedData, cancelRequests]);
+  }, [hasPermission, handleError]);
 
-  // CRUD Operations with optimistic updates
+  // Enhanced CRUD operations with optimistic updates
   const createPledge = useCallback(async (pledgeData) => {
     if (!hasPermission('create')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to create pledges';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -369,33 +274,34 @@ const usePledges = (initialFilters = {}, options = {}) => {
       
       if (response.success) {
         // Optimistic update
-        if (mountedRef.current) {
+        if (mountedRef.current && config.optimisticUpdates) {
           setPledges(prev => [response.data, ...prev]);
           setPagination(prev => ({ ...prev, count: prev.count + 1 }));
         }
         
-        // Invalidate cache and refresh stats
-        invalidateCache();
-        fetchStatistics({ forceRefresh: true, silent: true });
+        // Refresh statistics
+        fetchStatistics({ silent: true });
         
+        handleSuccess('Pledge created successfully');
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to create pledge');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to create pledge';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'create pledge');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, invalidateCache, fetchStatistics]);
+  }, [hasPermission, config.optimisticUpdates, fetchStatistics, handleError, handleSuccess]);
 
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!hasPermission('update')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to update pledges';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -404,7 +310,7 @@ const usePledges = (initialFilters = {}, options = {}) => {
 
       // Optimistic update
       const originalPledge = pledges.find(p => p.id === pledgeId);
-      if (mountedRef.current) {
+      if (mountedRef.current && config.optimisticUpdates) {
         setPledges(prev => prev.map(pledge => 
           pledge.id === pledgeId ? { ...pledge, ...pledgeData } : pledge
         ));
@@ -420,14 +326,14 @@ const usePledges = (initialFilters = {}, options = {}) => {
           ));
         }
         
-        // Invalidate cache and refresh stats
-        invalidateCache(pledgeId);
-        fetchStatistics({ forceRefresh: true, silent: true });
+        // Refresh statistics
+        fetchStatistics({ silent: true });
         
+        handleSuccess('Pledge updated successfully');
         return response.data;
       } else {
-        // Revert optimistic update
-        if (mountedRef.current && originalPledge) {
+        // Revert optimistic update on failure
+        if (mountedRef.current && originalPledge && config.optimisticUpdates) {
           setPledges(prev => prev.map(pledge => 
             pledge.id === pledgeId ? originalPledge : pledge
           ));
@@ -435,20 +341,21 @@ const usePledges = (initialFilters = {}, options = {}) => {
         
         throw new Error(response.error || 'Failed to update pledge');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to update pledge';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'update pledge');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, pledges, invalidateCache, fetchStatistics]);
+  }, [hasPermission, pledges, config.optimisticUpdates, fetchStatistics, handleError, handleSuccess]);
 
   const deletePledge = useCallback(async (pledgeId) => {
     if (!hasPermission('delete')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to delete pledges';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -457,7 +364,7 @@ const usePledges = (initialFilters = {}, options = {}) => {
 
       // Optimistic update
       const originalPledges = pledges;
-      if (mountedRef.current) {
+      if (mountedRef.current && config.optimisticUpdates) {
         setPledges(prev => prev.filter(pledge => pledge.id !== pledgeId));
         setPagination(prev => ({ ...prev, count: Math.max(0, prev.count - 1) }));
       }
@@ -465,33 +372,36 @@ const usePledges = (initialFilters = {}, options = {}) => {
       const response = await pledgesService.deletePledge(pledgeId);
       
       if (response.success) {
-        // Invalidate cache and refresh stats
-        invalidateCache();
-        fetchStatistics({ forceRefresh: true, silent: true });
+        // Refresh statistics
+        fetchStatistics({ silent: true });
+        
+        handleSuccess('Pledge deleted successfully');
+        return true;
       } else {
-        // Revert optimistic update
-        if (mountedRef.current) {
+        // Revert optimistic update on failure
+        if (mountedRef.current && config.optimisticUpdates) {
           setPledges(originalPledges);
           setPagination(prev => ({ ...prev, count: prev.count + 1 }));
         }
         
         throw new Error(response.error || 'Failed to delete pledge');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to delete pledge';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'delete pledge');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, pledges, invalidateCache, fetchStatistics]);
+  }, [hasPermission, pledges, config.optimisticUpdates, fetchStatistics, handleError, handleSuccess]);
 
   // Bulk operations
   const bulkUpdatePledges = useCallback(async (pledgeIds, updates) => {
     if (!hasPermission('update')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to bulk update pledges';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -504,27 +414,29 @@ const usePledges = (initialFilters = {}, options = {}) => {
         // Refresh data after bulk update
         await Promise.all([
           fetchPledges({ forceRefresh: true, silent: true }),
-          fetchStatistics({ forceRefresh: true, silent: true })
+          fetchStatistics({ silent: true })
         ]);
         
+        handleSuccess(`Successfully updated ${pledgeIds.length} pledges`);
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to bulk update pledges');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to bulk update pledges';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'bulk update pledges');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchPledges, fetchStatistics]);
+  }, [hasPermission, fetchPledges, fetchStatistics, handleError, handleSuccess]);
 
   const bulkDeletePledges = useCallback(async (pledgeIds) => {
     if (!hasPermission('delete')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to bulk delete pledges';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -540,29 +452,30 @@ const usePledges = (initialFilters = {}, options = {}) => {
           setPagination(prev => ({ ...prev, count: Math.max(0, prev.count - pledgeIds.length) }));
         }
         
-        // Invalidate cache and refresh stats
-        invalidateCache();
-        fetchStatistics({ forceRefresh: true, silent: true });
+        // Refresh statistics
+        fetchStatistics({ silent: true });
         
+        handleSuccess(`Successfully deleted ${pledgeIds.length} pledges`);
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to bulk delete pledges');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to bulk delete pledges';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'bulk delete pledges');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, invalidateCache, fetchStatistics]);
+  }, [hasPermission, fetchStatistics, handleError, handleSuccess]);
 
   // Payment operations
   const addPayment = useCallback(async (pledgeId, paymentData) => {
     if (!hasPermission('create')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to add payments';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -579,7 +492,7 @@ const usePledges = (initialFilters = {}, options = {}) => {
               return {
                 ...pledge,
                 payments: [...(pledge.payments || []), response.data],
-                amount_received: (pledge.amount_received || 0) + paymentData.amount
+                total_received: (pledge.total_received || 0) + parseFloat(paymentData.amount)
               };
             }
             return pledge;
@@ -587,27 +500,29 @@ const usePledges = (initialFilters = {}, options = {}) => {
         }
         
         // Refresh statistics
-        fetchStatistics({ forceRefresh: true, silent: true });
+        fetchStatistics({ silent: true });
         
+        handleSuccess('Payment added successfully');
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to add payment');
       }
-    } catch (err) {
-      const errorMessage = err.message || 'Failed to add payment';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+    } catch (error) {
+      handleError(error, 'add payment');
+      throw error;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchStatistics]);
+  }, [hasPermission, fetchStatistics, handleError, handleSuccess]);
 
   // Export function
   const exportPledges = useCallback(async (exportParams = {}, format = 'csv') => {
     if (!hasPermission('export_data')) {
-      throw new Error('Insufficient permissions');
+      const error = 'Insufficient permissions to export data';
+      setError(error);
+      throw new Error(error);
     }
 
     try {
@@ -618,14 +533,16 @@ const usePledges = (initialFilters = {}, options = {}) => {
       }, format);
       
       if (response.success) {
+        handleSuccess('Export completed successfully');
         return true;
       } else {
         throw new Error(response.error || 'Failed to export pledges');
       }
-    } catch (err) {
-      throw new Error(err.message || 'Failed to export pledges');
+    } catch (error) {
+      handleError(error, 'export pledges');
+      throw error;
     }
-  }, [hasPermission, debouncedSearchQuery, filters]);
+  }, [hasPermission, debouncedSearchQuery, filters, handleError, handleSuccess]);
 
   // Filter management
   const updateFilters = useCallback((newFilters) => {
@@ -635,40 +552,87 @@ const usePledges = (initialFilters = {}, options = {}) => {
       setPagination(prev => ({ ...prev, currentPage: 1 }));
       return updatedFilters;
     });
-    invalidateCache();
-  }, [invalidateCache]);
+  }, []);
 
   const updateSearchQuery = useCallback((query) => {
     setSearchQuery(query);
     // Reset pagination when search changes
     setPagination(prev => ({ ...prev, currentPage: 1 }));
-    invalidateCache();
-  }, [invalidateCache]);
+  }, []);
 
   const updatePagination = useCallback((updates) => {
     setPagination(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Real-time update handler (placeholder for WebSocket integration)
+  const handleRealTimeUpdate = useCallback((type, data) => {
+    if (!mountedRef.current || !config.enableRealTime) return;
+
+    switch (type) {
+      case 'pledge_created':
+        setPledges(prev => [data, ...prev]);
+        setPagination(prev => ({ ...prev, count: prev.count + 1 }));
+        handleSuccess('New pledge added');
+        break;
+        
+      case 'pledge_updated':
+        setPledges(prev => prev.map(pledge => 
+          pledge.id === data.id ? { ...pledge, ...data } : pledge
+        ));
+        break;
+        
+      case 'pledge_deleted':
+        setPledges(prev => prev.filter(pledge => pledge.id !== data.id));
+        setPagination(prev => ({ 
+          ...prev, 
+          count: Math.max(0, prev.count - 1) 
+        }));
+        break;
+        
+      case 'payment_added':
+        setPledges(prev => prev.map(pledge => {
+          if (pledge.id === data.pledge_id) {
+            return {
+              ...pledge,
+              payments: [...(pledge.payments || []), data.payment],
+              total_received: (pledge.total_received || 0) + parseFloat(data.payment.amount)
+            };
+          }
+          return pledge;
+        }));
+        handleSuccess('Payment added');
+        break;
+
+      default:
+        console.log('[usePledges] Unknown real-time update type:', type);
+    }
+  }, [config.enableRealTime, handleSuccess]);
+
   // Auto-fetch effect
   useEffect(() => {
     if (!config.autoFetch || !isAuthenticated) return;
 
-    // Fetch pledges and statistics on mount or when dependencies change
-    Promise.all([
-      fetchPledges({ silent: true }),
-      fetchStatistics({ silent: true })
-    ]).catch(err => {
-      console.error('Auto-fetch failed:', err);
-    });
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          fetchPledges({ silent: true }),
+          fetchStatistics({ silent: true })
+        ]);
+      } catch (error) {
+        console.error('Auto-fetch failed:', error);
+      }
+    };
+
+    fetchData();
   }, [config.autoFetch, isAuthenticated, cacheKey, fetchPledges, fetchStatistics]);
 
   // Utility functions
   const getTotalPledgeAmount = useCallback(() => {
-    return pledges.reduce((total, pledge) => total + (pledge.amount || 0), 0);
+    return pledges.reduce((total, pledge) => total + (parseFloat(pledge.amount) || 0), 0);
   }, [pledges]);
 
   const getTotalReceivedAmount = useCallback(() => {
-    return pledges.reduce((total, pledge) => total + (pledge.amount_received || 0), 0);
+    return pledges.reduce((total, pledge) => total + (parseFloat(pledge.total_received) || 0), 0);
   }, [pledges]);
 
   const getPledgeCompletionRate = useCallback(() => {
@@ -680,20 +644,16 @@ const usePledges = (initialFilters = {}, options = {}) => {
   const getOverduePledges = useCallback(() => {
     const now = new Date();
     return pledges.filter(pledge => {
-      if (!pledge.due_date) return false;
-      const dueDate = new Date(pledge.due_date);
-      const amountDue = (pledge.amount || 0) - (pledge.amount_received || 0);
-      return dueDate < now && amountDue > 0;
+      if (!pledge.end_date || pledge.status !== 'active') return false;
+      const endDate = new Date(pledge.end_date);
+      const amountDue = (parseFloat(pledge.total_pledged) || 0) - (parseFloat(pledge.total_received) || 0);
+      return endDate < now && amountDue > 0;
     });
   }, [pledges]);
 
   // Clear functions
   const clearError = useCallback(() => {
     setError(null);
-  }, []);
-
-  const clearCache = useCallback(() => {
-    cacheRef.current = {};
   }, []);
 
   const resetState = useCallback(() => {
@@ -710,9 +670,23 @@ const usePledges = (initialFilters = {}, options = {}) => {
       });
       setError(null);
       setLoading(false);
+      setLastFetch(null);
     }
-    clearCache();
-  }, [clearCache]);
+    cacheRef.current = {};
+  }, []);
+
+  // Refresh function
+  const refresh = useCallback(async () => {
+    try {
+      setError(null);
+      await Promise.all([
+        fetchPledges({ forceRefresh: true }),
+        fetchStatistics({ forceRefresh: true })
+      ]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  }, [fetchPledges, fetchStatistics]);
 
   // Computed values
   const computedValues = useMemo(() => ({
@@ -724,8 +698,9 @@ const usePledges = (initialFilters = {}, options = {}) => {
     completedPledges: pledges.filter(p => p.status === 'completed').length,
     hasPledges: pledges.length > 0,
     hasNextPage: pagination.next !== null,
-    hasPrevPage: pagination.previous !== null
-  }), [pledges, pagination, getTotalPledgeAmount, getTotalReceivedAmount, getPledgeCompletionRate, getOverduePledges]);
+    hasPrevPage: pagination.previous !== null,
+    isStale: lastFetch && (Date.now() - lastFetch.getTime()) > config.staleTime
+  }), [pledges, pagination, getTotalPledgeAmount, getTotalReceivedAmount, getPledgeCompletionRate, getOverduePledges, lastFetch, config.staleTime]);
 
   return {
     // Data
@@ -741,7 +716,7 @@ const usePledges = (initialFilters = {}, options = {}) => {
     error,
     filters,
     searchQuery: debouncedSearchQuery,
-    isConnected: config.enableRealTime && isConnected,
+    lastFetch,
     
     // Core Actions
     fetchPledges,
@@ -771,18 +746,12 @@ const usePledges = (initialFilters = {}, options = {}) => {
     
     // Management
     clearError,
-    clearCache,
     resetState,
-    refresh: () => fetchPledges({ forceRefresh: true }),
+    refresh,
     
-    // Cache info
-    getCacheInfo: () => Object.keys(cacheRef.current).map(key => ({
-      key,
-      timestamp: cacheRef.current[key].timestamp,
-      age: Date.now() - cacheRef.current[key].timestamp
-    }))
+    // Real-time updates
+    handleRealTimeUpdate
   };
 };
 
 export default usePledges;
-export { usePledges }; 

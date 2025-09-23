@@ -1,184 +1,258 @@
-// services/pledges.js - Complete Implementation
-import { api } from './api';
+// services/pledges.js - ENHANCED VERSION with better error handling and success feedback
+import apiMethods from './api';
 
-const PLEDGES_ENDPOINTS = {
-  LIST: '/pledges/',
-  DETAIL: (id) => `/pledges/${id}/`,
-  CREATE: '/pledges/',
-  UPDATE: (id) => `/pledges/${id}/`,
-  DELETE: (id) => `/pledges/${id}/`,
-  STATS: '/pledges/stats/',
-  STATISTICS: '/pledges/statistics/', // Alternative endpoint
-  MEMBER_PLEDGES: (memberId) => `/members/${memberId}/pledges/`,
-  EXPORT: '/pledges/export/',
-  BULK_UPDATE: '/pledges/bulk-action/',
-  BULK_DELETE: '/pledges/bulk-delete/',
-  PAYMENTS: '/pledges/payments/',
-  PAYMENT_DETAIL: (id) => `/pledges/payments/${id}/`,
-  ADD_PAYMENT: (pledgeId) => `/pledges/${pledgeId}/add-payment/`,
-  PAYMENT_HISTORY: (pledgeId) => `/pledges/${pledgeId}/payment-history/`,
-  OVERDUE: '/pledges/overdue/',
-  UPCOMING: '/pledges/upcoming-payments/',
-  SUMMARY_REPORT: '/pledges/summary-report/',
+const ENDPOINTS = {
+  LIST: 'pledges/',
+  DETAIL: (id) => `pledges/${id}/`,
+  CREATE: 'pledges/',
+  UPDATE: (id) => `pledges/${id}/`,
+  DELETE: (id) => `pledges/${id}/`,
+  
+  // FIXED: Support both endpoint variations
+  STATS: 'pledges/stats/',
+  STATISTICS: 'pledges/statistics/',
+  
+  RECENT: 'pledges/recent/',
+  TRENDS: 'pledges/trends/',
+  EXPORT: 'pledges/export/',
+  
+  // Bulk operations
+  BULK_UPDATE: 'pledges/bulk-update/',
+  BULK_DELETE: 'pledges/bulk-delete/',
+  BULK_ACTION: 'pledges/bulk-action/',
+  
+  // Payment endpoints
+  ADD_PAYMENT: (id) => `pledges/${id}/add-payment/`,
+  PAYMENT_HISTORY: (id) => `pledges/${id}/payment-history/`,
+  PAYMENTS: 'pledges/payments/',
 };
 
 class PledgesService {
-  // GET: Fetch all pledges with filtering and pagination
-  async getPledges(params = {}) {
+  // Enhanced error handling wrapper
+  async handleApiCall(apiCall, operation = 'operation') {
     try {
-      console.log('PledgesService.getPledges called with params:', params);
+      console.log(`[PledgesService] Starting ${operation}...`);
+      const result = await apiCall();
+      console.log(`[PledgesService] ${operation} completed successfully`);
+      return {
+        success: true,
+        data: result.data || result,
+        message: `${operation} completed successfully`
+      };
+    } catch (error) {
+      console.error(`[PledgesService] ${operation} failed:`, error);
       
-      // Clean up params
+      const errorMessage = error?.response?.data?.error || 
+                          error?.response?.data?.detail || 
+                          error?.response?.data?.message ||
+                          error?.message ||
+                          `${operation} failed`;
+      
+      return {
+        success: false,
+        error: errorMessage,
+        details: error?.response?.data,
+        status: error?.response?.status
+      };
+    }
+  }
+
+  // GET: Fetch pledges with enhanced params handling
+  async getPledges(params = {}) {
+    return this.handleApiCall(async () => {
+      // Clean and validate params
       const cleanParams = {};
       Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '' && params[key] !== 'all') {
           cleanParams[key] = params[key];
         }
       });
 
-      const response = await api.get(PLEDGES_ENDPOINTS.LIST, { params: cleanParams });
-      console.log('PledgesService.getPledges response:', response.data);
-      
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      console.error('PledgesService.getPledges error:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch pledges',
-        details: error.response?.data
-      };
-    }
+      const response = await apiMethods.get(ENDPOINTS.LIST, { params: cleanParams });
+      return response;
+    }, 'fetch pledges');
   }
 
-  // GET: Fetch single pledge by ID
+  // GET: Single pledge
   async getPledge(id) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.DETAIL(id));
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch pledge',
-      };
+    if (!id) {
+      return { success: false, error: 'Pledge ID is required' };
     }
+
+    return this.handleApiCall(async () => {
+      return await apiMethods.get(ENDPOINTS.DETAIL(id));
+    }, `fetch pledge ${id}`);
   }
 
-  // POST: Create new pledge
+  // POST: Create pledge with validation
   async createPledge(pledgeData) {
-    try {
-      console.log('PledgesService.createPledge called with data:', pledgeData);
-      
-      // Validate required fields
-      if (!pledgeData.member_id) {
-        return {
-          success: false,
-          error: 'Member ID is required',
-          validationErrors: { member_id: ['This field is required'] }
-        };
-      }
-
-      if (!pledgeData.amount || pledgeData.amount <= 0) {
-        return {
-          success: false,
-          error: 'Valid pledge amount is required',
-          validationErrors: { amount: ['Amount must be greater than 0'] }
-        };
-      }
-
-      const response = await api.post(PLEDGES_ENDPOINTS.CREATE, pledgeData);
-      console.log('PledgesService.createPledge response:', response.data);
-      
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error('PledgesService.createPledge error:', error);
+    // Client-side validation
+    const validation = this.validatePledgeData(pledgeData);
+    if (!validation.isValid) {
       return {
         success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to create pledge',
-        validationErrors: error.response?.data?.errors || error.response?.data,
+        error: 'Validation failed',
+        validationErrors: validation.errors,
+        warnings: validation.warnings
       };
     }
+
+    return this.handleApiCall(async () => {
+      // Ensure required fields are properly formatted
+      const formattedData = {
+        ...pledgeData,
+        amount: parseFloat(pledgeData.amount),
+        member_id: parseInt(pledgeData.member_id),
+        start_date: pledgeData.start_date,
+        end_date: pledgeData.frequency === 'one-time' ? null : pledgeData.end_date,
+      };
+
+      const response = await apiMethods.post(ENDPOINTS.CREATE, formattedData);
+      return response;
+    }, 'create pledge');
   }
 
-  // PUT/PATCH: Update existing pledge
+  // PUT: Update pledge
   async updatePledge(id, pledgeData) {
-    try {
-      console.log('PledgesService.updatePledge called:', id, pledgeData);
-      const response = await api.put(PLEDGES_ENDPOINTS.UPDATE(id), pledgeData);
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error('PledgesService.updatePledge error:', error);
+    if (!id) {
+      return { success: false, error: 'Pledge ID is required' };
+    }
+
+    const validation = this.validatePledgeData(pledgeData, false); // Allow partial updates
+    if (!validation.isValid) {
       return {
         success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to update pledge',
-        validationErrors: error.response?.data?.errors || error.response?.data,
+        error: 'Validation failed',
+        validationErrors: validation.errors,
+        warnings: validation.warnings
       };
     }
+
+    return this.handleApiCall(async () => {
+      const formattedData = {
+        ...pledgeData,
+        amount: pledgeData.amount ? parseFloat(pledgeData.amount) : undefined,
+        member_id: pledgeData.member_id ? parseInt(pledgeData.member_id) : undefined,
+      };
+
+      // Remove undefined values for PATCH-like behavior
+      Object.keys(formattedData).forEach(key => {
+        if (formattedData[key] === undefined) {
+          delete formattedData[key];
+        }
+      });
+
+      return await apiMethods.put(ENDPOINTS.UPDATE(id), formattedData);
+    }, `update pledge ${id}`);
   }
 
   // DELETE: Delete pledge
   async deletePledge(id) {
-    try {
-      await api.delete(PLEDGES_ENDPOINTS.DELETE(id));
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to delete pledge',
-      };
+    if (!id) {
+      return { success: false, error: 'Pledge ID is required' };
     }
+
+    return this.handleApiCall(async () => {
+      await apiMethods.delete(ENDPOINTS.DELETE(id));
+      return { message: 'Pledge deleted successfully' };
+    }, `delete pledge ${id}`);
   }
 
-  // GET: Fetch pledge statistics
+  // GET: Statistics with fallback
   async getStatistics(params = {}) {
-    try {
-      console.log('PledgesService.getStatistics called with params:', params);
-      
-      // Try primary endpoint first, fall back to alternative
-      let response;
+    return this.handleApiCall(async () => {
+      // Try primary endpoint first, fallback to alternative
       try {
-        response = await api.get(PLEDGES_ENDPOINTS.STATS, { params });
-      } catch (primaryError) {
-        console.log('Primary stats endpoint failed, trying alternative...');
-        response = await api.get(PLEDGES_ENDPOINTS.STATISTICS, { params });
+        return await apiMethods.get(ENDPOINTS.STATS, { params });
+      } catch (error) {
+        console.log('[PledgesService] Primary stats endpoint failed, trying alternative...');
+        return await apiMethods.get(ENDPOINTS.STATISTICS, { params });
       }
-      
-      console.log('PledgesService.getStatistics response:', response.data);
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error('PledgesService.getStatistics error:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch pledge statistics',
-      };
+    }, 'fetch pledge statistics');
+  }
+
+  // GET: Recent pledges
+  async getRecentPledges(limit = 10) {
+    return this.handleApiCall(async () => {
+      return await apiMethods.get(ENDPOINTS.RECENT, { params: { limit } });
+    }, 'fetch recent pledges');
+  }
+
+  // GET: Pledge trends
+  async getPledgeTrends(range = '12m') {
+    return this.handleApiCall(async () => {
+      return await apiMethods.get(ENDPOINTS.TRENDS, { params: { range } });
+    }, 'fetch pledge trends');
+  }
+
+  // POST: Bulk update pledges
+  async bulkUpdatePledges(pledgeIds, updates) {
+    if (!Array.isArray(pledgeIds) || pledgeIds.length === 0) {
+      return { success: false, error: 'No pledges selected for bulk update' };
     }
+
+    return this.handleApiCall(async () => {
+      return await apiMethods.post(ENDPOINTS.BULK_ACTION, {
+        action: 'bulk_update',
+        pledge_ids: pledgeIds,
+        updates: updates
+      });
+    }, `bulk update ${pledgeIds.length} pledges`);
   }
 
-  // Alias for backward compatibility
-  async getPledgeStats(params = {}) {
-    return this.getStatistics(params);
-  }
-
-  // GET: Fetch pledges for a specific member
-  async getMemberPledges(memberId, params = {}) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.MEMBER_PLEDGES(memberId), { params });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch member pledges',
-      };
+  // POST: Bulk delete pledges
+  async bulkDeletePledges(pledgeIds) {
+    if (!Array.isArray(pledgeIds) || pledgeIds.length === 0) {
+      return { success: false, error: 'No pledges selected for bulk delete' };
     }
+
+    return this.handleApiCall(async () => {
+      return await apiMethods.post(ENDPOINTS.BULK_ACTION, {
+        action: 'delete',
+        pledge_ids: pledgeIds
+      });
+    }, `bulk delete ${pledgeIds.length} pledges`);
   }
 
-  // GET: Export pledges data
+  // POST: Add payment to pledge
+  async addPayment(pledgeId, paymentData) {
+    if (!pledgeId) {
+      return { success: false, error: 'Pledge ID is required' };
+    }
+
+    // Validate payment data
+    if (!paymentData.amount || paymentData.amount <= 0) {
+      return { success: false, error: 'Valid payment amount is required' };
+    }
+
+    return this.handleApiCall(async () => {
+      const formattedData = {
+        ...paymentData,
+        amount: parseFloat(paymentData.amount),
+        payment_date: paymentData.payment_date || new Date().toISOString().split('T')[0],
+        payment_method: paymentData.payment_method || 'cash'
+      };
+
+      return await apiMethods.post(ENDPOINTS.ADD_PAYMENT(pledgeId), formattedData);
+    }, `add payment to pledge ${pledgeId}`);
+  }
+
+  // GET: Payment history
+  async getPaymentHistory(pledgeId) {
+    if (!pledgeId) {
+      return { success: false, error: 'Pledge ID is required' };
+    }
+
+    return this.handleApiCall(async () => {
+      return await apiMethods.get(ENDPOINTS.PAYMENT_HISTORY(pledgeId));
+    }, `fetch payment history for pledge ${pledgeId}`);
+  }
+
+  // GET: Export pledges
   async exportPledges(params = {}, format = 'csv') {
-    try {
+    return this.handleApiCall(async () => {
       const exportParams = { ...params, format };
-      const response = await api.get(PLEDGES_ENDPOINTS.EXPORT, { 
+      const response = await apiMethods.get(ENDPOINTS.EXPORT, { 
         params: exportParams,
         responseType: 'blob' 
       });
@@ -196,266 +270,42 @@ class PledgesService {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to export pledges',
-      };
-    }
+      return { message: 'Export completed successfully' };
+    }, 'export pledges');
   }
 
-  // POST: Bulk update pledges
-  async bulkUpdatePledges(pledgeIds, updates) {
-    try {
-      const response = await api.post(PLEDGES_ENDPOINTS.BULK_UPDATE, {
-        pledge_ids: pledgeIds,
-        updates: updates,
-        action: 'update'
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to bulk update pledges',
-      };
-    }
-  }
-
-  // POST: Bulk delete pledges
-  async bulkDeletePledges(pledgeIds) {
-    try {
-      const response = await api.post(PLEDGES_ENDPOINTS.BULK_DELETE, {
-        pledge_ids: pledgeIds
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to bulk delete pledges',
-      };
-    }
-  }
-
-  // Payment Management Methods
-
-  // GET: Fetch all payments
-  async getPayments(params = {}) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.PAYMENTS, { params });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch payments',
-      };
-    }
-  }
-
-  // POST: Add payment to a pledge
-  async addPayment(pledgeId, paymentData) {
-    try {
-      console.log('PledgesService.addPayment called:', pledgeId, paymentData);
-      const response = await api.post(PLEDGES_ENDPOINTS.ADD_PAYMENT(pledgeId), paymentData);
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error('PledgesService.addPayment error:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to add payment',
-        validationErrors: error.response?.data?.errors || error.response?.data,
-      };
-    }
-  }
-
-  // GET: Fetch payment history for a pledge
-  async getPaymentHistory(pledgeId) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.PAYMENT_HISTORY(pledgeId));
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch payment history',
-      };
-    }
-  }
-
-  // PUT: Update a payment
-  async updatePayment(paymentId, paymentData) {
-    try {
-      const response = await api.put(PLEDGES_ENDPOINTS.PAYMENT_DETAIL(paymentId), paymentData);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to update payment',
-        validationErrors: error.response?.data?.errors || error.response?.data,
-      };
-    }
-  }
-
-  // DELETE: Delete a payment
-  async deletePayment(paymentId) {
-    try {
-      await api.delete(PLEDGES_ENDPOINTS.PAYMENT_DETAIL(paymentId));
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to delete payment',
-      };
-    }
-  }
-
-  // Special Reports and Queries
-
-  // GET: Fetch overdue pledges
-  async getOverduePledges(params = {}) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.OVERDUE, { params });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch overdue pledges',
-      };
-    }
-  }
-
-  // GET: Fetch upcoming payments
-  async getUpcomingPayments(params = {}) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.UPCOMING, { params });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to fetch upcoming payments',
-      };
-    }
-  }
-
-  // GET: Generate summary report
-  async getSummaryReport(params = {}) {
-    try {
-      const response = await api.get(PLEDGES_ENDPOINTS.SUMMARY_REPORT, { params });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.response?.data?.detail || 'Failed to generate summary report',
-      };
-    }
-  }
-
-  // Utility Functions
-
-  // Calculate total pledge amount from pledge array
-  calculateTotalPledgeAmount(pledges) {
-    if (!Array.isArray(pledges)) return 0;
-    
-    return pledges.reduce((total, pledge) => {
-      if (pledge?.status === 'active' || pledge?.status === 'completed') {
-        return total + parseFloat(pledge?.total_pledged || pledge?.amount || 0);
-      }
-      return total;
-    }, 0);
-  }
-
-  // Calculate total received amount from pledge array
-  calculateTotalReceivedAmount(pledges) {
-    if (!Array.isArray(pledges)) return 0;
-    
-    return pledges.reduce((total, pledge) => {
-      return total + parseFloat(pledge?.total_received || 0);
-    }, 0);
-  }
-
-  // Get pledge frequency display text
-  getFrequencyDisplayText(frequency) {
-    const frequencyMap = {
-      'one-time': 'One-time',
-      'weekly': 'Weekly',
-      'monthly': 'Monthly',
-      'quarterly': 'Quarterly',
-      'annually': 'Annually',
-    };
-    return frequencyMap[frequency?.toLowerCase()] || frequency || 'Unknown';
-  }
-
-  // Get pledge status display text
-  getStatusDisplayText(status) {
-    const statusMap = {
-      'active': 'Active',
-      'completed': 'Completed',
-      'cancelled': 'Cancelled',
-      'overdue': 'Overdue',
-    };
-    return statusMap[status?.toLowerCase()] || status || 'Unknown';
-  }
-
-  // Format pledge amount
-  formatPledgeAmount(amount) {
-    const num = parseFloat(amount || 0);
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-  }
-
-  // Format date string
-  formatDate(dateString) {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return dateString;
-      
-      return new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      }).format(date);
-    } catch (error) {
-      return dateString;
-    }
-  }
-
-  // Calculate pledge completion percentage
-  calculateCompletionPercentage(totalPledged, totalReceived) {
-    const pledged = parseFloat(totalPledged || 0);
-    const received = parseFloat(totalReceived || 0);
-    
-    if (pledged === 0) return 0;
-    return Math.min((received / pledged) * 100, 100);
-  }
-
-  // Validate pledge data before submission
-  validatePledgeData(pledgeData) {
+  // Enhanced validation
+  validatePledgeData(pledgeData, requireAll = true) {
     const errors = {};
     const warnings = [];
 
-    // Required field validation
-    if (!pledgeData.member_id) {
-      errors.member_id = 'Member is required';
+    if (requireAll || pledgeData.member_id !== undefined) {
+      if (!pledgeData.member_id) {
+        errors.member_id = 'Member is required';
+      }
     }
 
-    if (!pledgeData.amount || pledgeData.amount <= 0) {
-      errors.amount = 'Amount must be greater than 0';
+    if (requireAll || pledgeData.amount !== undefined) {
+      if (!pledgeData.amount || pledgeData.amount <= 0) {
+        errors.amount = 'Amount must be greater than 0';
+      } else if (pledgeData.amount > 100000) {
+        warnings.push('This is a very large pledge amount - please verify');
+      }
     }
 
-    if (!pledgeData.frequency) {
-      errors.frequency = 'Frequency is required';
+    if (requireAll || pledgeData.frequency !== undefined) {
+      if (!pledgeData.frequency) {
+        errors.frequency = 'Frequency is required';
+      }
     }
 
-    if (!pledgeData.start_date) {
-      errors.start_date = 'Start date is required';
+    if (requireAll || pledgeData.start_date !== undefined) {
+      if (!pledgeData.start_date) {
+        errors.start_date = 'Start date is required';
+      }
     }
 
-    // Logical validation
+    // Date validation
     if (pledgeData.start_date && pledgeData.end_date) {
       const startDate = new Date(pledgeData.start_date);
       const endDate = new Date(pledgeData.end_date);
@@ -464,17 +314,17 @@ class PledgesService {
         errors.end_date = 'End date must be after start date';
       }
 
-      // Warn for very long pledge periods
+      // Check for unreasonably long periods
       const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
                         (endDate.getMonth() - startDate.getMonth());
       if (monthsDiff > 60) { // 5 years
-        warnings.push('This pledge period is longer than 5 years');
+        warnings.push('Pledge duration exceeds 5 years - please verify');
       }
     }
 
-    // Warn for very large amounts
-    if (pledgeData.amount > 10000) {
-      warnings.push('This is a large pledge amount - please verify');
+    // End date requirement for non-one-time pledges
+    if (pledgeData.frequency && pledgeData.frequency !== 'one-time' && !pledgeData.end_date && requireAll) {
+      errors.end_date = 'End date is required for recurring pledges';
     }
 
     return {
@@ -484,34 +334,52 @@ class PledgesService {
     };
   }
 
-  // Generate pledge reminder message
-  generateReminderMessage(pledge) {
-    const memberName = pledge?.member?.name || pledge?.member_name || 'Member';
-    const amount = this.formatPledgeAmount(pledge?.amount);
-    const frequency = this.getFrequencyDisplayText(pledge?.frequency);
-    
-    return `Dear ${memberName}, this is a friendly reminder about your ${frequency.toLowerCase()} pledge of ${amount}. Thank you for your continued support!`;
+  // Utility: Calculate total pledge amount
+  calculateTotalPledged(pledge) {
+    if (!pledge) return 0;
+
+    if (pledge.frequency === 'one-time' || !pledge.start_date || !pledge.end_date) {
+      return parseFloat(pledge.amount || 0);
+    }
+
+    const startDate = new Date(pledge.start_date);
+    const endDate = new Date(pledge.end_date);
+    const monthsDiff = ((endDate.getFullYear() - startDate.getFullYear()) * 12) + 
+                       (endDate.getMonth() - startDate.getMonth());
+    const amount = parseFloat(pledge.amount || 0);
+
+    switch (pledge.frequency?.toLowerCase()) {
+      case 'weekly':
+        return amount * Math.ceil(monthsDiff * 4.33);
+      case 'monthly':
+        return amount * Math.max(1, monthsDiff);
+      case 'quarterly':
+        return amount * Math.max(1, Math.ceil(monthsDiff / 3));
+      case 'annually':
+        return amount * Math.max(1, Math.ceil(monthsDiff / 12));
+      default:
+        return amount;
+    }
   }
 
-  // Calculate next payment date
-  calculateNextPaymentDate(pledge) {
-    if (!pledge?.start_date || pledge?.frequency === 'one-time') return null;
+  // Utility: Format currency
+  formatCurrency(amount) {
+    const num = parseFloat(amount || 0);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  }
+
+  // Utility: Calculate completion percentage
+  calculateCompletionPercentage(totalPledged, totalReceived) {
+    const pledged = parseFloat(totalPledged || 0);
+    const received = parseFloat(totalReceived || 0);
     
-    const lastPayment = pledge?.last_payment_date || pledge?.start_date;
-    const lastPaymentDate = new Date(lastPayment);
-    
-    switch (pledge?.frequency?.toLowerCase()) {
-      case 'weekly':
-        return new Date(lastPaymentDate.setDate(lastPaymentDate.getDate() + 7));
-      case 'monthly':
-        return new Date(lastPaymentDate.setMonth(lastPaymentDate.getMonth() + 1));
-      case 'quarterly':
-        return new Date(lastPaymentDate.setMonth(lastPaymentDate.getMonth() + 3));
-      case 'annually':
-        return new Date(lastPaymentDate.setFullYear(lastPaymentDate.getFullYear() + 1));
-      default:
-        return null;
-    }
+    if (pledged === 0) return 0;
+    return Math.min((received / pledged) * 100, 100);
   }
 }
 

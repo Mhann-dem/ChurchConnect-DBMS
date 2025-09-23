@@ -1,4 +1,4 @@
-# pledges/views.py - COMPLETE FIX with missing recent endpoint and trends
+# pledges/views.py - ENHANCED VERSION with missing endpoints and better error handling
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -94,7 +94,99 @@ class PledgeViewSet(viewsets.ModelViewSet):
             
         return queryset
 
-    # FIXED: Added missing recent endpoint
+    def create(self, request, *args, **kwargs):
+        """Enhanced create with better response formatting"""
+        try:
+            logger.info(f"[PledgeViewSet] Create request from: {request.user.email}")
+            logger.debug(f"[PledgeViewSet] Create data: {request.data}")
+            
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                pledge = serializer.save()
+                
+                # Return detailed response
+                response_serializer = PledgeDetailSerializer(pledge)
+                logger.info(f"[PledgeViewSet] Pledge created successfully: ID {pledge.id}")
+                
+                return Response({
+                    'success': True,
+                    'message': 'Pledge created successfully',
+                    'data': response_serializer.data
+                }, status=status.HTTP_201_CREATED)
+            else:
+                logger.warning(f"[PledgeViewSet] Create validation failed: {serializer.errors}")
+                return Response({
+                    'success': False,
+                    'error': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            logger.error(f"[PledgeViewSet] Create error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Failed to create pledge: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        """Enhanced update with better response formatting"""
+        try:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            
+            logger.info(f"[PledgeViewSet] Update request for pledge {instance.id} from: {request.user.email}")
+            
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            if serializer.is_valid():
+                pledge = serializer.save()
+                
+                response_serializer = PledgeDetailSerializer(pledge)
+                logger.info(f"[PledgeViewSet] Pledge updated successfully: ID {pledge.id}")
+                
+                return Response({
+                    'success': True,
+                    'message': 'Pledge updated successfully',
+                    'data': response_serializer.data
+                })
+            else:
+                logger.warning(f"[PledgeViewSet] Update validation failed: {serializer.errors}")
+                return Response({
+                    'success': False,
+                    'error': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            logger.error(f"[PledgeViewSet] Update error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Failed to update pledge: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def destroy(self, request, *args, **kwargs):
+        """Enhanced delete with better response formatting"""
+        try:
+            instance = self.get_object()
+            pledge_id = instance.id
+            
+            logger.info(f"[PledgeViewSet] Delete request for pledge {pledge_id} from: {request.user.email}")
+            
+            instance.delete()
+            
+            logger.info(f"[PledgeViewSet] Pledge deleted successfully: ID {pledge_id}")
+            
+            return Response({
+                'success': True,
+                'message': 'Pledge deleted successfully'
+            }, status=status.HTTP_204_NO_CONTENT)
+            
+        except Exception as e:
+            logger.error(f"[PledgeViewSet] Delete error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Failed to delete pledge: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=False, methods=['get'])
     def recent(self, request):
         """Get recently created pledges"""
@@ -108,18 +200,18 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Returning {len(serializer.data)} recent pledges")
             
             return Response({
+                'success': True,
                 'results': serializer.data,
                 'count': len(serializer.data)
             })
             
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error getting recent pledges: {str(e)}", exc_info=True)
-            return Response(
-                {'error': 'Failed to get recent pledges'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': 'Failed to get recent pledges'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # FIXED: Added missing trends endpoint
     @action(detail=False, methods=['get'])
     def trends(self, request):
         """Get pledge trends over time"""
@@ -161,10 +253,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
                     'month': current_date.strftime('%Y-%m'),
                     'month_name': current_date.strftime('%B %Y'),
                     'pledges_count': month_pledges.count(),
-                    'pledges_amount': month_pledges.aggregate(total=Sum('amount'))['total'] or 0,
+                    'pledges_amount': float(month_pledges.aggregate(total=Sum('amount'))['total'] or 0),
                     'payments_count': month_payments.count(),
-                    'payments_amount': month_payments.aggregate(total=Sum('amount'))['total'] or 0,
-                    'avg_pledge_amount': month_pledges.aggregate(avg=Avg('amount'))['avg'] or 0
+                    'payments_amount': float(month_payments.aggregate(total=Sum('amount'))['total'] or 0),
+                    'avg_pledge_amount': float(month_pledges.aggregate(avg=Avg('amount'))['avg'] or 0)
                 })
                 
                 # Move to next month
@@ -176,6 +268,7 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Returning trends data with {len(trends_data)} months")
             
             return Response({
+                'success': True,
                 'results': trends_data,
                 'range': range_param,
                 'start_date': start_date,
@@ -184,10 +277,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
             
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error getting trends: {str(e)}", exc_info=True)
-            return Response(
-                {'error': 'Failed to get pledge trends'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': 'Failed to get pledge trends'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def statistics(self, request):
@@ -199,6 +292,11 @@ class PledgeViewSet(viewsets.ModelViewSet):
             
             # Basic counts
             total_pledges = queryset.count()
+            active_pledges = queryset.filter(status='active').count()
+            completed_pledges = queryset.filter(status='completed').count()
+            cancelled_pledges = queryset.filter(status='cancelled').count()
+            
+            # Status breakdown
             status_counts = queryset.values('status').annotate(count=Count('id'))
             status_breakdown = {item['status']: item['count'] for item in status_counts}
             
@@ -209,23 +307,32 @@ class PledgeViewSet(viewsets.ModelViewSet):
                 average_amount=Avg('amount')
             )
             
-            # Calculate outstanding amount
-            outstanding_amount = (amount_stats['total_pledged'] or 0) - (amount_stats['total_received'] or 0)
+            # Convert Decimal to float for JSON serialization
+            total_pledged = float(amount_stats['total_pledged'] or 0)
+            total_received = float(amount_stats['total_received'] or 0)
+            average_pledge = float(amount_stats['average_amount'] or 0)
             
-            # Average completion rate
-            pledges_with_payments = queryset.exclude(total_pledged=0)
-            if pledges_with_payments.exists():
-                avg_completion = pledges_with_payments.aggregate(
-                    avg_completion=Avg(
-                        F('total_received') * 100.0 / F('total_pledged')
-                    )
-                )['avg_completion'] or 0
-            else:
-                avg_completion = 0
+            # Calculate outstanding amount
+            outstanding_amount = total_pledged - total_received
+            
+            # Fulfillment rate calculation
+            fulfillment_rate = 0
+            if total_pledged > 0:
+                fulfillment_rate = (total_received / total_pledged) * 100
             
             # Frequency breakdown
-            frequency_counts = queryset.values('frequency').annotate(count=Count('id'))
-            frequency_breakdown = {item['frequency']: item['count'] for item in frequency_counts}
+            frequency_counts = queryset.values('frequency').annotate(
+                count=Count('id'),
+                total_amount=Sum('amount'),
+                avg_amount=Avg('amount')
+            )
+            frequency_breakdown = {}
+            for item in frequency_counts:
+                frequency_breakdown[item['frequency']] = {
+                    'count': item['count'],
+                    'amount': float(item['total_amount'] or 0),
+                    'avg_amount': float(item['avg_amount'] or 0)
+                }
             
             # Recent activity (last 30 days)
             thirty_days_ago = timezone.now().date() - timedelta(days=30)
@@ -235,20 +342,117 @@ class PledgeViewSet(viewsets.ModelViewSet):
                 pledge__in=queryset
             )
             
+            # This month's activity
+            first_of_month = timezone.now().date().replace(day=1)
+            this_month_received = float(
+                recent_payments.filter(
+                    payment_date__gte=first_of_month
+                ).aggregate(total=Sum('amount'))['total'] or 0
+            )
+            
+            # Calculate target (average of last 3 months)
+            three_months_ago = timezone.now().date() - timedelta(days=90)
+            avg_monthly = float(
+                PledgePayment.objects.filter(
+                    payment_date__gte=three_months_ago,
+                    pledge__in=queryset
+                ).aggregate(total=Sum('amount'))['total'] or 0
+            ) / 3
+            
+            # Overdue pledges
+            today = timezone.now().date()
+            overdue_amount = float(
+                queryset.filter(
+                    status='active',
+                    end_date__lt=today
+                ).aggregate(total=Sum('amount'))['total'] or 0
+            )
+            
+            # Top pledgers (members with highest total pledged)
+            from members.models import Member
+            top_pledgers_data = Member.objects.filter(
+                pledges__in=queryset
+            ).annotate(
+                total_pledged=Sum('pledges__total_pledged'),
+                total_received=Sum('pledges__total_received'),
+                pledge_count=Count('pledges')
+            ).order_by('-total_pledged')[:10]
+            
+            top_pledgers = []
+            for member in top_pledgers_data:
+                fulfillment = 0
+                if member.total_pledged and member.total_pledged > 0:
+                    fulfillment = (float(member.total_received or 0) / float(member.total_pledged)) * 100
+                
+                top_pledgers.append({
+                    'id': member.id,
+                    'name': f"{member.first_name} {member.last_name}",
+                    'email': member.email,
+                    'total_pledged': float(member.total_pledged or 0),
+                    'total_received': float(member.total_received or 0),
+                    'fulfillment_rate': fulfillment,
+                    'pledge_count': member.pledge_count
+                })
+            
+            # Monthly trends for the last 12 months
+            monthly_trends = []
+            for i in range(12):
+                month_start = (timezone.now().date().replace(day=1) - timedelta(days=i*30)).replace(day=1)
+                if month_start.month == 12:
+                    month_end = month_start.replace(year=month_start.year + 1, month=1) - timedelta(days=1)
+                else:
+                    month_end = month_start.replace(month=month_start.month + 1) - timedelta(days=1)
+                
+                month_pledges = queryset.filter(created_at__date__range=[month_start, month_end])
+                month_payments = PledgePayment.objects.filter(
+                    payment_date__range=[month_start, month_end],
+                    pledge__in=queryset
+                )
+                
+                monthly_trends.insert(0, {
+                    'month': month_start.strftime('%Y-%m'),
+                    'month_name': month_start.strftime('%B %Y'),
+                    'amount': float(month_pledges.aggregate(total=Sum('amount'))['total'] or 0),
+                    'count': month_pledges.count(),
+                    'payments_amount': float(month_payments.aggregate(total=Sum('amount'))['total'] or 0),
+                    'payments_count': month_payments.count()
+                })
+            
             stats_data = {
+                # Basic summary stats
+                'total_pledged': total_pledged,
+                'total_received': total_received,
+                'active_pledges': active_pledges,
+                'completed_pledges': completed_pledges,
+                'cancelled_pledges': cancelled_pledges,
+                'average_pledge': average_pledge,
+                'fulfillment_rate': fulfillment_rate,
+                'projected_annual': total_received * 12 if total_received > 0 else 0,
+                'overdue_amount': overdue_amount,
+                'upcoming_pledges': active_pledges,  # Simplified - could be more specific
+                'this_month_received': this_month_received,
+                'this_month_target': avg_monthly,
+                'payments_count': recent_payments.count(),
+                
+                # Breakdown data
+                'pledges_by_frequency': frequency_breakdown,
+                'monthly_trends': monthly_trends,
+                'top_pledgers': top_pledgers,
+                
+                # Legacy compatibility
                 'summary': {
                     'total_pledges': total_pledges,
-                    'active_pledges': status_breakdown.get('active', 0),
-                    'completed_pledges': status_breakdown.get('completed', 0),
-                    'cancelled_pledges': status_breakdown.get('cancelled', 0),
-                    'total_pledged_amount': amount_stats['total_pledged'] or 0,
-                    'total_received_amount': amount_stats['total_received'] or 0,
+                    'active_pledges': active_pledges,
+                    'completed_pledges': completed_pledges,
+                    'cancelled_pledges': cancelled_pledges,
+                    'total_pledged_amount': total_pledged,
+                    'total_received_amount': total_received,
                     'outstanding_amount': outstanding_amount,
-                    'average_pledge_amount': amount_stats['average_amount'] or 0,
-                    'average_completion_rate': round(avg_completion, 2),
+                    'average_pledge_amount': average_pledge,
+                    'average_completion_rate': fulfillment_rate,
                     'recent_pledges_count': recent_pledges.count(),
                     'recent_payments_count': recent_payments.count(),
-                    'recent_payments_amount': recent_payments.aggregate(total=Sum('amount'))['total'] or 0
+                    'recent_payments_amount': float(recent_payments.aggregate(total=Sum('amount'))['total'] or 0)
                 },
                 'breakdown': {
                     'status': status_breakdown,
@@ -258,14 +462,81 @@ class PledgeViewSet(viewsets.ModelViewSet):
             
             logger.info(f"[PledgeViewSet] Statistics returned successfully")
             
-            return Response(stats_data)
+            return Response({
+                'success': True,
+                **stats_data
+            })
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error calculating statistics: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to calculate statistics: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to calculate statistics: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # NEW: Bulk update endpoint
+    @action(detail=False, methods=['post'])
+    def bulk_update(self, request):
+        """Bulk update multiple pledges"""
+        try:
+            pledge_ids = request.data.get('pledge_ids', [])
+            updates = request.data.get('updates', {})
+            
+            if not pledge_ids:
+                return Response({
+                    'success': False,
+                    'error': 'No pledge IDs provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            pledges = Pledge.objects.filter(id__in=pledge_ids)
+            updated_count = pledges.update(**updates)
+            
+            logger.info(f"[PledgeViewSet] Bulk updated {updated_count} pledges")
+            
+            return Response({
+                'success': True,
+                'message': f'Successfully updated {updated_count} pledges',
+                'updated_count': updated_count
+            })
+            
+        except Exception as e:
+            logger.error(f"[PledgeViewSet] Bulk update error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Bulk update failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # NEW: Bulk delete endpoint
+    @action(detail=False, methods=['post'])
+    def bulk_delete(self, request):
+        """Bulk delete multiple pledges"""
+        try:
+            pledge_ids = request.data.get('pledge_ids', [])
+            
+            if not pledge_ids:
+                return Response({
+                    'success': False,
+                    'error': 'No pledge IDs provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            pledges = Pledge.objects.filter(id__in=pledge_ids)
+            deleted_count = pledges.count()
+            pledges.delete()
+            
+            logger.info(f"[PledgeViewSet] Bulk deleted {deleted_count} pledges")
+            
+            return Response({
+                'success': True,
+                'message': f'Successfully deleted {deleted_count} pledges',
+                'deleted_count': deleted_count
+            })
+            
+        except Exception as e:
+            logger.error(f"[PledgeViewSet] Bulk delete error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Bulk delete failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
@@ -319,10 +590,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error exporting pledges: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to export pledges: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to export pledges: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def summary_report(self, request):
@@ -333,14 +604,14 @@ class PledgeViewSet(viewsets.ModelViewSet):
             from members.models import Member
             
             members_with_pledges = Member.objects.filter(
-                pledge__isnull=False
+                pledges__isnull=False
             ).distinct().prefetch_related('pledge_set__payments')
             
             summary_data = []
             for member in members_with_pledges:
                 member_pledges = member.pledge_set.all()
-                total_pledged = sum(p.total_pledged for p in member_pledges)
-                total_received = sum(p.total_received for p in member_pledges)
+                total_pledged = sum(float(p.total_pledged) for p in member_pledges)
+                total_received = sum(float(p.total_received) for p in member_pledges)
                 completion_pct = (total_received / total_pledged * 100) if total_pledged > 0 else 0
                 
                 # Get last payment date
@@ -351,6 +622,7 @@ class PledgeViewSet(viewsets.ModelViewSet):
                         last_payment = pledge_last_payment.payment_date
                 
                 summary_data.append({
+                    'member_id': member.id,
                     'member_name': f"{member.first_name} {member.last_name}",
                     'member_email': member.email,
                     'total_pledged': total_pledged,
@@ -363,16 +635,17 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Summary report generated for {len(summary_data)} members")
             
             return Response({
+                'success': True,
                 'results': summary_data,
                 'count': len(summary_data)
             })
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error generating summary report: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to generate summary report: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to generate summary report: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def overdue(self, request):
@@ -391,16 +664,17 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Found {overdue_pledges.count()} overdue pledges")
             
             return Response({
+                'success': True,
                 'results': serializer.data,
                 'count': overdue_pledges.count()
             })
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error fetching overdue pledges: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to fetch overdue pledges: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to fetch overdue pledges: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def upcoming_payments(self, request):
@@ -425,6 +699,7 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Found {upcoming_pledges.count()} pledges with upcoming payments")
             
             return Response({
+                'success': True,
                 'results': serializer.data,
                 'count': upcoming_pledges.count(),
                 'days_ahead': days_ahead
@@ -432,10 +707,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error fetching upcoming payments: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to fetch upcoming payments: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': 'Failed to fetch upcoming payments'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['post'])
     def bulk_action(self, request):
@@ -443,15 +718,16 @@ class PledgeViewSet(viewsets.ModelViewSet):
         try:
             action = request.data.get('action')
             pledge_ids = request.data.get('pledge_ids', [])
+            updates = request.data.get('updates', {})
             notes = request.data.get('notes', '')
             
             logger.info(f"[PledgeViewSet] Bulk action '{action}' for {len(pledge_ids)} pledges from: {request.user.email}")
             
             if not action or not pledge_ids:
-                return Response(
-                    {'error': 'Action and pledge_ids are required'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({
+                    'success': False,
+                    'error': 'Action and pledge_ids are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             pledges = Pledge.objects.filter(id__in=pledge_ids)
             actual_count = pledges.count()
@@ -461,7 +737,13 @@ class PledgeViewSet(viewsets.ModelViewSet):
             
             result_message = ""
             
-            if action == 'activate':
+            if action == 'bulk_update':
+                pledges.update(**updates)
+                result_message = f"Successfully updated {actual_count} pledges"
+            elif action == 'delete':
+                pledges.delete()
+                result_message = f"Successfully deleted {actual_count} pledges"
+            elif action == 'activate':
                 pledges.update(status='active')
                 result_message = f"Successfully activated {actual_count} pledges"
             elif action == 'pause':
@@ -488,10 +770,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
                     reminder_count += 1
                 result_message = f"Successfully created {reminder_count} reminders"
             else:
-                return Response(
-                    {'error': f'Unknown action: {action}'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({
+                    'success': False,
+                    'error': f'Unknown action: {action}'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             logger.info(f"[PledgeViewSet] Bulk action completed: {result_message}")
             
@@ -503,10 +785,10 @@ class PledgeViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error in bulk action: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to perform bulk action: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to perform bulk action: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'])
     def add_payment(self, request, pk=None):
@@ -529,22 +811,28 @@ class PledgeViewSet(viewsets.ModelViewSet):
                 logger.info(f"[PledgeViewSet] Payment added successfully: ${payment.amount}")
                 
                 return Response({
+                    'success': True,
+                    'message': 'Payment added successfully',
                     'payment': serializer.data,
                     'pledge_updated': {
-                        'total_received': pledge.total_received,
-                        'completion_percentage': (pledge.total_received / pledge.total_pledged * 100) if pledge.total_pledged > 0 else 0,
+                        'total_received': float(pledge.total_received),
+                        'completion_percentage': (float(pledge.total_received) / float(pledge.total_pledged) * 100) if pledge.total_pledged > 0 else 0,
                         'status': pledge.status
                     }
                 }, status=status.HTTP_201_CREATED)
             
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'success': False,
+                'error': 'Validation failed',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error adding payment: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to add payment: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to add payment: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['get'])
     def payment_history(self, request, pk=None):
@@ -559,30 +847,32 @@ class PledgeViewSet(viewsets.ModelViewSet):
             logger.info(f"[PledgeViewSet] Returning {payments.count()} payments")
             
             return Response({
+                'success': True,
                 'results': serializer.data,
                 'count': payments.count()
             })
         
         except Exception as e:
             logger.error(f"[PledgeViewSet] Error fetching payment history: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to fetch payment history: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to fetch payment history: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# ADD THESE VIEWSETS TO YOUR EXISTING pledges/views.py file
 
 class PledgePaymentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing pledge payments
     """
-    queryset = PledgePayment.objects.select_related('pledge__member')
+    queryset = PledgePayment.objects.select_related('pledges__member')
     serializer_class = PledgePaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['payment_method', 'pledge', 'pledge__member', 'pledge__status']
+    filterset_fields = ['payment_method', 'pledge', 'pledges__member', 'pledges__status']
     search_fields = [
         'reference_number', 'notes', 'recorded_by',
-        'pledge__member__first_name', 'pledge__member__last_name'
+        'pledges__member__first_name', 'pledges__member__last_name'
     ]
     ordering_fields = ['payment_date', 'amount', 'created_at']
     ordering = ['-payment_date']
@@ -618,14 +908,15 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
             for item in method_counts:
                 method_breakdown[item['payment_method']] = {
                     'count': item['count'],
-                    'amount': item['total_amount'] or 0
+                    'amount': float(item['total_amount'] or 0)
                 }
             
             return Response({
+                'success': True,
                 'summary': {
                     'total_payments': total_payments,
-                    'total_amount': total_amount,
-                    'average_amount': round(average_amount, 2)
+                    'total_amount': float(total_amount),
+                    'average_amount': float(average_amount)
                 },
                 'breakdown': {
                     'payment_methods': method_breakdown
@@ -634,10 +925,10 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             logger.error(f"[PledgePaymentViewSet] Error calculating statistics: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to calculate payment statistics: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to calculate payment statistics: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
@@ -656,12 +947,12 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
                 'Payment Method', 'Reference Number', 'Notes', 'Recorded By', 'Created Date'
             ])
             
-            for payment in queryset.select_related('pledge__member'):
+            for payment in queryset.select_related('pledges__member'):
                 writer.writerow([
                     str(payment.id),
                     str(payment.pledge.id),
                     f"{payment.pledge.member.first_name} {payment.pledge.member.last_name}",
-                    payment.amount,
+                    float(payment.amount),
                     payment.payment_date,
                     payment.payment_method,
                     payment.reference_number or '',
@@ -676,25 +967,109 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             logger.error(f"[PledgePaymentViewSet] Error exporting payments: {str(e)}", exc_info=True)
-            return Response(
-                {'error': f'Failed to export payments: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'success': False,
+                'error': f'Failed to export payments: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PledgeReminderViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing pledge reminders
     """
-    queryset = PledgeReminder.objects.select_related('pledge__member')
+    queryset = PledgeReminder.objects.select_related('pledges__member')
     serializer_class = PledgeReminderSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['reminder_type', 'reminder_method', 'pledge']
-    search_fields = ['message', 'sent_by', 'pledge__member__first_name', 'pledge__member__last_name']
+    search_fields = ['message', 'sent_by', 'pledges__member__first_name', 'pledges__member__last_name']
     ordering_fields = ['sent_date', 'created_at']
     ordering = ['-sent_date']
 
     def perform_create(self, serializer):
         """Set sent_by to current user when creating reminder"""
         serializer.save(sent_by=str(self.request.user))
+
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """Get reminder statistics"""
+        try:
+            queryset = self.get_queryset()
+            
+            # Basic statistics
+            total_reminders = queryset.count()
+            
+            # Reminder type breakdown
+            type_breakdown = {}
+            type_counts = queryset.values('reminder_type').annotate(count=Count('id'))
+            
+            for item in type_counts:
+                type_breakdown[item['reminder_type']] = item['count']
+            
+            # Method breakdown
+            method_breakdown = {}
+            method_counts = queryset.values('reminder_method').annotate(count=Count('id'))
+            
+            for item in method_counts:
+                method_breakdown[item['reminder_method']] = item['count']
+            
+            return Response({
+                'success': True,
+                'summary': {
+                    'total_reminders': total_reminders
+                },
+                'breakdown': {
+                    'reminder_types': type_breakdown,
+                    'reminder_methods': method_breakdown
+                }
+            })
+        
+        except Exception as e:
+            logger.error(f"[PledgeReminderViewSet] Error calculating statistics: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Failed to calculate reminder statistics: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'])
+    def send_bulk_reminders(self, request):
+        """Send reminders for multiple pledges"""
+        try:
+            pledge_ids = request.data.get('pledge_ids', [])
+            message = request.data.get('message', 'Pledge reminder')
+            reminder_method = request.data.get('method', 'email')
+            
+            if not pledge_ids:
+                return Response({
+                    'success': False,
+                    'error': 'No pledge IDs provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            reminders_created = 0
+            for pledge_id in pledge_ids:
+                try:
+                    pledge = Pledge.objects.get(id=pledge_id)
+                    PledgeReminder.objects.create(
+                        pledge=pledge,
+                        reminder_type='manual',
+                        reminder_method=reminder_method,
+                        message=message,
+                        sent_date=timezone.now().date(),
+                        sent_by=str(request.user)
+                    )
+                    reminders_created += 1
+                except Pledge.DoesNotExist:
+                    continue
+            
+            return Response({
+                'success': True,
+                'message': f'Created {reminders_created} reminders',
+                'reminders_created': reminders_created
+            })
+        
+        except Exception as e:
+            logger.error(f"[PledgeReminderViewSet] Error sending bulk reminders: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Failed to send bulk reminders: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

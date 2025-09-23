@@ -30,7 +30,7 @@ import MemberForm from '../../components/admin/Members/MemberForm';
 import { useToast } from '../../hooks/useToast';
 import { useMembers } from '../../hooks/useMembers';
 import { useGroups } from '../../hooks/useGroups';
-import { usePledges } from '../../hooks/usePledges';
+import usePledges from '../../hooks/usePledges';
 import { formatPhoneNumber, formatDate, formatCurrency } from '../../utils/formatters';
 import { validateMember, validateId } from '../../utils/validation';
 import membersService from '../../services/members';

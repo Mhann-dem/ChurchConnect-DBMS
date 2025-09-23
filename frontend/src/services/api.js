@@ -1,4 +1,4 @@
-// services/api.js - CORRECTED VERSION - Fixed endpoint mappings to match your backend
+// services/api.js - COMPLETE CORRECTED VERSION
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -15,7 +15,7 @@ const api = axios.create({
   },
 });
 
-// CORRECTED ENDPOINTS - Fixed to match your actual backend implementation
+// CORRECTED ENDPOINTS - Only URL strings, no methods
 const ENDPOINTS = {
   auth: {
     login: 'auth/login/',
@@ -33,19 +33,17 @@ const ENDPOINTS = {
     detail: (id) => `members/${id}/`,
     update: (id) => `members/${id}/`,
     delete: (id) => `members/${id}/`,
-    // FIXED: These endpoints go to MemberStatisticsViewSet, not MemberViewSet
-    statistics: 'members/statistics/', // This goes to MemberStatisticsViewSet.list()
-    recent: 'members/recent/', // This goes to MemberViewSet.recent() action
-    search: 'members/search/', // This goes to MemberViewSet.search() action
-    birthdays: 'members/birthdays/', // This goes to MemberViewSet.birthdays() action
+    statistics: 'members/statistics/',
+    recent: 'members/recent/',
+    search: 'members/search/',
+    birthdays: 'members/birthdays/',
     export: 'members/export/',
     tags: 'members/tags/',
     importLogs: 'members/import-logs/',
     publicRegister: 'members/register/',
     bulkActions: 'members/bulk_actions/',
     bulkImport: 'members/bulk_import/',
-    importTemplate: 'members/import_template/',
-    // Remove demographics endpoints - these don't exist in your backend
+    importTemplate: 'members/import_template/'
   },
   
   families: {
@@ -57,8 +55,8 @@ const ENDPOINTS = {
     addMember: (id) => `families/${id}/add-member/`,
     removeMember: (id, memberId) => `families/${id}/remove-member/${memberId}/`,
     members: (id) => `families/${id}/members/`,
-    statistics: 'families/statistics/', // Make sure this endpoint exists in your backend
-    recent: 'families/recent-families/', // Add if needed
+    statistics: 'families/statistics/',
+    recent: 'families/recent-families/',
     setPrimaryContact: (id) => `families/${id}/set-primary-contact/`,
     bulkOperations: 'families/bulk-operations/',
     needingAttention: 'families/families-needing-attention/'
@@ -77,7 +75,7 @@ const ENDPOINTS = {
     updateMembership: (id, memberId) => `groups/${id}/update-membership/${memberId}/`,
     members: (id) => `groups/${id}/members/`,
     export: (id) => `groups/${id}/export/`,
-    statistics: 'groups/statistics/', // This exists and works
+    statistics: 'groups/statistics/',
     public: 'groups/public/',
     categories: 'groups/categories/',
     memberships: 'groups/memberships/'
@@ -89,21 +87,17 @@ const ENDPOINTS = {
     detail: (id) => `pledges/${id}/`,
     update: (id) => `pledges/${id}/`,
     delete: (id) => `pledges/${id}/`,
-    
-    // FIXED: Match actual backend endpoints
-    statistics: 'pledges/stats/',        // ✅ Matches backend
-    export: 'pledges/export/',           // ✅ Matches backend
-    recent: 'pledges/recent/',           // ✅ Added to backend
-    trends: 'pledges/trends/',           // ✅ Added to backend
+    statistics: 'pledges/stats/',
+    export: 'pledges/export/',
+    recent: 'pledges/recent/',
+    trends: 'pledges/trends/',
     overdue: 'pledges/overdue/',
     upcomingPayments: 'pledges/upcoming_payments/',
     bulkAction: 'pledges/bulk_action/',
     summaryReport: 'pledges/summary_report/',
-    
-    // Payment endpoints
     payments: 'pledges/payments/',
     addPayment: (pledgeId) => `pledges/${pledgeId}/add_payment/`,
-    paymentHistory: (pledgeId) => `pledges/${pledgeId}/payment_history/`,
+    paymentHistory: (pledgeId) => `pledges/${pledgeId}/payment_history/`
   },
   
   events: {
@@ -112,30 +106,24 @@ const ENDPOINTS = {
     detail: (id) => `events/${id}/`,
     update: (id) => `events/${id}/`,
     delete: (id) => `events/${id}/`,
-    statistics: 'events/statistics/', // Add if needed
-    recent: 'events/recent/' // Add if needed
+    statistics: 'events/statistics/',
+    recent: 'events/recent/'
   },
   
-  // Remove reports endpoints if they don't exist yet
-  // reports: {
-  //   ...
-  // },
-  
   core: {
-    health: 'core/health/', // This exists and works
-    status: 'core/status/', // This exists and works
-    version: 'core/version/' // This exists and works
+    health: 'core/health/',
+    status: 'core/status/',
+    version: 'core/version/'
   },
 
   dashboard: {
-    overview: 'core/dashboard/overview/', // This exists and works
-    stats: 'core/dashboard/stats/', // This exists and works
-    health: 'core/dashboard/health/', // This exists and works
-    alerts: 'core/dashboard/alerts/', // This exists and works
-    config: (userId) => `core/dashboard/config/${userId}/` // This exists and works
+    overview: 'core/dashboard/overview/',
+    stats: 'core/dashboard/stats/',
+    health: 'core/dashboard/health/',
+    alerts: 'core/dashboard/alerts/',
+    config: (userId) => `core/dashboard/config/${userId}/`
   }
 };
-
 
 // Request interceptor with enhanced auth handling
 api.interceptors.request.use(
@@ -284,131 +272,6 @@ api.interceptors.response.use(
   }
 );
 
-// Enhanced pledges API methods with better error handling
-const pledgesApi = {
-  // Get pledges with enhanced error handling
-  async list(params = {}) {
-    try {
-      console.log('[API] Fetching pledges with params:', params);
-      const response = await api.get(ENDPOINTS.pledges.list, { params });
-      
-      // Handle both paginated and non-paginated responses
-      if (response.data.results) {
-        return {
-          success: true,
-          data: response.data.results,
-          pagination: {
-            count: response.data.count,
-            next: response.data.next,
-            previous: response.data.previous,
-            totalPages: Math.ceil(response.data.count / (params.limit || 25)),
-            currentPage: params.page || 1
-          }
-        };
-      } else if (Array.isArray(response.data)) {
-        return {
-          success: true,
-          data: response.data,
-          pagination: {
-            count: response.data.length,
-            totalPages: 1,
-            currentPage: 1
-          }
-        };
-      } else {
-        return { success: true, data: response.data };
-      }
-    } catch (error) {
-      console.error('[API] Error fetching pledges:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to fetch pledges',
-        data: []
-      };
-    }
-  },
-
-  // Create pledge with validation
-  async create(pledgeData) {
-    try {
-      console.log('[API] Creating pledge:', pledgeData);
-      
-      // Validate required fields
-      if (!pledgeData.member_id) {
-        throw new Error('Member ID is required');
-      }
-      if (!pledgeData.amount || pledgeData.amount <= 0) {
-        throw new Error('Valid amount is required');
-      }
-
-      const response = await api.post(ENDPOINTS.pledges.create, pledgeData);
-      console.log('[API] Pledge created successfully:', response.data);
-      
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.error('[API] Error creating pledge:', error);
-      
-      // Handle validation errors
-      if (error.response?.status === 400) {
-        const validationErrors = error.response.data;
-        const errorMessage = Object.values(validationErrors).flat()[0] || 'Validation failed';
-        return {
-          success: false,
-          error: errorMessage,
-          validationErrors
-        };
-      }
-      
-      return {
-        success: false,
-        error: error.message || 'Failed to create pledge'
-      };
-    }
-  },
-
-  // Get statistics with fallback
-  async getStatistics(params = {}) {
-    try {
-      console.log('[API] Fetching pledge statistics:', params);
-      const response = await api.get(ENDPOINTS.pledges.statistics, { params });
-      
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.error('[API] Error fetching statistics:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to fetch statistics',
-        data: {}
-      };
-    }
-  },
-
-  // Update pledge
-  async update(id, pledgeData) {
-    try {
-      console.log('[API] Updating pledge:', id, pledgeData);
-      const response = await api.put(ENDPOINTS.pledges.update(id), pledgeData);
-      
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.error('[API] Error updating pledge:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to update pledge'
-      };
-    }
-  }
-};
-
 // Helper functions
 const clearAuthData = () => {
   const keysToRemove = ['access_token', 'authToken', 'refresh_token', 'user'];
@@ -484,7 +347,6 @@ const apiMethods = {
     }
   },
 
-  // Dashboard API methods with real backend integration
   dashboard: {
     getOverview: async () => {
       try {
@@ -497,46 +359,113 @@ const apiMethods = {
     },
 
     getStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.dashboard.stats);
-      return response.data;
+      try {
+        console.log('[Dashboard API] Fetching dashboard stats...');
+        const response = await apiMethods.get(ENDPOINTS.dashboard.stats);
+        console.log('[Dashboard API] Stats response:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[Dashboard API] Stats failed:', error);
+        throw error;
+      }
     },
 
     getMemberStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.members.statistics, { 
-        params: { range } 
-      });
-      return response.data;
+      try {
+        console.log(`[Dashboard API] Fetching member stats for range: ${range}`);
+        const response = await apiMethods.get(ENDPOINTS.members.statistics, { 
+          params: { range } 
+        });
+        console.log('[Dashboard API] Member stats response:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[Dashboard API] Member stats failed:', error);
+        return { 
+          summary: { 
+            total_members: 0, 
+            active_members: 0, 
+            inactive_members: 0 
+          } 
+        };
+      }
     },
 
     getPledgeStats: async (range = '30d') => {
-      const response = await apiMethods.get(ENDPOINTS.pledges.statistics, { 
-        params: { range } 
-      });
-      return response.data;
-    },
-
-    getGroupStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.groups.statistics);
-      return response.data;
-    },
-
-    getFamilyStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.families.statistics);
-      return response.data;
-    },
-
-    getRecentMembers: async (limit = 10) => {
       try {
-        const response = await apiMethods.get(ENDPOINTS.members.recent, { 
-          params: { limit } 
+        const response = await apiMethods.get(ENDPOINTS.pledges.statistics, { 
+          params: { range } 
         });
         return response.data;
       } catch (error) {
-        console.warn('[Dashboard API] Recent members endpoint failed, using list with ordering');
-        const response = await apiMethods.get(ENDPOINTS.members.list, { 
-          params: { ordering: '-registration_date', limit } 
-        });
+        console.error('[Dashboard API] Pledge stats failed:', error);
+        return { total_amount: 0, active_pledges: 0, monthly_total: 0 };
+      }
+    },
+
+    getGroupStats: async () => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.groups.statistics);
         return response.data;
+      } catch (error) {
+        console.error('[Dashboard API] Group stats failed:', error);
+        return { total_groups: 0, active_groups: 0 };
+      }
+    },
+
+    getFamilyStats: async () => {
+      try {
+        const response = await apiMethods.get(ENDPOINTS.families.statistics);
+        return response.data;
+      } catch (error) {
+        console.error('[Dashboard API] Family stats failed:', error);
+        return { total_families: 0, new_families: 0 };
+      }
+    },
+
+    // FIXED: Corrected recent members method with fallback
+    getRecentMembers: async (limit = 10) => {
+      try {
+        console.log(`[Dashboard API] Fetching recent members with limit: ${limit}`);
+        
+        // First try the recent endpoint
+        try {
+          const response = await apiMethods.get(ENDPOINTS.members.recent, { 
+            params: { limit } 
+          });
+          console.log('[Dashboard API] Recent members response:', response.data);
+          
+          // Handle different response formats
+          if (response.data.results) {
+            return response.data.results;
+          } else if (Array.isArray(response.data)) {
+            return response.data;
+          } else {
+            return response.data;
+          }
+        } catch (recentError) {
+          console.warn('[Dashboard API] Recent endpoint failed, using fallback:', recentError.message);
+          
+          // Fallback to regular list with ordering (this is the working endpoint from your logs)
+          const response = await apiMethods.get(ENDPOINTS.members.list, { 
+            params: { 
+              ordering: '-registration_date', 
+              limit: limit,
+              page_size: limit
+            } 
+          });
+          
+          // Handle paginated response from list endpoint
+          if (response.data.results) {
+            return response.data.results;
+          } else if (Array.isArray(response.data)) {
+            return response.data;
+          } else {
+            return [];
+          }
+        }
+      } catch (error) {
+        console.error('[Dashboard API] All recent members endpoints failed:', error);
+        return [];
       }
     },
 
@@ -545,13 +474,32 @@ const apiMethods = {
         const response = await apiMethods.get(ENDPOINTS.pledges.recent, { 
           params: { limit } 
         });
-        return response.data;
+        
+        if (response.data.results) {
+          return response.data.results;
+        } else if (Array.isArray(response.data)) {
+          return response.data;
+        } else {
+          return response.data;
+        }
       } catch (error) {
         console.warn('[Dashboard API] Recent pledges endpoint failed, using list with ordering');
-        const response = await apiMethods.get(ENDPOINTS.pledges.list, { 
-          params: { ordering: '-created_at', limit } 
-        });
-        return response.data;
+        try {
+          const response = await apiMethods.get(ENDPOINTS.pledges.list, { 
+            params: { ordering: '-created_at', limit } 
+          });
+          
+          if (response.data.results) {
+            return response.data.results;
+          } else if (Array.isArray(response.data)) {
+            return response.data;
+          } else {
+            return [];
+          }
+        } catch (fallbackError) {
+          console.error('[Dashboard API] Fallback for recent pledges also failed:', fallbackError);
+          return [];
+        }
       }
     },
 
@@ -561,8 +509,12 @@ const apiMethods = {
         return response.data;
       } catch (error) {
         console.warn('[Dashboard API] Health endpoint failed, using core health');
-        const response = await apiMethods.get(ENDPOINTS.core.health);
-        return { status: 'healthy', ...response.data };
+        try {
+          const response = await apiMethods.get(ENDPOINTS.core.health);
+          return { status: 'healthy', ...response.data };
+        } catch (coreError) {
+          return { status: 'unknown', error: coreError.message };
+        }
       }
     },
 
@@ -590,7 +542,7 @@ const apiMethods = {
         return response.data;
       } catch (error) {
         if (error.status === 404) {
-          return null; // No config found
+          return null;
         }
         throw error;
       }
@@ -601,7 +553,6 @@ const apiMethods = {
       return response.data;
     }
   },
-
   // Member API methods
   members: {
     list: async (params = {}) => {
@@ -670,8 +621,11 @@ const apiMethods = {
 
     getDemographics: async (type = 'age') => {
       const endpoint = type === 'age' ? 
-        ENDPOINTS.members.demographics.age : 
-        ENDPOINTS.members.demographics.gender;
+        ENDPOINTS.members.demographics?.age : 
+        ENDPOINTS.members.demographics?.gender;
+      if (!endpoint) {
+        return { results: [] };
+      }
       const response = await apiMethods.get(endpoint);
       return response.data;
     }
@@ -842,57 +796,6 @@ const apiMethods = {
     }
   },
 
-  // Report API methods
-  reports: {
-    list: async (params = {}) => {
-      const response = await apiMethods.get(ENDPOINTS.reports.list, { params });
-      return response.data;
-    },
-
-    create: async (reportData) => {
-      const response = await apiMethods.post(ENDPOINTS.reports.create, reportData);
-      return response.data;
-    },
-
-    get: async (id) => {
-      const response = await apiMethods.get(ENDPOINTS.reports.detail(id));
-      return response.data;
-    },
-
-    generate: async (id, params = {}) => {
-      const response = await apiMethods.post(ENDPOINTS.reports.generate(id), params);
-      return response.data;
-    },
-
-    getStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.reports.stats);
-      return response.data;
-    },
-
-    exportMembers: async (format = 'csv') => {
-      const response = await apiMethods.get(ENDPOINTS.reports.membersCsv, {
-        params: { format },
-        responseType: 'blob'
-      });
-      return response.data;
-    },
-
-    exportPledges: async (format = 'csv') => {
-      const response = await apiMethods.get(ENDPOINTS.reports.pledgesCsv, {
-        params: { format },
-        responseType: 'blob'
-      });
-      return response.data;
-    },
-
-    getActivity: async (range = '7d') => {
-      const response = await apiMethods.get(ENDPOINTS.reports.activity, {
-        params: { range }
-      });
-      return response.data;
-    }
-  },
-
   // Core API methods
   core: {
     health: async () => {
@@ -908,6 +811,131 @@ const apiMethods = {
     version: async () => {
       const response = await apiMethods.get(ENDPOINTS.core.version);
       return response.data;
+    }
+  }
+};
+
+// Enhanced pledges API methods with better error handling
+const pledgesApi = {
+  // Get pledges with enhanced error handling
+  async list(params = {}) {
+    try {
+      console.log('[API] Fetching pledges with params:', params);
+      const response = await api.get(ENDPOINTS.pledges.list, { params });
+      
+      // Handle both paginated and non-paginated responses
+      if (response.data.results) {
+        return {
+          success: true,
+          data: response.data.results,
+          pagination: {
+            count: response.data.count,
+            next: response.data.next,
+            previous: response.data.previous,
+            totalPages: Math.ceil(response.data.count / (params.limit || 25)),
+            currentPage: params.page || 1
+          }
+        };
+      } else if (Array.isArray(response.data)) {
+        return {
+          success: true,
+          data: response.data,
+          pagination: {
+            count: response.data.length,
+            totalPages: 1,
+            currentPage: 1
+          }
+        };
+      } else {
+        return { success: true, data: response.data };
+      }
+    } catch (error) {
+      console.error('[API] Error fetching pledges:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch pledges',
+        data: []
+      };
+    }
+  },
+
+  // Create pledge with validation
+  async create(pledgeData) {
+    try {
+      console.log('[API] Creating pledge:', pledgeData);
+      
+      // Validate required fields
+      if (!pledgeData.member_id) {
+        throw new Error('Member ID is required');
+      }
+      if (!pledgeData.amount || pledgeData.amount <= 0) {
+        throw new Error('Valid amount is required');
+      }
+
+      const response = await api.post(ENDPOINTS.pledges.create, pledgeData);
+      console.log('[API] Pledge created successfully:', response.data);
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error creating pledge:', error);
+      
+      // Handle validation errors
+      if (error.response?.status === 400) {
+        const validationErrors = error.response.data;
+        const errorMessage = Object.values(validationErrors).flat()[0] || 'Validation failed';
+        return {
+          success: false,
+          error: errorMessage,
+          validationErrors
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.message || 'Failed to create pledge'
+      };
+    }
+  },
+
+  // Get statistics with fallback
+  async getStatistics(params = {}) {
+    try {
+      console.log('[API] Fetching pledge statistics:', params);
+      const response = await api.get(ENDPOINTS.pledges.statistics, { params });
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error fetching statistics:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch statistics',
+        data: {}
+      };
+    }
+  },
+
+  // Update pledge
+  async update(id, pledgeData) {
+    try {
+      console.log('[API] Updating pledge:', id, pledgeData);
+      const response = await api.put(ENDPOINTS.pledges.update(id), pledgeData);
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('[API] Error updating pledge:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to update pledge'
+      };
     }
   }
 };

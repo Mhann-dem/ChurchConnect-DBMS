@@ -188,6 +188,51 @@ export const useMembers = (options = {}) => {
     cancelRequests
   ]);
 
+  // Add this method to your useMembers hook
+  const getRecentMembers = useCallback(async (limit = 5) => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log('[useMembers] Fetching recent members...');
+      
+      // FIXED: Use the working endpoint pattern from your logs
+      const result = await membersService.getMembers({
+        ordering: '-registration_date',
+        limit: limit,
+        forceRefresh: true
+      });
+
+      if (result.success) {
+        console.log('[useMembers] Recent members loaded:', result.data?.length || 0);
+        return {
+          success: true,
+          data: result.data || [],
+          total: result.totalMembers || 0
+        };
+      } else {
+        throw new Error(result.error || 'Failed to fetch recent members');
+      }
+    } catch (error) {
+      const errorMessage = error?.message || 'Failed to fetch recent members';
+      console.error('[useMembers] Recent members error:', errorMessage);
+      
+      if (mountedRef.current) {
+        setError(errorMessage);
+      }
+      
+      return { success: false, error: errorMessage };
+    } finally {
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [isAuthenticated, membersService]);
+
   // CRUD Operations with immediate UI updates
   const createMember = useCallback(async (memberData) => {
     if (!isAuthenticated) {
@@ -486,6 +531,7 @@ export const useMembers = (options = {}) => {
     deleteMember,
     bulkUpdateMembers,
     bulkDeleteMembers,
+    getRecentMembers,
     
     // Utilities
     refresh,

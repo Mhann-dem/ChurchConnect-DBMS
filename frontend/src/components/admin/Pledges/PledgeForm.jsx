@@ -1,4 +1,4 @@
-// frontend/src/components/admin/Pledges/PledgeForm.jsx
+// Enhanced PledgeForm.jsx with better success feedback and error handling
 import React, { useState, useEffect, useMemo } from 'react';
 import useForm from '../../../hooks/useForm';
 import { useMembers } from '../../../hooks/useMembers';
@@ -10,14 +10,17 @@ import TextArea from '../../form/FormControls/TextArea';
 import DatePicker from '../../form/FormControls/DatePicker';
 import { validateRequired, validateNumber, validateDate } from '../../../utils/validation';
 import { formatCurrency } from '../../../utils/formatters';
+import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import styles from './Pledges.module.css';
 
 const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState(null);
   const [memberSearch, setMemberSearch] = useState('');
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [totalCalculated, setTotalCalculated] = useState(0);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const { members, fetchMembers, loading: membersLoading } = useMembers() || {};
   const { showToast } = useToast();
@@ -237,11 +240,13 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     }, 200);
   };
 
-  // Form submission
+  // Enhanced form submission with better feedback
   const onFormSubmit = async (formData) => {
     if (!onSubmit) return;
     
     setIsSubmitting(true);
+    setSubmissionResult(null);
+    setShowSuccessMessage(false);
     
     try {
       // Validate member selection
@@ -249,6 +254,10 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         if (showToast) {
           showToast('Please select a member', 'error');
         }
+        setSubmissionResult({
+          success: false,
+          error: 'Please select a member'
+        });
         return;
       }
 
@@ -264,21 +273,65 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
 
       console.log('PledgeForm: Submitting data:', submissionData);
       
-      await onSubmit(submissionData);
+      const result = await onSubmit(submissionData);
       
-      if (showToast) {
-        showToast(
-          pledge ? 'Pledge updated successfully' : 'Pledge created successfully', 
-          'success'
-        );
+      // Handle different response formats
+      let success = false;
+      let message = '';
+      let data = null;
+
+      if (result && typeof result === 'object') {
+        success = result.success !== false;
+        message = result.message || (pledge ? 'Pledge updated successfully' : 'Pledge created successfully');
+        data = result.data || result;
+      } else {
+        success = true;
+        message = pledge ? 'Pledge updated successfully' : 'Pledge created successfully';
+        data = result;
       }
+
+      setSubmissionResult({
+        success,
+        message,
+        data
+      });
+
+      if (success) {
+        setShowSuccessMessage(true);
+        
+        if (showToast) {
+          showToast(message, 'success');
+        }
+
+        // Auto-close success message after 3 seconds and close form
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+          if (onCancel) {
+            onCancel();
+          }
+        }, 3000);
+      } else {
+        if (showToast) {
+          showToast(message || 'Failed to save pledge', 'error');
+        }
+      }
+      
     } catch (error) {
       console.error('PledgeForm: Submission error:', error);
+      
+      const errorMessage = error?.response?.data?.error ||
+                          error?.response?.data?.message ||
+                          error?.message ||
+                          (pledge ? 'Failed to update pledge' : 'Failed to create pledge');
+      
+      setSubmissionResult({
+        success: false,
+        error: errorMessage,
+        details: error?.response?.data
+      });
+      
       if (showToast) {
-        showToast(
-          error.message || (pledge ? 'Failed to update pledge' : 'Failed to create pledge'),
-          'error'
-        );
+        showToast(errorMessage, 'error');
       }
     } finally {
       setIsSubmitting(false);
@@ -302,6 +355,41 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
           ×
         </Button>
       </div>
+
+      {/* Success Message */}
+      {showSuccessMessage && submissionResult?.success && (
+        <div className={styles.successMessage}>
+          <CheckCircle size={20} className={styles.successIcon} />
+          <div className={styles.successContent}>
+            <h4 className={styles.successTitle}>Success!</h4>
+            <p className={styles.successText}>
+              {submissionResult.message}
+            </p>
+            <p className={styles.successSubtext}>
+              This form will close automatically in a few seconds.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {submissionResult && !submissionResult.success && (
+        <div className={styles.errorMessage}>
+          <AlertCircle size={20} className={styles.errorIcon} />
+          <div className={styles.errorContent}>
+            <h4 className={styles.errorTitle}>Error</h4>
+            <p className={styles.errorText}>
+              {submissionResult.error}
+            </p>
+            {submissionResult.details && (
+              <details className={styles.errorDetails}>
+                <summary>Technical Details</summary>
+                <pre>{JSON.stringify(submissionResult.details, null, 2)}</pre>
+              </details>
+            )}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>
         {/* Member Selection */}
@@ -498,13 +586,17 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
           <Button
             type="submit"
             variant="primary"
-            disabled={!isValid || isLoading || !values.member_id}
+            disabled={!isValid || isLoading || !values.member_id || showSuccessMessage}
             loading={isLoading}
           >
-            {isLoading 
-              ? (pledge ? 'Updating...' : 'Creating...')
-              : (pledge ? 'Update Pledge' : 'Create Pledge')
-            }
+            {isLoading ? (
+              <div className={styles.loadingContent}>
+                <Loader size={16} className={styles.spinner} />
+                {pledge ? 'Updating...' : 'Creating...'}
+              </div>
+            ) : (
+              pledge ? 'Update Pledge' : 'Create Pledge'
+            )}
           </Button>
         </div>
       </form>

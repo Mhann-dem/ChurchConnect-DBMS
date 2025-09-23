@@ -248,28 +248,38 @@ const useForm = ({ initialValues, validate, onSubmit }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const formErrors = validate ? validate(values) : {};
-    setErrors(formErrors);
-    
-    // Mark all fields as touched
-    const allTouched = {};
-    Object.keys(values).forEach(key => {
-      allTouched[key] = true;
-    });
-    setTouched(allTouched);
-    
-    if (Object.keys(formErrors).length === 0) {
+  const handleSubmit = async (formData) => {
+    try {
       setIsSubmitting(true);
-      try {
-        await onSubmit(values);
-      } catch (error) {
-        console.error('Form submission error:', error);
-      } finally {
-        setIsSubmitting(false);
+      
+      // Choose service method based on context
+      const result = formData.registrationContext === 'admin_portal' 
+        ? await membersService.createMember(formData)
+        : await membersService.publicRegister(formData);
+      
+      if (result.success) {
+        // SUCCESS FEEDBACK
+        showToast(result.message || 'Member saved successfully!', 'success');
+        
+        // CLOSE MODAL/FORM after brief delay
+        setTimeout(() => {
+          if (onClose) onClose({ success: true, data: result });
+          if (onSuccess) onSuccess(result);
+        }, 1000);
+        
+        return { success: true };
+      } else {
+        // SHOW ERRORS
+        showToast(result.error || 'Failed to save member', 'error');
+        setErrors(result.validationErrors || { submit: result.error });
+        return { success: false, error: result.error };
       }
+      
+    } catch (error) {
+      showToast('Network error. Please try again.', 'error');
+      return { success: false, error: error.message };
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

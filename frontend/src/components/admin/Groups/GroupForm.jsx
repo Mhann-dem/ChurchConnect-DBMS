@@ -1,7 +1,9 @@
-// Enhanced GroupForm.jsx
+// Enhanced GroupForm.jsx - Updated with success handler
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Save, X, AlertCircle, Users, Clock, Mail, Phone, MapPin, Settings, Info, CheckCircle } from 'lucide-react';
 import { useMembers } from '../../../hooks/useMembers';
+import { useFormSubmission } from '../../../hooks/useFormSubmission';
+import { FormContainer } from '../../shared/FormContainer';
 import Button from '../../ui/Button';
 import Card from '../../ui/Card';
 import Badge from '../../ui/Badge';
@@ -34,12 +36,42 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
   });
   
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
+  const [formTouched, setFormTouched] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
   const [tagInput, setTagInput] = useState('');
 
   const { members, loading: membersLoading, searchMembers } = useMembers();
+
+  // Form submission handler
+  const {
+    isSubmitting: formSubmitting,
+    showSuccess,
+    submissionError,
+    handleSubmit: handleFormSubmit,
+    clearError
+  } = useFormSubmission({
+    onSubmit: async (submitData) => {
+      // Prepare data for submission
+      const preparedData = {
+        ...submitData,
+        name: submitData.name.trim(),
+        description: submitData.description.trim(),
+        leader_name: submitData.leader_name.trim(),
+        meeting_schedule: submitData.meeting_schedule.trim(),
+        meeting_location: submitData.meeting_location.trim(),
+        contact_email: submitData.contact_email.trim(),
+        contact_phone: submitData.contact_phone.trim(),
+        requirements: submitData.requirements.trim(),
+        max_members: submitData.max_members ? parseInt(submitData.max_members) : null,
+        leader_id: submitData.leader_id || null
+      };
+      
+      return await onSave(preparedData);
+    },
+    onClose: onCancel,
+    successMessage: group ? 'Group updated successfully!' : 'Group created successfully!',
+    autoCloseDelay: 2500
+  });
 
   // Categories with descriptions
   const groupCategories = [
@@ -136,7 +168,7 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
     }
     
     setErrors({});
-    setIsDirty(false);
+    setFormTouched({});
     setCurrentStep(1);
   }, [group]);
 
@@ -164,7 +196,7 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
     
-    setIsDirty(true);
+    setFormTouched(prev => ({ ...prev, [name]: true }));
   }, [errors, availableLeaders]);
 
   // Handle tag management
@@ -176,7 +208,7 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
         tags: [...prev.tags, tag]
       }));
       setTagInput('');
-      setIsDirty(true);
+      setFormTouched(prev => ({ ...prev, tags: true }));
     }
   }, [tagInput, formData.tags]);
 
@@ -185,7 +217,7 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
-    setIsDirty(true);
+    setFormTouched(prev => ({ ...prev, tags: true }));
   }, []);
 
   const handleTagInputKeyPress = useCallback((e) => {
@@ -251,66 +283,16 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
     return newErrors;
   }, [formData]);
 
-  // Handle form submission
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
+  const validateCurrentStep = () => {
+    const stepErrors = {};
     
-    // Validate form
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+    if (currentStep === 1) {
+      if (!formData.name.trim()) stepErrors.name = 'Group name is required';
+      if (!formData.category) stepErrors.category = 'Please select a category';
     }
     
-    setIsSubmitting(true);
-    setErrors({});
-    
-    try {
-      // Prepare data for submission
-      const submitData = {
-        ...formData,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        leader_name: formData.leader_name.trim(),
-        meeting_schedule: formData.meeting_schedule.trim(),
-        meeting_location: formData.meeting_location.trim(),
-        contact_email: formData.contact_email.trim(),
-        contact_phone: formData.contact_phone.trim(),
-        requirements: formData.requirements.trim(),
-        max_members: formData.max_members ? parseInt(formData.max_members) : null,
-        leader_id: formData.leader_id || null
-      };
-      
-      // Call save handler
-      await onSave(submitData);
-      
-      // Reset form state
-      setIsDirty(false);
-    } catch (error) {
-      // Handle validation errors from API
-      if (error.validationErrors) {
-        setErrors(error.validationErrors);
-      } else {
-        setErrors({ 
-          submit: error.message || 'An error occurred while saving the group' 
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [formData, validateForm, onSave]);
-
-  // Handle cancel
-  const handleCancel = useCallback(() => {
-    if (isDirty) {
-      const confirmDiscard = window.confirm(
-        'You have unsaved changes. Are you sure you want to cancel?'
-      );
-      if (!confirmDiscard) return;
-    }
-    
-    onCancel?.();
-  }, [isDirty, onCancel]);
+    return stepErrors;
+  };
 
   // Handle step navigation
   const nextStep = () => {
@@ -326,16 +308,48 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const validateCurrentStep = () => {
-    const stepErrors = {};
+  // Handle form submission
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
     
-    if (currentStep === 1) {
-      if (!formData.name.trim()) stepErrors.name = 'Group name is required';
-      if (!formData.category) stepErrors.category = 'Please select a category';
+    // Validate current step first
+    const stepErrors = validateCurrentStep();
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      return;
+    }
+
+    // If not on final step, go to next step
+    if (currentStep < 4) {
+      nextStep();
+      return;
+    }
+
+    // Validate entire form
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
     }
     
-    return stepErrors;
-  };
+    // Clear errors and submit
+    setErrors({});
+    clearError();
+    
+    await handleFormSubmit(formData, e);
+  }, [formData, validateForm, currentStep, clearError, handleFormSubmit]);
+
+  // Handle cancel
+  const handleCancel = useCallback(() => {
+    if (Object.keys(formTouched).length > 0) {
+      const confirmDiscard = window.confirm(
+        'You have unsaved changes. Are you sure you want to cancel?'
+      );
+      if (!confirmDiscard) return;
+    }
+    
+    onCancel?.();
+  }, [formTouched, onCancel]);
 
   // Form steps configuration
   const steps = [
@@ -346,518 +360,537 @@ const GroupForm = ({ group, onSave, onCancel, loading = false }) => {
   ];
 
   return (
-    <div className={styles.groupFormContainer}>
-      {/* Step Indicator */}
-      <div className={styles.stepIndicator}>
-        {steps.map((step) => (
-          <div
-            key={step.number}
-            className={`${styles.stepItem} ${
-              currentStep === step.number ? styles.active :
-              currentStep > step.number ? styles.completed : styles.inactive
-            }`}
-          >
-            <div className={styles.stepIcon}>
-              {currentStep > step.number ? (
-                <CheckCircle size={20} />
-              ) : (
-                <step.icon size={20} />
-              )}
-            </div>
-            <span className={styles.stepTitle}>{step.title}</span>
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className={styles.groupForm}>
-        {/* General Error */}
-        {errors.submit && (
-          <div className={styles.errorBanner}>
-            <AlertCircle size={16} />
-            <span>{errors.submit}</span>
-          </div>
-        )}
-
-        {/* Step 1: Basic Information */}
-        {currentStep === 1 && (
-          <div className={styles.formStep}>
-            <div className={styles.stepHeader}>
-              <h3>Basic Information</h3>
-              <p>Essential details about your group</p>
-            </div>
-            
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label htmlFor="name" className={styles.label}>
-                  Group Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
-                  placeholder="Enter group name"
-                  required
-                  maxLength="100"
-                />
-                {errors.name && (
-                  <span className={styles.errorText}>{errors.name}</span>
+    <FormContainer
+      title={group ? 'Edit Group' : 'Create New Group'}
+      onClose={handleCancel}
+      showSuccess={showSuccess}
+      successMessage={group ? 'Group updated successfully!' : 'Group created successfully!'}
+      submissionError={submissionError}
+      isSubmitting={formSubmitting || loading}
+      maxWidth="900px"
+    >
+      <div className={styles.groupFormContainer}>
+        {/* Step Indicator */}
+        <div className={styles.stepIndicator}>
+          {steps.map((step) => (
+            <div
+              key={step.number}
+              className={`${styles.stepItem} ${
+                currentStep === step.number ? styles.active :
+                currentStep > step.number ? styles.completed : styles.inactive
+              }`}
+            >
+              <div className={styles.stepIcon}>
+                {currentStep > step.number ? (
+                  <CheckCircle size={20} />
+                ) : (
+                  <step.icon size={20} />
                 )}
               </div>
-              
-              <div className={styles.formField}>
-                <label htmlFor="category" className={styles.label}>
-                  Category *
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className={`${styles.select} ${errors.category ? styles.inputError : ''}`}
-                  required
-                >
-                  {groupCategories.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-                {formData.category && (
-                  <span className={styles.fieldDescription}>
-                    {groupCategories.find(c => c.value === formData.category)?.description}
-                  </span>
-                )}
-                {errors.category && (
-                  <span className={styles.errorText}>{errors.category}</span>
-                )}
-              </div>
+              <span className={styles.stepTitle}>{step.title}</span>
             </div>
-            
-            <div className={styles.formField}>
-              <label htmlFor="description" className={styles.label}>
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
-                placeholder="Describe the group's purpose, activities, and what members can expect"
-                rows="4"
-                maxLength="1000"
-              />
-              {errors.description && (
-                <span className={styles.errorText}>{errors.description}</span>
-              )}
-              <span className={styles.charCount}>
-                {formData.description.length}/1000
-              </span>
-            </div>
-
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label htmlFor="age_group" className={styles.label}>
-                  Target Age Group
-                </label>
-                <select
-                  id="age_group"
-                  name="age_group"
-                  value={formData.age_group}
-                  onChange={handleChange}
-                  className={styles.select}
-                >
-                  {ageGroups.map((age) => (
-                    <option key={age.value} value={age.value}>
-                      {age.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formField}>
-                <label htmlFor="max_members" className={styles.label}>
-                  Maximum Members
-                </label>
-                <input
-                  type="number"
-                  id="max_members"
-                  name="max_members"
-                  value={formData.max_members}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.max_members ? styles.inputError : ''}`}
-                  placeholder="Leave empty for unlimited"
-                  min="1"
-                  max="1000"
-                />
-                {errors.max_members && (
-                  <span className={styles.errorText}>{errors.max_members}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className={styles.formField}>
-              <label className={styles.label}>Tags</label>
-              <div className={styles.tagInput}>
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={handleTagInputKeyPress}
-                  className={styles.input}
-                  placeholder="Add tags (press Enter)"
-                />
-                <Button type="button" onClick={addTag} size="sm" variant="outline">
-                  Add
-                </Button>
-              </div>
-              <div className={styles.tagList}>
-                {formData.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className={styles.tag}
-                    onClick={() => removeTag(tag)}
-                  >
-                    {tag} ×
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Leadership & Contact */}
-        {currentStep === 2 && (
-          <div className={styles.formStep}>
-            <div className={styles.stepHeader}>
-              <h3>Leadership & Contact</h3>
-              <p>Assign leadership and contact information</p>
-            </div>
-            
-            <div className={styles.formField}>
-              <label htmlFor="leader_id" className={styles.label}>
-                Group Leader
-              </label>
-              <select
-                id="leader_id"
-                name="leader_id"
-                value={formData.leader_id}
-                onChange={handleChange}
-                className={styles.select}
-                disabled={membersLoading}
-              >
-                <option value="">Select a leader (optional)</option>
-                {availableLeaders.map((leader) => (
-                  <option key={leader.id} value={leader.id}>
-                    {leader.first_name} {leader.last_name} - {leader.email}
-                  </option>
-                ))}
-              </select>
-              {formData.leader_id && (
-                <div className={styles.selectedLeader}>
-                  {(() => {
-                    const leader = availableLeaders.find(l => l.id === formData.leader_id);
-                    return leader ? (
-                      <div className={styles.leaderPreview}>
-                        <Avatar
-                          src={leader.photo_url}
-                          name={`${leader.first_name} ${leader.last_name}`}
-                          size="sm"
-                        />
-                        <div>
-                          <strong>{leader.first_name} {leader.last_name}</strong>
-                          <p>{leader.email}</p>
-                        </div>
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
-              )}
-            </div>
-            
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label htmlFor="contact_email" className={styles.label}>
-                  <Mail size={16} />
-                  Contact Email
-                </label>
-                <input
-                  type="email"
-                  id="contact_email"
-                  name="contact_email"
-                  value={formData.contact_email}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.contact_email ? styles.inputError : ''}`}
-                  placeholder="group@church.com"
-                />
-                {errors.contact_email && (
-                  <span className={styles.errorText}>{errors.contact_email}</span>
-                )}
-              </div>
-              
-              <div className={styles.formField}>
-                <label htmlFor="contact_phone" className={styles.label}>
-                  <Phone size={16} />
-                  Contact Phone
-                </label>
-                <input
-                  type="tel"
-                  id="contact_phone"
-                  name="contact_phone"
-                  value={formData.contact_phone}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.contact_phone ? styles.inputError : ''}`}
-                  placeholder="(555) 123-4567"
-                />
-                {errors.contact_phone && (
-                  <span className={styles.errorText}>{errors.contact_phone}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Meeting Information */}
-        {currentStep === 3 && (
-          <div className={styles.formStep}>
-            <div className={styles.stepHeader}>
-              <h3>Meeting Information</h3>
-              <p>When and where your group meets</p>
-            </div>
-            
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label htmlFor="meeting_frequency" className={styles.label}>
-                  Meeting Frequency
-                </label>
-                <select
-                  id="meeting_frequency"
-                  name="meeting_frequency"
-                  value={formData.meeting_frequency}
-                  onChange={handleChange}
-                  className={styles.select}
-                >
-                  {meetingFrequencies.map((freq) => (
-                    <option key={freq.value} value={freq.value}>
-                      {freq.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formField}>
-                <label htmlFor="meeting_schedule" className={styles.label}>
-                  Meeting Schedule
-                </label>
-                <input
-                  type="text"
-                  id="meeting_schedule"
-                  name="meeting_schedule"
-                  value={formData.meeting_schedule}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.meeting_schedule ? styles.inputError : ''}`}
-                  placeholder="e.g., Sundays at 10:00 AM"
-                  maxLength="200"
-                />
-                {errors.meeting_schedule && (
-                  <span className={styles.errorText}>{errors.meeting_schedule}</span>
-                )}
-              </div>
-            </div>
-            
-            <div className={styles.formField}>
-              <label htmlFor="meeting_location" className={styles.label}>
-                <MapPin size={16} />
-                Meeting Location
-              </label>
-              <input
-                type="text"
-                id="meeting_location"
-                name="meeting_location"
-                value={formData.meeting_location}
-                onChange={handleChange}
-                className={styles.input}
-                placeholder="e.g., Fellowship Hall, Room 205, or Virtual"
-                maxLength="200"
-              />
-            </div>
-
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label htmlFor="start_date" className={styles.label}>
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  id="start_date"
-                  name="start_date"
-                  value={formData.start_date}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
-              </div>
-
-              <div className={styles.formField}>
-                <label htmlFor="end_date" className={styles.label}>
-                  End Date (Optional)
-                </label>
-                <input
-                  type="date"
-                  id="end_date"
-                  name="end_date"
-                  value={formData.end_date}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.end_date ? styles.inputError : ''}`}
-                />
-                {errors.end_date && (
-                  <span className={styles.errorText}>{errors.end_date}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Settings */}
-        {currentStep === 4 && (
-          <div className={styles.formStep}>
-            <div className={styles.stepHeader}>
-              <h3>Group Settings</h3>
-              <p>Configure group visibility and membership settings</p>
-            </div>
-
-            <div className={styles.formField}>
-              <label htmlFor="requirements" className={styles.label}>
-                Membership Requirements
-              </label>
-              <textarea
-                id="requirements"
-                name="requirements"
-                value={formData.requirements}
-                onChange={handleChange}
-                className={`${styles.textarea} ${errors.requirements ? styles.inputError : ''}`}
-                placeholder="Any special requirements or qualifications for membership"
-                rows="3"
-                maxLength="500"
-              />
-              {errors.requirements && (
-                <span className={styles.errorText}>{errors.requirements}</span>
-              )}
-              <span className={styles.charCount}>
-                {formData.requirements.length}/500
-              </span>
-            </div>
-            
-            <div className={styles.checkboxGroup}>
-              <div className={styles.checkboxField}>
-                <input
-                  type="checkbox"
-                  id="active"
-                  name="active"
-                  checked={formData.active}
-                  onChange={handleChange}
-                  className={styles.checkbox}
-                />
-                <label htmlFor="active" className={styles.checkboxLabel}>
-                  Active Group
-                  <span className={styles.checkboxDescription}>
-                    Active groups appear in member registration and accept new members
-                  </span>
-                </label>
-              </div>
-              
-              <div className={styles.checkboxField}>
-                <input
-                  type="checkbox"
-                  id="is_public"
-                  name="is_public"
-                  checked={formData.is_public}
-                  onChange={handleChange}
-                  className={styles.checkbox}
-                />
-                <label htmlFor="is_public" className={styles.checkboxLabel}>
-                  Public Group
-                  <span className={styles.checkboxDescription}>
-                    Public groups are visible to all members and can receive join requests
-                  </span>
-                </label>
-              </div>
-
-              <div className={styles.checkboxField}>
-                <input
-                  type="checkbox"
-                  id="registration_required"
-                  name="registration_required"
-                  checked={formData.registration_required}
-                  onChange={handleChange}
-                  className={styles.checkbox}
-                />
-                <label htmlFor="registration_required" className={styles.checkboxLabel}>
-                  Registration Required
-                  <span className={styles.checkboxDescription}>
-                    Members must formally register to join this group
-                  </span>
-                </label>
-              </div>
-
-              <div className={styles.checkboxField}>
-                <input
-                  type="checkbox"
-                  id="auto_approve"
-                  name="auto_approve"
-                  checked={formData.auto_approve}
-                  onChange={handleChange}
-                  className={styles.checkbox}
-                  disabled={!formData.registration_required}
-                />
-                <label htmlFor="auto_approve" className={styles.checkboxLabel}>
-                  Auto-approve Registrations
-                  <span className={styles.checkboxDescription}>
-                    Automatically approve new member requests (requires registration)
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Form Navigation */}
-        <div className={styles.formNavigation}>
-          <div className={styles.navLeft}>
-            {currentStep > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep}>
-                Previous
-              </Button>
-            )}
-          </div>
-
-          <div className={styles.navRight}>
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            
-            {currentStep < 4 ? (
-              <Button type="button" variant="primary" onClick={nextStep}>
-                Next
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isSubmitting || loading}
-                icon={Save}
-              >
-                {isSubmitting ? 'Saving...' : (group ? 'Update Group' : 'Create Group')}
-              </Button>
-            )}
-          </div>
+          ))}
         </div>
-      </form>
-    </div>
+
+        <form onSubmit={handleSubmit} className={styles.groupForm}>
+          {/* Step 1: Basic Information */}
+          {currentStep === 1 && (
+            <div className={styles.formStep}>
+              <div className={styles.stepHeader}>
+                <h3>Basic Information</h3>
+                <p>Essential details about your group</p>
+              </div>
+              
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label htmlFor="name" className={styles.label}>
+                    Group Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
+                    placeholder="Enter group name"
+                    required
+                    maxLength="100"
+                    disabled={formSubmitting}
+                  />
+                  {errors.name && (
+                    <span className={styles.errorText}>{errors.name}</span>
+                  )}
+                </div>
+                
+                <div className={styles.formField}>
+                  <label htmlFor="category" className={styles.label}>
+                    Category *
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`${styles.select} ${errors.category ? styles.inputError : ''}`}
+                    required
+                    disabled={formSubmitting}
+                  >
+                    {groupCategories.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.category && (
+                    <span className={styles.fieldDescription}>
+                      {groupCategories.find(c => c.value === formData.category)?.description}
+                    </span>
+                  )}
+                  {errors.category && (
+                    <span className={styles.errorText}>{errors.category}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className={styles.formField}>
+                <label htmlFor="description" className={styles.label}>
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+                  placeholder="Describe the group's purpose, activities, and what members can expect"
+                  rows="4"
+                  maxLength="1000"
+                  disabled={formSubmitting}
+                />
+                {errors.description && (
+                  <span className={styles.errorText}>{errors.description}</span>
+                )}
+                <span className={styles.charCount}>
+                  {formData.description.length}/1000
+                </span>
+              </div>
+
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label htmlFor="age_group" className={styles.label}>
+                    Target Age Group
+                  </label>
+                  <select
+                    id="age_group"
+                    name="age_group"
+                    value={formData.age_group}
+                    onChange={handleChange}
+                    className={styles.select}
+                    disabled={formSubmitting}
+                  >
+                    {ageGroups.map((age) => (
+                      <option key={age.value} value={age.value}>
+                        {age.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formField}>
+                  <label htmlFor="max_members" className={styles.label}>
+                    Maximum Members
+                  </label>
+                  <input
+                    type="number"
+                    id="max_members"
+                    name="max_members"
+                    value={formData.max_members}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.max_members ? styles.inputError : ''}`}
+                    placeholder="Leave empty for unlimited"
+                    min="1"
+                    max="1000"
+                    disabled={formSubmitting}
+                  />
+                  {errors.max_members && (
+                    <span className={styles.errorText}>{errors.max_members}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className={styles.formField}>
+                <label className={styles.label}>Tags</label>
+                <div className={styles.tagInput}>
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyPress={handleTagInputKeyPress}
+                    className={styles.input}
+                    placeholder="Add tags (press Enter)"
+                    disabled={formSubmitting}
+                  />
+                  <Button type="button" onClick={addTag} size="sm" variant="outline" disabled={formSubmitting}>
+                    Add
+                  </Button>
+                </div>
+                <div className={styles.tagList}>
+                  {formData.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className={styles.tag}
+                      onClick={() => !formSubmitting && removeTag(tag)}
+                    >
+                      {tag} ×
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Leadership & Contact */}
+          {currentStep === 2 && (
+            <div className={styles.formStep}>
+              <div className={styles.stepHeader}>
+                <h3>Leadership & Contact</h3>
+                <p>Assign leadership and contact information</p>
+              </div>
+              
+              <div className={styles.formField}>
+                <label htmlFor="leader_id" className={styles.label}>
+                  Group Leader
+                </label>
+                <select
+                  id="leader_id"
+                  name="leader_id"
+                  value={formData.leader_id}
+                  onChange={handleChange}
+                  className={styles.select}
+                  disabled={membersLoading || formSubmitting}
+                >
+                  <option value="">Select a leader (optional)</option>
+                  {availableLeaders.map((leader) => (
+                    <option key={leader.id} value={leader.id}>
+                      {leader.first_name} {leader.last_name} - {leader.email}
+                    </option>
+                  ))}
+                </select>
+                {formData.leader_id && (
+                  <div className={styles.selectedLeader}>
+                    {(() => {
+                      const leader = availableLeaders.find(l => l.id === formData.leader_id);
+                      return leader ? (
+                        <div className={styles.leaderPreview}>
+                          <Avatar
+                            src={leader.photo_url}
+                            name={`${leader.first_name} ${leader.last_name}`}
+                            size="sm"
+                          />
+                          <div>
+                            <strong>{leader.first_name} {leader.last_name}</strong>
+                            <p>{leader.email}</p>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
+              </div>
+              
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label htmlFor="contact_email" className={styles.label}>
+                    <Mail size={16} />
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    id="contact_email"
+                    name="contact_email"
+                    value={formData.contact_email}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.contact_email ? styles.inputError : ''}`}
+                    placeholder="group@church.com"
+                    disabled={formSubmitting}
+                  />
+                  {errors.contact_email && (
+                    <span className={styles.errorText}>{errors.contact_email}</span>
+                  )}
+                </div>
+                
+                <div className={styles.formField}>
+                  <label htmlFor="contact_phone" className={styles.label}>
+                    <Phone size={16} />
+                    Contact Phone
+                  </label>
+                  <input
+                    type="tel"
+                    id="contact_phone"
+                    name="contact_phone"
+                    value={formData.contact_phone}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.contact_phone ? styles.inputError : ''}`}
+                    placeholder="(555) 123-4567"
+                    disabled={formSubmitting}
+                  />
+                  {errors.contact_phone && (
+                    <span className={styles.errorText}>{errors.contact_phone}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Meeting Information */}
+          {currentStep === 3 && (
+            <div className={styles.formStep}>
+              <div className={styles.stepHeader}>
+                <h3>Meeting Information</h3>
+                <p>When and where your group meets</p>
+              </div>
+              
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label htmlFor="meeting_frequency" className={styles.label}>
+                    Meeting Frequency
+                  </label>
+                  <select
+                    id="meeting_frequency"
+                    name="meeting_frequency"
+                    value={formData.meeting_frequency}
+                    onChange={handleChange}
+                    className={styles.select}
+                    disabled={formSubmitting}
+                  >
+                    {meetingFrequencies.map((freq) => (
+                      <option key={freq.value} value={freq.value}>
+                        {freq.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formField}>
+                  <label htmlFor="meeting_schedule" className={styles.label}>
+                    Meeting Schedule
+                  </label>
+                  <input
+                    type="text"
+                    id="meeting_schedule"
+                    name="meeting_schedule"
+                    value={formData.meeting_schedule}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.meeting_schedule ? styles.inputError : ''}`}
+                    placeholder="e.g., Sundays at 10:00 AM"
+                    maxLength="200"
+                    disabled={formSubmitting}
+                  />
+                  {errors.meeting_schedule && (
+                    <span className={styles.errorText}>{errors.meeting_schedule}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className={styles.formField}>
+                <label htmlFor="meeting_location" className={styles.label}>
+                  <MapPin size={16} />
+                  Meeting Location
+                </label>
+                <input
+                  type="text"
+                  id="meeting_location"
+                  name="meeting_location"
+                  value={formData.meeting_location}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="e.g., Fellowship Hall, Room 205, or Virtual"
+                  maxLength="200"
+                  disabled={formSubmitting}
+                />
+              </div>
+
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label htmlFor="start_date" className={styles.label}>
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    id="start_date"
+                    name="start_date"
+                    value={formData.start_date}
+                    onChange={handleChange}
+                    className={styles.input}
+                    disabled={formSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <label htmlFor="end_date" className={styles.label}>
+                    End Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    id="end_date"
+                    name="end_date"
+                    value={formData.end_date}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.end_date ? styles.inputError : ''}`}
+                    disabled={formSubmitting}
+                  />
+                  {errors.end_date && (
+                    <span className={styles.errorText}>{errors.end_date}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Settings */}
+          {currentStep === 4 && (
+            <div className={styles.formStep}>
+              <div className={styles.stepHeader}>
+                <h3>Group Settings</h3>
+                <p>Configure group visibility and membership settings</p>
+              </div>
+
+              <div className={styles.formField}>
+                <label htmlFor="requirements" className={styles.label}>
+                  Membership Requirements
+                </label>
+                <textarea
+                  id="requirements"
+                  name="requirements"
+                  value={formData.requirements}
+                  onChange={handleChange}
+                  className={`${styles.textarea} ${errors.requirements ? styles.inputError : ''}`}
+                  placeholder="Any special requirements or qualifications for membership"
+                  rows="3"
+                  maxLength="500"
+                  disabled={formSubmitting}
+                />
+                {errors.requirements && (
+                  <span className={styles.errorText}>{errors.requirements}</span>
+                )}
+                <span className={styles.charCount}>
+                  {formData.requirements.length}/500
+                </span>
+              </div>
+              
+              <div className={styles.checkboxGroup}>
+                <div className={styles.checkboxField}>
+                  <input
+                    type="checkbox"
+                    id="active"
+                    name="active"
+                    checked={formData.active}
+                    onChange={handleChange}
+                    className={styles.checkbox}
+                    disabled={formSubmitting}
+                  />
+                  <label htmlFor="active" className={styles.checkboxLabel}>
+                    Active Group
+                    <span className={styles.checkboxDescription}>
+                      Active groups appear in member registration and accept new members
+                    </span>
+                  </label>
+                </div>
+                
+                <div className={styles.checkboxField}>
+                  <input
+                    type="checkbox"
+                    id="is_public"
+                    name="is_public"
+                    checked={formData.is_public}
+                    onChange={handleChange}
+                    className={styles.checkbox}
+                    disabled={formSubmitting}
+                  />
+                  <label htmlFor="is_public" className={styles.checkboxLabel}>
+                    Public Group
+                    <span className={styles.checkboxDescription}>
+                      Public groups are visible to all members and can receive join requests
+                    </span>
+                  </label>
+                </div>
+
+                <div className={styles.checkboxField}>
+                  <input
+                    type="checkbox"
+                    id="registration_required"
+                    name="registration_required"
+                    checked={formData.registration_required}
+                    onChange={handleChange}
+                    className={styles.checkbox}
+                    disabled={formSubmitting}
+                  />
+                  <label htmlFor="registration_required" className={styles.checkboxLabel}>
+                    Registration Required
+                    <span className={styles.checkboxDescription}>
+                      Members must formally register to join this group
+                    </span>
+                  </label>
+                </div>
+
+                <div className={styles.checkboxField}>
+                  <input
+                    type="checkbox"
+                    id="auto_approve"
+                    name="auto_approve"
+                    checked={formData.auto_approve}
+                    onChange={handleChange}
+                    className={styles.checkbox}
+                    disabled={!formData.registration_required || formSubmitting}
+                  />
+                  <label htmlFor="auto_approve" className={styles.checkboxLabel}>
+                    Auto-approve Registrations
+                    <span className={styles.checkboxDescription}>
+                      Automatically approve new member requests (requires registration)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Form Navigation */}
+          <div className={styles.formNavigation}>
+            <div className={styles.navLeft}>
+              {currentStep > 1 && (
+                <Button type="button" variant="outline" onClick={prevStep} disabled={formSubmitting}>
+                  Previous
+                </Button>
+              )}
+            </div>
+
+            <div className={styles.navRight}>
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={formSubmitting}>
+                Cancel
+              </Button>
+              
+              {currentStep < 4 ? (
+                <Button type="button" variant="primary" onClick={nextStep} disabled={formSubmitting}>
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={formSubmitting || loading}
+                  icon={Save}
+                >
+                  {formSubmitting ? 'Saving...' : (group ? 'Update Group' : 'Create Group')}
+                </Button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </FormContainer>
   );
 };
 

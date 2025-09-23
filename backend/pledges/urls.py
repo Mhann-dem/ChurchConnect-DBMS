@@ -1,6 +1,4 @@
-# ==============================================================================
-# pledges/urls.py - COMPLETE FIX
-# ==============================================================================
+# pledges/urls.py - COMPLETE FIX with proper endpoint mapping
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
@@ -11,20 +9,30 @@ router.register(r'', views.PledgeViewSet, basename='pledge')
 router.register(r'payments', views.PledgePaymentViewSet, basename='pledge-payment')
 router.register(r'reminders', views.PledgeReminderViewSet, basename='pledge-reminder')
 
-# Define URL patterns - CRITICAL: Custom endpoints MUST come BEFORE router URLs
+# FIXED: Custom endpoints that frontend expects (must be before router URLs)
 urlpatterns = [
-    # Custom endpoints that frontend expects (must be before router URLs)
+    # Frontend calls both these endpoints - support both
     path('stats/', views.PledgeViewSet.as_view({'get': 'statistics'}), name='pledge-stats'),
     path('statistics/', views.PledgeViewSet.as_view({'get': 'statistics'}), name='pledge-statistics'),
-    path('export/', views.PledgeViewSet.as_view({'get': 'export_csv'}), name='pledge-export'),
-    path('summary_report/', views.PledgeViewSet.as_view({'get': 'summary_report'}), name='pledge-summary'),
-    path('overdue/', views.PledgeViewSet.as_view({'get': 'overdue'}), name='pledge-overdue'),
-    path('upcoming_payments/', views.PledgeViewSet.as_view({'get': 'upcoming_payments'}), name='pledge-upcoming'),
-    path('bulk_action/', views.PledgeViewSet.as_view({'post': 'bulk_action'}), name='pledge-bulk-action'),
     
-    # Include all router URLs (this will create standard CRUD + other custom actions)
+    # Add missing endpoints that frontend expects
+    path('recent/', views.PledgeViewSet.as_view({'get': 'recent'}), name='pledge-recent'),
+    path('trends/', views.PledgeViewSet.as_view({'get': 'trends'}), name='pledge-trends'),
+    path('export/', views.PledgeViewSet.as_view({'get': 'export_csv'}), name='pledge-export'),
+    path('summary-report/', views.PledgeViewSet.as_view({'get': 'summary_report'}), name='pledge-summary'),
+    path('overdue/', views.PledgeViewSet.as_view({'get': 'overdue'}), name='pledge-overdue'),
+    path('upcoming-payments/', views.PledgeViewSet.as_view({'get': 'upcoming_payments'}), name='pledge-upcoming'),
+    
+    # Bulk operations
+    path('bulk-action/', views.PledgeViewSet.as_view({'post': 'bulk_action'}), name='pledge-bulk-action'),
+    path('bulk-update/', views.PledgeViewSet.as_view({'post': 'bulk_update'}), name='pledge-bulk-update'),
+    path('bulk-delete/', views.PledgeViewSet.as_view({'post': 'bulk_delete'}), name='pledge-bulk-delete'),
+    
+    # Include all router URLs (this creates standard CRUD + other custom actions)
     path('', include(router.urls)),
 ]
+
+app_name = 'pledges'
 
 # This configuration creates the following URL patterns:
 #

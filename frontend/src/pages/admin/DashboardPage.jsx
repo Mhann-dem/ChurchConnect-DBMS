@@ -36,6 +36,8 @@ import { useFamilies } from '../../hooks/useFamilies';
 import dashboardService from '../../services/dashboardService';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
+import { formatCurrency } from '../../utils/formatters';
+import apiMethods from '../../services/api';
 
 const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();

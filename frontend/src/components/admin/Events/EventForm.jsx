@@ -6,6 +6,9 @@ import { useToast } from '../../../hooks/useToast';
 import { eventsService } from '../../../services/events';
 import groupsService from '../../../services/groups';
 import LoadingSpinner from '../../shared/LoadingSpinner';
+// Add these imports to the existing imports
+import { useFormSubmission } from '../../../hooks/useFormSubmission';
+import { FormContainer } from '../../shared/FormContainer';
 
 const EventForm = ({ event, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);

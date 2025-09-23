@@ -1,4 +1,4 @@
-# members/views.py - UPDATED VERSION - Cleaned up imports and added template endpoint
+# members/views.py - FIXED VERSION - Recent members endpoint corrected
 
 import csv
 import json
@@ -15,6 +15,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from .bulk_views import bulk_import_members, get_import_template, test_database_connection
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from .serializers import (
     MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
@@ -26,18 +27,23 @@ from .serializers import (
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def public_member_registration(request):
-    """Public member registration endpoint - no authentication required"""
+    """Public member registration endpoint"""
     try:
         logger.info(f"[Public Registration] Request from IP: {request.META.get('REMOTE_ADDR')}")
         
-        # Create serializer with context
-        serializer = MemberCreateSerializer(
-            data=request.data, 
-            context={'request': request, 'is_public': True}
-        )
+        # Format phone number for Ghana
+        data = request.data.copy()
+        if 'phone' in data and data['phone']:
+            phone = data['phone'].strip()
+            if phone and not phone.startswith('+'):
+                if phone.startswith('0'):
+                    data['phone'] = '+233' + phone[1:]
+                elif len(phone) == 9:
+                    data['phone'] = '+233' + phone
+        
+        serializer = MemberCreateSerializer(data=data)
         
         if serializer.is_valid():
-            # Save member with public registration defaults
             member = serializer.save(
                 registration_source='public_form',
                 is_active=True,
@@ -57,18 +63,10 @@ def public_member_registration(request):
         else:
             logger.warning(f"[Public Registration] Validation errors: {serializer.errors}")
             
-            # Format errors for frontend
-            formatted_errors = {}
-            for field, errors in serializer.errors.items():
-                if isinstance(errors, list):
-                    formatted_errors[field] = errors[0] if errors else 'Invalid value'
-                else:
-                    formatted_errors[field] = str(errors)
-            
             return Response({
                 'success': False,
                 'message': 'Please check the form and correct any errors.',
-                'errors': formatted_errors
+                'errors': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
             
     except Exception as e:
@@ -234,7 +232,8 @@ class MemberViewSet(viewsets.ModelViewSet):
             'message': 'Member deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
     
-    @action(detail=False, methods=['get'], url_path='recent')
+    # FIXED: Corrected the @action decorator and method name
+    @action(detail=False, methods=['get'])
     def recent(self, request):
         """Get recently registered members - FIXED ENDPOINT"""
         try:
@@ -255,11 +254,13 @@ class MemberViewSet(viewsets.ModelViewSet):
             
         except ValueError:
             return Response({
+                'success': False,
                 'error': 'Invalid limit parameter'
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"[MemberViewSet] Recent error: {str(e)}", exc_info=True)
             return Response({
+                'success': False,
                 'error': 'Failed to get recent members'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -728,34 +729,6 @@ class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class MemberTagViewSet(viewsets.ModelViewSet):
-    queryset = MemberTag.objects.all()
-    serializer_class = MemberTagSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class MemberNoteViewSet(viewsets.ModelViewSet):
-    serializer_class = MemberNoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        queryset = MemberNote.objects.select_related('member', 'created_by')
-        member_id = self.request.query_params.get('member_id')
-        if member_id:
-            queryset = queryset.filter(member_id=member_id)
-        return queryset.order_by('-created_at')
-
-
-class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = BulkImportLogSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_superuser or user.is_staff:
-            return BulkImportLog.objects.all().order_by('-started_at')
-        return BulkImportLog.objects.none()
-
 
 class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for viewing bulk import logs - Admin only"""
@@ -771,3 +744,101 @@ class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             logger.warning(f"[BulkImportLogViewSet] Non-admin user {user.email} attempted to access import logs")
             return BulkImportLog.objects.none()
+        
+# Add to members/views.py
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def test_database_connection(request):
+    """Test database connectivity and return system status"""
+    try:
+        from django.db import connection
+        
+        # Test database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            db_status = "connected"
+        
+        # Test member model
+        member_count = Member.objects.count()
+        
+        return Response({
+            'success': True,
+            'database': db_status,
+            'member_count': member_count,
+            'timestamp': timezone.now()
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e),
+            'database': 'disconnected'
+        }, status=500)
+    
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def bulk_import_members(request):
+    """Bulk import members from CSV/Excel"""
+    try:
+        from .utils import BulkImportProcessor
+        
+        if 'file' not in request.FILES:
+            return Response({
+                'success': False,
+                'error': 'No file uploaded'
+            }, status=400)
+        
+        processor = BulkImportProcessor(request.user)
+        import_log = processor.process_file(
+            request.FILES['file'],
+            skip_duplicates=request.data.get('skip_duplicates', True)
+        )
+        
+        return Response({
+            'success': import_log.status in ['completed', 'completed_with_errors'],
+            'data': {
+                'imported': import_log.successful_rows,
+                'failed': import_log.failed_rows,
+                'total': import_log.total_rows
+            },
+            'import_log_id': str(import_log.id)
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_import_template(request):
+    """Download CSV template for member import"""
+    template_info = {
+        'required_columns': [
+            'first_name', 'last_name', 'email', 'phone'
+        ],
+        'optional_columns': [
+            'date_of_birth', 'gender', 'address', 'preferred_contact_method',
+            'preferred_language', 'profession', 'emergency_contact_name', 
+            'emergency_contact_phone', 'notes', 'family_name'
+        ]
+    }
+    
+    # Create CSV template
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="member_import_template.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(template_info['required_columns'] + template_info['optional_columns'])
+    
+    # Add sample row
+    sample_row = [
+        'John', 'Doe', 'john@example.com', '+233241234567',
+        '1990-01-15', 'male', '123 Main St, Accra', 'email',
+        'English', '', 'Jane Doe', '+233241234568', '', ''
+    ]
+    writer.writerow(sample_row)
+    
+    return response

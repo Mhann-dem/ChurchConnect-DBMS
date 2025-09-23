@@ -17,7 +17,7 @@ import {
 import { PledgesList, PledgeForm, PledgeStats } from '../../components/admin/Pledges';
 import { SearchBar, LoadingSpinner, ErrorBoundary } from '../../components/shared';
 import { Button, Card, Badge } from '../../components/ui';
-import { usePledges } from '../../hooks/usePledges';
+import usePledges from '../../hooks/usePledges';
 import { useToast } from '../../hooks/useToast';
 import { useDebounce } from '../../hooks/useDebounce';
 import pledgesService from '../../services/pledges';
