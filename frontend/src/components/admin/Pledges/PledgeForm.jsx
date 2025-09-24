@@ -1,6 +1,7 @@
-// Enhanced PledgeForm.jsx with better success feedback and error handling
+// Enhanced PledgeForm.jsx with updated success feedback and error handling
 import React, { useState, useEffect, useMemo } from 'react';
-import useForm from '../../../hooks/useForm';
+import { useFormSubmission } from '../../../hooks/useFormSubmission';
+import { FormContainer } from '../../shared/FormContainer';
 import { useMembers } from '../../../hooks/useMembers';
 import { useToast } from '../../../hooks/useToast';
 import { Button, Card } from '../../ui';
@@ -14,13 +15,10 @@ import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import styles from './Pledges.module.css';
 
 const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionResult, setSubmissionResult] = useState(null);
   const [memberSearch, setMemberSearch] = useState('');
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [totalCalculated, setTotalCalculated] = useState(0);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const { members, fetchMembers, loading: membersLoading } = useMembers() || {};
   const { showToast } = useToast();
@@ -37,82 +35,100 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     status: pledge?.status || 'active'
   };
 
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  const [warnings, setWarnings] = useState([]);
+
+  // Form submission handler
+  const {
+    isSubmitting: formSubmitting,
+    showSuccess,
+    submissionError,
+    handleSubmit: handleFormSubmit,
+    clearError
+  } = useFormSubmission({
+    onSubmit: async (formData) => {
+      // Validate member selection
+      if (!formData.member_id) {
+        throw new Error('Please select a member');
+      }
+
+      // Prepare submission data
+      const submissionData = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        end_date: formData.frequency === 'one-time' ? null : formData.end_date,
+        calculated_total: totalCalculated
+      };
+
+      console.log('PledgeForm: Submitting data:', submissionData);
+      
+      return await onSubmit(submissionData);
+    },
+    onClose: onCancel,
+    successMessage: pledge ? 'Pledge updated successfully!' : 'Pledge created successfully!',
+    autoCloseDelay: 3000
+  });
+
   // Enhanced validation rules
-  const validationRules = {
-    member_id: [
-      (value) => validateRequired(value, 'Member selection is required')
-    ],
-    amount: [
-      (value) => validateRequired(value, 'Pledge amount is required'),
-      (value) => validateNumber(value, 'Amount must be a valid number'),
-      (value) => {
-        const num = parseFloat(value);
-        if (num <= 0) return 'Amount must be greater than 0';
-        if (num > 1000000) return 'Amount seems unusually large - please verify';
-        return null;
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!values.member_id) {
+      newErrors.member_id = 'Member selection is required';
+    }
+    
+    if (!values.amount) {
+      newErrors.amount = 'Pledge amount is required';
+    } else if (isNaN(values.amount) || parseFloat(values.amount) <= 0) {
+      newErrors.amount = 'Amount must be a valid positive number';
+    } else if (parseFloat(values.amount) > 1000000) {
+      newErrors.amount = 'Amount seems unusually large - please verify';
+    }
+    
+    if (!values.frequency) {
+      newErrors.frequency = 'Frequency is required';
+    }
+    
+    if (!values.start_date) {
+      newErrors.start_date = 'Start date is required';
+    } else {
+      const startDate = new Date(values.start_date);
+      const today = new Date();
+      const diffMonths = (startDate.getFullYear() - today.getFullYear()) * 12 + 
+                        (startDate.getMonth() - today.getMonth());
+      if (diffMonths < -12) {
+        newErrors.start_date = 'Start date cannot be more than 1 year in the past';
       }
-    ],
-    frequency: [
-      (value) => validateRequired(value, 'Frequency is required')
-    ],
-    start_date: [
-      (value) => validateRequired(value, 'Start date is required'),
-      (value) => validateDate(value, 'Invalid start date'),
-      (value) => {
-        const today = new Date();
-        const startDate = new Date(value);
-        const diffMonths = (startDate.getFullYear() - today.getFullYear()) * 12 + 
-                          (startDate.getMonth() - today.getMonth());
-        if (diffMonths < -12) {
-          return 'Start date cannot be more than 1 year in the past';
-        }
-        return null;
-      }
-    ],
-    end_date: [
-      (value, formValues) => {
-        if (formValues.frequency === 'one-time') return null;
-        if (!value) return 'End date is required for recurring pledges';
-        return validateDate(value, 'Invalid end date');
-      },
-      (value, formValues) => {
-        if (formValues.frequency === 'one-time' || !value || !formValues.start_date) return null;
-        const startDate = new Date(formValues.start_date);
-        const endDate = new Date(value);
+    }
+    
+    if (values.frequency !== 'one-time') {
+      if (!values.end_date) {
+        newErrors.end_date = 'End date is required for recurring pledges';
+      } else if (values.start_date) {
+        const startDate = new Date(values.start_date);
+        const endDate = new Date(values.end_date);
         
         if (endDate <= startDate) {
-          return 'End date must be after start date';
+          newErrors.end_date = 'End date must be after start date';
         }
         
-        // Check for reasonable duration
         const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
                           (endDate.getMonth() - startDate.getMonth());
         
-        if (monthsDiff > 60) { // 5 years
-          return 'Pledge duration exceeds 5 years - please verify this is correct';
+        if (monthsDiff > 60) {
+          newErrors.end_date = 'Pledge duration exceeds 5 years - please verify this is correct';
         }
-        
-        if (monthsDiff < 1 && formValues.frequency !== 'weekly') {
-          return 'Pledge duration is less than 1 month';
-        }
-        
-        return null;
       }
-    ],
-    notes: [
-      (value) => {
-        if (value && value.length > 1000) {
-          return 'Notes cannot exceed 1000 characters';
-        }
-        return null;
-      }
-    ]
-  };
+    }
+    
+    if (values.notes && values.notes.length > 1000) {
+      newErrors.notes = 'Notes cannot exceed 1000 characters';
+    }
 
-  const { values, errors, warnings, handleChange, handleSubmit, isValid, setFieldValue, validateField } = useForm(
-    initialValues,
-    validationRules
-  );
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Frequency options with descriptions
   const frequencyOptions = [
@@ -159,7 +175,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         return name.toLowerCase().includes(searchLower) ||
                email.toLowerCase().includes(searchLower);
       });
-      setFilteredMembers(filtered.slice(0, 10)); // Limit to 10 results
+      setFilteredMembers(filtered.slice(0, 10));
     } else {
       setFilteredMembers([]);
     }
@@ -209,17 +225,33 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     setTotalCalculated(calculateTotalPledged);
   }, [calculateTotalPledged]);
 
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setValues(prev => ({ ...prev, [name]: value }));
+    
+    // Clear field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
   // Member selection handlers
   const handleMemberSelect = (member) => {
     if (!member) return;
     
-    setFieldValue('member_id', member.id);
-    setFieldValue('member_name', member.name || member.full_name || '');
+    setValues(prev => ({
+      ...prev,
+      member_id: member.id,
+      member_name: member.name || member.full_name || ''
+    }));
     setMemberSearch(member.name || member.full_name || '');
     setShowMemberDropdown(false);
     
     // Clear member validation error
-    validateField('member_id', member.id);
+    if (errors.member_id) {
+      setErrors(prev => ({ ...prev, member_id: null }));
+    }
   };
 
   const handleMemberSearchChange = (e) => {
@@ -228,8 +260,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     setShowMemberDropdown(value.length > 0);
     
     if (!value) {
-      setFieldValue('member_id', '');
-      setFieldValue('member_name', '');
+      setValues(prev => ({ ...prev, member_id: '', member_name: '' }));
     }
   };
 
@@ -240,172 +271,46 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     }, 200);
   };
 
-  // Enhanced form submission with better feedback
-  const onFormSubmit = async (formData) => {
-    if (!onSubmit) return;
+  // Form submission
+  const onFormSubmit = async (e) => {
+    e.preventDefault();
     
-    setIsSubmitting(true);
-    setSubmissionResult(null);
-    setShowSuccessMessage(false);
-    
-    try {
-      // Validate member selection
-      if (!formData.member_id) {
-        if (showToast) {
-          showToast('Please select a member', 'error');
-        }
-        setSubmissionResult({
-          success: false,
-          error: 'Please select a member'
-        });
-        return;
-      }
-
-      // Prepare submission data
-      const submissionData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        // Ensure end_date is null for one-time pledges
-        end_date: formData.frequency === 'one-time' ? null : formData.end_date,
-        // Add calculated total if needed
-        calculated_total: totalCalculated
-      };
-
-      console.log('PledgeForm: Submitting data:', submissionData);
-      
-      const result = await onSubmit(submissionData);
-      
-      // Handle different response formats
-      let success = false;
-      let message = '';
-      let data = null;
-
-      if (result && typeof result === 'object') {
-        success = result.success !== false;
-        message = result.message || (pledge ? 'Pledge updated successfully' : 'Pledge created successfully');
-        data = result.data || result;
-      } else {
-        success = true;
-        message = pledge ? 'Pledge updated successfully' : 'Pledge created successfully';
-        data = result;
-      }
-
-      setSubmissionResult({
-        success,
-        message,
-        data
-      });
-
-      if (success) {
-        setShowSuccessMessage(true);
-        
-        if (showToast) {
-          showToast(message, 'success');
-        }
-
-        // Auto-close success message after 3 seconds and close form
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-          if (onCancel) {
-            onCancel();
-          }
-        }, 3000);
-      } else {
-        if (showToast) {
-          showToast(message || 'Failed to save pledge', 'error');
-        }
-      }
-      
-    } catch (error) {
-      console.error('PledgeForm: Submission error:', error);
-      
-      const errorMessage = error?.response?.data?.error ||
-                          error?.response?.data?.message ||
-                          error?.message ||
-                          (pledge ? 'Failed to update pledge' : 'Failed to create pledge');
-      
-      setSubmissionResult({
-        success: false,
-        error: errorMessage,
-        details: error?.response?.data
-      });
-      
-      if (showToast) {
-        showToast(errorMessage, 'error');
-      }
-    } finally {
-      setIsSubmitting(false);
+    if (!validateForm()) {
+      return;
     }
+
+    clearError();
+    await handleFormSubmit(values, e);
   };
 
-  const isLoading = isSubmitting || externalLoading;
+  const isLoading = formSubmitting || externalLoading;
+  const isValid = values.member_id && values.amount && values.frequency && values.start_date;
 
   return (
-    <Card className={styles.pledgeForm}>
-      <div className={styles.formHeader}>
-        <h2 className={styles.formTitle}>
-          {pledge ? 'Edit Pledge' : 'Create New Pledge'}
-        </h2>
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          className={styles.closeButton}
-          disabled={isLoading}
-        >
-          ×
-        </Button>
-      </div>
-
-      {/* Success Message */}
-      {showSuccessMessage && submissionResult?.success && (
-        <div className={styles.successMessage}>
-          <CheckCircle size={20} className={styles.successIcon} />
-          <div className={styles.successContent}>
-            <h4 className={styles.successTitle}>Success!</h4>
-            <p className={styles.successText}>
-              {submissionResult.message}
-            </p>
-            <p className={styles.successSubtext}>
-              This form will close automatically in a few seconds.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {submissionResult && !submissionResult.success && (
-        <div className={styles.errorMessage}>
-          <AlertCircle size={20} className={styles.errorIcon} />
-          <div className={styles.errorContent}>
-            <h4 className={styles.errorTitle}>Error</h4>
-            <p className={styles.errorText}>
-              {submissionResult.error}
-            </p>
-            {submissionResult.details && (
-              <details className={styles.errorDetails}>
-                <summary>Technical Details</summary>
-                <pre>{JSON.stringify(submissionResult.details, null, 2)}</pre>
-              </details>
-            )}
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>
+    <FormContainer
+      title={pledge ? 'Edit Pledge' : 'Create New Pledge'}
+      onClose={onCancel}
+      showSuccess={showSuccess}
+      successMessage={pledge ? 'Pledge updated successfully!' : 'Pledge created successfully!'}
+      submissionError={submissionError}
+      isSubmitting={isLoading}
+      maxWidth="600px"
+    >
+      <form onSubmit={onFormSubmit} className={styles.form}>
         {/* Member Selection */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>
             Member *
           </label>
           <div className={styles.memberSearchContainer}>
-            <Input
+            <input
               type="text"
               placeholder="Search for member by name or email..."
               value={memberSearch}
               onChange={handleMemberSearchChange}
               onBlur={handleMemberSearchBlur}
               onFocus={() => setShowMemberDropdown(memberSearch.length > 0)}
-              error={errors.member_id}
+              className={`${styles.input} ${errors.member_id ? styles.inputError : ''}`}
               disabled={isLoading || membersLoading}
             />
             
@@ -435,6 +340,10 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                 </div>
               </div>
             )}
+            
+            {errors.member_id && (
+              <div className={styles.errorText}>{errors.member_id}</div>
+            )}
           </div>
         </div>
 
@@ -444,7 +353,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             <label className={styles.formLabel}>
               Pledge Amount *
             </label>
-            <Input
+            <input
               type="number"
               step="0.01"
               min="0"
@@ -453,9 +362,12 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
               value={values.amount}
               onChange={handleChange}
               name="amount"
-              error={errors.amount}
+              className={`${styles.input} ${errors.amount ? styles.inputError : ''}`}
               disabled={isLoading}
             />
+            {errors.amount && (
+              <div className={styles.errorText}>{errors.amount}</div>
+            )}
           </div>
 
           {/* Frequency */}
@@ -463,14 +375,22 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             <label className={styles.formLabel}>
               Payment Frequency *
             </label>
-            <Select
+            <select
               value={values.frequency}
               onChange={handleChange}
               name="frequency"
-              options={frequencyOptions}
-              error={errors.frequency}
+              className={`${styles.select} ${errors.frequency ? styles.inputError : ''}`}
               disabled={isLoading}
-            />
+            >
+              {frequencyOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.frequency && (
+              <div className={styles.errorText}>{errors.frequency}</div>
+            )}
           </div>
         </div>
 
@@ -480,13 +400,17 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             <label className={styles.formLabel}>
               Start Date *
             </label>
-            <DatePicker
+            <input
+              type="date"
               value={values.start_date}
               onChange={handleChange}
               name="start_date"
-              error={errors.start_date}
+              className={`${styles.input} ${errors.start_date ? styles.inputError : ''}`}
               disabled={isLoading}
             />
+            {errors.start_date && (
+              <div className={styles.errorText}>{errors.start_date}</div>
+            )}
           </div>
 
           {values.frequency !== 'one-time' && (
@@ -494,14 +418,18 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
               <label className={styles.formLabel}>
                 End Date *
               </label>
-              <DatePicker
+              <input
+                type="date"
                 value={values.end_date}
                 onChange={handleChange}
                 name="end_date"
-                error={errors.end_date}
+                className={`${styles.input} ${errors.end_date ? styles.inputError : ''}`}
                 disabled={isLoading}
                 min={values.start_date}
               />
+              {errors.end_date && (
+                <div className={styles.errorText}>{errors.end_date}</div>
+              )}
             </div>
           )}
         </div>
@@ -512,14 +440,19 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             <label className={styles.formLabel}>
               Status
             </label>
-            <Select
+            <select
               value={values.status}
               onChange={handleChange}
               name="status"
-              options={statusOptions}
-              error={errors.status}
+              className={`${styles.select} ${errors.status ? styles.inputError : ''}`}
               disabled={isLoading}
-            />
+            >
+              {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 
@@ -530,10 +463,10 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
               Total Pledged Amount:
             </div>
             <div className={styles.calculationValue}>
-              {formatCurrency(totalCalculated)}
+              {formatCurrency ? formatCurrency(totalCalculated) : `$${totalCalculated.toFixed(2)}`}
             </div>
             <div className={styles.calculationDetails}>
-              {formatCurrency(values.amount)} × {Math.ceil(totalCalculated / parseFloat(values.amount))} payments
+              {formatCurrency ? formatCurrency(values.amount) : `$${parseFloat(values.amount).toFixed(2)}`} × {Math.ceil(totalCalculated / parseFloat(values.amount))} payments
             </div>
           </div>
         )}
@@ -555,16 +488,19 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
           <label className={styles.formLabel}>
             Notes
           </label>
-          <TextArea
+          <textarea
             placeholder="Additional notes about this pledge..."
             value={values.notes}
             onChange={handleChange}
             name="notes"
             rows={3}
-            error={errors.notes}
+            className={`${styles.textarea} ${errors.notes ? styles.inputError : ''}`}
             disabled={isLoading}
             maxLength={1000}
           />
+          {errors.notes && (
+            <div className={styles.errorText}>{errors.notes}</div>
+          )}
           {values.notes && (
             <div className={styles.characterCount}>
               {values.notes.length}/1000 characters
@@ -574,20 +510,19 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
 
         {/* Form Actions */}
         <div className={styles.formActions}>
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onCancel}
             disabled={isLoading}
+            className={styles.cancelButton}
           >
             Cancel
-          </Button>
+          </button>
           
-          <Button
+          <button
             type="submit"
-            variant="primary"
-            disabled={!isValid || isLoading || !values.member_id || showSuccessMessage}
-            loading={isLoading}
+            disabled={!isValid || isLoading || !values.member_id || showSuccess}
+            className={`${styles.submitButton} ${(!isValid || isLoading) ? styles.disabled : ''}`}
           >
             {isLoading ? (
               <div className={styles.loadingContent}>
@@ -597,10 +532,10 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             ) : (
               pledge ? 'Update Pledge' : 'Create Pledge'
             )}
-          </Button>
+          </button>
         </div>
       </form>
-    </Card>
+    </FormContainer>
   );
 };
 

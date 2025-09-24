@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft } from 'lucide-react';
+import { useFormSubmission } from '../../../hooks/useFormSubmission';
+import { FormContainer } from '../../shared/FormContainer';
 import styles from './Members.module.css';
 
 // Simple UI components
@@ -43,6 +45,7 @@ const Input = ({
   placeholder = '', 
   helpText = '',
   className = '',
+  disabled = false,
   ...props 
 }) => (
   <div className={`${styles.formGroup} ${className}`}>
@@ -60,6 +63,7 @@ const Input = ({
       placeholder={placeholder}
       className={`${styles.input} ${error && touched ? styles.inputError : ''}`}
       required={required}
+      disabled={disabled}
       {...props}
     />
     {helpText && <span className={styles.helpText}>{helpText}</span>}
@@ -78,6 +82,7 @@ const Select = ({
   required = false, 
   children, 
   className = '',
+  disabled = false,
   ...props 
 }) => (
   <div className={`${styles.formGroup} ${className}`}>
@@ -93,6 +98,7 @@ const Select = ({
       onBlur={onBlur}
       className={`${styles.select} ${error && touched ? styles.inputError : ''}`}
       required={required}
+      disabled={disabled}
       {...props}
     >
       {children}
@@ -113,6 +119,7 @@ const TextArea = ({
   placeholder = '', 
   rows = 3,
   className = '',
+  disabled = false,
   ...props 
 }) => (
   <div className={`${styles.formGroup} ${className}`}>
@@ -130,6 +137,7 @@ const TextArea = ({
       rows={rows}
       className={`${styles.textarea} ${error && touched ? styles.inputError : ''}`}
       required={required}
+      disabled={disabled}
       {...props}
     />
     {error && touched && <span className={styles.errorText}>{error}</span>}
@@ -142,6 +150,7 @@ const Checkbox = ({
   checked = false, 
   onChange, 
   className = '',
+  disabled = false,
   ...props 
 }) => (
   <div className={`${styles.checkboxGroup} ${className}`}>
@@ -152,6 +161,7 @@ const Checkbox = ({
         checked={checked}
         onChange={onChange}
         className={styles.checkbox}
+        disabled={disabled}
         {...props}
       />
       <span className={styles.checkboxText}>{label}</span>
@@ -223,78 +233,6 @@ const validateMemberForm = (values) => {
   return errors;
 };
 
-// Simple form hook
-const useForm = ({ initialValues, validate, onSubmit }) => {
-  const [values, setValues] = useState(initialValues);
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setValues(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleBlur = (e) => {
-    const { name } = e.target;
-    setTouched(prev => ({ ...prev, [name]: true }));
-    
-    if (validate) {
-      const fieldErrors = validate(values);
-      setErrors(prev => ({ ...prev, [name]: fieldErrors[name] }));
-    }
-  };
-
-  const handleSubmit = async (formData) => {
-    try {
-      setIsSubmitting(true);
-      
-      // Choose service method based on context
-      const result = formData.registrationContext === 'admin_portal' 
-        ? await membersService.createMember(formData)
-        : await membersService.publicRegister(formData);
-      
-      if (result.success) {
-        // SUCCESS FEEDBACK
-        showToast(result.message || 'Member saved successfully!', 'success');
-        
-        // CLOSE MODAL/FORM after brief delay
-        setTimeout(() => {
-          if (onClose) onClose({ success: true, data: result });
-          if (onSuccess) onSuccess(result);
-        }, 1000);
-        
-        return { success: true };
-      } else {
-        // SHOW ERRORS
-        showToast(result.error || 'Failed to save member', 'error');
-        setErrors(result.validationErrors || { submit: result.error });
-        return { success: false, error: result.error };
-      }
-      
-    } catch (error) {
-      showToast('Network error. Please try again.', 'error');
-      return { success: false, error: error.message };
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    setValues,
-    isSubmitting
-  };
-};
-
 const mockMemberData = {
   id: 1,
   first_name: 'John',
@@ -350,33 +288,67 @@ const MemberForm = () => {
     emergency_contact_phone: ''
   };
 
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  // Form submission handler
   const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    setValues,
-    isSubmitting
-  } = useForm({
-    initialValues,
-    validate: validateMemberForm,
+    isSubmitting,
+    showSuccess,
+    submissionError,
+    handleSubmit: handleFormSubmit,
+    clearError
+  } = useFormSubmission({
     onSubmit: async (formValues) => {
-      try {
-        if (isEditing) {
-          await updateMember(id, formValues);
-          showToast('Member updated successfully', 'success');
-        } else {
-          await createMember(formValues);
-          showToast('Member created successfully', 'success');
-        }
-        navigate('/admin/members');
-      } catch (error) {
-        showToast(error.message || 'Failed to save member', 'error');
+      if (isEditing) {
+        return await updateMember(id, formValues);
+      } else {
+        return await createMember(formValues);
       }
-    }
+    },
+    onSuccess: () => {
+      // Don't navigate immediately, let the success show first
+      setTimeout(() => {
+        navigate('/admin/members');
+      }, 1500);
+    },
+    successMessage: isEditing ? 'Member updated successfully!' : 'Member created successfully!',
+    autoCloseDelay: 3000
   });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setValues(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    const fieldErrors = validateMemberForm(values);
+    setErrors(prev => ({ ...prev, [name]: fieldErrors[name] }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validate form
+    const validationErrors = validateMemberForm(values);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setTouched(Object.keys(validationErrors).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+      return;
+    }
+
+    // Clear errors and submit
+    setErrors({});
+    clearError();
+    handleFormSubmit(values, e);
+  };
 
   useEffect(() => {
     if (isEditing) {
@@ -406,13 +378,15 @@ const MemberForm = () => {
       ? currentGroups.filter(gId => gId !== groupId)
       : [...currentGroups, groupId];
     
-    handleChange({
-      target: { name: 'groups', value: newGroups }
-    });
+    setValues(prev => ({ ...prev, groups: newGroups }));
   };
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>;
+    return (
+      <div className={styles.formContainer}>
+        <div className={styles.loading}>Loading...</div>
+      </div>
+    );
   }
 
   return (
@@ -431,278 +405,302 @@ const MemberForm = () => {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Personal Information</h2>
-          
-          <div className={styles.formGrid}>
-            <Input
-              name="first_name"
-              label="First Name"
-              value={values.first_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.first_name}
-              touched={touched.first_name}
-              required
-            />
+      <FormContainer
+        title={isEditing ? 'Edit Member' : 'Add New Member'}
+        onClose={() => navigate('/admin/members')}
+        showSuccess={showSuccess}
+        successMessage={isEditing ? 'Member updated successfully!' : 'Member created successfully!'}
+        submissionError={submissionError}
+        isSubmitting={isSubmitting}
+        maxWidth="800px"
+      >
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Personal Information</h2>
             
-            <Input
-              name="last_name"
-              label="Last Name"
-              value={values.last_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.last_name}
-              touched={touched.last_name}
-              required
-            />
-            
-            <Input
-              name="preferred_name"
-              label="Preferred Name"
-              value={values.preferred_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.preferred_name}
-              touched={touched.preferred_name}
-              placeholder="Optional"
-            />
-            
-            <Input
-              name="date_of_birth"
-              label="Date of Birth"
-              type="date"
-              value={values.date_of_birth}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.date_of_birth}
-              touched={touched.date_of_birth}
-              required
-            />
-            
-            <Select
-              name="gender"
-              label="Gender"
-              value={values.gender}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.gender}
-              touched={touched.gender}
-              required
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
-            </Select>
-          </div>
-        </Card>
-
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Contact Information</h2>
-          
-          <div className={styles.formGrid}>
-            <Input
-              name="email"
-              label="Email Address"
-              type="email"
-              value={values.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.email}
-              touched={touched.email}
-              required
-            />
-            
-            <Input
-              name="phone"
-              label="Phone Number"
-              type="tel"
-              value={values.phone}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.phone}
-              touched={touched.phone}
-              required
-            />
-            
-            <Input
-              name="alternate_phone"
-              label="Alternate Phone"
-              type="tel"
-              value={values.alternate_phone}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.alternate_phone}
-              touched={touched.alternate_phone}
-              placeholder="Optional"
-            />
-            
-            <Select
-              name="preferred_contact_method"
-              label="Preferred Contact Method"
-              value={values.preferred_contact_method}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.preferred_contact_method}
-              touched={touched.preferred_contact_method}
-            >
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-              <option value="sms">SMS</option>
-              <option value="mail">Mail</option>
-              <option value="no_contact">No Contact</option>
-            </Select>
-          </div>
-          
-          <TextArea
-            name="address"
-            label="Address"
-            value={values.address}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.address}
-            touched={touched.address}
-            placeholder="Optional"
-            rows={3}
-          />
-        </Card>
-
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Emergency Contact</h2>
-          
-          <div className={styles.formGrid}>
-            <Input
-              name="emergency_contact_name"
-              label="Emergency Contact Name"
-              value={values.emergency_contact_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.emergency_contact_name}
-              touched={touched.emergency_contact_name}
-              placeholder="Optional"
-            />
-            
-            <Input
-              name="emergency_contact_phone"
-              label="Emergency Contact Phone"
-              type="tel"
-              value={values.emergency_contact_phone}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.emergency_contact_phone}
-              touched={touched.emergency_contact_phone}
-              placeholder="Optional"
-            />
-          </div>
-        </Card>
-
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Groups & Ministries</h2>
-          
-          <div className={styles.groupsGrid}>
-            {groups.map(group => (
-              <Checkbox
-                key={group.id}
-                name={`group_${group.id}`}
-                label={group.name}
-                checked={(values.groups || []).includes(group.id)}
-                onChange={() => handleGroupChange(group.id)}
+            <div className={styles.formGrid}>
+              <Input
+                name="first_name"
+                label="First Name"
+                value={values.first_name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.first_name}
+                touched={touched.first_name}
+                required
+                disabled={isSubmitting}
               />
-            ))}
-          </div>
-        </Card>
+              
+              <Input
+                name="last_name"
+                label="Last Name"
+                value={values.last_name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.last_name}
+                touched={touched.last_name}
+                required
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                name="preferred_name"
+                label="Preferred Name"
+                value={values.preferred_name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.preferred_name}
+                touched={touched.preferred_name}
+                placeholder="Optional"
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                name="date_of_birth"
+                label="Date of Birth"
+                type="date"
+                value={values.date_of_birth}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.date_of_birth}
+                touched={touched.date_of_birth}
+                required
+                disabled={isSubmitting}
+              />
+              
+              <Select
+                name="gender"
+                label="Gender"
+                value={values.gender}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.gender}
+                touched={touched.gender}
+                required
+                disabled={isSubmitting}
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </Select>
+            </div>
+          </Card>
 
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Additional Information</h2>
-          
-          <div className={styles.formGrid}>
-            <Select
-              name="preferred_language"
-              label="Preferred Language"
-              value={values.preferred_language}
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Contact Information</h2>
+            
+            <div className={styles.formGrid}>
+              <Input
+                name="email"
+                label="Email Address"
+                type="email"
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.email}
+                touched={touched.email}
+                required
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                name="phone"
+                label="Phone Number"
+                type="tel"
+                value={values.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.phone}
+                touched={touched.phone}
+                required
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                name="alternate_phone"
+                label="Alternate Phone"
+                type="tel"
+                value={values.alternate_phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.alternate_phone}
+                touched={touched.alternate_phone}
+                placeholder="Optional"
+                disabled={isSubmitting}
+              />
+              
+              <Select
+                name="preferred_contact_method"
+                label="Preferred Contact Method"
+                value={values.preferred_contact_method}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.preferred_contact_method}
+                touched={touched.preferred_contact_method}
+                disabled={isSubmitting}
+              >
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="sms">SMS</option>
+                <option value="mail">Mail</option>
+                <option value="no_contact">No Contact</option>
+              </Select>
+            </div>
+            
+            <TextArea
+              name="address"
+              label="Address"
+              value={values.address}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors.preferred_language}
-              touched={touched.preferred_language}
-            >
-              <option value="English">English</option>
-              <option value="Spanish">Spanish</option>
-              <option value="French">French</option>
-              <option value="Other">Other</option>
-            </Select>
-          </div>
-          
-          <TextArea
-            name="accessibility_needs"
-            label="Accessibility Needs"
-            value={values.accessibility_needs}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.accessibility_needs}
-            touched={touched.accessibility_needs}
-            placeholder="Optional - Any special accommodations needed"
-            rows={3}
-          />
-          
-          <TextArea
-            name="notes"
-            label="Notes"
-            value={values.notes}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.notes}
-            touched={touched.notes}
-            placeholder="Optional - Any additional notes"
-            rows={4}
-          />
-        </Card>
+              error={errors.address}
+              touched={touched.address}
+              placeholder="Optional"
+              rows={3}
+              disabled={isSubmitting}
+            />
+          </Card>
 
-        <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Status & Preferences</h2>
-          
-          <div className={styles.checkboxGrid}>
-            <Checkbox
-              name="is_active"
-              label="Active Member"
-              checked={values.is_active}
-              onChange={(e) => handleChange({
-                target: { name: 'is_active', value: e.target.checked }
-              })}
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Emergency Contact</h2>
+            
+            <div className={styles.formGrid}>
+              <Input
+                name="emergency_contact_name"
+                label="Emergency Contact Name"
+                value={values.emergency_contact_name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.emergency_contact_name}
+                touched={touched.emergency_contact_name}
+                placeholder="Optional"
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                name="emergency_contact_phone"
+                label="Emergency Contact Phone"
+                type="tel"
+                value={values.emergency_contact_phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.emergency_contact_phone}
+                touched={touched.emergency_contact_phone}
+                placeholder="Optional"
+                disabled={isSubmitting}
+              />
+            </div>
+          </Card>
+
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Groups & Ministries</h2>
+            
+            <div className={styles.groupsGrid}>
+              {groups.map(group => (
+                <Checkbox
+                  key={group.id}
+                  name={`group_${group.id}`}
+                  label={group.name}
+                  checked={(values.groups || []).includes(group.id)}
+                  onChange={() => handleGroupChange(group.id)}
+                  disabled={isSubmitting}
+                />
+              ))}
+            </div>
+          </Card>
+
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Additional Information</h2>
+            
+            <div className={styles.formGrid}>
+              <Select
+                name="preferred_language"
+                label="Preferred Language"
+                value={values.preferred_language}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.preferred_language}
+                touched={touched.preferred_language}
+                disabled={isSubmitting}
+              >
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="Other">Other</option>
+              </Select>
+            </div>
+            
+            <TextArea
+              name="accessibility_needs"
+              label="Accessibility Needs"
+              value={values.accessibility_needs}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.accessibility_needs}
+              touched={touched.accessibility_needs}
+              placeholder="Optional - Any special accommodations needed"
+              rows={3}
+              disabled={isSubmitting}
             />
             
-            <Checkbox
-              name="communication_opt_in"
-              label="Allow Communications"
-              checked={values.communication_opt_in}
-              onChange={(e) => handleChange({
-                target: { name: 'communication_opt_in', value: e.target.checked }
-              })}
+            <TextArea
+              name="notes"
+              label="Notes"
+              value={values.notes}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.notes}
+              touched={touched.notes}
+              placeholder="Optional - Any additional notes"
+              rows={4}
+              disabled={isSubmitting}
             />
-          </div>
-        </Card>
+          </Card>
 
-        <div className={styles.formActions}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/admin/members')}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className={styles.submitButton}
-          >
-            <Save size={16} />
-            {isSubmitting ? 'Saving...' : isEditing ? 'Update Member' : 'Create Member'}
-          </Button>
-        </div>
-      </form>
+          <Card className={styles.formCard}>
+            <h2 className={styles.sectionTitle}>Status & Preferences</h2>
+            
+            <div className={styles.checkboxGrid}>
+              <Checkbox
+                name="is_active"
+                label="Active Member"
+                checked={values.is_active}
+                onChange={(e) => setValues(prev => ({ ...prev, is_active: e.target.checked }))}
+                disabled={isSubmitting}
+              />
+              
+              <Checkbox
+                name="communication_opt_in"
+                label="Allow Communications"
+                checked={values.communication_opt_in}
+                onChange={(e) => setValues(prev => ({ ...prev, communication_opt_in: e.target.checked }))}
+                disabled={isSubmitting}
+              />
+            </div>
+          </Card>
+
+          <div className={styles.formActions}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/admin/members')}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className={styles.submitButton}
+            >
+              <Save size={16} />
+              {isSubmitting ? 'Saving...' : isEditing ? 'Update Member' : 'Create Member'}
+            </Button>
+          </div>
+        </form>
+      </FormContainer>
     </div>
   );
 };

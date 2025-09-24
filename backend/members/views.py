@@ -15,7 +15,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from .bulk_views import bulk_import_members, get_import_template, test_database_connection
+# from .bulk_views import bulk_import_members, get_import_template, test_database_connection
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from .serializers import (
     MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
