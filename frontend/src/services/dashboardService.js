@@ -1,4 +1,4 @@
-// services/dashboardService.js - COMPLETE FIXED VERSION
+// services/dashboardService.js - CORRECTED FOR YOUR ACTUAL URL PATTERNS
 import apiMethods from './api';
 
 class DashboardService {
@@ -107,11 +107,39 @@ class DashboardService {
     }
   }
 
-  // Get overall system statistics
+  // CORRECTED: Get overall system statistics
   async getStats() {
     const cacheKey = this.getCacheKey('dashboard_stats');
     return await this.makeRequest(
-      () => apiMethods.dashboard.getStats(),
+      async () => {
+        console.log('[DashboardService] Fetching core dashboard stats...');
+        
+        try {
+          // Try core dashboard endpoint first
+          const response = await apiMethods.get('core/dashboard/stats/');
+          console.log('[DashboardService] Core stats response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Core stats failed, aggregating from individual endpoints');
+          
+          // Fallback: aggregate from individual statistics
+          const [memberStats, groupStats, familyStats, pledgeStats] = await Promise.allSettled([
+            this.getMemberStats(),
+            this.getGroupStats(),
+            this.getFamilyStats(),
+            this.getPledgeStats()
+          ]);
+          
+          return {
+            total_members: memberStats.status === 'fulfilled' ? (memberStats.value?.summary?.total_members || 0) : 0,
+            total_groups: groupStats.status === 'fulfilled' ? (groupStats.value?.total_groups || 0) : 0,
+            total_pledges: pledgeStats.status === 'fulfilled' ? (pledgeStats.value?.active_pledges || 0) : 0,
+            total_families: familyStats.status === 'fulfilled' ? (familyStats.value?.total_families || 0) : 0,
+            total_events: 0, // Events might not be implemented yet
+            monthly_revenue: pledgeStats.status === 'fulfilled' ? (pledgeStats.value?.monthly_total || 0) : 0
+          };
+        }
+      },
       cacheKey,
       true,
       { 
@@ -125,11 +153,36 @@ class DashboardService {
     );
   }
 
-  // Get member statistics with time range
+  // CORRECTED: Get member statistics - WORKING endpoint
   async getMemberStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('member_stats', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.dashboard.getMemberStats(timeRange),
+      async () => {
+        console.log('[DashboardService] Fetching member stats...');
+        
+        // Use the WORKING endpoint from your logs: members/statistics/
+        const response = await apiMethods.get('members/statistics/', { 
+          params: { range: timeRange } 
+        });
+        
+        console.log('[DashboardService] Member stats raw response:', response.data);
+        
+        // Handle your Django MemberStatisticsViewSet response structure
+        const data = response.data;
+        const processedStats = {
+          summary: data.summary || {
+            total_members: 0, 
+            active_members: 0, 
+            inactive_members: 0
+          },
+          new_members: data.summary?.recent_registrations || 0,
+          growth_rate: data.summary?.growth_rate || 0,
+          retention_rate: data.retention_rate || 0
+        };
+        
+        console.log('[DashboardService] Processed member stats:', processedStats);
+        return processedStats;
+      },
       cacheKey,
       true,
       { 
@@ -145,11 +198,89 @@ class DashboardService {
     );
   }
 
-  // Get pledge statistics with time range
+  // CORRECTED: Get recent members - WORKING endpoint
+  async getRecentMembers(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_members', { limit });
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching recent members...');
+        
+        try {
+          // Use the WORKING endpoint from your logs: members/recent/
+          const response = await apiMethods.get('members/recent/', { 
+            params: { limit } 
+          });
+          
+          console.log('[DashboardService] Recent members raw response:', response.data);
+          
+          // Your Django MemberViewSet.recent returns: { success: true, results: [...], count: 4 }
+          if (response.data?.success && response.data?.results) {
+            const processedData = {
+              results: response.data.results,
+              count: response.data.count || response.data.results.length
+            };
+            
+            console.log('[DashboardService] Processed recent members:', {
+              count: processedData.count,
+              resultsLength: processedData.results.length,
+              firstMember: processedData.results[0] ? 
+                `${processedData.results[0].first_name} ${processedData.results[0].last_name}` : 
+                'none'
+            });
+            
+            return processedData;
+          } else {
+            throw new Error('Unexpected response format from recent members endpoint');
+          }
+        } catch (error) {
+          console.warn('[DashboardService] Recent endpoint failed, using fallback:', error.message);
+          
+          // Fallback to regular members list with ordering
+          const fallbackResponse = await apiMethods.get('members/', { 
+            params: { 
+              ordering: '-registration_date', 
+              page_size: limit
+            } 
+          });
+          
+          return {
+            results: fallbackResponse.data.results || [],
+            count: fallbackResponse.data.count || 0
+          };
+        }
+      },
+      cacheKey,
+      true,
+      { results: [], count: 0 }
+    );
+  }
+
+  // CORRECTED: Get pledge statistics - Use correct endpoint
   async getPledgeStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('pledge_stats', { range: timeRange });
     return await this.makeRequest(
-      () => apiMethods.dashboard.getPledgeStats(timeRange),
+      async () => {
+        console.log('[DashboardService] Fetching pledge stats...');
+        
+        try {
+          // Use the WORKING endpoint from your logs: pledges/stats/
+          const response = await apiMethods.get('pledges/stats/', { 
+            params: { range: timeRange } 
+          });
+          
+          console.log('[DashboardService] Pledge stats response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Pledge stats endpoint failed:', error.message);
+          return {
+            total_amount: 0, 
+            active_pledges: 0, 
+            monthly_total: 0,
+            growth_rate: 0,
+            fulfillment_rate: 0
+          };
+        }
+      },
       cacheKey,
       true,
       { 
@@ -162,11 +293,24 @@ class DashboardService {
     );
   }
 
-  // Get group/ministry statistics
+  // CORRECTED: Get group statistics - WORKING endpoint
   async getGroupStats() {
     const cacheKey = this.getCacheKey('group_stats');
     return await this.makeRequest(
-      () => apiMethods.dashboard.getGroupStats(),
+      async () => {
+        console.log('[DashboardService] Fetching group stats...');
+        
+        // Use the WORKING endpoint from your logs: groups/statistics/
+        const response = await apiMethods.get('groups/statistics/');
+        console.log('[DashboardService] Group stats response:', response.data);
+        
+        return response.data || {
+          total_groups: 0, 
+          active_groups: 0, 
+          growth_rate: 0,
+          avg_group_size: 0
+        };
+      },
       cacheKey,
       true,
       { 
@@ -178,11 +322,28 @@ class DashboardService {
     );
   }
 
-  // Get family statistics
+  // CORRECTED: Get family statistics - WORKING endpoint
   async getFamilyStats() {
     const cacheKey = this.getCacheKey('family_stats');
     return await this.makeRequest(
-      () => apiMethods.dashboard.getFamilyStats(),
+      async () => {
+        console.log('[DashboardService] Fetching family stats...');
+        
+        try {
+          // Use the WORKING endpoint from your logs: families/statistics/
+          const response = await apiMethods.get('families/statistics/');
+          console.log('[DashboardService] Family stats response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Family stats endpoint failed:', error.message);
+          return {
+            total_families: 0, 
+            new_families: 0, 
+            growth_rate: 0,
+            avg_family_size: 0
+          };
+        }
+      },
       cacheKey,
       true,
       { 
@@ -194,15 +355,32 @@ class DashboardService {
     );
   }
 
-  // Get event statistics
+  // CORRECTED: Get event statistics - Use correct endpoint pattern
   async getEventStats() {
     const cacheKey = this.getCacheKey('event_stats');
     return await this.makeRequest(
-      () => apiMethods.events ? apiMethods.events.getStats() : Promise.resolve({ 
-        total_events: 0, 
-        upcoming_events: 0, 
-        this_month_events: 0 
-      }),
+      async () => {
+        console.log('[DashboardService] Fetching event stats...');
+        
+        try {
+          // Based on your events URLs, use: events/events/statistics/
+          const response = await apiMethods.get('events/events/statistics/');
+          return response.data || {
+            total_events: 0, 
+            upcoming_events: 0, 
+            this_month_events: 0,
+            avg_attendance: 0
+          };
+        } catch (error) {
+          console.warn('[DashboardService] Event stats not available:', error.message);
+          return {
+            total_events: 0, 
+            upcoming_events: 0, 
+            this_month_events: 0,
+            avg_attendance: 0
+          };
+        }
+      },
       cacheKey,
       true,
       { 
@@ -214,37 +392,134 @@ class DashboardService {
     );
   }
 
-  // FIXED: Get recent members using the corrected API method
-  async getRecentMembers(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_members', { limit });
+  // CORRECTED: Get recent pledges
+  async getRecentPledges(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_pledges', { limit });
     return await this.makeRequest(
       async () => {
-        console.log('[DashboardService] Fetching recent members...');
+        console.log('[DashboardService] Fetching recent pledges...');
         
-        // FIXED: Use apiMethods.dashboard.getRecentMembers instead of undefined membersService
-        const result = await apiMethods.dashboard.getRecentMembers(limit);
+        try {
+          // Use the endpoint from your pledges URLs: pledges/recent/
+          const response = await apiMethods.get('pledges/recent/', { 
+            params: { limit } 
+          });
+          
+          return {
+            results: response.data.results || [],
+            count: response.data.count || 0
+          };
+        } catch (error) {
+          console.warn('[DashboardService] Recent pledges endpoint failed:', error.message);
+          return { results: [], count: 0 };
+        }
+      },
+      cacheKey,
+      true,
+      { results: [], count: 0 }
+    );
+  }
+
+  // CORRECTED: Get recent events
+  async getRecentEvents(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_events', { limit });
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching recent events...');
         
-        console.log('[DashboardService] Recent members API response:', result);
+        try {
+          // Based on your events URLs, try: events/events/ with recent ordering
+          const response = await apiMethods.get('events/events/', { 
+            params: { 
+              limit: limit,
+              ordering: '-created_at',
+              upcoming: false
+            } 
+          });
+          
+          return {
+            results: response.data.results || [],
+            count: response.data.count || 0
+          };
+        } catch (error) {
+          console.warn('[DashboardService] Recent events not available:', error.message);
+          return { results: [], count: 0 };
+        }
+      },
+      cacheKey,
+      true,
+      { results: [], count: 0 }
+    );
+  }
+
+  // CORRECTED: Get recent families - Use families list with ordering since no recent endpoint exists
+  async getRecentFamilies(limit = 10) {
+    const cacheKey = this.getCacheKey('recent_families', { limit });
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching recent families...');
         
-        // Handle different response formats from the API
-        if (Array.isArray(result)) {
+        try {
+          // Since your families URLs don't have a recent endpoint, use list with ordering
+          const response = await apiMethods.get('families/', { 
+            params: { 
+              page_size: limit,
+              ordering: '-created_at'
+            } 
+          });
+          
           return {
-            results: result,
-            count: result.length
+            results: response.data.results || [],
+            count: response.data.count || 0
           };
-        } else if (result && result.results) {
-          return result;
-        } else if (result && result.data) {
-          return {
-            results: result.data,
-            count: result.data.length
-          };
-        } else {
-          console.warn('[DashboardService] Unexpected recent members response format:', result);
-          return {
-            results: [],
-            count: 0
-          };
+        } catch (error) {
+          console.warn('[DashboardService] Recent families endpoint failed:', error.message);
+          return { results: [], count: 0 };
+        }
+      },
+      cacheKey,
+      true,
+      { results: [], count: 0 }
+    );
+  }
+
+  // CORRECTED: Get system health status
+  async getSystemHealth() {
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching system health...');
+        
+        try {
+          // Use the WORKING endpoint from your logs: core/dashboard/health/
+          const response = await apiMethods.get('core/dashboard/health/');
+          console.log('[DashboardService] System health response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Health endpoint failed:', error.message);
+          return { status: 'unknown', error: error.message };
+        }
+      },
+      null,
+      false,
+      { status: 'healthy', uptime: '99.9%' }
+    );
+  }
+
+  // CORRECTED: Get alerts and notifications
+  async getAlerts() {
+    const cacheKey = this.getCacheKey('alerts');
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching alerts...');
+        
+        try {
+          // Use the WORKING endpoint from your logs: core/dashboard/alerts/
+          const response = await apiMethods.get('core/dashboard/alerts/');
+          console.log('[DashboardService] Alerts response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Alerts endpoint failed:', error.message);
+          return { results: [] };
         }
       },
       cacheKey,
@@ -253,145 +528,10 @@ class DashboardService {
     );
   }
 
-  // Get recent pledges
-  async getRecentPledges(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_pledges', { limit });
-    return await this.makeRequest(
-      () => apiMethods.dashboard.getRecentPledges(limit),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Get recent events
-  async getRecentEvents(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_events', { limit });
-    return await this.makeRequest(
-      () => apiMethods.events ? apiMethods.events.getRecent(limit) : Promise.resolve({ results: [] }),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Get recent families
-  async getRecentFamilies(limit = 10) {
-    const cacheKey = this.getCacheKey('recent_families', { limit });
-    return await this.makeRequest(
-      () => apiMethods.families ? apiMethods.families.getRecent(limit) : Promise.resolve({ results: [] }),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Get system health status
-  async getSystemHealth() {
-    return await this.makeRequest(
-      () => apiMethods.dashboard.getSystemHealth(),
-      null,
-      false,
-      { status: 'healthy', uptime: '99.9%' }
-    );
-  }
-
-  // Get alerts and notifications
-  async getAlerts() {
-    const cacheKey = this.getCacheKey('alerts');
-    return await this.makeRequest(
-      () => apiMethods.dashboard.getAlerts(),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Mark alert as read
-  async markAlertRead(alertId) {
-    try {
-      const result = await apiMethods.dashboard.markAlertRead(alertId);
-      
-      // Clear alerts cache to force refresh
-      this.clearCache('alerts');
-      
-      return result;
-    } catch (error) {
-      console.error(`[DashboardService] Failed to mark alert ${alertId} as read:`, error);
-      throw error;
-    }
-  }
-
-  // Get member growth data for charts
-  async getMemberGrowthData(timeRange = '12m') {
-    const cacheKey = this.getCacheKey('member_growth', { range: timeRange });
-    return await this.makeRequest(
-      () => apiMethods.get(`members/growth/`, { params: { range: timeRange } }),
-      cacheKey,
-      true,
-      { results: [], labels: [], datasets: [] }
-    );
-  }
-
-  // Get pledge trends data for charts
-  async getPledgeTrends(timeRange = '12m') {
-    const cacheKey = this.getCacheKey('pledge_trends', { range: timeRange });
-    return await this.makeRequest(
-      () => apiMethods.pledges.getTrends(timeRange),
-      cacheKey,
-      true,
-      { results: [], labels: [], datasets: [] }
-    );
-  }
-
-  // Get age demographics data
-  async getAgeDemo() {
-    const cacheKey = this.getCacheKey('age_demographics');
-    return await this.makeRequest(
-      () => apiMethods.members.getDemographics('age'),
-      cacheKey,
-      true,
-      { age_groups: [], data: [] }
-    );
-  }
-
-  // Get gender demographics data
-  async getGenderDemo() {
-    const cacheKey = this.getCacheKey('gender_demographics');
-    return await this.makeRequest(
-      () => apiMethods.members.getDemographics('gender'),
-      cacheKey,
-      true,
-      { genders: [], data: [] }
-    );
-  }
-
-  // Get upcoming birthdays
-  async getUpcomingBirthdays(days = 30) {
-    const cacheKey = this.getCacheKey('upcoming_birthdays', { days });
-    return await this.makeRequest(
-      () => apiMethods.members.getBirthdays(days),
-      cacheKey,
-      true,
-      { results: [] }
-    );
-  }
-
-  // Get system activity summary
-  async getActivitySummary(timeRange = '7d') {
-    const cacheKey = this.getCacheKey('activity_summary', { range: timeRange });
-    return await this.makeRequest(
-      () => apiMethods.reports?.getActivity ? apiMethods.reports.getActivity(timeRange) : Promise.resolve({ activities: [], summary: {} }),
-      cacheKey,
-      true,
-      { activities: [], summary: {} }
-    );
-  }
-
-  // Get comprehensive dashboard data (all key metrics)
+  // Get comprehensive dashboard data with proper error handling
   async getDashboardData(timeRange = '30d', forceRefresh = false) {
     try {
-      console.log('[DashboardService] Fetching comprehensive dashboard data...');
+      console.log('=== [DashboardService] Starting Dashboard Data Fetch ===');
       
       if (forceRefresh) {
         console.log('[DashboardService] Force refresh requested, clearing cache');
@@ -475,10 +615,10 @@ class DashboardService {
           upcoming_events: 0, 
           this_month_events: 0 
         }),
-        recentMembers: processResult(recentMembers, { results: [] }),
-        recentPledges: processResult(recentPledges, { results: [] }),
-        recentEvents: processResult(recentEvents, { results: [] }),
-        recentFamilies: processResult(recentFamilies, { results: [] }),
+        recentMembers: processResult(recentMembers, { results: [], count: 0 }),
+        recentPledges: processResult(recentPledges, { results: [], count: 0 }),
+        recentEvents: processResult(recentEvents, { results: [], count: 0 }),
+        recentFamilies: processResult(recentFamilies, { results: [], count: 0 }),
         systemHealth: processResult(systemHealth, { status: 'healthy' }),
         alerts: processResult(alerts, { results: [] }),
         lastUpdated: new Date(),
@@ -489,13 +629,13 @@ class DashboardService {
         }
       };
 
-      console.log('[DashboardService] Dashboard data fetched successfully:', {
+      console.log('=== [DashboardService] Final Dashboard Data ===', {
         statsLoaded: !!dashboardData.stats,
-        membersCount: dashboardData.recentMembers?.results?.length || 0,
-        pledgesCount: dashboardData.recentPledges?.results?.length || 0,
-        familiesCount: dashboardData.recentFamilies?.results?.length || 0,
-        eventsCount: dashboardData.recentEvents?.results?.length || 0,
-        alertsCount: dashboardData.alerts?.results?.length || 0,
+        totalMembers: dashboardData.memberStats?.summary?.total_members || 0,
+        recentMembersCount: dashboardData.recentMembers?.count || 0,
+        recentMembersArrayLength: dashboardData.recentMembers?.results?.length || 0,
+        totalGroups: dashboardData.groupStats?.total_groups || 0,
+        activeGroups: dashboardData.groupStats?.active_groups || 0,
         systemStatus: dashboardData.systemHealth?.status,
         cacheEntries: this.cache.size
       });
@@ -525,62 +665,6 @@ class DashboardService {
     return this.cache.size > 0 ? 0.75 : 0;
   }
 
-  // Export dashboard data
-  async exportDashboardData(format = 'csv') {
-    try {
-      console.log(`[DashboardService] Exporting dashboard data as ${format}...`);
-      
-      const response = await apiMethods.get('reports/dashboard/export/', {
-        params: { format },
-        responseType: 'blob'
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('[DashboardService] Export failed:', error);
-      throw new Error(`Failed to export dashboard data: ${error.message}`);
-    }
-  }
-
-  // Get user-specific dashboard configuration
-  async getDashboardConfig(userId) {
-    try {
-      const config = await apiMethods.dashboard.getDashboardConfig(userId);
-      return config || this.getDefaultDashboardConfig();
-    } catch (error) {
-      console.warn('[DashboardService] Failed to get dashboard config, using defaults:', error);
-      return this.getDefaultDashboardConfig();
-    }
-  }
-
-  // Save user dashboard configuration
-  async saveDashboardConfig(userId, config) {
-    try {
-      const result = await apiMethods.dashboard.saveDashboardConfig(userId, config);
-      console.log('[DashboardService] Dashboard config saved successfully');
-      return result;
-    } catch (error) {
-      console.error('[DashboardService] Failed to save dashboard config:', error);
-      throw new Error(`Failed to save dashboard configuration: ${error.message}`);
-    }
-  }
-
-  // Default dashboard configuration
-  getDefaultDashboardConfig() {
-    return {
-      widgets: [
-        { id: 'stats', enabled: true, order: 1, size: 'full' },
-        { id: 'recent_members', enabled: true, order: 2, size: 'half' },
-        { id: 'alerts', enabled: true, order: 3, size: 'half' },
-        { id: 'quick_actions', enabled: true, order: 4, size: 'full' }
-      ],
-      refreshInterval: 300000, // 5 minutes
-      theme: 'light',
-      compactView: false,
-      showWelcome: true
-    };
-  }
-
   // Refresh all cached data
   async refreshAll(timeRange = '30d') {
     console.log('[DashboardService] Refreshing all dashboard data...');
@@ -588,33 +672,28 @@ class DashboardService {
     return await this.getDashboardData(timeRange, true);
   }
 
-  // Get real-time statistics (no caching)
-  async getRealTimeStats() {
-    console.log('[DashboardService] Fetching real-time stats...');
-    return await this.makeRequest(
-      () => apiMethods.dashboard.getStats(),
-      null,
-      false // No caching
-    );
-  }
-
-  // Validate API connectivity
+  // Test API connectivity with your specific endpoints
   async testConnection() {
     try {
       console.log('[DashboardService] Testing API connectivity...');
       
       const startTime = Date.now();
-      const healthData = await apiMethods.core.health();
+      
+      // Test the core endpoints that we know work from your logs
+      const healthResponse = await apiMethods.get('core/dashboard/health/');
       const responseTime = Date.now() - startTime;
+      
+      console.log('[DashboardService] Health check successful:', healthResponse.data);
       
       return { 
         success: true, 
         message: 'API connection successful',
         responseTime,
-        data: healthData,
+        data: healthResponse.data,
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      console.error('[DashboardService] Connection test failed:', error);
       return { 
         success: false, 
         message: 'API connection failed',
@@ -640,32 +719,12 @@ class DashboardService {
     return `${Math.floor(diffDays / 30)} months ago`;
   }
 
-  isRecentlyJoined(dateString, daysThreshold = 30) {
-    if (!dateString) return false;
-    
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    return diffDays <= daysThreshold;
-  }
-
   formatCurrency(amount) {
     if (typeof amount !== 'number') return '$0.00';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
-  }
-
-  isPledgeOverdue(pledge) {
-    if (!pledge.next_payment_date) return false;
-    
-    const nextPayment = new Date(pledge.next_payment_date);
-    const now = new Date();
-    
-    return nextPayment < now;
   }
 
   // Performance monitoring

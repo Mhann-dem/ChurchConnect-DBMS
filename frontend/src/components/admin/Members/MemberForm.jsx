@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft } from 'lucide-react';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
-import { FormContainer } from '../../shared/FormContainer';
+import FormContainer from '../../shared/FormContainer';
 import styles from './Members.module.css';
 
 // Simple UI components

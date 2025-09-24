@@ -98,4 +98,5 @@ const MemberSelector = ({
   );
 };
 
+export { MemberSelector };
 export default MemberSelector;

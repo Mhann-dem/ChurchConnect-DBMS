@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { X, Calendar, MapPin, Users, DollarSign, Tag, Clock, Save, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
-import { FormContainer } from '../../shared/FormContainer';
+import FormContainer from '../../shared/FormContainer';
 import { eventsService } from '../../../services/events';
 import groupsService from '../../../services/groups';
 import LoadingSpinner from '../../shared/LoadingSpinner';

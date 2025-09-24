@@ -12,6 +12,7 @@ import LoadingSpinner from '../../shared/LoadingSpinner';
 import EmptyState from '../../shared/EmptyState';
 import ConfirmDialog from '../../shared/ConfirmDialog';
 import FamilyFilters from './FamilyFilters';
+import BulkActions from './BulkActions';
 
 import './Families.module.css';
 

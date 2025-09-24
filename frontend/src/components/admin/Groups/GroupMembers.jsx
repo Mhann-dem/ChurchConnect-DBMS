@@ -1,4 +1,4 @@
-// Enhanced GroupMembers.jsx
+// Enhanced GroupMembers.jsx - Updated with success handling
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -9,6 +9,8 @@ import {
 import { useGroups } from '../../../hooks/useGroups';
 import { useMembers } from '../../../hooks/useMembers';
 import { useToast } from '../../../hooks/useToast';
+import { useFormSubmission } from '../../../hooks/useFormSubmission';
+import FormContainer from '../../shared/FormContainer';
 import { useRealTimeUpdates } from '../../../hooks/useRealTimeUpdates';
 import LoadingSpinner from '../../shared/LoadingSpinner';
 import SearchBar from '../../shared/SearchBar';
@@ -56,6 +58,72 @@ const GroupMembers = () => {
   } = useGroups();
 
   const { exportMemberData } = useMembers();
+
+  // Form submission handlers for different operations
+  const {
+    isSubmitting: addingMembers,
+    showSuccess: showAddSuccess,
+    submissionError: addError,
+    handleSubmit: handleAddSubmit,
+    clearError: clearAddError
+  } = useFormSubmission({
+    onSubmit: async (memberIds) => {
+      const result = await addMembersToGroup(groupId, memberIds);
+      await fetchAvailableMembers(groupId); // Refresh available members
+      return result;
+    },
+    onSuccess: (result, memberIds) => {
+      setShowAddMemberModal(false);
+      setSelectedMembers([]);
+      showToast(`${memberIds.length} member(s) added to group successfully`, 'success');
+    },
+    successMessage: 'Members added to group successfully!',
+    autoCloseDelay: 2000
+  });
+
+  const {
+    isSubmitting: removingMember,
+    showSuccess: showRemoveSuccess,
+    submissionError: removeError,
+    handleSubmit: handleRemoveSubmit,
+    clearError: clearRemoveError
+  } = useFormSubmission({
+    onSubmit: async (memberId) => {
+      const result = await removeMemberFromGroup(groupId, memberId);
+      await fetchAvailableMembers(groupId); // Refresh available members
+      return result;
+    },
+    onSuccess: () => {
+      setShowRemoveConfirm(false);
+      setMemberToRemove(null);
+      showToast('Member removed from group successfully', 'success');
+    },
+    successMessage: 'Member removed from group successfully!',
+    autoCloseDelay: 1500
+  });
+
+  const {
+    isSubmitting: bulkRemoving,
+    showSuccess: showBulkRemoveSuccess,
+    submissionError: bulkRemoveError,
+    handleSubmit: handleBulkRemoveSubmit,
+    clearError: clearBulkRemoveError
+  } = useFormSubmission({
+    onSubmit: async (memberIds) => {
+      const results = await Promise.all(
+        memberIds.map(memberId => removeMemberFromGroup(groupId, memberId))
+      );
+      await fetchAvailableMembers(groupId); // Refresh available members
+      return results;
+    },
+    onSuccess: (results, memberIds) => {
+      setSelectedMembers([]);
+      setShowBulkRemoveConfirm(false);
+      showToast(`${memberIds.length} members removed from group successfully`, 'success');
+    },
+    successMessage: 'Selected members removed successfully!',
+    autoCloseDelay: 2000
+  });
 
   // Real-time updates for group members
   useRealTimeUpdates(`group-${groupId}-members`, {
@@ -178,48 +246,23 @@ const GroupMembers = () => {
 
   // Handle adding members to group
   const handleAddMembers = useCallback(async (memberIds) => {
-    try {
-      await addMembersToGroup(groupId, memberIds);
-      setShowAddMemberModal(false);
-      showToast(`${memberIds.length} member(s) added to group successfully`, 'success');
-      // Refresh available members list
-      await fetchAvailableMembers(groupId);
-    } catch (error) {
-      showToast('Failed to add members to group', 'error');
-    }
-  }, [groupId, addMembersToGroup, showToast, fetchAvailableMembers]);
+    clearAddError();
+    await handleAddSubmit(memberIds);
+  }, [handleAddSubmit, clearAddError]);
 
   // Handle removing member from group
   const handleRemoveMember = useCallback(async () => {
     if (memberToRemove) {
-      try {
-        await removeMemberFromGroup(groupId, memberToRemove.member_id);
-        setShowRemoveConfirm(false);
-        setMemberToRemove(null);
-        showToast('Member removed from group successfully', 'success');
-        // Refresh available members list
-        await fetchAvailableMembers(groupId);
-      } catch (error) {
-        showToast('Failed to remove member from group', 'error');
-      }
+      clearRemoveError();
+      await handleRemoveSubmit(memberToRemove.member_id);
     }
-  }, [memberToRemove, groupId, removeMemberFromGroup, showToast, fetchAvailableMembers]);
+  }, [memberToRemove, handleRemoveSubmit, clearRemoveError]);
 
   // Handle bulk remove
   const handleBulkRemove = useCallback(async () => {
-    try {
-      await Promise.all(
-        selectedMembers.map(memberId => removeMemberFromGroup(groupId, memberId))
-      );
-      setSelectedMembers([]);
-      setShowBulkRemoveConfirm(false);
-      showToast('Selected members removed from group successfully', 'success');
-      // Refresh available members list
-      await fetchAvailableMembers(groupId);
-    } catch (error) {
-      showToast('Failed to remove selected members', 'error');
-    }
-  }, [selectedMembers, groupId, removeMemberFromGroup, showToast, fetchAvailableMembers]);
+    clearBulkRemoveError();
+    await handleBulkRemoveSubmit(selectedMembers);
+  }, [selectedMembers, handleBulkRemoveSubmit, clearBulkRemoveError]);
 
   // Handle role update
   const handleRoleUpdate = useCallback(async (memberId, newRole) => {
@@ -621,50 +664,105 @@ const GroupMembers = () => {
       )}
 
       {/* Loading overlay */}
-      {loading && groupMembers && (
+      {(loading && groupMembers) || addingMembers || removingMember || bulkRemoving ? (
         <div className={styles.loadingOverlay}>
           <LoadingSpinner size="small" />
         </div>
+      ) : null}
+
+      {/* Add Members Modal with Success Handling */}
+      {showAddMemberModal && (
+        <FormContainer
+          title="Add Members to Group"
+          onClose={() => setShowAddMemberModal(false)}
+          showSuccess={showAddSuccess}
+          successMessage="Members added to group successfully!"
+          submissionError={addError}
+          isSubmitting={addingMembers}
+          maxWidth="700px"
+        >
+          <AddMembersForm
+            availableMembers={availableMembers}
+            onAddMembers={handleAddMembers}
+            onCancel={() => setShowAddMemberModal(false)}
+            loading={loading || addingMembers}
+          />
+        </FormContainer>
       )}
 
-      {/* Add Members Modal */}
-      <Modal
-        isOpen={showAddMemberModal}
-        onClose={() => setShowAddMemberModal(false)}
-        title="Add Members to Group"
-        size="lg"
-      >
-        <AddMembersForm
-          availableMembers={availableMembers}
-          onAddMembers={handleAddMembers}
-          onCancel={() => setShowAddMemberModal(false)}
-          loading={loading}
-        />
-      </Modal>
+      {/* Remove Confirmation Dialog with Success Handling */}
+      {showRemoveConfirm && (
+        <FormContainer
+          title="Remove Member"
+          onClose={() => setShowRemoveConfirm(false)}
+          showSuccess={showRemoveSuccess}
+          successMessage="Member removed from group successfully!"
+          submissionError={removeError}
+          isSubmitting={removingMember}
+          maxWidth="400px"
+        >
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
+            <h3 style={{ marginBottom: '8px' }}>Remove Member</h3>
+            <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+              Are you sure you want to remove {memberToRemove?.member_name} from this group?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <Button
+                variant="outline"
+                onClick={() => setShowRemoveConfirm(false)}
+                disabled={removingMember}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleRemoveMember}
+                disabled={removingMember}
+              >
+                {removingMember ? 'Removing...' : 'Remove'}
+              </Button>
+            </div>
+          </div>
+        </FormContainer>
+      )}
 
-      {/* Remove Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showRemoveConfirm}
-        onClose={() => setShowRemoveConfirm(false)}
-        onConfirm={handleRemoveMember}
-        title="Remove Member"
-        message={`Are you sure you want to remove ${memberToRemove?.member_name} from this group?`}
-        confirmText="Remove"
-        cancelText="Cancel"
-        variant="danger"
-      />
-
-      {/* Bulk Remove Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showBulkRemoveConfirm}
-        onClose={() => setShowBulkRemoveConfirm(false)}
-        onConfirm={handleBulkRemove}
-        title="Remove Members"
-        message={`Are you sure you want to remove ${selectedMembers.length} member${selectedMembers.length !== 1 ? 's' : ''} from this group?`}
-        confirmText="Remove All"
-        cancelText="Cancel"
-        variant="danger"
-      />
+      {/* Bulk Remove Confirmation Dialog with Success Handling */}
+      {showBulkRemoveConfirm && (
+        <FormContainer
+          title="Remove Members"
+          onClose={() => setShowBulkRemoveConfirm(false)}
+          showSuccess={showBulkRemoveSuccess}
+          successMessage="Selected members removed successfully!"
+          submissionError={bulkRemoveError}
+          isSubmitting={bulkRemoving}
+          maxWidth="400px"
+        >
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
+            <h3 style={{ marginBottom: '8px' }}>Remove Members</h3>
+            <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+              Are you sure you want to remove {selectedMembers.length} member{selectedMembers.length !== 1 ? 's' : ''} from this group?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkRemoveConfirm(false)}
+                disabled={bulkRemoving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleBulkRemove}
+                disabled={bulkRemoving}
+              >
+                {bulkRemoving ? 'Removing...' : 'Remove All'}
+              </Button>
+            </div>
+          </div>
+        </FormContainer>
+      )}
     </div>
   );
 };
@@ -680,8 +778,6 @@ const MemberCard = ({
   getRoleBadgeVariant,
   getStatusBadge
 }) => {
-  const [showActions, setShowActions] = useState(false);
-
   return (
     <Card className={`${styles.memberCard} ${selected ? styles.selected : ''}`}>
       <div className={styles.memberCardHeader}>
@@ -753,6 +849,88 @@ const MemberCard = ({
   );
 };
 
+// Member List Item Component
+const MemberListItem = ({ 
+  member, 
+  selected, 
+  onSelect, 
+  onRoleUpdate, 
+  onRemove,
+  formatJoinDate,
+  getRoleBadgeVariant,
+  getStatusBadge
+}) => {
+  return (
+    <div className={`${styles.memberListItem} ${selected ? styles.selected : ''}`}>
+      <div className={styles.memberCell}>
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onSelect}
+          className={styles.memberCheckbox}
+        />
+        <Avatar
+          src={member.photo_url}
+          alt={member.member_name}
+          size="sm"
+          className={styles.memberAvatar}
+        />
+        <div className={styles.memberDetails}>
+          <strong>{member.member_name}</strong>
+          <span>{member.member_email}</span>
+        </div>
+      </div>
+      
+      <div className={styles.memberCell}>
+        <Badge variant={getRoleBadgeVariant(member.role)}>
+          {member.role || 'Member'}
+        </Badge>
+      </div>
+      
+      <div className={styles.memberCell}>
+        {getStatusBadge(member.status)}
+      </div>
+      
+      <div className={styles.memberCell}>
+        {formatJoinDate(member.join_date)}
+      </div>
+      
+      <div className={styles.memberCell}>
+        <div className={styles.contactInfo}>
+          {member.member_phone && (
+            <div className={styles.contactItem}>
+              <Phone size={12} />
+              <span>{member.member_phone}</span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className={styles.memberCell}>
+        <div className={styles.listActions}>
+          <select
+            value={member.role || 'member'}
+            onChange={(e) => onRoleUpdate(member.member_id, e.target.value)}
+            className={styles.roleSelectSmall}
+          >
+            <option value="member">Member</option>
+            <option value="coordinator">Coordinator</option>
+            <option value="co-leader">Co-Leader</option>
+            <option value="leader">Leader</option>
+          </select>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(member)}
+          >
+            <Trash2 size={16} />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Add Members Form Component
 const AddMembersForm = ({ availableMembers, onAddMembers, onCancel, loading }) => {
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -799,6 +977,7 @@ const AddMembersForm = ({ availableMembers, onAddMembers, onCancel, loading }) =
           onChange={setSearchTerm}
           placeholder="Search available members..."
           className={styles.modalSearchBar}
+          disabled={loading}
         />
         
         <div className={styles.selectAllContainer}>
@@ -807,7 +986,7 @@ const AddMembersForm = ({ availableMembers, onAddMembers, onCancel, loading }) =
               type="checkbox"
               checked={filteredMembers.length > 0 && selectedMembers.length === filteredMembers.length}
               onChange={handleSelectAll}
-              disabled={filteredMembers.length === 0}
+              disabled={filteredMembers.length === 0 || loading}
             />
             Select All ({filteredMembers.length})
           </label>
@@ -845,6 +1024,7 @@ const AddMembersForm = ({ availableMembers, onAddMembers, onCancel, loading }) =
                   checked={selectedMembers.includes(member.id)}
                   onChange={() => handleMemberToggle(member.id)}
                   className={styles.memberCheckbox}
+                  disabled={loading}
                 />
                 <Avatar
                   src={member.photo_url}
@@ -867,7 +1047,14 @@ const AddMembersForm = ({ availableMembers, onAddMembers, onCancel, loading }) =
         )}
       </div>
       
-      <div className={styles.modalActions}>
+      <div className={styles.modalActions} style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '12px',
+        paddingTop: '20px',
+        borderTop: '1px solid #e5e7eb',
+        marginTop: '20px'
+      }}>
         <Button 
           type="button" 
           variant="outline" 

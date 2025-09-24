@@ -1,6 +1,8 @@
-// MemberRegistrationForm.jsx - FIXED: Proper API integration and success feedback
+// MemberRegistrationForm.jsx - Updated with success handler integration
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useFormSubmission } from '../../hooks/useFormSubmission';
+import FormContainer from '../shared/FormContainer';
 import styles from './Form.module.css';
 
 // Import the real services and hooks
@@ -510,9 +512,7 @@ const MemberRegistrationForm = ({
   const { showToast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
-  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
 
   const isAdmin = isAuthenticated && ['admin', 'super_admin'].includes(user?.role);
   const effectiveAdminMode = isAdminMode && isAdmin;
@@ -530,6 +530,74 @@ const MemberRegistrationForm = ({
     ...initialData,
     registeredBy: effectiveAdminMode ? user?.id : null,
     registrationContext: effectiveAdminMode ? 'admin_portal' : 'public'
+  });
+
+  // Form submission handler with success pattern
+  const {
+    isSubmitting,
+    showSuccess,
+    submissionError,
+    handleSubmit: handleFormSubmit,
+    clearError
+  } = useFormSubmission({
+    onSubmit: async (submitData) => {
+      console.log('[RegistrationForm] Submitting form data:', submitData);
+      
+      const apiData = transformFormDataForAPI(submitData);
+      console.log('[RegistrationForm] Transformed API data:', apiData);
+
+      let result;
+      
+      if (effectiveAdminMode) {
+        // Admin creating member - use the members service directly
+        result = await membersService.createMember(apiData);
+      } else {
+        // Public registration - use registration endpoint
+        result = await membersService.registerMember(apiData);
+      }
+      
+      console.log('[RegistrationForm] API result:', result);
+      
+      if (!result || !result.success) {
+        throw new Error(result?.error || result?.message || 'Registration failed');
+      }
+
+      return result;
+    },
+    onSuccess: (result) => {
+      const memberName = result.data?.first_name || 'Member';
+      
+      // Handle success callback for admin mode
+      if (effectiveAdminMode && typeof onSuccess === 'function') {
+        console.log('[RegistrationForm] Calling onSuccess callback with:', result.data);
+        onSuccess(result.data);
+      } else if (!effectiveAdminMode) {
+        // Navigate to thank you page for public registration after delay
+        setTimeout(() => {
+          navigate('/thank-you', { 
+            state: { 
+              memberData: { 
+                name: `${formData.firstName} ${formData.lastName}`,
+                email: formData.email 
+              } 
+            } 
+          });
+        }, 2000);
+      }
+    },
+    onError: (error) => {
+      // Handle field-level errors from API
+      if (error?.response?.data?.field_errors) {
+        Object.entries(error.response.data.field_errors).forEach(([field, fieldError]) => {
+          setFieldError(field, Array.isArray(fieldError) ? fieldError[0] : fieldError);
+        });
+      }
+    },
+    onClose: effectiveAdminMode ? onCancel : null,
+    successMessage: effectiveAdminMode 
+      ? 'Member registered successfully!' 
+      : 'Registration submitted successfully!',
+    autoCloseDelay: effectiveAdminMode ? 2500 : 3000
   });
 
   const handleNext = async () => {
@@ -552,83 +620,18 @@ const MemberRegistrationForm = ({
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setSubmitStatus({ type: '', message: '' });
-    
-    try {
-      console.log('[RegistrationForm] Submitting form data:', formData);
-      
-      const apiData = transformFormDataForAPI(formData);
-      console.log('[RegistrationForm] Transformed API data:', apiData);
-
-      let result;
-      
-      if (effectiveAdminMode) {
-        // Admin creating member - use the members service directly
-        result = await membersService.createMember(apiData);
-      } else {
-        // Public registration - use registration endpoint
-        result = await membersService.registerMember(apiData);
-      }
-      
-      console.log('[RegistrationForm] API result:', result);
-      
-      if (!result || !result.success) {
-        throw new Error(result?.error || result?.message || 'Registration failed');
-      }
-
-      // Set success status
-      setSubmitStatus({ 
-        type: 'success', 
-        message: `${result.data?.first_name || 'Member'} registered successfully!` 
+    // Final validation
+    const finalStepErrors = validateStep('confirmation', formData, effectiveAdminMode);
+    if (Object.keys(finalStepErrors).length > 0) {
+      Object.keys(finalStepErrors).forEach(field => {
+        setFieldError(field, finalStepErrors[field]);
       });
-
-      // Show success toast
-      showToast(
-        effectiveAdminMode 
-          ? `${result.data?.first_name || 'Member'} registered successfully!`
-          : 'Registration submitted successfully!',
-        'success'
-      );
-
-      // Handle success callback for admin mode
-      if (effectiveAdminMode && typeof onSuccess === 'function') {
-        console.log('[RegistrationForm] Calling onSuccess callback with:', result.data);
-        
-        // Add a small delay to ensure the toast shows
-        setTimeout(() => {
-          onSuccess(result.data);
-        }, 500);
-      } else if (!effectiveAdminMode) {
-        // Navigate to thank you page for public registration
-        navigate('/thank-you', { 
-          state: { 
-            memberData: { 
-              name: `${formData.firstName} ${formData.lastName}`,
-              email: formData.email 
-            } 
-          } 
-        });
-      }
-    } catch (error) {
-      console.error('[RegistrationForm] Submit error:', error);
-      
-      const errorMessage = error?.response?.data?.error || 
-                          error?.response?.data?.detail ||
-                          error?.message || 
-                          'An error occurred. Please try again.';
-      
-      setSubmitStatus({ type: 'error', message: errorMessage });
-      showToast(errorMessage, 'error');
-      
-      if (error?.response?.data?.field_errors) {
-        Object.entries(error.response.data.field_errors).forEach(([field, fieldError]) => {
-          setFieldError(field, Array.isArray(fieldError) ? fieldError[0] : fieldError);
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
+      showToast('Please fix the errors before submitting.', 'error');
+      return;
     }
+
+    clearError();
+    await handleFormSubmit(formData);
   };
 
   const AdminEnhancements = () => {
@@ -654,6 +657,7 @@ const MemberRegistrationForm = ({
               placeholder="Internal notes (not visible to member)"
               rows={3}
               className={styles.internalNotes}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -663,6 +667,7 @@ const MemberRegistrationForm = ({
                 type="checkbox"
                 checked={formData.skipValidation || false}
                 onChange={(e) => setFieldValue('skipValidation', e.target.checked)}
+                disabled={isSubmitting}
               />
               Skip strict validation (admin override)
             </label>
@@ -687,93 +692,164 @@ const MemberRegistrationForm = ({
 
   return (
     <div className={`${styles.formContainer} ${effectiveAdminMode ? styles.adminMode : ''}`}>
-      <div className={styles.formHeader}>
-        <h1 className={styles.title}>
-          {effectiveAdminMode ? 'Register New Member' : 'Member Registration'}
-        </h1>
-        <p className={styles.subtitle}>
-          {effectiveAdminMode ? 
-            'Adding a new member to the church database' :
-            'Join our church family - we\'re excited to get to know you!'
-          }
-        </p>
-      </div>
+      {effectiveAdminMode ? (
+        // Admin mode - use FormContainer with success handling
+        <FormContainer
+          title="Register New Member"
+          onClose={onCancel}
+          showSuccess={showSuccess}
+          successMessage="Member registered successfully!"
+          submissionError={submissionError}
+          isSubmitting={isSubmitting}
+          maxWidth="800px"
+        >
+          <div className={styles.registrationContent}>
+            <div className={styles.formHeader}>
+              <p className={styles.subtitle}>
+                Adding a new member to the church database
+              </p>
+            </div>
 
-      {/* Status Messages */}
-      {submitStatus.type && (
-        <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
-          {submitStatus.message}
-        </div>
-      )}
+            <AdminEnhancements />
 
-      <AdminEnhancements />
+            <StepIndicator 
+              steps={STEPS} 
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+            />
 
-      <StepIndicator 
-        steps={STEPS} 
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-      />
+            <div className={styles.formContent}>
+              <CurrentStepComponent {...stepProps} />
+            </div>
 
-      <div className={styles.formContent}>
-        <CurrentStepComponent {...stepProps} />
-      </div>
-
-      <div className={styles.formActions}>
-        {currentStep > 0 && (
-          <Button
-            variant="secondary"
-            onClick={handlePrevious}
-            disabled={isSubmitting}
-          >
-            Previous
-          </Button>
-        )}
-
-        <div className={styles.actionButtons}>
-          {effectiveAdminMode && onCancel && (
-            <Button
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
-          
-          {!isLastStep ? (
-            <Button
-              variant="primary"
-              onClick={handleNext}
-              disabled={isSubmitting}
-            >
-              Next
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              disabled={isSubmitting || (!effectiveAdminMode && !formData.privacyPolicyAgreed)}
-            >
-              {isSubmitting ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  {effectiveAdminMode ? 'Registering...' : 'Submitting...'}
-                </>
-              ) : (
-                effectiveAdminMode ? 'Register Member' : 'Submit Registration'
+            <div className={styles.formActions}>
+              {currentStep > 0 && (
+                <Button
+                  variant="secondary"
+                  onClick={handlePrevious}
+                  disabled={isSubmitting}
+                >
+                  Previous
+                </Button>
               )}
-            </Button>
-          )}
-        </div>
-      </div>
 
-      {effectiveAdminMode && (
-        <div className={styles.adminFooter}>
-          <small>
-            Admin Registration Mode • Changes are tracked • 
-            Member will receive welcome email if communication is opted in
-          </small>
-        </div>
+              <div className={styles.actionButtons}>
+                {!isLastStep ? (
+                  <Button
+                    variant="primary"
+                    onClick={handleNext}
+                    disabled={isSubmitting}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <LoadingSpinner size="sm" />
+                        Registering...
+                      </>
+                    ) : (
+                      'Register Member'
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.adminFooter}>
+              <small>
+                Admin Registration Mode • Changes are tracked • 
+                Member will receive welcome email if communication is opted in
+              </small>
+            </div>
+          </div>
+        </FormContainer>
+      ) : (
+        // Public mode - standard layout with success overlay
+        <>
+          <div className={styles.formHeader}>
+            <h1 className={styles.title}>Member Registration</h1>
+            <p className={styles.subtitle}>
+              Join our church family - we're excited to get to know you!
+            </p>
+          </div>
+
+          {/* Success Overlay for Public Mode */}
+          {showSuccess && (
+            <div className={styles.successOverlay}>
+              <div className={styles.successContent}>
+                <div className={styles.successIcon}>✓</div>
+                <h3>Registration Submitted Successfully!</h3>
+                <p>Thank you for joining our church family. We'll be in touch soon!</p>
+                <div className={styles.successAnimation}>
+                  <LoadingSpinner size="sm" />
+                  <span>Redirecting to thank you page...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {submissionError && (
+            <div className={styles.errorBanner}>
+              <span>{submissionError}</span>
+            </div>
+          )}
+
+          <StepIndicator 
+            steps={STEPS} 
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+          />
+
+          <div className={styles.formContent}>
+            <CurrentStepComponent {...stepProps} />
+          </div>
+
+          <div className={styles.formActions}>
+            {currentStep > 0 && (
+              <Button
+                variant="secondary"
+                onClick={handlePrevious}
+                disabled={isSubmitting}
+              >
+                Previous
+              </Button>
+            )}
+
+            <div className={styles.actionButtons}>
+              {!isLastStep ? (
+                <Button
+                  variant="primary"
+                  onClick={handleNext}
+                  disabled={isSubmitting}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !formData.privacyPolicyAgreed}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit Registration'
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

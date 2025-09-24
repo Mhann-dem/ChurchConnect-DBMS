@@ -2,7 +2,7 @@
 import React from 'react';
 import { CheckCircle, X, Loader } from 'lucide-react';
 
-export const FormContainer = ({ 
+const FormContainer = ({ 
   children, 
   title, 
   onClose, 
@@ -177,3 +177,5 @@ export const FormContainer = ({
     </div>
   );
 };
+
+export default FormContainer;

@@ -35,9 +35,9 @@ urlpatterns = [
 ]
 
 # DEBUG: Print all URL patterns
-# print(f"[DEBUG] Final URL patterns:")
-# for i, pattern in enumerate(urlpatterns):
-#     print(f"  {i}: {pattern}")
+print(f"[DEBUG] Final URL patterns:")
+for i, pattern in enumerate(urlpatterns):
+    print(f"  {i}: {pattern}")
 
 # Expected URLs after this fix:
 # GET  /api/v1/members/                    -> MemberViewSet.list()

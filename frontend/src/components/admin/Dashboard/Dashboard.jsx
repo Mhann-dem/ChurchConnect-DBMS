@@ -1,4 +1,4 @@
-// components/admin/Dashboard/Dashboard.jsx - COMPLETELY FIXED VERSION
+// Fixed Dashboard Component - Correct Data Processing
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   UsersIcon, 
@@ -10,7 +10,6 @@ import {
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
-import apiMethods from '../../services/api'; // Use the FIXED API methods
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -19,88 +18,123 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // FIXED: Fetch dashboard data with proper error handling
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('[Dashboard] Fetching data from corrected endpoints...');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
 
-      // FIXED: Use Promise.allSettled to handle failures gracefully
-      const [
-        memberStatsResult, 
-        groupStatsResult,
-        familyStatsResult,
-        recentMembersResult,
-        systemHealthResult,
-        alertsResult
-      ] = await Promise.allSettled([
-        // Use the CORRECTED API methods
-        apiMethods.dashboard.getMemberStats('30d'),
-        apiMethods.dashboard.getGroupStats(), 
-        apiMethods.dashboard.getFamilyStats(),
-        apiMethods.dashboard.getRecentMembers(5),
-        apiMethods.dashboard.getSystemHealth(),
-        apiMethods.dashboard.getAlerts()
-      ]);
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
 
-      // FIXED: Process results with proper fallback data structure
-      const processResult = (result, fallback = null) => {
-        if (result.status === 'fulfilled') {
-          console.log('[Dashboard] API Success:', result.value);
-          return result.value;
-        } else {
-          console.warn('[Dashboard] API Failed:', result.reason?.message);
-          return fallback;
+      const baseURL = 'http://localhost:8000'; // Your backend URL
+
+      // FIXED: Use exact endpoints from your Django logs
+      const apiCalls = [
+        // Members statistics - returns { summary: { total_members: 4, active_members: 4 } }
+        fetch(`${baseURL}/api/v1/members/statistics/?range=30d`, { headers }),
+        
+        // Groups statistics - returns { total_groups: 4, active_groups: 4 }  
+        fetch(`${baseURL}/api/v1/groups/statistics/`, { headers }),
+        
+        // Families statistics - returns { total_families: 0 }
+        fetch(`${baseURL}/api/v1/families/statistics/`, { headers }),
+        
+        // Recent members - returns { success: true, results: [...], count: 4 }
+        fetch(`${baseURL}/api/v1/members/recent/?limit=5`, { headers }),
+        
+        // System health
+        fetch(`${baseURL}/api/v1/core/dashboard/health/`, { headers }),
+        
+        // Alerts  
+        fetch(`${baseURL}/api/v1/core/dashboard/alerts/`, { headers })
+      ];
+
+      const responses = await Promise.allSettled(apiCalls);
+      
+      // Process each response individually with detailed logging
+      const processResponse = async (responseResult, endpointName) => {
+        if (responseResult.status === 'rejected') {
+          console.error(`[Dashboard] ${endpointName} failed:`, responseResult.reason);
+          return null;
+        }
+
+        const response = responseResult.value;
+        if (!response.ok) {
+          console.error(`[Dashboard] ${endpointName} HTTP error:`, response.status, response.statusText);
+          return null;
+        }
+
+        try {
+          const data = await response.json();
+          console.log(`[Dashboard] ${endpointName} data:`, data);
+          return data;
+        } catch (parseError) {
+          console.error(`[Dashboard] ${endpointName} parse error:`, parseError);
+          return null;
         }
       };
 
-      // FIXED: Structure data to match your backend response format
-      const newData = {
-        // Member statistics from MemberStatisticsViewSet
-        memberStats: processResult(memberStatsResult, { 
-          summary: { 
-            total_members: 0, 
-            active_members: 0, 
-            inactive_members: 0 
-          }
-        }),
+      // Process all responses
+      const [
+        memberStatsData,
+        groupStatsData, 
+        familyStatsData,
+        recentMembersData,
+        healthData,
+        alertsData
+      ] = await Promise.all([
+        processResponse(responses[0], 'Member Stats'),
+        processResponse(responses[1], 'Group Stats'),
+        processResponse(responses[2], 'Family Stats'), 
+        processResponse(responses[3], 'Recent Members'),
+        processResponse(responses[4], 'Health'),
+        processResponse(responses[5], 'Alerts')
+      ]);
+
+      // FIXED: Extract data with correct paths based on your API responses
+      const extractedData = {
+        // Members: Extract from summary object
+        totalMembers: memberStatsData?.summary?.total_members || 0,
+        activeMembers: memberStatsData?.summary?.active_members || 0,
+        newMembers: memberStatsData?.summary?.recent_registrations || 0,
         
-        // Group statistics from GroupViewSet.statistics
-        groupStats: processResult(groupStatsResult, { 
-          total_groups: 0, 
-          active_groups: 0 
-        }),
+        // Groups: Direct properties
+        totalGroups: groupStatsData?.total_groups || 0,
+        activeGroups: groupStatsData?.active_groups || 0,
         
-        // Family statistics (if endpoint exists)
-        familyStats: processResult(familyStatsResult, { 
-          total_families: 0, 
-          new_families: 0 
-        }),
+        // Families: Direct property
+        totalFamilies: familyStatsData?.total_families || 0,
         
-        // Recent members from MemberViewSet.recent
-        recentMembers: processResult(recentMembersResult, { 
-          results: [] 
-        }),
+        // Recent members: Handle both response formats
+        recentMembers: recentMembersData?.results || recentMembersData || [],
         
-        // System health from dashboard health endpoint
-        systemHealth: processResult(systemHealthResult, { 
-          status: 'unknown' 
-        }),
+        // System data
+        systemHealth: healthData || { status: 'unknown' },
+        alerts: alertsData?.results || alertsData || [],
         
-        // Alerts from dashboard alerts endpoint
-        alerts: processResult(alertsResult, { 
-          results: [] 
-        })
+        // Metadata
+        lastUpdated: new Date(),
+        debug: {
+          memberStatsRaw: memberStatsData,
+          groupStatsRaw: groupStatsData,
+          familyStatsRaw: familyStatsData,
+          recentMembersRaw: recentMembersData
+        }
       };
 
-      console.log('[Dashboard] Processed data:', newData);
-      setDashboardData(newData);
+      console.log('[Dashboard] Final extracted data:', extractedData);
+      setDashboardData(extractedData);
 
     } catch (error) {
-      console.error('[Dashboard] Error fetching data:', error);
-      setError(error.message || 'Failed to load dashboard data');
+      console.error('[Dashboard] Fetch error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -180,35 +214,30 @@ const Dashboard = () => {
     );
   }
 
-  // FIXED: Extract data using the actual API response structure
   const stats = [
     {
       name: 'Total Members',
-      // FIXED: Use the correct path based on your MemberStatisticsViewSet response
-      value: dashboardData?.memberStats?.summary?.total_members || 0,
+      value: dashboardData?.totalMembers?.toLocaleString() || '0',
       icon: UsersIcon,
-      description: `${dashboardData?.memberStats?.summary?.active_members || 0} active members`,
+      description: `${dashboardData?.activeMembers || 0} active members`,
       color: 'from-blue-500 to-cyan-500'
     },
     {
-      name: 'Total Families', 
-      // FIXED: Use the correct path based on your families endpoint
-      value: dashboardData?.familyStats?.total_families || 0,
+      name: 'Total Families',
+      value: dashboardData?.totalFamilies?.toLocaleString() || '0',
       icon: HomeIcon,
-      description: `${dashboardData?.familyStats?.new_families || 0} new families`,
+      description: 'registered families',
       color: 'from-green-500 to-teal-500'
     },
     {
       name: 'Active Groups',
-      // FIXED: Use the correct path based on your GroupViewSet.statistics response
-      value: dashboardData?.groupStats?.active_groups || 0,
+      value: dashboardData?.activeGroups?.toLocaleString() || '0',
       icon: UserGroupIcon,
-      description: `${dashboardData?.groupStats?.total_groups || 0} total groups`,
+      description: `${dashboardData?.totalGroups || 0} total groups`,
       color: 'from-purple-500 to-indigo-500'
     },
     {
       name: 'System Health',
-      // FIXED: Use the system health status
       value: dashboardData?.systemHealth?.status === 'healthy' ? 'Good' : 'Check',
       icon: ChartBarIcon,
       description: 'system status',
@@ -346,7 +375,7 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Recent Members Section */}
+      {/* Recent Members */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '2fr 1fr',
@@ -354,7 +383,6 @@ const Dashboard = () => {
         marginBottom: '32px'
       }}>
         
-        {/* Recent Members */}
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -370,16 +398,16 @@ const Dashboard = () => {
           }}>
             <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>Recent Members</h3>
             <span style={{ fontSize: '14px', color: '#6b7280' }}>
-              {dashboardData?.recentMembers?.results?.length || 0} members
+              {dashboardData?.recentMembers?.length || 0} members
             </span>
           </div>
           
           <div style={{ padding: '24px' }}>
-            {dashboardData?.recentMembers?.results?.length > 0 ? (
+            {dashboardData?.recentMembers?.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {dashboardData.recentMembers.results.slice(0, 5).map((member) => (
+                {dashboardData.recentMembers.slice(0, 5).map((member, index) => (
                   <div
-                    key={member.id}
+                    key={member.id || index}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -401,7 +429,7 @@ const Dashboard = () => {
                       fontWeight: 'bold',
                       marginRight: '16px'
                     }}>
-                      {member.first_name?.charAt(0)}{member.last_name?.charAt(0)}
+                      {(member.first_name?.charAt(0) || '') + (member.last_name?.charAt(0) || '')}
                     </div>
                     
                     <div style={{ flex: 1 }}>
@@ -414,7 +442,10 @@ const Dashboard = () => {
                     </div>
                     
                     <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                      {new Date(member.registration_date).toLocaleDateString()}
+                      {member.registration_date ? 
+                        new Date(member.registration_date).toLocaleDateString() : 
+                        'Recently'
+                      }
                     </div>
                   </div>
                 ))}
@@ -428,7 +459,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* System Status */}
         <div style={{
           background: 'white',
           borderRadius: '12px', 
@@ -462,45 +492,37 @@ const Dashboard = () => {
                 {dashboardData?.systemHealth?.status === 'healthy' ? 'All Systems Online' : 'System Status: Checking'}
               </span>
             </div>
-            
-            {/* Alert Count */}
-            {dashboardData?.alerts?.results?.length > 0 && (
-              <div style={{
-                marginTop: '12px',
-                padding: '12px',
-                background: '#fef2f2',
-                borderRadius: '8px',
-                border: '1px solid #fecaca'
-              }}>
-                <span style={{ fontSize: '14px', color: '#dc2626' }}>
-                  {dashboardData.alerts.results.length} alert{dashboardData.alerts.results.length !== 1 ? 's' : ''} need attention
-                </span>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Debug Information (Development) */}
+      {/* Debug Panel - Only in development */}
       {process.env.NODE_ENV === 'development' && dashboardData && (
         <div style={{
           background: '#f8f9fa',
-          border: '1px solid #dee2e6',
+          border: '2px solid #007bff',
           borderRadius: '8px',
           padding: '16px',
           marginTop: '24px'
         }}>
-          <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>
-            Debug Information (Development)
+          <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#007bff' }}>
+            🔍 DEBUG: API Response Data
           </h4>
-          <div style={{ fontSize: '14px', fontFamily: 'monospace' }}>
-            <p><strong>API Base URL:</strong> {process.env.REACT_APP_API_URL || 'http://localhost:8000'}</p>
-            <p><strong>Member Stats:</strong> {JSON.stringify(dashboardData?.memberStats?.summary, null, 2)}</p>
-            <p><strong>Group Stats:</strong> {JSON.stringify(dashboardData?.groupStats, null, 2)}</p>
-            <p><strong>Family Stats:</strong> {JSON.stringify(dashboardData?.familyStats, null, 2)}</p>
-            <p><strong>Recent Members Count:</strong> {dashboardData?.recentMembers?.results?.length || 0}</p>
-            <p><strong>System Health:</strong> {dashboardData?.systemHealth?.status}</p>
-            <p><strong>Alerts Count:</strong> {dashboardData?.alerts?.results?.length || 0}</p>
+          <div style={{ fontSize: '12px', fontFamily: 'monospace', background: '#fff', padding: '12px', borderRadius: '4px' }}>
+            <p><strong>Extracted Values:</strong></p>
+            <p>• Total Members: {dashboardData.totalMembers}</p>
+            <p>• Active Members: {dashboardData.activeMembers}</p>
+            <p>• Total Groups: {dashboardData.totalGroups}</p>
+            <p>• Active Groups: {dashboardData.activeGroups}</p>
+            <p>• Total Families: {dashboardData.totalFamilies}</p>
+            <p>• Recent Members Count: {dashboardData.recentMembers?.length || 0}</p>
+            
+            <details style={{ marginTop: '8px' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Raw API Responses</summary>
+              <pre style={{ fontSize: '10px', overflow: 'auto', maxHeight: '200px', marginTop: '8px' }}>
+                {JSON.stringify(dashboardData.debug, null, 2)}
+              </pre>
+            </details>
           </div>
         </div>
       )}

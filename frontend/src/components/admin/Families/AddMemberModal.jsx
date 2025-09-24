@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMembers } from '../../../hooks/useMembers';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
-import { FormContainer } from '../../shared/FormContainer';
+import FormContainer from '../../shared/FormContainer';
 import Button from '../../ui/Button';
 import SearchBar from '../../shared/SearchBar';
 import LoadingSpinner from '../../shared/LoadingSpinner';

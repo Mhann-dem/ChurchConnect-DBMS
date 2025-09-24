@@ -1,7 +1,7 @@
 // Enhanced PledgeForm.jsx with updated success feedback and error handling
 import React, { useState, useEffect, useMemo } from 'react';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
-import { FormContainer } from '../../shared/FormContainer';
+import FormContainer from '../../shared/FormContainer';
 import { useMembers } from '../../../hooks/useMembers';
 import { useToast } from '../../../hooks/useToast';
 import { Button, Card } from '../../ui';

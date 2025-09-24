@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Save, X, AlertCircle, Users, Clock, Mail, Phone, MapPin, Settings, Info, CheckCircle } from 'lucide-react';
 import { useMembers } from '../../../hooks/useMembers';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
-import { FormContainer } from '../../shared/FormContainer';
+import FormContainer from '../../shared/FormContainer';
 import Button from '../../ui/Button';
 import Card from '../../ui/Card';
 import Badge from '../../ui/Badge';
