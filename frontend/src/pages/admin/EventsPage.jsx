@@ -27,8 +27,22 @@ import { useToast } from '../../hooks/useToast';
 import EventForm from '../../components/admin/Events/EventForm';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 
-// Simple Modal component since it's missing
+// Enhanced Modal component
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') onClose();
+      };
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const modalStyles = {
@@ -66,118 +80,30 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   );
 };
 
-// Simple ConfirmDialog component since it's missing
-const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', variant = 'primary' }) => {
-  if (!isOpen) return null;
-
-  const dialogStyles = {
-    overlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1050,
-      padding: '20px'
-    },
-    content: {
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      padding: '24px',
-      maxWidth: '450px',
-      width: '100%',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-    },
-    title: {
-      fontSize: '18px',
-      fontWeight: 'bold',
-      color: '#1f2937',
-      marginBottom: '16px'
-    },
-    message: {
-      color: '#6b7280',
-      marginBottom: '24px',
-      lineHeight: '1.5'
-    },
-    actions: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: '12px'
-    },
-    cancelButton: {
-      padding: '8px 16px',
-      backgroundColor: 'white',
-      border: '1px solid #d1d5db',
-      borderRadius: '6px',
-      color: '#374151',
-      cursor: 'pointer',
-      fontSize: '14px'
-    },
-    confirmButton: {
-      padding: '8px 16px',
-      backgroundColor: variant === 'danger' ? '#ef4444' : '#3b82f6',
-      border: 'none',
-      borderRadius: '6px',
-      color: 'white',
-      cursor: 'pointer',
-      fontSize: '14px'
-    }
-  };
-
-  return (
-    <div style={dialogStyles.overlay} onClick={onClose}>
-      <div style={dialogStyles.content} onClick={(e) => e.stopPropagation()}>
-        <h3 style={dialogStyles.title}>{title}</h3>
-        <div style={dialogStyles.message}>{message}</div>
-        <div style={dialogStyles.actions}>
-          <button style={dialogStyles.cancelButton} onClick={onClose}>
-            {cancelText}
-          </button>
-          <button style={dialogStyles.confirmButton} onClick={onConfirm}>
-            {confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   
-  // Get initial state from URL params (dashboard integration)
-  const initialTab = searchParams.get('view') || 'list';
-  const initialAction = searchParams.get('action');
-  const initialSearch = searchParams.get('search') || '';
-  const initialStatus = searchParams.get('status') || '';
-  const initialType = searchParams.get('type') || '';
-  const initialUpcoming = searchParams.get('upcoming') || '';
-  
   // State management
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const [showEventForm, setShowEventForm] = useState(initialAction === 'create');
+  const [activeTab, setActiveTab] = useState('list');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [deleteEvent, setDeleteEvent] = useState(null);
   const [filters, setFilters] = useState({
-    status: initialStatus,
-    event_type: initialType,
-    upcoming: initialUpcoming,
-    featured: searchParams.get('featured') || ''
+    status: '',
+    event_type: '',
+    upcoming: '',
+    featured: ''
   });
   
-  // Stats and data
+  // Stats
   const [eventStats, setEventStats] = useState({
     total: 0,
     upcoming: 0,
@@ -187,25 +113,16 @@ const EventsPage = () => {
     avgAttendance: 0
   });
   const [refreshing, setRefreshing] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0
-  });
 
-  // FIXED: Better event fetching with comprehensive error handling
-  const fetchEvents = useCallback(async (customFilters = {}) => {
+  // FIXED: Proper event fetching
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const params = {
-        page: pagination.page,
-        limit: pagination.limit,
         search: searchTerm,
-        ...filters,
-        ...customFilters
+        ...filters
       };
 
       // Remove empty filters
@@ -218,120 +135,33 @@ const EventsPage = () => {
       console.log('[EventsPage] Fetching events with params:', params);
       
       const response = await eventsService.getEvents(params);
-      console.log('[EventsPage] Full API response:', response);
+      console.log('[EventsPage] Events response:', response);
       
-      // FIXED: Comprehensive response handling for different backend structures
-      let eventsData = [];
-      let totalCount = 0;
-
-      if (!response) {
-        throw new Error('No response received from server');
-      }
-
       // Handle different response structures
-      if (response.data) {
-        // Case 1: Response with data property (most common)
-        if (Array.isArray(response.data)) {
-          // Direct array in data
-          eventsData = response.data;
-          totalCount = response.data.length;
-        } else if (response.data.results && Array.isArray(response.data.results)) {
-          // Django REST Framework pagination style
-          eventsData = response.data.results;
-          totalCount = response.data.count || response.data.results.length;
-        } else if (response.data.events && Array.isArray(response.data.events)) {
-          // Custom events property
-          eventsData = response.data.events;
-          totalCount = response.data.total || response.data.events.length;
-        } else if (Array.isArray(response.data.items)) {
-          // Alternative pagination style
-          eventsData = response.data.items;
-          totalCount = response.data.total || response.data.items.length;
-        } else {
-          // Try to extract any array from data
-          const arrayKeys = Object.keys(response.data).filter(key => Array.isArray(response.data[key]));
-          if (arrayKeys.length > 0) {
-            eventsData = response.data[arrayKeys[0]];
-            totalCount = eventsData.length;
-          }
-        }
-      } else if (Array.isArray(response)) {
-        // Case 2: Direct array response
-        eventsData = response;
-        totalCount = response.length;
-      } else if (response.results && Array.isArray(response.results)) {
-        // Case 3: Direct DRF response without data wrapper
+      let eventsData = [];
+      if (response.results && Array.isArray(response.results)) {
         eventsData = response.results;
-        totalCount = response.count || response.results.length;
+      } else if (Array.isArray(response.data)) {
+        eventsData = response.data;
+      } else if (Array.isArray(response)) {
+        eventsData = response;
       }
 
-      // FIXED: Final fallback - check if we found any events
-      if (!Array.isArray(eventsData)) {
-        console.warn('[EventsPage] No events array found in response structure:', response);
-        eventsData = [];
-        totalCount = 0;
-      }
-
-      console.log('[EventsPage] Extracted events:', eventsData);
-      console.log('[EventsPage] Total count:', totalCount);
-      
       setEvents(eventsData);
-      
-      // Update pagination
-      setPagination(prev => ({
-        ...prev,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / prev.limit)
-      }));
-      
-      // Calculate stats
       calculateStats(eventsData);
-      
-      // Show message if no events but successful response
-      if (eventsData.length === 0) {
-        if (searchTerm || Object.values(filters).some(f => f) || Object.values(customFilters).some(f => f)) {
-          setError('No events match your search criteria');
-        } else {
-          setError('No events found. Create your first event to get started.');
-        }
-      } else {
-        setError(null);
-      }
       
     } catch (err) {
       console.error('[EventsPage] Error fetching events:', err);
-      
-      // Enhanced error handling
-      let errorMessage = 'Failed to fetch events';
-      
-      if (err.response) {
-        // Server responded with error status
-        if (err.response.status === 404) {
-          errorMessage = 'Events API endpoint not found (404). Check your backend routes.';
-        } else if (err.response.status === 401) {
-          errorMessage = 'Authentication required. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = 'You do not have permission to view events.';
-        } else if (err.response.status >= 500) {
-          errorMessage = 'Server error. Please try again later.';
-        } else if (err.response.data) {
-          errorMessage = err.response.data.detail || err.response.data.message || JSON.stringify(err.response.data);
-        }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'Cannot connect to server. Check your network connection and ensure the backend is running.';
-      } else {
-        // Other errors
-        errorMessage = err.message || 'An unexpected error occurred';
-      }
+      const errorMessage = err.response?.status === 404 
+        ? 'Events API not found. Please check backend configuration.'
+        : err.message || 'Failed to fetch events';
       
       setError(errorMessage);
-      setEvents([]);
       showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, searchTerm, filters, showToast]);
+  }, [searchTerm, filters, showToast]);
 
   // Calculate event statistics
   const calculateStats = useCallback((eventsList) => {
@@ -372,9 +202,8 @@ const EventsPage = () => {
       event.is_featured === true || event.featured === true
     );
     
-    // Handle different registration count field names
     const totalRegistrations = eventsList.reduce((sum, event) => {
-      const count = event.registration_count || event.registrations_count || event.attendees_count || event.participants_count || 0;
+      const count = event.registration_count || 0;
       return sum + (typeof count === 'number' ? count : 0);
     }, 0);
 
@@ -393,44 +222,7 @@ const EventsPage = () => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // Update URL params when state changes
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (activeTab !== 'list') params.set('view', activeTab);
-    if (searchTerm) params.set('search', searchTerm);
-    if (filters.status) params.set('status', filters.status);
-    if (filters.event_type) params.set('type', filters.event_type);
-    if (filters.upcoming) params.set('upcoming', filters.upcoming);
-    if (filters.featured) params.set('featured', filters.featured);
-    
-    setSearchParams(params);
-  }, [activeTab, searchTerm, filters, setSearchParams]);
-
   // Event handlers
-  const handleTabChange = useCallback((tabId) => {
-    setActiveTab(tabId);
-  }, []);
-
-  const handleSearch = useCallback((e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setPagination(prev => ({ ...prev, page: 1 }));
-    
-    // Debounce search
-    const timeoutId = setTimeout(() => {
-      fetchEvents({ search: term });
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [fetchEvents]);
-
-  const handleFilterChange = useCallback((key, value) => {
-    const updatedFilters = { ...filters, [key]: value };
-    setFilters(updatedFilters);
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchEvents(updatedFilters);
-  }, [filters, fetchEvents]);
-
   const handleCreateEvent = useCallback(() => {
     console.log('[EventsPage] Create event clicked');
     setEditingEvent(null);
@@ -442,11 +234,6 @@ const EventsPage = () => {
     setEditingEvent(event);
     setShowEventForm(true);
   }, []);
-
-  const handleViewEvent = useCallback((event) => {
-    console.log('[EventsPage] View event clicked:', event);
-    navigate(`/admin/events/${event.id}`);
-  }, [navigate]);
 
   const handleDeleteEvent = useCallback((event) => {
     console.log('[EventsPage] Delete event clicked:', event);
@@ -478,52 +265,26 @@ const EventsPage = () => {
     fetchEvents().finally(() => setRefreshing(false));
   }, [fetchEvents]);
 
-  const handleExport = useCallback(async () => {
-    try {
-      console.log('[EventsPage] Export clicked');
-      const response = await eventsService.exportEvents(filters);
-      const blob = new Blob([response], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `events_export_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-      showToast('Events exported successfully', 'success');
-    } catch (error) {
-      console.error('Export error:', error);
-      showToast('Failed to export events', 'error');
-    }
-  }, [filters, showToast]);
-
-  const clearFilters = useCallback(() => {
-    const clearedFilters = {
-      status: '',
-      event_type: '',
-      upcoming: '',
-      featured: ''
-    };
-    setFilters(clearedFilters);
-    setSearchTerm('');
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchEvents(clearedFilters);
-  }, [fetchEvents]);
-
+  // FIXED: Form submission handler
   const handleFormSubmit = useCallback(async (formData) => {
     try {
       console.log('[EventsPage] Form submit:', formData);
       
-      let response;
+      let savedEvent;
       if (editingEvent) {
-        response = await eventsService.updateEvent(editingEvent.id, formData);
+        savedEvent = await eventsService.updateEvent(editingEvent.id, formData);
+        setEvents(prev => prev.map(e => e.id === editingEvent.id ? savedEvent : e));
         showToast('Event updated successfully', 'success');
       } else {
-        response = await eventsService.createEvent(formData);
+        savedEvent = await eventsService.createEvent(formData);
+        setEvents(prev => [savedEvent, ...prev]);
         showToast('Event created successfully', 'success');
       }
       
       setShowEventForm(false);
       setEditingEvent(null);
+      
+      // Refresh stats
       fetchEvents();
       
     } catch (error) {
@@ -568,8 +329,25 @@ const EventsPage = () => {
     return event.status_display || event.status || 'Unknown';
   };
 
-  // FIXED: Enhanced error display with debugging information
-  if (error && !loading) {
+  // Loading state
+  if (loading && events.length === 0) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '16px'
+      }}>
+        <LoadingSpinner size="lg" />
+        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && events.length === 0) {
     return (
       <div style={{
         padding: '24px',
@@ -602,28 +380,9 @@ const EventsPage = () => {
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b', marginBottom: '16px' }}>
             Events Loading Error
           </h2>
-          <p style={{ color: '#dc2626', marginBottom: '8px', fontSize: '16px', maxWidth: '500px' }}>
+          <p style={{ color: '#dc2626', marginBottom: '24px', fontSize: '16px', maxWidth: '500px' }}>
             {error}
           </p>
-          <div style={{ 
-            background: '#fef2f2', 
-            padding: '16px', 
-            borderRadius: '8px', 
-            marginBottom: '24px',
-            textAlign: 'left',
-            maxWidth: '500px'
-          }}>
-            <p style={{ color: '#92400e', fontSize: '14px', margin: '0 0 8px 0' }}>
-              <strong>Debugging steps:</strong>
-            </p>
-            <ul style={{ color: '#92400e', fontSize: '12px', margin: 0, paddingLeft: '20px' }}>
-              <li>Check if your backend server is running</li>
-              <li>Verify the events API endpoint URL</li>
-              <li>Check browser Network tab for API requests</li>
-              <li>Ensure CORS is configured on the backend</li>
-              <li>Verify authentication if required</li>
-            </ul>
-          </div>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button 
               onClick={handleRefresh}
@@ -643,21 +402,6 @@ const EventsPage = () => {
             >
               <RefreshCw size={16} />
               Try Again
-            </button>
-            <button 
-              onClick={() => navigate('/admin/dashboard')}
-              style={{
-                padding: '10px 20px',
-                background: 'white',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                color: '#374151',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              Back to Dashboard
             </button>
             <button 
               onClick={handleCreateEvent}
@@ -684,24 +428,6 @@ const EventsPage = () => {
     );
   }
 
-  // Loading state
-  if (loading && events.length === 0) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '60vh',
-        gap: '16px'
-      }}>
-        <LoadingSpinner size="lg" />
-        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events...</p>
-        <p style={{ color: '#9ca3af', fontSize: '14px' }}>Connecting to backend API</p>
-      </div>
-    );
-  }
-
   return (
     <div style={{
       padding: '24px',
@@ -710,7 +436,7 @@ const EventsPage = () => {
       backgroundColor: '#f8fafc',
       minHeight: '100vh'
     }}>
-      {/* Enhanced Header */}
+      {/* Header */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -739,7 +465,7 @@ const EventsPage = () => {
               fontSize: '16px' 
             }}>
               Manage church events, services, and community activities
-              {events.length > 0 && ` (${events.length} events loaded)`}
+              {events.length > 0 && ` (${events.length} events)`}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -769,51 +495,6 @@ const EventsPage = () => {
             </button>
             
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                background: 'white',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                color: '#374151',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <Filter size={16} />
-              Filters
-            </button>
-            
-            <button
-              onClick={handleExport}
-              disabled={events.length === 0}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                background: 'white',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                color: '#374151',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: events.length === 0 ? 'not-allowed' : 'pointer',
-                opacity: events.length === 0 ? 0.5 : 1,
-                transition: 'all 0.2s'
-              }}
-            >
-              <Download size={16} />
-              Export
-            </button>
-            
-            {/* FIXED: Create Event Button */}
-            <button
               onClick={handleCreateEvent}
               style={{
                 display: 'flex',
@@ -830,14 +511,6 @@ const EventsPage = () => {
                 transition: 'all 0.2s',
                 boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
               }}
-              onMouseOver={(e) => {
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.4)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.3)';
-              }}
             >
               <Plus size={16} />
               Create Event
@@ -853,7 +526,58 @@ const EventsPage = () => {
         gap: '20px',
         marginBottom: '24px'
       }}>
-        {/* Stats cards with proper event counts */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Calendar size={20} style={{ color: 'white' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Total Events</h3>
+              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.total}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <TrendingUp size={20} style={{ color: 'white' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Upcoming Events</h3>
+              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.upcoming}</span>
+            </div>
+          </div>
+        </div>
+
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -878,181 +602,7 @@ const EventsPage = () => {
               <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.featured}</span>
             </div>
           </div>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '4px 8px',
-            background: eventStats.featured > 0 ? '#dbeafe' : '#f3f4f6',
-            color: eventStats.featured > 0 ? '#1e40af' : '#374151',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: '600'
-          }}>
-            {eventStats.featured > 0 ? 'Active promotions' : 'None featured'}
-          </div>
         </div>
-      </div>
-
-      {/* Search and Filters Section */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e5e7eb'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: showFilters ? '24px' : '0' }}>
-          <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-            <input
-              type="text"
-              placeholder="Search events by title, description, or organizer..."
-              value={searchTerm}
-              onChange={handleSearch}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div style={{
-            borderTop: '1px solid #f3f4f6',
-            paddingTop: '20px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Filters</h3>
-              <button
-                onClick={clearFilters}
-                style={{
-                  padding: '6px 12px',
-                  background: 'transparent',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  color: '#6b7280',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                Clear All
-              </button>
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px'
-            }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                >
-                  <option value="">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                  Event Type
-                </label>
-                <select
-                  value={filters.event_type}
-                  onChange={(e) => handleFilterChange('event_type', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                >
-                  <option value="">All Types</option>
-                  <option value="service">Church Service</option>
-                  <option value="meeting">Meeting</option>
-                  <option value="social">Social Event</option>
-                  <option value="youth">Youth Event</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="outreach">Outreach</option>
-                  <option value="fundraiser">Fundraiser</option>
-                  <option value="kids">Kids Event</option>
-                  <option value="seniors">Seniors Event</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                  Time Frame
-                </label>
-                <select
-                  value={filters.upcoming}
-                  onChange={(e) => handleFilterChange('upcoming', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                >
-                  <option value="">All Events</option>
-                  <option value="true">Upcoming Only</option>
-                  <option value="past">Past Events</option>
-                  <option value="today">Today</option>
-                  <option value="this_week">This Week</option>
-                  <option value="this_month">This Month</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                  Featured
-                </label>
-                <select
-                  value={filters.featured}
-                  onChange={(e) => handleFilterChange('featured', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                >
-                  <option value="">All Events</option>
-                  <option value="true">Featured Only</option>
-                  <option value="false">Not Featured</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Events List */}
@@ -1123,35 +673,17 @@ const EventsPage = () => {
                             {event.event_type_display || event.event_type}
                           </span>
                         )}
-                        {(event.registration_count || event.registrations_count) && (
+                        {(event.registration_count) && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Users size={12} />
                             <span style={{ fontSize: '12px' }}>
-                              {event.registration_count || event.registrations_count} registered
+                              {event.registration_count} registered
                             </span>
                           </div>
                         )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => handleViewEvent(event)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#dbeafe',
-                          border: 'none',
-                          borderRadius: '6px',
-                          color: '#1d4ed8',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                        title="View Details"
-                      >
-                        <Eye size={14} />
-                      </button>
                       <button
                         onClick={() => handleEditEvent(event)}
                         style={{
@@ -1169,6 +701,7 @@ const EventsPage = () => {
                         title="Edit Event"
                       >
                         <Edit size={14} />
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(event)}
@@ -1187,6 +720,7 @@ const EventsPage = () => {
                         title="Delete Event"
                       >
                         <Trash2 size={14} />
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -1208,38 +742,33 @@ const EventsPage = () => {
               No events found
             </h3>
             <p style={{ color: '#6b7280', marginBottom: '24px', fontSize: '14px' }}>
-              {searchTerm || Object.values(filters).some(f => f) ? 
-                'Try adjusting your search or filters.' :
-                'Create your first event to get started.'
-              }
+              Create your first event to get started.
             </p>
-            {!searchTerm && !Object.values(filters).some(f => f) && (
-              <button 
-                onClick={handleCreateEvent}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <Plus size={16} />
-                Create Event
-              </button>
-            )}
+            <button 
+              onClick={handleCreateEvent}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Plus size={16} />
+              Create Event
+            </button>
           </div>
         )}
       </div>
 
-      {/* FIXED: Event Form Modal */}
+      {/* Event Form Modal */}
       {showEventForm && (
         <Modal
           isOpen={showEventForm}
@@ -1255,15 +784,33 @@ const EventsPage = () => {
         </Modal>
       )}
 
-      {/* FIXED: Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       {deleteEvent && (
-        <ConfirmDialog
-          isOpen={!!deleteEvent}
-          onClose={() => setDeleteEvent(null)}
-          onConfirm={confirmDeleteEvent}
-          title="Delete Event"
-          message={
-            <>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1050,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '450px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
+              Delete Event
+            </h3>
+            <div style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
               <p>Are you sure you want to delete "<strong>{deleteEvent.title}</strong>"?</p>
               {(deleteEvent.registration_count || 0) > 0 && (
                 <p style={{ color: '#dc2626', marginTop: '8px' }}>
@@ -1272,12 +819,39 @@ const EventsPage = () => {
                 </p>
               )}
               <p style={{ marginTop: '8px' }}>This action cannot be undone.</p>
-            </>
-          }
-          confirmText="Delete Event"
-          cancelText="Cancel"
-          variant="danger"
-        />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+                onClick={() => setDeleteEvent(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ef4444',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+                onClick={confirmDeleteEvent}
+              >
+                Delete Event
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
