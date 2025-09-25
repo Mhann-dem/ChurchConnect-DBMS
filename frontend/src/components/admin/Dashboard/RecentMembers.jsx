@@ -1,5 +1,5 @@
 // Dashboard/RecentMembers.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react'; // Added useMemo import
 import { 
   EnvelopeIcon, 
   PhoneIcon, 
@@ -20,6 +20,16 @@ const RecentMembers = ({
   maxItems = 5 
 }) => {
   const [viewMode, setViewMode] = useState('list');
+
+  const membersList = useMemo(() => {
+    if (Array.isArray(members)) {
+      return members;
+    }
+    if (members?.results && Array.isArray(members.results)) {
+      return members.results;
+    }
+    return [];
+  }, [members]);
 
   // Format member name with preferred name handling
   const formatMemberName = (member) => {
@@ -75,7 +85,7 @@ const RecentMembers = ({
     }
   };
 
-  // Render individual member card
+  // Render individual member card - FIXED: Removed incorrect map function
   const renderMemberCard = (member, index) => {
     const contactMethod = getContactMethod(member);
     const ContactIcon = contactMethod.icon;
@@ -180,11 +190,11 @@ const RecentMembers = ({
     );
   };
 
-  // Render list view
+  // Render list view - FIXED: Use membersList instead of members
   const renderListView = () => {
     return (
       <div className="space-y-3">
-        {members.slice(0, maxItems).map((member, index) => (
+        {membersList.slice(0, maxItems).map((member, index) => (
           <div 
             key={member.id || index}
             className="group cursor-pointer"
@@ -248,11 +258,11 @@ const RecentMembers = ({
     );
   };
 
-  // Render grid view
+  // Render grid view - FIXED: Use membersList instead of members
   const renderGridView = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {members.slice(0, maxItems).map(renderMemberCard)}
+        {membersList.slice(0, maxItems).map((member, index) => renderMemberCard(member, index))}
       </div>
     );
   };
@@ -267,8 +277,8 @@ const RecentMembers = ({
     );
   }
 
-  // Empty state
-  if (!members || members.length === 0) {
+  // Empty state - FIXED: Use membersList.length instead of members.length
+  if (!membersList || membersList.length === 0) {
     return (
       <div className="text-center py-12">
         <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -293,7 +303,7 @@ const RecentMembers = ({
       {/* Header with view controls */}
       <div className="flex items-center justify-between mb-4 px-6">
         <div className="text-sm text-gray-600">
-          Showing {Math.min(members.length, maxItems)} of {members.length} recent members
+          Showing {Math.min(membersList.length, maxItems)} of {membersList.length} recent members
         </div>
         <div className="flex items-center space-x-1">
           <button
@@ -326,14 +336,14 @@ const RecentMembers = ({
         {viewMode === 'list' ? renderListView() : renderGridView()}
       </div>
 
-      {/* Footer with view all button */}
-      {members.length > maxItems && (
+      {/* Footer with view all button - FIXED: Use membersList.length instead of members.length */}
+      {membersList.length > maxItems && (
         <div className="px-6 py-4 border-t border-gray-200">
           <a
             href="/admin/members"
             className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
           >
-            View All {members.length} Members
+            View All {membersList.length} Members
           </a>
         </div>
       )}

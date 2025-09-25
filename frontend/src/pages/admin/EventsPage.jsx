@@ -22,10 +22,8 @@ import {
   XCircle
 } from 'lucide-react';
 import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
-// FIXED: Correct import structure
 import { eventsService } from '../../services/events';
 import { useToast } from '../../hooks/useToast';
-// FIXED: Create these missing components
 import EventForm from '../../components/admin/Events/EventForm';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 
@@ -171,7 +169,7 @@ const EventsPage = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState([]);
-  const [deleteEvent, setDeleteEvent] = useState(null); // FIXED: For delete confirmation
+  const [deleteEvent, setDeleteEvent] = useState(null);
   const [filters, setFilters] = useState({
     status: initialStatus,
     event_type: initialType,
@@ -196,7 +194,7 @@ const EventsPage = () => {
     totalPages: 0
   });
 
-  // FIXED: Fetch events with proper backend compatibility
+  // FIXED: Better event fetching with comprehensive error handling
   const fetchEvents = useCallback(async (customFilters = {}) => {
     try {
       setLoading(true);
@@ -220,61 +218,111 @@ const EventsPage = () => {
       console.log('[EventsPage] Fetching events with params:', params);
       
       const response = await eventsService.getEvents(params);
-      console.log('[EventsPage] Events response:', response);
+      console.log('[EventsPage] Full API response:', response);
       
-      // FIXED: Handle your backend response structure
-      if (response && response.data) {
-        let eventsData = [];
-        let totalCount = 0;
-        
-        if (response.data.results && Array.isArray(response.data.results)) {
-          // DRF pagination response
-          eventsData = response.data.results;
-          totalCount = response.data.count || eventsData.length;
-        } else if (Array.isArray(response.data)) {
-          // Simple array response
+      // FIXED: Comprehensive response handling for different backend structures
+      let eventsData = [];
+      let totalCount = 0;
+
+      if (!response) {
+        throw new Error('No response received from server');
+      }
+
+      // Handle different response structures
+      if (response.data) {
+        // Case 1: Response with data property (most common)
+        if (Array.isArray(response.data)) {
+          // Direct array in data
           eventsData = response.data;
-          totalCount = eventsData.length;
+          totalCount = response.data.length;
+        } else if (response.data.results && Array.isArray(response.data.results)) {
+          // Django REST Framework pagination style
+          eventsData = response.data.results;
+          totalCount = response.data.count || response.data.results.length;
+        } else if (response.data.events && Array.isArray(response.data.events)) {
+          // Custom events property
+          eventsData = response.data.events;
+          totalCount = response.data.total || response.data.events.length;
+        } else if (Array.isArray(response.data.items)) {
+          // Alternative pagination style
+          eventsData = response.data.items;
+          totalCount = response.data.total || response.data.items.length;
         } else {
-          // Unknown format
-          console.warn('[EventsPage] Unexpected response format:', response.data);
-          eventsData = [];
-          totalCount = 0;
+          // Try to extract any array from data
+          const arrayKeys = Object.keys(response.data).filter(key => Array.isArray(response.data[key]));
+          if (arrayKeys.length > 0) {
+            eventsData = response.data[arrayKeys[0]];
+            totalCount = eventsData.length;
+          }
         }
-        
-        setEvents(eventsData);
-        
-        // Update pagination
-        setPagination(prev => ({
-          ...prev,
-          total: totalCount,
-          totalPages: Math.ceil(totalCount / prev.limit)
-        }));
-        
-        // Calculate stats
-        calculateStats(eventsData);
-        
-        // Clear error if successful
-        setError(null);
+      } else if (Array.isArray(response)) {
+        // Case 2: Direct array response
+        eventsData = response;
+        totalCount = response.length;
+      } else if (response.results && Array.isArray(response.results)) {
+        // Case 3: Direct DRF response without data wrapper
+        eventsData = response.results;
+        totalCount = response.count || response.results.length;
+      }
+
+      // FIXED: Final fallback - check if we found any events
+      if (!Array.isArray(eventsData)) {
+        console.warn('[EventsPage] No events array found in response structure:', response);
+        eventsData = [];
+        totalCount = 0;
+      }
+
+      console.log('[EventsPage] Extracted events:', eventsData);
+      console.log('[EventsPage] Total count:', totalCount);
+      
+      setEvents(eventsData);
+      
+      // Update pagination
+      setPagination(prev => ({
+        ...prev,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / prev.limit)
+      }));
+      
+      // Calculate stats
+      calculateStats(eventsData);
+      
+      // Show message if no events but successful response
+      if (eventsData.length === 0) {
+        if (searchTerm || Object.values(filters).some(f => f) || Object.values(customFilters).some(f => f)) {
+          setError('No events match your search criteria');
+        } else {
+          setError('No events found. Create your first event to get started.');
+        }
       } else {
-        console.warn('[EventsPage] No data in response:', response);
-        setEvents([]);
-        setError('No events data received from server');
+        setError(null);
       }
       
     } catch (err) {
       console.error('[EventsPage] Error fetching events:', err);
       
-      // More specific error handling
+      // Enhanced error handling
       let errorMessage = 'Failed to fetch events';
-      if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      } else if (err.response?.status === 404) {
-        errorMessage = 'Events API endpoint not found. Please check your backend configuration.';
-      } else if (err.response?.status >= 500) {
-        errorMessage = 'Server error. Please try again later.';
+      
+      if (err.response) {
+        // Server responded with error status
+        if (err.response.status === 404) {
+          errorMessage = 'Events API endpoint not found (404). Check your backend routes.';
+        } else if (err.response.status === 401) {
+          errorMessage = 'Authentication required. Please log in again.';
+        } else if (err.response.status === 403) {
+          errorMessage = 'You do not have permission to view events.';
+        } else if (err.response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (err.response.data) {
+          errorMessage = err.response.data.detail || err.response.data.message || JSON.stringify(err.response.data);
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'Cannot connect to server. Check your network connection and ensure the backend is running.';
+      } else {
+        // Other errors
+        errorMessage = err.message || 'An unexpected error occurred';
       }
       
       setError(errorMessage);
@@ -305,7 +353,7 @@ const EventsPage = () => {
     
     const upcomingEvents = eventsList.filter(event => {
       try {
-        return new Date(event.start_datetime) > now;
+        return event.start_datetime && new Date(event.start_datetime) > now;
       } catch (e) {
         return false;
       }
@@ -321,12 +369,12 @@ const EventsPage = () => {
     });
     
     const featuredEvents = eventsList.filter(event => 
-      event.is_featured === true
+      event.is_featured === true || event.featured === true
     );
     
-    // FIXED: Handle different registration count field names
+    // Handle different registration count field names
     const totalRegistrations = eventsList.reduce((sum, event) => {
-      const count = event.registration_count || event.registrations_count || 0;
+      const count = event.registration_count || event.registrations_count || event.attendees_count || event.participants_count || 0;
       return sum + (typeof count === 'number' ? count : 0);
     }, 0);
 
@@ -371,7 +419,7 @@ const EventsPage = () => {
     // Debounce search
     const timeoutId = setTimeout(() => {
       fetchEvents({ search: term });
-    }, 300);
+    }, 500);
     
     return () => clearTimeout(timeoutId);
   }, [fetchEvents]);
@@ -383,37 +431,28 @@ const EventsPage = () => {
     fetchEvents(updatedFilters);
   }, [filters, fetchEvents]);
 
-  // FIXED: Create event handler
   const handleCreateEvent = useCallback(() => {
     console.log('[EventsPage] Create event clicked');
     setEditingEvent(null);
     setShowEventForm(true);
   }, []);
 
-  // FIXED: Edit event handler with proper navigation
   const handleEditEvent = useCallback((event) => {
     console.log('[EventsPage] Edit event clicked:', event);
-    // Option 1: Use modal form
     setEditingEvent(event);
     setShowEventForm(true);
-    
-    // Option 2: Navigate to edit page (uncomment if you prefer this)
-    // navigate(`/admin/events/edit/${event.id}`, { state: { event } });
   }, []);
 
-  // FIXED: View event details handler
   const handleViewEvent = useCallback((event) => {
     console.log('[EventsPage] View event clicked:', event);
     navigate(`/admin/events/${event.id}`);
   }, [navigate]);
 
-  // FIXED: Delete event handler with confirmation
   const handleDeleteEvent = useCallback((event) => {
     console.log('[EventsPage] Delete event clicked:', event);
     setDeleteEvent(event);
   }, []);
 
-  // FIXED: Confirm delete handler
   const confirmDeleteEvent = useCallback(async () => {
     if (!deleteEvent) return;
     
@@ -431,7 +470,7 @@ const EventsPage = () => {
       console.error('Error deleting event:', err);
       showToast(err.message || 'Failed to delete event', 'error');
     }
-  }, [deleteEvent, eventsService, showToast, events, calculateStats]);
+  }, [deleteEvent, showToast, events, calculateStats]);
 
   const handleRefresh = useCallback(() => {
     console.log('[EventsPage] Refresh clicked');
@@ -466,26 +505,23 @@ const EventsPage = () => {
     };
     setFilters(clearedFilters);
     setSearchTerm('');
+    setPagination(prev => ({ ...prev, page: 1 }));
     fetchEvents(clearedFilters);
   }, [fetchEvents]);
 
-  // FIXED: Form submit handlers
   const handleFormSubmit = useCallback(async (formData) => {
     try {
       console.log('[EventsPage] Form submit:', formData);
       
       let response;
       if (editingEvent) {
-        // Update existing event
         response = await eventsService.updateEvent(editingEvent.id, formData);
         showToast('Event updated successfully', 'success');
       } else {
-        // Create new event
         response = await eventsService.createEvent(formData);
         showToast('Event created successfully', 'success');
       }
       
-      // Close form and refresh data
       setShowEventForm(false);
       setEditingEvent(null);
       fetchEvents();
@@ -494,7 +530,7 @@ const EventsPage = () => {
       console.error('Form submit error:', error);
       showToast(error.message || 'Failed to save event', 'error');
     }
-  }, [editingEvent, eventsService, showToast, fetchEvents]);
+  }, [editingEvent, showToast, fetchEvents]);
 
   const handleFormCancel = useCallback(() => {
     console.log('[EventsPage] Form cancelled');
@@ -502,7 +538,7 @@ const EventsPage = () => {
     setEditingEvent(null);
   }, []);
 
-  // FIXED: Utility functions to handle your backend data structure
+  // Utility functions
   const getEventStatusIcon = (event) => {
     if (event.status === 'published') {
       if (event.end_datetime && isPast(parseISO(event.end_datetime))) {
@@ -532,45 +568,8 @@ const EventsPage = () => {
     return event.status_display || event.status || 'Unknown';
   };
 
-  const getEventTypeColor = (eventType) => {
-    const colors = {
-      service: 'bg-blue-100 text-blue-800',
-      meeting: 'bg-red-100 text-red-800',
-      social: 'bg-green-100 text-green-800',
-      youth: 'bg-orange-100 text-orange-800',
-      workshop: 'bg-purple-100 text-purple-800',
-      outreach: 'bg-teal-100 text-teal-800',
-      conference: 'bg-indigo-100 text-indigo-800',
-      retreat: 'bg-pink-100 text-pink-800',
-      other: 'bg-gray-100 text-gray-800'
-    };
-    return colors[eventType] || colors.other;
-  };
-
-  // Tab configuration
-  const tabs = [
-    {
-      id: 'list',
-      label: 'Events List',
-      icon: List,
-      badge: eventStats.total
-    },
-    {
-      id: 'calendar',
-      label: 'Calendar View',
-      icon: Calendar,
-      badge: eventStats.upcoming
-    },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: BarChart3,
-      badge: eventStats.thisMonth
-    }
-  ];
-
-  // FIXED: Better error handling for the blank page issue
-  if (error && !events.length) {
+  // FIXED: Enhanced error display with debugging information
+  if (error && !loading) {
     return (
       <div style={{
         padding: '24px',
@@ -606,10 +605,26 @@ const EventsPage = () => {
           <p style={{ color: '#dc2626', marginBottom: '8px', fontSize: '16px', maxWidth: '500px' }}>
             {error}
           </p>
-          <p style={{ color: '#6b7280', marginBottom: '32px', fontSize: '14px' }}>
-            Please check your backend connection and try again.
-          </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ 
+            background: '#fef2f2', 
+            padding: '16px', 
+            borderRadius: '8px', 
+            marginBottom: '24px',
+            textAlign: 'left',
+            maxWidth: '500px'
+          }}>
+            <p style={{ color: '#92400e', fontSize: '14px', margin: '0 0 8px 0' }}>
+              <strong>Debugging steps:</strong>
+            </p>
+            <ul style={{ color: '#92400e', fontSize: '12px', margin: 0, paddingLeft: '20px' }}>
+              <li>Check if your backend server is running</li>
+              <li>Verify the events API endpoint URL</li>
+              <li>Check browser Network tab for API requests</li>
+              <li>Ensure CORS is configured on the backend</li>
+              <li>Verify authentication if required</li>
+            </ul>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button 
               onClick={handleRefresh}
               style={{
@@ -644,6 +659,25 @@ const EventsPage = () => {
             >
               Back to Dashboard
             </button>
+            <button 
+              onClick={handleCreateEvent}
+              style={{
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Plus size={16} />
+              Create First Event
+            </button>
           </div>
         </div>
       </div>
@@ -663,6 +697,7 @@ const EventsPage = () => {
       }}>
         <LoadingSpinner size="lg" />
         <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events...</p>
+        <p style={{ color: '#9ca3af', fontSize: '14px' }}>Connecting to backend API</p>
       </div>
     );
   }

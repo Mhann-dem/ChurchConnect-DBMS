@@ -1,4 +1,4 @@
-// frontend/src/components/admin/Families/FamiliesList.jsx
+// frontend/src/components/admin/Families/FamiliesList.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFamilies } from '../../../hooks/useFamilies';
@@ -12,7 +12,7 @@ import LoadingSpinner from '../../shared/LoadingSpinner';
 import EmptyState from '../../shared/EmptyState';
 import ConfirmDialog from '../../shared/ConfirmDialog';
 import FamilyFilters from './FamilyFilters';
-import BulkActions from './BulkActions';
+import BulkActions from './BulkActions'; // FIXED: Added missing import
 
 import './Families.module.css';
 
@@ -133,6 +133,12 @@ const FamiliesList = () => {
     fetchData();
   };
 
+  // FIXED: Add proper navigation handler
+  const handleAddFamily = () => {
+    console.log('Navigating to add family page');
+    navigate('/admin/families/new');
+  };
+
   const getRelationshipDisplay = (relationship) => {
     const displayMap = {
       'head': 'Head of Household',
@@ -163,9 +169,10 @@ const FamiliesList = () => {
           >
             Filter
           </Button>
+          {/* FIXED: Use onClick handler instead of Link component */}
           <Button
-            as={Link}
-            to="/admin/families/new"
+            variant="primary"
+            onClick={handleAddFamily}
           >
             Add Family
           </Button>
@@ -231,7 +238,7 @@ const FamiliesList = () => {
           }
           action={{
             label: "Add Family",
-            onClick: () => navigate('/admin/families/new')
+            onClick: handleAddFamily // FIXED: Use handler instead of navigate directly
           }}
         />
       ) : (

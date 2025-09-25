@@ -1,4 +1,4 @@
-// Fixed Dashboard Component - Correct Data Processing
+// Fixed Dashboard Component - Correct Data Extraction for Your Django API
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   UsersIcon, 
@@ -33,32 +33,32 @@ const Dashboard = () => {
         'Content-Type': 'application/json',
       };
 
-      const baseURL = 'http://localhost:8000'; // Your backend URL
+      const baseURL = 'http://localhost:8000';
 
-      // FIXED: Use exact endpoints from your Django logs
+      // FIXED: Correct API calls matching your Django logs exactly
       const apiCalls = [
-        // Members statistics - returns { summary: { total_members: 4, active_members: 4 } }
+        // Member statistics - returns your exact response format
         fetch(`${baseURL}/api/v1/members/statistics/?range=30d`, { headers }),
         
-        // Groups statistics - returns { total_groups: 4, active_groups: 4 }  
+        // Groups statistics  
         fetch(`${baseURL}/api/v1/groups/statistics/`, { headers }),
         
-        // Families statistics - returns { total_families: 0 }
+        // Families statistics
         fetch(`${baseURL}/api/v1/families/statistics/`, { headers }),
         
-        // Recent members - returns { success: true, results: [...], count: 4 }
+        // Recent members - your working endpoint
         fetch(`${baseURL}/api/v1/members/recent/?limit=5`, { headers }),
         
         // System health
-        fetch(`${baseURL}/api/v1/core/dashboard/health/`, { headers }),
+        fetch(`${baseURL}/api/v1/core/dashboard/health/`, { headers }).catch(() => null),
         
         // Alerts  
-        fetch(`${baseURL}/api/v1/core/dashboard/alerts/`, { headers })
+        fetch(`${baseURL}/api/v1/core/dashboard/alerts/`, { headers }).catch(() => null)
       ];
 
       const responses = await Promise.allSettled(apiCalls);
       
-      // Process each response individually with detailed logging
+      // FIXED: Safer response processing
       const processResponse = async (responseResult, endpointName) => {
         if (responseResult.status === 'rejected') {
           console.error(`[Dashboard] ${endpointName} failed:`, responseResult.reason);
@@ -66,14 +66,14 @@ const Dashboard = () => {
         }
 
         const response = responseResult.value;
-        if (!response.ok) {
-          console.error(`[Dashboard] ${endpointName} HTTP error:`, response.status, response.statusText);
+        if (!response || !response.ok) {
+          console.error(`[Dashboard] ${endpointName} HTTP error:`, response?.status);
           return null;
         }
 
         try {
           const data = await response.json();
-          console.log(`[Dashboard] ${endpointName} data:`, data);
+          console.log(`[Dashboard] ${endpointName} success:`, data);
           return data;
         } catch (parseError) {
           console.error(`[Dashboard] ${endpointName} parse error:`, parseError);
@@ -81,7 +81,6 @@ const Dashboard = () => {
         }
       };
 
-      // Process all responses
       const [
         memberStatsData,
         groupStatsData, 
@@ -98,38 +97,67 @@ const Dashboard = () => {
         processResponse(responses[5], 'Alerts')
       ]);
 
-      // FIXED: Extract data with correct paths based on your API responses
+      // FIXED: Correct data extraction matching your Django response structure
       const extractedData = {
-        // Members: Extract from summary object
-        totalMembers: memberStatsData?.summary?.total_members || 0,
-        activeMembers: memberStatsData?.summary?.active_members || 0,
-        newMembers: memberStatsData?.summary?.recent_registrations || 0,
+        // FIXED: Member stats - handle your actual response structure
+        totalMembers: memberStatsData?.summary?.total_members || 
+                     memberStatsData?.total_members || 0,
+        activeMembers: memberStatsData?.summary?.active_members || 
+                      memberStatsData?.active_members || 0,
+        newMembers: memberStatsData?.summary?.recent_registrations || 
+                   memberStatsData?.new_members || 0,
         
-        // Groups: Direct properties
+        // FIXED: Group stats - direct properties from your API
         totalGroups: groupStatsData?.total_groups || 0,
         activeGroups: groupStatsData?.active_groups || 0,
         
-        // Families: Direct property
+        // FIXED: Family stats - direct property
         totalFamilies: familyStatsData?.total_families || 0,
         
-        // Recent members: Handle both response formats
-        recentMembers: recentMembersData?.results || recentMembersData || [],
+        // FIXED: Recent members - handle your Django response format
+        // Your API returns: { success: true, results: [...], count: 4 }
+        recentMembers: (() => {
+          if (recentMembersData?.success && recentMembersData?.results) {
+            return recentMembersData.results;
+          }
+          if (Array.isArray(recentMembersData)) {
+            return recentMembersData;
+          }
+          return [];
+        })(),
         
-        // System data
+        // System data with fallbacks
         systemHealth: healthData || { status: 'unknown' },
         alerts: alertsData?.results || alertsData || [],
         
-        // Metadata
+        // Metadata for debugging
         lastUpdated: new Date(),
-        debug: {
+        debugInfo: {
           memberStatsRaw: memberStatsData,
           groupStatsRaw: groupStatsData,
           familyStatsRaw: familyStatsData,
-          recentMembersRaw: recentMembersData
+          recentMembersRaw: recentMembersData,
+          recentMembersProcessed: (() => {
+            if (recentMembersData?.success && recentMembersData?.results) {
+              return {
+                format: 'django_success_response',
+                count: recentMembersData.results.length,
+                sample: recentMembersData.results[0] || null
+              };
+            }
+            return { format: 'unknown', data: recentMembersData };
+          })()
         }
       };
 
-      console.log('[Dashboard] Final extracted data:', extractedData);
+      console.log('[Dashboard] FINAL extracted data:', {
+        totalMembers: extractedData.totalMembers,
+        activeMembers: extractedData.activeMembers,
+        recentMembersCount: extractedData.recentMembers.length,
+        recentMembersFirst: extractedData.recentMembers[0]?.first_name,
+        debugInfo: extractedData.debugInfo
+      });
+      
       setDashboardData(extractedData);
 
     } catch (error) {
@@ -150,7 +178,8 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  if (loading) {
+  // FIXED: Loading state
+  if (loading && !dashboardData) {
     return (
       <div style={{
         display: 'flex',
@@ -168,7 +197,7 @@ const Dashboard = () => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }} />
-        <p>Loading Dashboard...</p>
+        <p>Loading Dashboard Data...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -179,7 +208,8 @@ const Dashboard = () => {
     );
   }
 
-  if (error) {
+  // FIXED: Error state
+  if (error && !dashboardData) {
     return (
       <div style={{
         display: 'flex',
@@ -214,24 +244,25 @@ const Dashboard = () => {
     );
   }
 
+  // FIXED: Stats with correct data
   const stats = [
     {
       name: 'Total Members',
-      value: dashboardData?.totalMembers?.toLocaleString() || '0',
+      value: (dashboardData?.totalMembers || 0).toLocaleString(),
       icon: UsersIcon,
       description: `${dashboardData?.activeMembers || 0} active members`,
       color: 'from-blue-500 to-cyan-500'
     },
     {
       name: 'Total Families',
-      value: dashboardData?.totalFamilies?.toLocaleString() || '0',
+      value: (dashboardData?.totalFamilies || 0).toLocaleString(),
       icon: HomeIcon,
       description: 'registered families',
       color: 'from-green-500 to-teal-500'
     },
     {
       name: 'Active Groups',
-      value: dashboardData?.activeGroups?.toLocaleString() || '0',
+      value: (dashboardData?.activeGroups || 0).toLocaleString(),
       icon: UserGroupIcon,
       description: `${dashboardData?.totalGroups || 0} total groups`,
       color: 'from-purple-500 to-indigo-500'
@@ -299,7 +330,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* FIXED: Stats Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -318,7 +349,9 @@ const Dashboard = () => {
                 border: '1px solid #e5e7eb',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                animationDelay: `${index * 0.1}s`,
+                animation: 'fadeInUp 0.5s ease-out forwards'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -375,7 +408,7 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Recent Members */}
+      {/* FIXED: Recent Members Section */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '2fr 1fr',
@@ -453,12 +486,16 @@ const Dashboard = () => {
             ) : (
               <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
                 <UsersIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#d1d5db' }} />
-                <p>No recent members</p>
+                <p>No recent members found</p>
+                <p style={{ fontSize: '14px', marginTop: '8px' }}>
+                  Total registered: {dashboardData?.totalMembers || 0}
+                </p>
               </div>
             )}
           </div>
         </div>
 
+        {/* System Status */}
         <div style={{
           background: 'white',
           borderRadius: '12px', 
@@ -496,8 +533,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Debug Panel - Only in development */}
-      {process.env.NODE_ENV === 'development' && dashboardData && (
+      {/* Debug Panel - Development Only */}
+      {process.env.NODE_ENV === 'development' && dashboardData?.debugInfo && (
         <div style={{
           background: '#f8f9fa',
           border: '2px solid #007bff',
@@ -506,21 +543,20 @@ const Dashboard = () => {
           marginTop: '24px'
         }}>
           <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#007bff' }}>
-            🔍 DEBUG: API Response Data
+            🔍 DEBUG: Data Processing Results
           </h4>
           <div style={{ fontSize: '12px', fontFamily: 'monospace', background: '#fff', padding: '12px', borderRadius: '4px' }}>
-            <p><strong>Extracted Values:</strong></p>
+            <p><strong>Processed Values:</strong></p>
             <p>• Total Members: {dashboardData.totalMembers}</p>
             <p>• Active Members: {dashboardData.activeMembers}</p>
             <p>• Total Groups: {dashboardData.totalGroups}</p>
-            <p>• Active Groups: {dashboardData.activeGroups}</p>
-            <p>• Total Families: {dashboardData.totalFamilies}</p>
-            <p>• Recent Members Count: {dashboardData.recentMembers?.length || 0}</p>
+            <p>• Recent Members Array Length: {dashboardData.recentMembers?.length || 0}</p>
+            <p>• Recent Members Processing: {dashboardData.debugInfo.recentMembersProcessed?.format}</p>
             
             <details style={{ marginTop: '8px' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Raw API Responses</summary>
               <pre style={{ fontSize: '10px', overflow: 'auto', maxHeight: '200px', marginTop: '8px' }}>
-                {JSON.stringify(dashboardData.debug, null, 2)}
+                {JSON.stringify(dashboardData.debugInfo, null, 2)}
               </pre>
             </details>
           </div>

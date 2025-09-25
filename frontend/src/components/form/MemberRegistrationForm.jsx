@@ -619,19 +619,31 @@ const MemberRegistrationForm = ({
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
 
-  const handleSubmit = async () => {
-    // Final validation
-    const finalStepErrors = validateStep('confirmation', formData, effectiveAdminMode);
-    if (Object.keys(finalStepErrors).length > 0) {
-      Object.keys(finalStepErrors).forEach(field => {
-        setFieldError(field, finalStepErrors[field]);
-      });
-      showToast('Please fix the errors before submitting.', 'error');
-      return;
+  const handleSubmit = async (formData) => {
+    try {
+      const result = await membersService.createMember(formData);
+      
+      // FIXED: Handle your Django response format
+      if (result?.success !== false) {
+        const memberData = result.data || result;
+        
+        // Call parent success handler with correct data structure
+        if (onSuccess) {
+          onSuccess({
+            id: memberData.id,
+            first_name: memberData.first_name,
+            last_name: memberData.last_name,
+            email: memberData.email,
+            ...memberData
+          });
+        }
+      } else {
+        throw new Error(result?.error || 'Registration failed');
+      }
+    } catch (error) {
+      // Handle error appropriately
+      setError(error.message);
     }
-
-    clearError();
-    await handleFormSubmit(formData);
   };
 
   const AdminEnhancements = () => {

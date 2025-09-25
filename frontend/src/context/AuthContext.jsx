@@ -54,13 +54,13 @@ const authReducer = (state, action) => {
       return {
         ...state,
         user: action.payload.user,
-        token: action.payload.token,
+        token: action.payload.access_token || action.payload.token, // FIXED: Handle both formats
         isAuthenticated: true,
         isLoading: false,
         error: null,
         authChecked: true,
         lastActivity: new Date().toISOString(),
-        sessionExpiry: action.payload.sessionExpiry || null
+        sessionExpiry: action.payload.sessionExpiry || action.payload.expires_at || null // FIXED: Handle both formats
       };
       
     case AUTH_ACTIONS.LOGIN_FAILURE:
@@ -248,30 +248,15 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         const authData = {
           user: result.user,
-          token: result.access_token || result.token,
-          sessionExpiry: result.expires_at || null
+          access_token: result.access_token || result.token, // FIXED: Handle your auth service format
+          token: result.access_token || result.token, // FIXED: Add fallback
+          sessionExpiry: result.expires_at || result.sessionExpiry || null
         };
         
         console.log('[AuthContext] Login successful');
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: authData
-        });
-
-        // Setup session timeout if expiry provided
-        if (authData.sessionExpiry) {
-          setupSessionTimeout(authData.sessionExpiry);
-        }
-        
-        // Track login activity
-        updateLastActivity();
-        
-        return { success: true, ...authData };
-      } else {
-        console.log('[AuthContext] Login failed:', result.error);
-        dispatch({ 
-          type: AUTH_ACTIONS.LOGIN_FAILURE, 
-          payload: result.error || 'Login failed' 
+          payload: authData // FIXED: Use corrected structure
         });
         return result;
       }

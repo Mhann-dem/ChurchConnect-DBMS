@@ -10,3 +10,4 @@ export { default as GroupDetailPage } from './GroupDetailPage';
 export { default as PledgesPage } from './PledgesPage';
 export { default as ReportsPage } from './ReportsPage';
 export { default as SettingsPage } from './SettingsPage';
+export {default as familiesPage} from './FamiliesPage';

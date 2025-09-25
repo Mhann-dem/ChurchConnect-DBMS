@@ -1,4 +1,4 @@
-// services/dashboardService.js - CORRECTED FOR YOUR ACTUAL URL PATTERNS
+// services/dashboardService.js - FIXED for Your Django API Patterns
 import apiMethods from './api';
 
 class DashboardService {
@@ -107,7 +107,7 @@ class DashboardService {
     }
   }
 
-  // CORRECTED: Get overall system statistics
+  // FIXED: Get overall system statistics
   async getStats() {
     const cacheKey = this.getCacheKey('dashboard_stats');
     return await this.makeRequest(
@@ -115,7 +115,7 @@ class DashboardService {
         console.log('[DashboardService] Fetching core dashboard stats...');
         
         try {
-          // Try core dashboard endpoint first
+          // Try dashboard stats endpoint first
           const response = await apiMethods.get('core/dashboard/stats/');
           console.log('[DashboardService] Core stats response:', response.data);
           return response.data;
@@ -123,20 +123,21 @@ class DashboardService {
           console.warn('[DashboardService] Core stats failed, aggregating from individual endpoints');
           
           // Fallback: aggregate from individual statistics
-          const [memberStats, groupStats, familyStats, pledgeStats] = await Promise.allSettled([
+          const [memberStats, groupStats, familyStats] = await Promise.allSettled([
             this.getMemberStats(),
             this.getGroupStats(),
-            this.getFamilyStats(),
-            this.getPledgeStats()
+            this.getFamilyStats()
           ]);
           
           return {
-            total_members: memberStats.status === 'fulfilled' ? (memberStats.value?.summary?.total_members || 0) : 0,
-            total_groups: groupStats.status === 'fulfilled' ? (groupStats.value?.total_groups || 0) : 0,
-            total_pledges: pledgeStats.status === 'fulfilled' ? (pledgeStats.value?.active_pledges || 0) : 0,
-            total_families: familyStats.status === 'fulfilled' ? (familyStats.value?.total_families || 0) : 0,
+            total_members: memberStats.status === 'fulfilled' ? 
+              (memberStats.value?.summary?.total_members || 0) : 0,
+            total_groups: groupStats.status === 'fulfilled' ? 
+              (groupStats.value?.total_groups || 0) : 0,
+            total_families: familyStats.status === 'fulfilled' ? 
+              (familyStats.value?.total_families || 0) : 0,
             total_events: 0, // Events might not be implemented yet
-            monthly_revenue: pledgeStats.status === 'fulfilled' ? (pledgeStats.value?.monthly_total || 0) : 0
+            monthly_revenue: 0
           };
         }
       },
@@ -145,7 +146,6 @@ class DashboardService {
       { 
         total_members: 0, 
         total_groups: 0, 
-        total_pledges: 0,
         total_families: 0,
         total_events: 0,
         monthly_revenue: 0 
@@ -153,35 +153,37 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get member statistics - WORKING endpoint
+  // FIXED: Get member statistics using your working endpoint
   async getMemberStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('member_stats', { range: timeRange });
     return await this.makeRequest(
       async () => {
         console.log('[DashboardService] Fetching member stats...');
         
-        // Use the WORKING endpoint from your logs: members/statistics/
+        // FIXED: Use the WORKING endpoint that matches your Django logs
         const response = await apiMethods.get('members/statistics/', { 
           params: { range: timeRange } 
         });
         
         console.log('[DashboardService] Member stats raw response:', response.data);
         
-        // Handle your Django MemberStatisticsViewSet response structure
+        // FIXED: Handle your Django MemberViewSet.statistics response structure
         const data = response.data;
-        const processedStats = {
+        
+        // Your API returns the structure based on your views.py statistics method
+        return {
           summary: data.summary || {
             total_members: 0, 
             active_members: 0, 
-            inactive_members: 0
+            inactive_members: 0,
+            recent_registrations: 0,
+            growth_rate: 0
           },
+          demographics: data.demographics || {},
+          trends: data.trends || {},
           new_members: data.summary?.recent_registrations || 0,
-          growth_rate: data.summary?.growth_rate || 0,
-          retention_rate: data.retention_rate || 0
+          growth_rate: data.summary?.growth_rate || 0
         };
-        
-        console.log('[DashboardService] Processed member stats:', processedStats);
-        return processedStats;
       },
       cacheKey,
       true,
@@ -189,16 +191,17 @@ class DashboardService {
         summary: {
           total_members: 0, 
           active_members: 0, 
-          inactive_members: 0
+          inactive_members: 0,
+          recent_registrations: 0,
+          growth_rate: 0
         },
         new_members: 0,
-        growth_rate: 0,
-        retention_rate: 0
+        growth_rate: 0
       }
     );
   }
 
-  // CORRECTED: Get recent members - WORKING endpoint
+  // FIXED: Get recent members using your working endpoint
   async getRecentMembers(limit = 10) {
     const cacheKey = this.getCacheKey('recent_members', { limit });
     return await this.makeRequest(
@@ -206,32 +209,47 @@ class DashboardService {
         console.log('[DashboardService] Fetching recent members...');
         
         try {
-          // Use the WORKING endpoint from your logs: members/recent/
+          // FIXED: Use the WORKING endpoint from your Django logs
           const response = await apiMethods.get('members/recent/', { 
             params: { limit } 
           });
           
           console.log('[DashboardService] Recent members raw response:', response.data);
           
-          // Your Django MemberViewSet.recent returns: { success: true, results: [...], count: 4 }
-          if (response.data?.success && response.data?.results) {
-            const processedData = {
-              results: response.data.results,
-              count: response.data.count || response.data.results.length
-            };
-            
-            console.log('[DashboardService] Processed recent members:', {
-              count: processedData.count,
-              resultsLength: processedData.results.length,
-              firstMember: processedData.results[0] ? 
-                `${processedData.results[0].first_name} ${processedData.results[0].last_name}` : 
-                'none'
-            });
-            
-            return processedData;
-          } else {
-            throw new Error('Unexpected response format from recent members endpoint');
+          // FIXED: Handle your Django MemberViewSet.recent response
+          // Your API returns: { success: true, results: [...], count: 4, limit: 5 }
+          let results = [];
+          let count = 0;
+
+          if (response.data && typeof response.data === 'object') {
+            if (response.data.success && response.data.results && Array.isArray(response.data.results)) {
+              // Your Django response format
+              results = response.data.results;
+              count = response.data.count || response.data.results.length;
+            } else if (Array.isArray(response.data)) {
+              // Fallback: direct array
+              results = response.data;
+              count = response.data.length;
+            } else if (response.data.results && Array.isArray(response.data.results)) {
+              // Standard DRF response
+              results = response.data.results;
+              count = response.data.count || response.data.results.length;
+            }
           }
+          
+          console.log('[DashboardService] Processed recent members:', {
+            count: count,
+            resultsLength: results.length,
+            firstMember: results[0] ? 
+              `${results[0].first_name} ${results[0].last_name}` : 
+              'none'
+          });
+          
+          return {
+            results: results,
+            count: count
+          };
+          
         } catch (error) {
           console.warn('[DashboardService] Recent endpoint failed, using fallback:', error.message);
           
@@ -255,7 +273,65 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get pledge statistics - Use correct endpoint
+  // FIXED: Get group statistics using your working endpoint
+  async getGroupStats() {
+    const cacheKey = this.getCacheKey('group_stats');
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching group stats...');
+        
+        // FIXED: Use the WORKING endpoint from your Django logs
+        const response = await apiMethods.get('groups/statistics/');
+        console.log('[DashboardService] Group stats response:', response.data);
+        
+        return response.data || {
+          total_groups: 0, 
+          active_groups: 0, 
+          growth_rate: 0
+        };
+      },
+      cacheKey,
+      true,
+      { 
+        total_groups: 0, 
+        active_groups: 0, 
+        growth_rate: 0
+      }
+    );
+  }
+
+  // FIXED: Get family statistics using your working endpoint
+  async getFamilyStats() {
+    const cacheKey = this.getCacheKey('family_stats');
+    return await this.makeRequest(
+      async () => {
+        console.log('[DashboardService] Fetching family stats...');
+        
+        try {
+          // FIXED: Use the WORKING endpoint from your Django logs
+          const response = await apiMethods.get('families/statistics/');
+          console.log('[DashboardService] Family stats response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.warn('[DashboardService] Family stats endpoint failed:', error.message);
+          return {
+            total_families: 0, 
+            new_families: 0, 
+            growth_rate: 0
+          };
+        }
+      },
+      cacheKey,
+      true,
+      { 
+        total_families: 0, 
+        new_families: 0, 
+        growth_rate: 0
+      }
+    );
+  }
+
+  // FIXED: Get pledge statistics
   async getPledgeStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('pledge_stats', { range: timeRange });
     return await this.makeRequest(
@@ -263,7 +339,7 @@ class DashboardService {
         console.log('[DashboardService] Fetching pledge stats...');
         
         try {
-          // Use the WORKING endpoint from your logs: pledges/stats/
+          // FIXED: Use your working endpoint pattern
           const response = await apiMethods.get('pledges/stats/', { 
             params: { range: timeRange } 
           });
@@ -276,8 +352,7 @@ class DashboardService {
             total_amount: 0, 
             active_pledges: 0, 
             monthly_total: 0,
-            growth_rate: 0,
-            fulfillment_rate: 0
+            growth_rate: 0
           };
         }
       },
@@ -287,75 +362,12 @@ class DashboardService {
         total_amount: 0, 
         active_pledges: 0, 
         monthly_total: 0,
-        growth_rate: 0,
-        fulfillment_rate: 0
+        growth_rate: 0
       }
     );
   }
 
-  // CORRECTED: Get group statistics - WORKING endpoint
-  async getGroupStats() {
-    const cacheKey = this.getCacheKey('group_stats');
-    return await this.makeRequest(
-      async () => {
-        console.log('[DashboardService] Fetching group stats...');
-        
-        // Use the WORKING endpoint from your logs: groups/statistics/
-        const response = await apiMethods.get('groups/statistics/');
-        console.log('[DashboardService] Group stats response:', response.data);
-        
-        return response.data || {
-          total_groups: 0, 
-          active_groups: 0, 
-          growth_rate: 0,
-          avg_group_size: 0
-        };
-      },
-      cacheKey,
-      true,
-      { 
-        total_groups: 0, 
-        active_groups: 0, 
-        growth_rate: 0,
-        avg_group_size: 0
-      }
-    );
-  }
-
-  // CORRECTED: Get family statistics - WORKING endpoint
-  async getFamilyStats() {
-    const cacheKey = this.getCacheKey('family_stats');
-    return await this.makeRequest(
-      async () => {
-        console.log('[DashboardService] Fetching family stats...');
-        
-        try {
-          // Use the WORKING endpoint from your logs: families/statistics/
-          const response = await apiMethods.get('families/statistics/');
-          console.log('[DashboardService] Family stats response:', response.data);
-          return response.data;
-        } catch (error) {
-          console.warn('[DashboardService] Family stats endpoint failed:', error.message);
-          return {
-            total_families: 0, 
-            new_families: 0, 
-            growth_rate: 0,
-            avg_family_size: 0
-          };
-        }
-      },
-      cacheKey,
-      true,
-      { 
-        total_families: 0, 
-        new_families: 0, 
-        growth_rate: 0,
-        avg_family_size: 0
-      }
-    );
-  }
-
-  // CORRECTED: Get event statistics - Use correct endpoint pattern
+  // FIXED: Get event statistics
   async getEventStats() {
     const cacheKey = this.getCacheKey('event_stats');
     return await this.makeRequest(
@@ -363,21 +375,19 @@ class DashboardService {
         console.log('[DashboardService] Fetching event stats...');
         
         try {
-          // Based on your events URLs, use: events/events/statistics/
+          // FIXED: Based on your events URLs pattern
           const response = await apiMethods.get('events/events/statistics/');
           return response.data || {
             total_events: 0, 
             upcoming_events: 0, 
-            this_month_events: 0,
-            avg_attendance: 0
+            this_month_events: 0
           };
         } catch (error) {
           console.warn('[DashboardService] Event stats not available:', error.message);
           return {
             total_events: 0, 
             upcoming_events: 0, 
-            this_month_events: 0,
-            avg_attendance: 0
+            this_month_events: 0
           };
         }
       },
@@ -386,13 +396,12 @@ class DashboardService {
       { 
         total_events: 0, 
         upcoming_events: 0, 
-        this_month_events: 0,
-        avg_attendance: 0
+        this_month_events: 0
       }
     );
   }
 
-  // CORRECTED: Get recent pledges
+  // FIXED: Get recent pledges
   async getRecentPledges(limit = 10) {
     const cacheKey = this.getCacheKey('recent_pledges', { limit });
     return await this.makeRequest(
@@ -400,7 +409,6 @@ class DashboardService {
         console.log('[DashboardService] Fetching recent pledges...');
         
         try {
-          // Use the endpoint from your pledges URLs: pledges/recent/
           const response = await apiMethods.get('pledges/recent/', { 
             params: { limit } 
           });
@@ -420,7 +428,7 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get recent events
+  // FIXED: Get recent events
   async getRecentEvents(limit = 10) {
     const cacheKey = this.getCacheKey('recent_events', { limit });
     return await this.makeRequest(
@@ -428,7 +436,6 @@ class DashboardService {
         console.log('[DashboardService] Fetching recent events...');
         
         try {
-          // Based on your events URLs, try: events/events/ with recent ordering
           const response = await apiMethods.get('events/events/', { 
             params: { 
               limit: limit,
@@ -452,7 +459,7 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get recent families - Use families list with ordering since no recent endpoint exists
+  // FIXED: Get recent families
   async getRecentFamilies(limit = 10) {
     const cacheKey = this.getCacheKey('recent_families', { limit });
     return await this.makeRequest(
@@ -460,7 +467,6 @@ class DashboardService {
         console.log('[DashboardService] Fetching recent families...');
         
         try {
-          // Since your families URLs don't have a recent endpoint, use list with ordering
           const response = await apiMethods.get('families/', { 
             params: { 
               page_size: limit,
@@ -483,14 +489,13 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get system health status
+  // FIXED: Get system health status
   async getSystemHealth() {
     return await this.makeRequest(
       async () => {
         console.log('[DashboardService] Fetching system health...');
         
         try {
-          // Use the WORKING endpoint from your logs: core/dashboard/health/
           const response = await apiMethods.get('core/dashboard/health/');
           console.log('[DashboardService] System health response:', response.data);
           return response.data;
@@ -505,7 +510,7 @@ class DashboardService {
     );
   }
 
-  // CORRECTED: Get alerts and notifications
+  // FIXED: Get alerts and notifications
   async getAlerts() {
     const cacheKey = this.getCacheKey('alerts');
     return await this.makeRequest(
@@ -513,7 +518,6 @@ class DashboardService {
         console.log('[DashboardService] Fetching alerts...');
         
         try {
-          // Use the WORKING endpoint from your logs: core/dashboard/alerts/
           const response = await apiMethods.get('core/dashboard/alerts/');
           console.log('[DashboardService] Alerts response:', response.data);
           return response.data;
@@ -528,7 +532,7 @@ class DashboardService {
     );
   }
 
-  // Get comprehensive dashboard data with proper error handling
+  // FIXED: Get comprehensive dashboard data with proper error handling
   async getDashboardData(timeRange = '30d', forceRefresh = false) {
     try {
       console.log('=== [DashboardService] Starting Dashboard Data Fetch ===');
@@ -538,19 +542,20 @@ class DashboardService {
         this.clearCache();
       }
       
+      // Execute requests with proper error boundaries
       const requests = [
-        this.getStats(),
-        this.getMemberStats(timeRange),
-        this.getPledgeStats(timeRange),
-        this.getGroupStats(),
-        this.getFamilyStats(),
-        this.getEventStats(),
-        this.getRecentMembers(5),
-        this.getRecentPledges(5),
-        this.getRecentEvents(5),
-        this.getRecentFamilies(5),
-        this.getSystemHealth(),
-        this.getAlerts()
+        this.getStats().catch(e => ({ error: e.message, fallback: { total_members: 0, total_groups: 0, total_families: 0 } })),
+        this.getMemberStats(timeRange).catch(e => ({ error: e.message, fallback: { summary: { total_members: 0, active_members: 0 } } })),
+        this.getPledgeStats(timeRange).catch(e => ({ error: e.message, fallback: { total_amount: 0, active_pledges: 0 } })),
+        this.getGroupStats().catch(e => ({ error: e.message, fallback: { total_groups: 0, active_groups: 0 } })),
+        this.getFamilyStats().catch(e => ({ error: e.message, fallback: { total_families: 0, new_families: 0 } })),
+        this.getEventStats().catch(e => ({ error: e.message, fallback: { total_events: 0, upcoming_events: 0 } })),
+        this.getRecentMembers(5).catch(e => ({ error: e.message, fallback: { results: [], count: 0 } })),
+        this.getRecentPledges(5).catch(e => ({ error: e.message, fallback: { results: [], count: 0 } })),
+        this.getRecentEvents(5).catch(e => ({ error: e.message, fallback: { results: [], count: 0 } })),
+        this.getRecentFamilies(5).catch(e => ({ error: e.message, fallback: { results: [], count: 0 } })),
+        this.getSystemHealth().catch(e => ({ error: e.message, fallback: { status: 'unknown' } })),
+        this.getAlerts().catch(e => ({ error: e.message, fallback: { results: [] } }))
       ];
 
       const [
@@ -566,14 +571,14 @@ class DashboardService {
         recentFamilies,
         systemHealth,
         alerts
-      ] = await Promise.allSettled(requests);
+      ] = await Promise.all(requests);
 
       const processResult = (result, fallback = {}) => {
-        if (result.status === 'fulfilled') {
-          return result.value;
+        if (result && !result.error) {
+          return result;
         } else {
-          console.warn('[DashboardService] Request failed:', result.reason?.message);
-          return fallback;
+          console.warn('[DashboardService] Using fallback for failed request:', result?.error);
+          return result?.fallback || fallback;
         }
       };
 
@@ -581,15 +586,16 @@ class DashboardService {
         stats: processResult(stats, { 
           total_members: 0, 
           total_groups: 0, 
-          total_pledges: 0,
           total_families: 0,
-          total_events: 0
+          total_events: 0,
+          monthly_revenue: 0
         }),
         memberStats: processResult(memberStats, { 
           summary: {
             total_members: 0, 
             active_members: 0, 
-            inactive_members: 0
+            inactive_members: 0,
+            recent_registrations: 0
           },
           new_members: 0, 
           growth_rate: 0 
@@ -630,20 +636,53 @@ class DashboardService {
       };
 
       console.log('=== [DashboardService] Final Dashboard Data ===', {
-        statsLoaded: !!dashboardData.stats,
+        statsLoaded: !!dashboardData.stats && !dashboardData.stats.error,
         totalMembers: dashboardData.memberStats?.summary?.total_members || 0,
         recentMembersCount: dashboardData.recentMembers?.count || 0,
         recentMembersArrayLength: dashboardData.recentMembers?.results?.length || 0,
         totalGroups: dashboardData.groupStats?.total_groups || 0,
         activeGroups: dashboardData.groupStats?.active_groups || 0,
         systemStatus: dashboardData.systemHealth?.status,
-        cacheEntries: this.cache.size
+        cacheEntries: this.cache.size,
+        errors: [stats, memberStats, pledgeStats, groupStats, familyStats, eventStats, recentMembers, recentPledges, recentEvents, recentFamilies, systemHealth, alerts]
+          .filter(r => r?.error).map(r => r.error)
       });
 
       return dashboardData;
     } catch (error) {
       console.error('[DashboardService] Error fetching dashboard data:', error);
       throw new Error(`Failed to load dashboard data: ${error.message}`);
+    }
+  }
+
+  // Test API connectivity
+  async testConnection() {
+    try {
+      console.log('[DashboardService] Testing API connectivity...');
+      
+      const startTime = Date.now();
+      
+      // Test the core endpoints that work from your logs
+      const healthResponse = await apiMethods.get('core/dashboard/health/');
+      const responseTime = Date.now() - startTime;
+      
+      console.log('[DashboardService] Health check successful:', healthResponse.data);
+      
+      return { 
+        success: true, 
+        message: 'API connection successful',
+        responseTime,
+        data: healthResponse.data,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('[DashboardService] Connection test failed:', error);
+      return { 
+        success: false, 
+        message: 'API connection failed',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
     }
   }
 
@@ -670,37 +709,6 @@ class DashboardService {
     console.log('[DashboardService] Refreshing all dashboard data...');
     this.clearCache();
     return await this.getDashboardData(timeRange, true);
-  }
-
-  // Test API connectivity with your specific endpoints
-  async testConnection() {
-    try {
-      console.log('[DashboardService] Testing API connectivity...');
-      
-      const startTime = Date.now();
-      
-      // Test the core endpoints that we know work from your logs
-      const healthResponse = await apiMethods.get('core/dashboard/health/');
-      const responseTime = Date.now() - startTime;
-      
-      console.log('[DashboardService] Health check successful:', healthResponse.data);
-      
-      return { 
-        success: true, 
-        message: 'API connection successful',
-        responseTime,
-        data: healthResponse.data,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('[DashboardService] Connection test failed:', error);
-      return { 
-        success: false, 
-        message: 'API connection failed',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    }
   }
 
   // Utility methods
@@ -749,7 +757,6 @@ class DashboardService {
   cleanup() {
     console.log('[DashboardService] Performing cleanup...');
     
-    // Remove expired cache entries
     const now = Date.now();
     let removedCount = 0;
     

@@ -40,7 +40,9 @@ class AuthService {
   saveToStorage(tokens, user) {
     try {
       if (tokens?.access) {
+        // FIXED: Store with multiple keys for compatibility
         localStorage.setItem('access_token', tokens.access);
+        localStorage.setItem('authToken', tokens.access); // Backup key
         this.accessToken = tokens.access;
       }
       if (tokens?.refresh) {
@@ -59,14 +61,16 @@ class AuthService {
   
   loadFromStorage() {
     try {
-      this.accessToken = localStorage.getItem('access_token');
+      // FIXED: Try both token keys
+      this.accessToken = localStorage.getItem('access_token') || localStorage.getItem('authToken');
       this.refreshToken = localStorage.getItem('refresh_token');
       const userString = localStorage.getItem('user');
       this.user = userString ? JSON.parse(userString) : null;
       
       logger.info('Auth data loaded from storage', {
         hasToken: !!this.accessToken,
-        hasUser: !!this.user
+        hasUser: !!this.user,
+        tokenLength: this.accessToken?.length || 0
       });
     } catch (error) {
       logger.error('Failed to load auth data:', error);
@@ -76,9 +80,12 @@ class AuthService {
   
   clearStorage() {
     try {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      // FIXED: Clear all possible token keys
+      const keysToRemove = ['access_token', 'authToken', 'refresh_token', 'user'];
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key); // Also clear sessionStorage
+      });
       
       this.accessToken = null;
       this.refreshToken = null;
@@ -88,6 +95,22 @@ class AuthService {
       logger.info('Auth data cleared');
     } catch (error) {
       logger.error('Failed to clear auth data:', error);
+    }
+  }
+
+  // Add this helper method:
+  getTokenExpirationTime(token) {
+    if (!token) return null;
+    
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      
+      const payload = JSON.parse(atob(parts[1]));
+      return payload.exp ? new Date(payload.exp * 1000).toISOString() : null;
+    } catch (error) {
+      logger.warn('Failed to parse token expiration:', error);
+      return null;
     }
   }
   
@@ -106,12 +129,23 @@ class AuthService {
         password: credentials.password
       });
       
+      console.log('[AuthService] Login response:', response.data);
+      
       const { access, refresh, user } = response.data;
       
       if (access && user) {
+        // FIXED: Store tokens with consistent keys
         this.saveToStorage({ access, refresh }, user);
-        logger.info('Login successful');
-        return { success: true, user, access_token: access };
+        
+        // FIXED: Return consistent format that AuthContext expects
+        return { 
+          success: true, 
+          user, 
+          access_token: access, // AuthContext looks for this key
+          token: access,        // Backup key
+          refresh_token: refresh,
+          expires_at: this.getTokenExpirationTime(access)
+        };
       }
       
       return { success: false, error: 'Invalid response from server' };

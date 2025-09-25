@@ -1,10 +1,10 @@
-// hooks/useMembers.js - FIXED VERSION for Correct Data Extraction
+// hooks/useMembers.js - FIXED VERSION with Correct Django API Integration
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
 
 /**
- * Fixed useMembers hook with correct data extraction from Django API
+ * Fixed useMembers hook that correctly handles your Django API responses
  */
 export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
@@ -62,7 +62,7 @@ export const useMembers = (options = {}) => {
     return abortControllerRef.current.signal;
   }, []);
 
-  // FIXED: Main fetch function with direct API calls
+  // FIXED: Main fetch function with correct Django API handling
   const fetchMembers = useCallback(async (fetchOptions = {}) => {
     const { forceRefresh = false, silent = false } = fetchOptions;
 
@@ -107,20 +107,24 @@ export const useMembers = (options = {}) => {
         forceRefresh
       });
 
-      // FIXED: Direct API call with proper authentication
+      // FIXED: Use correct authentication and API endpoint
       const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
 
       const baseURL = 'http://localhost:8000';
-      const params = new URLSearchParams({
-        search: debouncedSearch || '',
-        page: page.toString(),
-        page_size: limit.toString(),
-        ordering: '-registration_date',
-        isValid: 'true'
-      });
+      const params = new URLSearchParams();
+      
+      // Add search parameter
+      if (debouncedSearch) {
+        params.set('search', debouncedSearch);
+      }
+      
+      // Add pagination
+      params.set('page', page.toString());
+      params.set('page_size', limit.toString());
+      params.set('ordering', '-registration_date');
 
       // Add filters to params
       Object.entries(filters).forEach(([key, value]) => {
@@ -129,6 +133,7 @@ export const useMembers = (options = {}) => {
         }
       });
 
+      // FIXED: Use the exact endpoint from your Django logs
       const url = `${baseURL}/api/v1/members/?${params.toString()}`;
       console.log('[useMembers] Fetching URL:', url);
 
@@ -145,51 +150,69 @@ export const useMembers = (options = {}) => {
       }
 
       const data = await response.json();
-      console.log('[useMembers] API Response:', data);
+      console.log('[useMembers] Raw API Response:', data);
 
       if (!mountedRef.current) {
         console.log('[useMembers] Component unmounted, ignoring result');
         return { success: false, error: 'Component unmounted' };
       }
 
-      // FIXED: Extract data with proper paths from Django DRF response
-      // Your Django API returns: { count: 4, next: null, previous: null, results: [...] }
-      const membersArray = Array.isArray(data.results) ? data.results : [];
-      const totalCount = typeof data.count === 'number' ? data.count : membersArray.length;
+      // FIXED: Handle Django DRF paginated response correctly
+      // Your API returns: { count: 4, next: null, previous: null, results: [...] }
+      let membersArray = [];
+      let totalCount = 0;
+      let paginationData = null;
+
+      if (data && typeof data === 'object') {
+        if (data.results && Array.isArray(data.results)) {
+          // Standard DRF paginated response
+          membersArray = data.results;
+          totalCount = data.count || data.results.length;
+          paginationData = {
+            count: data.count,
+            next: data.next,
+            previous: data.previous,
+            total_pages: Math.ceil(totalCount / limit),
+            current_page: page
+          };
+        } else if (Array.isArray(data)) {
+          // Direct array response
+          membersArray = data;
+          totalCount = data.length;
+          paginationData = {
+            count: data.length,
+            total_pages: 1,
+            current_page: 1
+          };
+        } else {
+          console.warn('[useMembers] Unexpected response format:', data);
+          membersArray = [];
+          totalCount = 0;
+        }
+      } else {
+        console.warn('[useMembers] Invalid response data:', data);
+        membersArray = [];
+        totalCount = 0;
+      }
       
       console.log('[useMembers] Processed data:', {
         membersCount: membersArray.length,
         totalMembers: totalCount,
-        pagination: {
-          count: data.count,
-          next: data.next,
-          previous: data.previous
-        }
+        firstMember: membersArray[0] ? `${membersArray[0].first_name} ${membersArray[0].last_name}` : 'none',
+        pagination: paginationData
       });
 
       // Update state with correct data
       setMembers(membersArray);
       setTotalMembers(totalCount);
-      setPagination({
-        count: data.count,
-        next: data.next,
-        previous: data.previous,
-        total_pages: Math.ceil(totalCount / limit),
-        current_page: page
-      });
+      setPagination(paginationData);
       setError(null);
 
       return { 
         success: true, 
         data: membersArray, 
         totalMembers: totalCount,
-        pagination: {
-          count: data.count,
-          next: data.next,
-          previous: data.previous,
-          total_pages: Math.ceil(totalCount / limit),
-          current_page: page
-        }
+        pagination: paginationData
       };
 
     } catch (err) {
@@ -224,7 +247,7 @@ export const useMembers = (options = {}) => {
     cancelRequests
   ]);
 
-  // FIXED: Get recent members with direct API call
+  // FIXED: Get recent members with correct Django API handling
   const getRecentMembers = useCallback(async (limit = 5) => {
     if (!isAuthenticated) {
       return { success: false, error: 'Authentication required' };
@@ -242,6 +265,8 @@ export const useMembers = (options = {}) => {
       }
 
       const baseURL = 'http://localhost:8000';
+      
+      // FIXED: Use the WORKING endpoint from your Django logs
       const url = `${baseURL}/api/v1/members/recent/?limit=${limit}`;
       
       console.log('[useMembers] Recent members URL:', url);
@@ -260,11 +285,36 @@ export const useMembers = (options = {}) => {
       const data = await response.json();
       console.log('[useMembers] Recent members API response:', data);
 
-      // Handle the Django response format: { success: true, results: [...], count: 4 }
-      const results = data.success ? (data.results || []) : [];
-      const count = data.count || results.length;
+      // FIXED: Handle your Django MemberViewSet.recent() response format
+      // Your API returns: { success: true, results: [...], count: 4, limit: 5 }
+      let results = [];
+      let count = 0;
 
-      console.log('[useMembers] Recent members processed:', { results: results.length, count });
+      if (data && typeof data === 'object') {
+        if (data.success && data.results && Array.isArray(data.results)) {
+          // Your Django response format
+          results = data.results;
+          count = data.count || data.results.length;
+        } else if (Array.isArray(data)) {
+          // Fallback: direct array
+          results = data;
+          count = data.length;
+        } else if (data.results && Array.isArray(data.results)) {
+          // Standard DRF response
+          results = data.results;
+          count = data.count || data.results.length;
+        } else {
+          console.warn('[useMembers] Unexpected recent members response format:', data);
+          results = [];
+          count = 0;
+        }
+      }
+
+      console.log('[useMembers] Recent members processed:', { 
+        results: results.length, 
+        count,
+        firstMember: results[0] ? `${results[0].first_name} ${results[0].last_name}` : 'none'
+      });
 
       return {
         success: true,
@@ -288,7 +338,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
-  // CRUD Operations (keeping existing implementations but with better error handling)
+  // CRUD Operations with better error handling
   const createMember = useCallback(async (memberData) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -328,6 +378,22 @@ export const useMembers = (options = {}) => {
       const result = await response.json();
       console.log('[useMembers] Member created successfully:', result);
 
+      // FIXED: Handle your Django MemberViewSet.create() response
+      // Your API might return: { success: true, data: {...}, message: "Member created successfully" }
+      let memberData_result = null;
+      let message = 'Member created successfully';
+
+      if (result && typeof result === 'object') {
+        if (result.success !== false) {
+          memberData_result = result.data || result;
+          message = result.message || message;
+        } else {
+          throw new Error(result.error || 'Creation failed');
+        }
+      } else {
+        memberData_result = result;
+      }
+
       // Force refresh to get updated list
       setTimeout(() => {
         if (mountedRef.current) {
@@ -337,8 +403,8 @@ export const useMembers = (options = {}) => {
 
       return {
         success: true,
-        data: result.data || result,
-        message: result.message || 'Member created successfully'
+        data: memberData_result,
+        message: message
       };
 
     } catch (err) {

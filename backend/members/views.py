@@ -235,7 +235,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     # FIXED: Corrected the @action decorator and method name
     @action(detail=False, methods=['get'])
     def recent(self, request):
-        """Get recently registered members - FIXED ENDPOINT"""
+        """Get recently registered members - FIXED RESPONSE FORMAT"""
         try:
             limit = min(int(request.query_params.get('limit', 10)), 50)  # Cap at 50
             logger.info(f"[MemberViewSet] Recent members request, limit: {limit}")
@@ -243,25 +243,32 @@ class MemberViewSet(viewsets.ModelViewSet):
             recent_members = Member.objects.select_related('family').order_by('-registration_date')[:limit]
             serializer = MemberSummarySerializer(recent_members, many=True)
             
-            logger.info(f"[MemberViewSet] Returning {len(serializer.data)} recent members")
-            
-            return Response({
+            # FIXED: Ensure consistent response format that frontend expects
+            response_data = {
                 'success': True,
                 'results': serializer.data,
                 'count': len(serializer.data),
                 'limit': limit
-            })
+            }
+            
+            logger.info(f"[MemberViewSet] Returning {len(serializer.data)} recent members")
+            
+            return Response(response_data)
             
         except ValueError:
             return Response({
                 'success': False,
-                'error': 'Invalid limit parameter'
+                'error': 'Invalid limit parameter',
+                'results': [],
+                'count': 0
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"[MemberViewSet] Recent error: {str(e)}", exc_info=True)
             return Response({
                 'success': False,
-                'error': 'Failed to get recent members'
+                'error': 'Failed to get recent members',
+                'results': [],
+                'count': 0
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='search')
@@ -317,7 +324,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='statistics')
     def statistics(self, request):
-        """Get comprehensive member statistics - ENHANCED"""
+        """Get comprehensive member statistics - FIXED RESPONSE FORMAT"""
         try:
             range_param = request.query_params.get('range', '30d')
             logger.info(f"[MemberViewSet] Statistics request, range: {range_param}")
@@ -340,10 +347,23 @@ class MemberViewSet(viewsets.ModelViewSet):
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             recent_registrations = Member.objects.filter(
-                registration_date__gte=date_threshold
+                registration_date__gte=date_threshold.date()
             ).count()
             
-            # Demographics
+            # Calculate growth rate
+            previous_period_start = date_threshold - (now - date_threshold)
+            previous_period_registrations = Member.objects.filter(
+                registration_date__gte=previous_period_start.date(),
+                registration_date__lt=date_threshold.date()
+            ).count()
+            
+            growth_rate = 0
+            if previous_period_registrations > 0:
+                growth_rate = ((recent_registrations - previous_period_registrations) / previous_period_registrations) * 100
+            elif recent_registrations > 0:
+                growth_rate = 100.0
+            
+            # Gender demographics
             gender_stats = Member.objects.values('gender').annotate(count=Count('id'))
             gender_breakdown = {
                 item['gender'] or 'not_specified': item['count'] 
@@ -376,53 +396,39 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             age_groups['unknown'] += total_members - members_with_birthdate.count()
             
-            # Registration trends (last 6 months)
-            monthly_trends = []
-            for i in range(6):
-                month_start = (now.replace(day=1) - timedelta(days=30*i)).replace(day=1)
-                if i == 0:
-                    month_end = now
-                else:
-                    month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-                
-                month_count = Member.objects.filter(
-                    registration_date__date__range=[month_start.date(), month_end.date()]
-                ).count()
-                
-                monthly_trends.insert(0, {
-                    'month': month_start.strftime('%Y-%m'),
-                    'month_name': month_start.strftime('%B %Y'),
-                    'registrations': month_count
-                })
-            
+            # FIXED: Ensure consistent response structure that matches frontend expectations
             stats_data = {
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
                     'inactive_members': total_members - active_members,
                     'recent_registrations': recent_registrations,
-                    'growth_rate': round(
-                        (recent_registrations / max(total_members - recent_registrations, 1)) * 100, 2
-                    )
+                    'growth_rate': round(growth_rate, 2)
                 },
                 'demographics': {
                     'gender': gender_breakdown,
                     'age_groups': age_groups
                 },
                 'trends': {
-                    'monthly_registrations': monthly_trends,
                     'range': range_param
                 }
             }
             
-            logger.info(f"[MemberViewSet] Statistics calculated for {total_members} members")
+            logger.info(f"[MemberViewSet] Statistics calculated: {total_members} total, {active_members} active, {recent_registrations} recent")
             
             return Response(stats_data)
             
         except Exception as e:
             logger.error(f"[MemberViewSet] Statistics error: {str(e)}", exc_info=True)
             return Response({
-                'error': 'Failed to get statistics'
+                'error': 'Failed to get statistics',
+                'summary': {
+                    'total_members': 0,
+                    'active_members': 0,
+                    'inactive_members': 0,
+                    'recent_registrations': 0,
+                    'growth_rate': 0
+                }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='birthdays')

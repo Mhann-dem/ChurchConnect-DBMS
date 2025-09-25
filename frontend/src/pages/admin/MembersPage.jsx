@@ -159,63 +159,25 @@ const MembersPage = () => {
     try {
       setShowRegistrationForm(false);
       
-      const memberName = `${newMember.first_name || newMember.firstName || 'Member'} ${newMember.last_name || newMember.lastName || ''}`.trim();
+      // FIXED: Handle both response formats
+      const memberName = newMember?.data ? 
+        `${newMember.data.first_name} ${newMember.data.last_name}`.trim() :
+        `${newMember.first_name || newMember.firstName || 'Member'} ${newMember.last_name || newMember.lastName || ''}`.trim();
       
-      // Show immediate success feedback
-      showToast(
-        `${memberName} registered successfully! Refreshing member list...`, 
-        'success',
-        5000 // Show for 5 seconds
-      );
+      showToast(`${memberName} registered successfully!`, 'success');
       
-      // Enhanced refresh strategy
-      try {
-        // Clear selection and filters to show the new member
-        setSelectedMembers(new Set());
-        setCurrentPage(1);
-        setCurrentSearchQuery('');
-        
-        // Invalidate cache first if available
-        if (typeof invalidateCache === 'function') {
-          console.log('[MembersPage] Invalidating cache...');
-          invalidateCache();
-        }
-        
-        // Wait a moment for the backend to process
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Force refresh the members list
-        if (typeof refetch === 'function') {
-          console.log('[MembersPage] Refreshing member list...');
-          const refreshResult = await refetch();
-          console.log('[MembersPage] Refresh result:', refreshResult);
-          
-          if (refreshResult?.success) {
-            showToast(`${memberName} has been added to the member list.`, 'success');
-          }
-        }
-        
-      } catch (refreshError) {
-        console.error('[MembersPage] Error during refresh:', refreshError);
-        showToast(
-          `${memberName} was registered successfully, but the list couldn't be refreshed automatically. Please click the refresh button.`, 
-          'warning',
-          8000
-        );
+      // Force refresh with correct hook method
+      if (typeof refresh === 'function') {
+        await refresh(true); // Force refresh
+      } else if (typeof refetch === 'function') {
+        await refetch();
       }
       
     } catch (error) {
-      console.error('[MembersPage] Error in registration success handler:', error);
-      showToast('Member registered but failed to refresh list. Please refresh manually.', 'error');
+      console.error('[MembersPage] Registration success handler error:', error);
+      showToast('Member registered successfully, but list refresh failed.', 'warning');
     }
-  }, [
-    showToast, 
-    refetch, 
-    invalidateCache,
-    setCurrentPage,
-    setCurrentSearchQuery,
-    setSelectedMembers
-  ]);
+  }, [showToast, refresh, refetch]);
 
   const handleRegistrationCancel = useCallback(() => {
     setShowRegistrationForm(false);
@@ -224,49 +186,27 @@ const MembersPage = () => {
   // Enhanced bulk actions handler
   const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
-      if (!memberIds?.length) {
-        showToast('No members selected', 'warning');
-        return;
-      }
-
       console.log('[MembersPage] Bulk action:', action, 'for', memberIds.length, 'members');
 
-      // Cancel any pending requests
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      // Use the corrected members service
+      const result = await membersService.performBulkAction(action, Array.from(memberIds), actionData);
       
-      abortControllerRef.current = new AbortController();
-
-      const result = await membersService.performBulkAction(
-        action, 
-        Array.from(memberIds), 
-        actionData,
-        { signal: abortControllerRef.current.signal }
-      );
-      
-      if (result?.success) {
-        // Clear selection after successful action
+      // FIXED: Handle your Django response format
+      if (result?.success !== false) {
         setSelectedMembers(new Set());
+        await refresh(true);
         
-        // Refresh data
-        await refetch();
-        
-        showToast(result.message || `Bulk ${action} completed successfully`, 'success');
+        showToast(result?.message || `Bulk ${action} completed successfully`, 'success');
         return result;
       } else {
         throw new Error(result?.error || 'Bulk action failed');
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
-        showToast('Action cancelled', 'info');
-        return;
-      }
       console.error('[MembersPage] Bulk action error:', error);
       showToast(error?.message || 'Bulk action failed', 'error');
       throw error;
     }
-  }, [refetch, showToast]);
+  }, [refresh, showToast]);
 
   // Import completion handler
   const handleImportComplete = useCallback(async (importResult) => {
