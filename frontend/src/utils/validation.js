@@ -1,6 +1,276 @@
 // utils/validation.js
 // Validation utilities for form inputs and data
 
+// ADD THESE FUNCTIONS TO THE END OF YOUR EXISTING utils/validation.js file
+
+import { useState, useCallback } from 'react';
+// ========== ADD THESE MISSING FUNCTIONS ==========
+
+// Base validator class
+class BaseValidator {
+  constructor(value, field = 'Field') {
+    this.value = value;
+    this.field = field;
+    this.errors = [];
+  }
+
+  required() {
+    if (!this.value || (typeof this.value === 'string' && !this.value.trim())) {
+      this.errors.push(`${this.field} is required`);
+    }
+    return this;
+  }
+
+  minLength(min) {
+    if (this.value && this.value.length < min) {
+      this.errors.push(`${this.field} must be at least ${min} characters`);
+    }
+    return this;
+  }
+
+  maxLength(max) {
+    if (this.value && this.value.length > max) {
+      this.errors.push(`${this.field} must be no more than ${max} characters`);
+    }
+    return this;
+  }
+
+  pattern(regex, customMessage) {
+    if (this.value && !regex.test(this.value)) {
+      this.errors.push(customMessage || `${this.field} has an invalid format`);
+    }
+    return this;
+  }
+
+  getErrors() {
+    return this.errors;
+  }
+
+  isValid() {
+    return this.errors.length === 0;
+  }
+}
+
+// Create validator instance
+export const validate = (value, field) => new BaseValidator(value, field);
+
+// Enhanced sanitization functions
+export const sanitize = {
+  text: (value) => {
+    if (!value) return '';
+    return sanitizeInput(value);
+  },
+  
+  html: (value) => {
+    if (!value) return '';
+    return sanitizeInput(value);
+  }
+};
+
+// Family-specific validation functions
+export const validateFamilyForm = (formData) => {
+  const errors = {};
+  const sanitizedData = { ...formData };
+
+  // Family name validation
+  const familyNameValidator = validate(formData.family_name, 'Family name')
+    .required()
+    .minLength(1)
+    .maxLength(255)
+    .pattern(/^[a-zA-Z0-9\s\-'\.]+$/, 'Family name contains invalid characters');
+
+  if (!familyNameValidator.isValid()) {
+    errors.family_name = familyNameValidator.getErrors()[0];
+  } else {
+    sanitizedData.family_name = sanitize.text(formData.family_name);
+  }
+
+  // Address validation
+  if (formData.address) {
+    const addressValidator = validate(formData.address, 'Address').maxLength(1000);
+    if (!addressValidator.isValid()) {
+      errors.address = addressValidator.getErrors()[0];
+    } else {
+      sanitizedData.address = sanitize.text(formData.address);
+    }
+  }
+
+  // Notes validation
+  if (formData.notes) {
+    const notesValidator = validate(formData.notes, 'Notes').maxLength(2000);
+    if (!notesValidator.isValid()) {
+      errors.notes = notesValidator.getErrors()[0];
+    } else {
+      sanitizedData.notes = sanitize.html(formData.notes);
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedData
+  };
+};
+
+export const validateMemberData = (memberData, existingRelationships = []) => {
+  const errors = {};
+  const sanitizedData = { ...memberData };
+
+  // Member ID validation
+  if (!memberData.member_id) {
+    errors.member_id = 'Member is required';
+  }
+
+  // Relationship type validation
+  if (!memberData.relationship_type) {
+    errors.relationship_type = 'Relationship type is required';
+  } else {
+    // Check relationship constraints
+    if (memberData.relationship_type === 'head' && existingRelationships.includes('head')) {
+      errors.relationship_type = 'A family can only have one head of household';
+    }
+    
+    if (memberData.relationship_type === 'spouse' && existingRelationships.includes('spouse')) {
+      errors.relationship_type = 'A family can only have one spouse';
+    }
+  }
+
+  // Notes validation
+  if (memberData.notes) {
+    const notesValidator = validate(memberData.notes, 'Notes').maxLength(1000);
+    if (!notesValidator.isValid()) {
+      errors.notes = notesValidator.getErrors()[0];
+    } else {
+      sanitizedData.notes = sanitize.html(memberData.notes);
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedData
+  };
+};
+
+// Search parameter validation
+export const validateSearchParams = (searchParams) => {
+  const errors = {};
+  const sanitizedParams = {};
+
+  // Search term
+  if (searchParams.search) {
+    const searchValidator = validate(searchParams.search, 'Search term').maxLength(100);
+    if (!searchValidator.isValid()) {
+      errors.search = searchValidator.getErrors()[0];
+    } else {
+      sanitizedParams.search = sanitize.text(searchParams.search);
+    }
+  }
+
+  // Numeric filters
+  ['member_count_min', 'member_count_max'].forEach(param => {
+    if (searchParams[param] !== undefined && searchParams[param] !== '') {
+      const value = parseInt(searchParams[param]);
+      if (isNaN(value) || value < 0) {
+        errors[param] = `${param.replace('_', ' ')} must be a valid positive number`;
+      } else {
+        sanitizedParams[param] = value;
+      }
+    }
+  });
+
+  // Boolean filters
+  ['has_children', 'missing_primary_contact'].forEach(param => {
+    if (searchParams[param] !== undefined && searchParams[param] !== '') {
+      if (!['true', 'false'].includes(searchParams[param])) {
+        errors[param] = `${param.replace('_', ' ')} must be true or false`;
+      } else {
+        sanitizedParams[param] = searchParams[param];
+      }
+    }
+  });
+
+  // Date filters
+  ['created_at__gte', 'created_at__lte'].forEach(param => {
+    if (searchParams[param]) {
+      const date = new Date(searchParams[param]);
+      if (isNaN(date.getTime())) {
+        errors[param] = `${param.replace('__', ' ').replace('_', ' ')} must be a valid date`;
+      } else {
+        sanitizedParams[param] = searchParams[param];
+      }
+    }
+  });
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedParams
+  };
+};
+
+// Form validation hook
+export const useFormValidation = (initialData = {}, validatorFn) => {
+  const [data, setData] = React.useState(initialData);
+  const [errors, setErrors] = React.useState({});
+  const [touched, setTouched] = React.useState({});
+
+  const validateField = React.useCallback((name, value) => {
+    const fieldData = { ...data, [name]: value };
+    const validation = validatorFn(fieldData);
+    
+    setErrors(prev => ({
+      ...prev,
+      [name]: validation.errors[name] || null
+    }));
+    
+    return !validation.errors[name];
+  }, [data, validatorFn]);
+
+  const handleChange = React.useCallback((name, value) => {
+    setData(prev => ({ ...prev, [name]: value }));
+    
+    if (touched[name]) {
+      validateField(name, value);
+    }
+  }, [touched, validateField]);
+
+  const handleBlur = React.useCallback((name) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    validateField(name, data[name]);
+  }, [data, validateField]);
+
+  const validateAll = React.useCallback(() => {
+    const validation = validatorFn(data);
+    setErrors(validation.errors);
+    setTouched(
+      Object.keys(data).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+    );
+    return validation;
+  }, [data, validatorFn]);
+
+  const reset = React.useCallback((newData = initialData) => {
+    setData(newData);
+    setErrors({});
+    setTouched({});
+  }, [initialData]);
+
+  return {
+    data,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validateAll,
+    validateField,
+    reset,
+    isValid: Object.keys(errors).length === 0,
+    hasErrors: Object.keys(errors).some(key => errors[key])
+  };
+};
+
+
+
 /**
  * Email validation using regex
  * @param {string} email - Email address to validate

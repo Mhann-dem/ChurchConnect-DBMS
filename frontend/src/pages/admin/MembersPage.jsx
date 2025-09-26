@@ -83,14 +83,17 @@ const MembersPage = () => {
     isLoading = false,
     error = null,
     refetch = () => Promise.resolve(),
-    invalidateCache,
-    clearError,
-    deleteMember,
-    updateMemberStatus,
+    invalidateCache = () => {},
+    clearError = () => {},
+    deleteMember = () => Promise.resolve(),
+    updateMemberStatus = () => Promise.resolve(),
     totalPages = 1,
     activeMembers = 0,
-    statistics = {}
+    statistics = {},
+    // Add fallback for refresh function
+    refresh: hookRefresh
   } = membersHook || {};
+
 
   // Check if we have any active filters
   const hasActiveFilters = useMemo(() => 
@@ -152,6 +155,12 @@ const MembersPage = () => {
     };
   }, []);
 
+  // Create a safe refresh function
+  const refresh = hookRefresh || refetch || (() => {
+    console.warn('[MembersPage] No refresh function available from useMembers hook');
+    return Promise.resolve();
+  });
+
   // Enhanced registration success handler with better feedback
   const handleRegistrationSuccess = useCallback(async (newMember) => {
     console.log('[MembersPage] Registration success:', newMember);
@@ -159,18 +168,24 @@ const MembersPage = () => {
     try {
       setShowRegistrationForm(false);
       
-      // FIXED: Handle both response formats
       const memberName = newMember?.data ? 
         `${newMember.data.first_name} ${newMember.data.last_name}`.trim() :
         `${newMember.first_name || newMember.firstName || 'Member'} ${newMember.last_name || newMember.lastName || ''}`.trim();
       
       showToast(`${memberName} registered successfully!`, 'success');
       
-      // Force refresh with correct hook method
-      if (typeof refresh === 'function') {
-        await refresh(true); // Force refresh
-      } else if (typeof refetch === 'function') {
-        await refetch();
+      // Use the safe refresh function
+      try {
+        if (typeof refresh === 'function') {
+          await refresh(true);
+        } else if (typeof refetch === 'function') {
+          await refetch();
+        } else {
+          console.warn('[MembersPage] No refresh method available');
+        }
+      } catch (refreshError) {
+        console.error('[MembersPage] Refresh failed:', refreshError);
+        showToast('Member registered successfully, but list refresh failed.', 'warning');
       }
       
     } catch (error) {
@@ -331,16 +346,21 @@ const MembersPage = () => {
     console.log('[MembersPage] Manual refresh triggered');
     
     try {
-      // Clear any errors first
       if (typeof clearError === 'function') {
         clearError();
       }
       
-      // Show loading feedback
       showToast('Refreshing member list...', 'info', 2000);
       
-      // Force a complete refresh
-      const result = await refetch();
+      let result;
+      if (typeof refresh === 'function') {
+        result = await refresh();
+      } else if (typeof refetch === 'function') {
+        result = await refetch();
+      } else {
+        throw new Error('No refresh method available');
+      }
+      
       console.log('[MembersPage] Refresh result:', result);
       
       if (result?.success !== false) {
@@ -352,7 +372,7 @@ const MembersPage = () => {
       console.error('[MembersPage] Refresh error:', error);
       showToast('Failed to refresh data. Please check your connection.', 'error');
     }
-  }, [refetch, showToast, clearError]);
+  }, [refresh, refetch, showToast, clearError]);
 
   // Memoized empty state content
   const EmptyStateContent = useMemo(() => {

@@ -7,6 +7,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+
+node_modules/
+jspm_packages/
+
 # Testing
 coverage/
 .nyc_output/
@@ -187,7 +191,7 @@ public/temp/
 *.old
 
 # Package manager lock files (choose one)
-# package-lock.json
+package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
 

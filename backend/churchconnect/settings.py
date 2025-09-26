@@ -254,6 +254,11 @@ REST_FRAMEWORK = {
         'anon': '10/hour' if not DEBUG else '100/hour',
         'user': '100/hour' if not DEBUG else '1000/hour'
     },
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',      # Increased from default
+        'user': '1000/hour',     # Increased from default  
+        'family_ops': '100/min', # Custom rate for family operations
+    },
     
     # API Documentation
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

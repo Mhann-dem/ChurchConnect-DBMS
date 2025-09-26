@@ -1,4 +1,5 @@
-// Fixed Dashboard Component - Correct Data Extraction for Your Django API
+// Debug Dashboard Component - Replace your Dashboard.jsx with this version to find the issue
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   UsersIcon, 
@@ -17,13 +18,33 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [debugInfo, setDebugInfo] = useState([]);
+
+  // Enhanced debug logging
+  const addDebugLog = useCallback((message, data) => {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      message,
+      data: JSON.stringify(data, null, 2)
+    };
+    console.log(`[Dashboard Debug] ${message}`, data);
+    setDebugInfo(prev => [...prev, logEntry].slice(-10)); // Keep last 10 logs
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      addDebugLog('🚀 Starting dashboard data fetch', {});
 
       const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      addDebugLog('🔑 Token check', { 
+        hasAccessToken: !!localStorage.getItem('access_token'),
+        hasAuthToken: !!localStorage.getItem('authToken'),
+        tokenLength: token?.length || 0,
+        tokenStart: token?.substring(0, 20) + '...' || 'none'
+      });
+
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -34,151 +55,168 @@ const Dashboard = () => {
       };
 
       const baseURL = 'http://localhost:8000';
+      addDebugLog('🌐 API Base URL', { baseURL, headers: { ...headers, Authorization: 'Bearer [HIDDEN]' } });
 
-      // FIXED: Correct API calls matching your Django logs exactly
+      // Test individual API calls with detailed logging
       const apiCalls = [
-        // Member statistics - returns your exact response format
-        fetch(`${baseURL}/api/v1/members/statistics/?range=30d`, { headers }),
-        
-        // Groups statistics  
-        fetch(`${baseURL}/api/v1/groups/statistics/`, { headers }),
-        
-        // Families statistics
-        fetch(`${baseURL}/api/v1/families/statistics/`, { headers }),
-        
-        // Recent members - your working endpoint
-        fetch(`${baseURL}/api/v1/members/recent/?limit=5`, { headers }),
-        
-        // System health
-        fetch(`${baseURL}/api/v1/core/dashboard/health/`, { headers }).catch(() => null),
-        
-        // Alerts  
-        fetch(`${baseURL}/api/v1/core/dashboard/alerts/`, { headers }).catch(() => null)
+        {
+          name: 'Member Stats',
+          url: `${baseURL}/api/v1/members/statistics/?range=30d`,
+          key: 'memberStats'
+        },
+        {
+          name: 'Group Stats',
+          url: `${baseURL}/api/v1/groups/statistics/`,
+          key: 'groupStats'
+        },
+        {
+          name: 'Family Stats',
+          url: `${baseURL}/api/v1/families/statistics/`,
+          key: 'familyStats'
+        },
+        {
+          name: 'Recent Members',
+          url: `${baseURL}/api/v1/members/recent/?limit=5`,
+          key: 'recentMembers'
+        }
       ];
 
-      const responses = await Promise.allSettled(apiCalls);
+      const results = {};
       
-      // FIXED: Safer response processing
-      const processResponse = async (responseResult, endpointName) => {
-        if (responseResult.status === 'rejected') {
-          console.error(`[Dashboard] ${endpointName} failed:`, responseResult.reason);
-          return null;
-        }
-
-        const response = responseResult.value;
-        if (!response || !response.ok) {
-          console.error(`[Dashboard] ${endpointName} HTTP error:`, response?.status);
-          return null;
-        }
-
+      // Execute each API call individually with detailed logging
+      for (const apiCall of apiCalls) {
         try {
+          addDebugLog(`📡 Fetching ${apiCall.name}`, { url: apiCall.url });
+          
+          const response = await fetch(apiCall.url, { headers });
+          
+          addDebugLog(`📨 ${apiCall.name} Response Status`, { 
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
           const data = await response.json();
-          console.log(`[Dashboard] ${endpointName} success:`, data);
-          return data;
-        } catch (parseError) {
-          console.error(`[Dashboard] ${endpointName} parse error:`, parseError);
-          return null;
+          
+          addDebugLog(`📊 ${apiCall.name} Raw Data`, {
+            dataType: typeof data,
+            isArray: Array.isArray(data),
+            keys: Object.keys(data || {}),
+            data: data
+          });
+
+          results[apiCall.key] = data;
+
+        } catch (error) {
+          addDebugLog(`❌ ${apiCall.name} Failed`, { 
+            error: error.message,
+            stack: error.stack
+          });
+          results[apiCall.key] = null;
         }
-      };
+      }
 
-      const [
-        memberStatsData,
-        groupStatsData, 
-        familyStatsData,
-        recentMembersData,
-        healthData,
-        alertsData
-      ] = await Promise.all([
-        processResponse(responses[0], 'Member Stats'),
-        processResponse(responses[1], 'Group Stats'),
-        processResponse(responses[2], 'Family Stats'), 
-        processResponse(responses[3], 'Recent Members'),
-        processResponse(responses[4], 'Health'),
-        processResponse(responses[5], 'Alerts')
-      ]);
+      addDebugLog('🔄 All API calls completed', { results: Object.keys(results) });
 
-      // FIXED: Correct data extraction matching your Django response structure
+      // Process each response individually
+      const memberStatsData = results.memberStats;
+      const groupStatsData = results.groupStats;
+      const familyStatsData = results.familyStats;
+      const recentMembersData = results.recentMembers;
+
+      addDebugLog('🧮 Processing Member Stats', {
+        raw: memberStatsData,
+        summaryExists: !!(memberStatsData && memberStatsData.summary),
+        totalMembers: memberStatsData?.summary?.total_members,
+        activeMembers: memberStatsData?.summary?.active_members,
+        directTotal: memberStatsData?.total_members
+      });
+
+      addDebugLog('👥 Processing Recent Members', {
+        raw: recentMembersData,
+        hasSuccess: recentMembersData?.success,
+        hasResults: !!(recentMembersData?.results),
+        resultsLength: recentMembersData?.results?.length || 0,
+        firstResult: recentMembersData?.results?.[0]
+      });
+
+      // Extract data with maximum flexibility
       const extractedData = {
-        // FIXED: Member stats - handle your actual response structure
+        // Try multiple possible paths for member data
         totalMembers: memberStatsData?.summary?.total_members || 
-                     memberStatsData?.total_members || 0,
-        activeMembers: memberStatsData?.summary?.active_members || 
-                      memberStatsData?.active_members || 0,
-        newMembers: memberStatsData?.summary?.recent_registrations || 
-                   memberStatsData?.new_members || 0,
+                     memberStatsData?.total_members || 
+                     memberStatsData?.count || 
+                     0,
         
-        // FIXED: Group stats - direct properties from your API
+        activeMembers: memberStatsData?.summary?.active_members || 
+                      memberStatsData?.active_members || 
+                      0,
+        
+        newMembers: memberStatsData?.summary?.recent_registrations || 
+                   memberStatsData?.new_members || 
+                   memberStatsData?.recent_registrations ||
+                   0,
+
+        // Try multiple possible paths for groups
         totalGroups: groupStatsData?.total_groups || 0,
         activeGroups: groupStatsData?.active_groups || 0,
-        
-        // FIXED: Family stats - direct property
+
+        // Try multiple possible paths for families
         totalFamilies: familyStatsData?.total_families || 0,
-        
-        // FIXED: Recent members - handle your Django response format
-        // Your API returns: { success: true, results: [...], count: 4 }
-        recentMembers: (() => {
-          if (recentMembersData?.success && recentMembersData?.results) {
-            return recentMembersData.results;
-          }
-          if (Array.isArray(recentMembersData)) {
-            return recentMembersData;
-          }
-          return [];
-        })(),
-        
-        // System data with fallbacks
-        systemHealth: healthData || { status: 'unknown' },
-        alerts: alertsData?.results || alertsData || [],
-        
-        // Metadata for debugging
+
+        // Try multiple possible paths for recent members
+        recentMembers: recentMembersData?.success ? recentMembersData.results : 
+                      recentMembersData?.results || 
+                      (Array.isArray(recentMembersData) ? recentMembersData : []),
+
         lastUpdated: new Date(),
-        debugInfo: {
-          memberStatsRaw: memberStatsData,
-          groupStatsRaw: groupStatsData,
-          familyStatsRaw: familyStatsData,
-          recentMembersRaw: recentMembersData,
-          recentMembersProcessed: (() => {
-            if (recentMembersData?.success && recentMembersData?.results) {
-              return {
-                format: 'django_success_response',
-                count: recentMembersData.results.length,
-                sample: recentMembersData.results[0] || null
-              };
-            }
-            return { format: 'unknown', data: recentMembersData };
-          })()
+        
+        // Full debug data
+        rawData: {
+          memberStatsData,
+          groupStatsData,
+          familyStatsData,
+          recentMembersData
         }
       };
 
-      console.log('[Dashboard] FINAL extracted data:', {
-        totalMembers: extractedData.totalMembers,
-        activeMembers: extractedData.activeMembers,
-        recentMembersCount: extractedData.recentMembers.length,
-        recentMembersFirst: extractedData.recentMembers[0]?.first_name,
-        debugInfo: extractedData.debugInfo
-      });
-      
+      addDebugLog('✅ Final Extracted Data', extractedData);
+
+      if (!mountedRef.current) return;
       setDashboardData(extractedData);
 
     } catch (error) {
-      console.error('[Dashboard] Fetch error:', error);
+      addDebugLog('💥 Fatal Error', { error: error.message, stack: error.stack });
+      console.error('[Dashboard] Fatal error:', error);
       setError(error.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [addDebugLog]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchDashboardData();
   };
 
+  const mountedRef = React.useRef(true);
+  
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // FIXED: Loading state
   if (loading && !dashboardData) {
     return (
       <div style={{
@@ -198,6 +236,32 @@ const Dashboard = () => {
           animation: 'spin 1s linear infinite'
         }} />
         <p>Loading Dashboard Data...</p>
+        
+        {/* Debug logs during loading */}
+        {debugInfo.length > 0 && (
+          <div style={{
+            background: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            borderRadius: '8px',
+            padding: '16px',
+            maxWidth: '600px',
+            maxHeight: '300px',
+            overflow: 'auto',
+            fontSize: '12px',
+            fontFamily: 'monospace'
+          }}>
+            <h4>🔍 Live Debug Logs:</h4>
+            {debugInfo.map((log, index) => (
+              <div key={index} style={{ marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
+                <strong>{log.message}</strong>
+                <pre style={{ margin: '4px 0', whiteSpace: 'pre-wrap', fontSize: '10px' }}>
+                  {log.data}
+                </pre>
+              </div>
+            ))}
+          </div>
+        )}
+        
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -208,7 +272,6 @@ const Dashboard = () => {
     );
   }
 
-  // FIXED: Error state
   if (error && !dashboardData) {
     return (
       <div style={{
@@ -240,11 +303,36 @@ const Dashboard = () => {
           <ArrowPathIcon style={{ width: '16px', height: '16px' }} />
           Try Again
         </button>
+        
+        {/* Show debug info even on error */}
+        {debugInfo.length > 0 && (
+          <div style={{
+            background: '#f8f9fa',
+            border: '2px solid #dc3545',
+            borderRadius: '8px',
+            padding: '16px',
+            maxWidth: '800px',
+            maxHeight: '400px',
+            overflow: 'auto',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            textAlign: 'left'
+          }}>
+            <h4 style={{ color: '#dc3545' }}>🐛 Debug Information:</h4>
+            {debugInfo.map((log, index) => (
+              <div key={index} style={{ marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
+                <strong>{log.message}</strong>
+                <pre style={{ margin: '4px 0', whiteSpace: 'pre-wrap', fontSize: '10px' }}>
+                  {log.data}
+                </pre>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
-  // FIXED: Stats with correct data
   const stats = [
     {
       name: 'Total Members',
@@ -268,10 +356,10 @@ const Dashboard = () => {
       color: 'from-purple-500 to-indigo-500'
     },
     {
-      name: 'System Health',
-      value: dashboardData?.systemHealth?.status === 'healthy' ? 'Good' : 'Check',
-      icon: ChartBarIcon,
-      description: 'system status',
+      name: 'New This Month',
+      value: (dashboardData?.newMembers || 0).toLocaleString(),
+      icon: CalendarDaysIcon,
+      description: 'new registrations',
       color: 'from-orange-500 to-red-500'
     }
   ];
@@ -298,7 +386,7 @@ const Dashboard = () => {
               Welcome back, {user?.first_name || 'Admin'}!
             </h1>
             <p style={{ fontSize: '18px', opacity: 0.8 }}>
-              Here's what's happening in your church community
+              Dashboard Debug Mode - Tracing Data Flow
             </p>
           </div>
           
@@ -330,7 +418,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* FIXED: Stats Grid */}
+      {/* Stats Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -347,19 +435,7 @@ const Dashboard = () => {
                 padding: '24px',
                 borderRadius: '12px',
                 border: '1px solid #e5e7eb',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'pointer',
-                animationDelay: `${index * 0.1}s`,
-                animation: 'fadeInUp 0.5s ease-out forwards'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
               }}
             >
               <div style={{
@@ -392,7 +468,7 @@ const Dashboard = () => {
               <p style={{
                 fontSize: '32px',
                 fontWeight: 'bold',
-                color: '#1f2937',
+                color: stat.value === '0' ? '#dc2626' : '#1f2937', // Red if zero
                 marginBottom: '8px'
               }}>
                 {stat.value}
@@ -408,160 +484,142 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* FIXED: Recent Members Section */}
+      {/* Recent Members Section */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '2fr 1fr',
-        gap: '24px',
+        background: 'white',
+        borderRadius: '12px',
+        border: '1px solid #e5e7eb',
+        overflow: 'hidden',
         marginBottom: '32px'
       }}>
-        
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          border: '1px solid #e5e7eb',
-          overflow: 'hidden'
+          padding: '24px',
+          borderBottom: '1px solid #f3f4f6',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}>
-          <div style={{
-            padding: '24px',
-            borderBottom: '1px solid #f3f4f6',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>Recent Members</h3>
-            <span style={{ fontSize: '14px', color: '#6b7280' }}>
-              {dashboardData?.recentMembers?.length || 0} members
-            </span>
-          </div>
-          
-          <div style={{ padding: '24px' }}>
-            {dashboardData?.recentMembers?.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {dashboardData.recentMembers.slice(0, 5).map((member, index) => (
-                  <div
-                    key={member.id || index}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '16px',
-                      background: '#f9fafb',
-                      borderRadius: '8px',
-                      border: '1px solid #f3f4f6'
-                    }}
-                  >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      marginRight: '16px'
-                    }}>
-                      {(member.first_name?.charAt(0) || '') + (member.last_name?.charAt(0) || '')}
-                    </div>
-                    
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
-                        {member.first_name} {member.last_name}
-                      </p>
-                      <p style={{ fontSize: '14px', color: '#6b7280' }}>
-                        {member.email}
-                      </p>
-                    </div>
-                    
-                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                      {member.registration_date ? 
-                        new Date(member.registration_date).toLocaleDateString() : 
-                        'Recently'
-                      }
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
-                <UsersIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#d1d5db' }} />
-                <p>No recent members found</p>
-                <p style={{ fontSize: '14px', marginTop: '8px' }}>
-                  Total registered: {dashboardData?.totalMembers || 0}
-                </p>
-              </div>
-            )}
-          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>Recent Members</h3>
+          <span style={{ fontSize: '14px', color: '#6b7280' }}>
+            {dashboardData?.recentMembers?.length || 0} members
+          </span>
         </div>
-
-        {/* System Status */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px', 
-          border: '1px solid #e5e7eb',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            padding: '24px',
-            borderBottom: '1px solid #f3f4f6'
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>System Status</h3>
-          </div>
-          
-          <div style={{ padding: '24px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '16px',
-              background: dashboardData?.systemHealth?.status === 'healthy' ? '#f0f9ff' : '#fef3c7',
-              borderRadius: '8px',
-              border: `1px solid ${dashboardData?.systemHealth?.status === 'healthy' ? '#e0f2fe' : '#fed7aa'}`
-            }}>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                background: dashboardData?.systemHealth?.status === 'healthy' ? '#22c55e' : '#f59e0b',
-                borderRadius: '50%',
-                marginRight: '12px'
-              }} />
-              <span style={{ fontWeight: '600' }}>
-                {dashboardData?.systemHealth?.status === 'healthy' ? 'All Systems Online' : 'System Status: Checking'}
-              </span>
+        
+        <div style={{ padding: '24px' }}>
+          {dashboardData?.recentMembers?.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {dashboardData.recentMembers.slice(0, 5).map((member, index) => (
+                <div
+                  key={member.id || index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '16px',
+                    background: '#f9fafb',
+                    borderRadius: '8px',
+                    border: '1px solid #f3f4f6'
+                  }}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    marginRight: '16px'
+                  }}>
+                    {(member.first_name?.charAt(0) || '') + (member.last_name?.charAt(0) || '')}
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
+                      {member.first_name} {member.last_name}
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                      {member.email}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '32px', color: '#dc2626' }}>
+              <UsersIcon style={{ width: '48px', height: '48px', margin: '0 auto 16px', color: '#dc2626' }} />
+              <p>No recent members data found</p>
+              <p style={{ fontSize: '12px', marginTop: '8px' }}>
+                Debug: Total count shows {dashboardData?.totalMembers || 0}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Debug Panel - Development Only */}
-      {process.env.NODE_ENV === 'development' && dashboardData?.debugInfo && (
-        <div style={{
-          background: '#f8f9fa',
-          border: '2px solid #007bff',
-          borderRadius: '8px',
-          padding: '16px',
-          marginTop: '24px'
-        }}>
-          <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#007bff' }}>
-            🔍 DEBUG: Data Processing Results
-          </h4>
-          <div style={{ fontSize: '12px', fontFamily: 'monospace', background: '#fff', padding: '12px', borderRadius: '4px' }}>
-            <p><strong>Processed Values:</strong></p>
-            <p>• Total Members: {dashboardData.totalMembers}</p>
-            <p>• Active Members: {dashboardData.activeMembers}</p>
-            <p>• Total Groups: {dashboardData.totalGroups}</p>
-            <p>• Recent Members Array Length: {dashboardData.recentMembers?.length || 0}</p>
-            <p>• Recent Members Processing: {dashboardData.debugInfo.recentMembersProcessed?.format}</p>
-            
-            <details style={{ marginTop: '8px' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Raw API Responses</summary>
-              <pre style={{ fontSize: '10px', overflow: 'auto', maxHeight: '200px', marginTop: '8px' }}>
-                {JSON.stringify(dashboardData.debugInfo, null, 2)}
-              </pre>
-            </details>
+      {/* ENHANCED DEBUG PANEL - Always visible */}
+      <div style={{
+        background: '#f8f9fa',
+        border: '2px solid #007bff',
+        borderRadius: '8px',
+        padding: '16px',
+        marginTop: '24px'
+      }}>
+        <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#007bff' }}>
+          🔍 DASHBOARD DEBUG PANEL
+        </h4>
+        
+        {/* Current Values */}
+        <div style={{ marginBottom: '16px', padding: '12px', background: '#fff', borderRadius: '4px' }}>
+          <h5 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Current Display Values:</h5>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', fontSize: '12px' }}>
+            <div>Total Members: <strong style={{ color: dashboardData?.totalMembers > 0 ? '#28a745' : '#dc3545' }}>{dashboardData?.totalMembers || 0}</strong></div>
+            <div>Active Members: <strong style={{ color: dashboardData?.activeMembers > 0 ? '#28a745' : '#dc3545' }}>{dashboardData?.activeMembers || 0}</strong></div>
+            <div>Recent Members: <strong style={{ color: (dashboardData?.recentMembers?.length || 0) > 0 ? '#28a745' : '#dc3545' }}>{dashboardData?.recentMembers?.length || 0}</strong></div>
+            <div>Total Families: <strong style={{ color: dashboardData?.totalFamilies > 0 ? '#28a745' : '#dc3545' }}>{dashboardData?.totalFamilies || 0}</strong></div>
           </div>
         </div>
-      )}
+
+        {/* Debug Logs */}
+        {debugInfo.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <h5 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Recent Debug Logs:</h5>
+            <div style={{ maxHeight: '300px', overflow: 'auto', fontSize: '10px', fontFamily: 'monospace' }}>
+              {debugInfo.slice(-5).map((log, index) => (
+                <details key={index} style={{ marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}>
+                    {log.message} - {new Date(log.timestamp).toLocaleTimeString()}
+                  </summary>
+                  <pre style={{ margin: '4px 0', whiteSpace: 'pre-wrap', fontSize: '9px', maxHeight: '150px', overflow: 'auto' }}>
+                    {log.data}
+                  </pre>
+                </details>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Raw Data Viewer */}
+        {dashboardData?.rawData && (
+          <details style={{ marginTop: '16px' }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>📊 Raw API Response Data</summary>
+            <pre style={{ 
+              fontSize: '10px', 
+              fontFamily: 'monospace', 
+              background: '#fff', 
+              padding: '12px', 
+              borderRadius: '4px', 
+              maxHeight: '400px', 
+              overflow: 'auto', 
+              marginTop: '8px',
+              border: '1px solid #ddd'
+            }}>
+              {JSON.stringify(dashboardData.rawData, null, 2)}
+            </pre>
+          </details>
+        )}
+      </div>
     </div>
   );
 };
