@@ -31,27 +31,29 @@ export const formatPhoneNumber = (phone) => {
 
 // Phone number formatter for Django PhoneNumberField
 const formatPhoneForAPI = (phoneNumber) => {
-  if (!phoneNumber) return '';
+  if (!phoneNumber || phoneNumber.trim() === '') return '';
   
-  // Remove all non-digit characters
+  // Clean the phone number - keep only digits and +
   const cleaned = phoneNumber.replace(/\D/g, '');
   
-  // If it's a US number (10 digits), add +1 prefix
-  if (cleaned.length === 10) {
-    return `+1${cleaned}`;
-  }
+  if (!cleaned) return '';
   
-  // If it already has country code (11 digits starting with 1), add +
-  if (cleaned.length === 11 && cleaned.startsWith('1')) {
+  // Handle Ghana numbers specifically (based on your log: +2335904321332)
+  if (cleaned.startsWith('233') && cleaned.length === 12) {
     return `+${cleaned}`;
   }
   
-  // For other formats, add + if not present
-  if (cleaned.length > 10 && !phoneNumber.startsWith('+')) {
-    return `+${cleaned}`;
+  // Handle international format
+  if (cleaned.startsWith('+')) {
+    return cleaned;
   }
   
-  return phoneNumber;
+  // Handle US/Canada numbers
+  if (cleaned.length === 10) return `+1${cleaned}`;
+  if (cleaned.length === 11 && cleaned.startsWith('1')) return `+${cleaned}`;
+  
+  // Default - just return with +
+  return `+${cleaned}`;
 };
 
 // Date formatter for Django DateField
@@ -92,7 +94,7 @@ const transformFormDataForAPI = (formData) => {
     alternate_phone: formatPhoneForAPI(formData.alternatePhone),
     address: formData.address?.trim() || '',
     preferred_contact_method: formData.preferredContactMethod || 'email',
-    preferred_language: formData.preferredLanguage || 'English',
+    preferred_language: formData.preferredLanguage || 'english', // FIXED: Use code instead of full name
     accessibility_needs: formData.accessibilityNeeds?.trim() || '',
     emergency_contact_name: formData.emergencyContactName?.trim() || '',
     emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),

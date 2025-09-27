@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Sum, Count, Avg, Q, F
+from django.db.models import Count, Q, Sum, Avg, F
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.http import HttpResponse

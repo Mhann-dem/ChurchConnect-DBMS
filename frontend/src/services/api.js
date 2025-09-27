@@ -87,17 +87,19 @@ const ENDPOINTS = {
     detail: (id) => `pledges/${id}/`,
     update: (id) => `pledges/${id}/`,
     delete: (id) => `pledges/${id}/`,
-    statistics: 'pledges/stats/',
+    statistics: 'pledges/stats/',  // Primary endpoint Django expects
+    stats: 'pledges/statistics/',  // Alternative endpoint
     export: 'pledges/export/',
     recent: 'pledges/recent/',
     trends: 'pledges/trends/',
     overdue: 'pledges/overdue/',
-    upcomingPayments: 'pledges/upcoming_payments/',
-    bulkAction: 'pledges/bulk_action/',
-    summaryReport: 'pledges/summary_report/',
-    payments: 'pledges/payments/',
-    addPayment: (pledgeId) => `pledges/${pledgeId}/add_payment/`,
-    paymentHistory: (pledgeId) => `pledges/${pledgeId}/payment_history/`
+    upcomingPayments: 'pledges/upcoming-payments/',
+    bulkAction: 'pledges/bulk-action/',
+    bulkUpdate: 'pledges/bulk-update/',
+    bulkDelete: 'pledges/bulk-delete/',
+    summaryReport: 'pledges/summary-report/',
+    addPayment: (pledgeId) => `pledges/${pledgeId}/add-payment/`,
+    paymentHistory: (pledgeId) => `pledges/${pledgeId}/payment-history/`
   },
   
   events: {
@@ -282,6 +284,45 @@ const clearAuthData = () => {
   console.log('[API] Auth data cleared');
 };
 
+// Helper function to safely clean objects for JSON serialization
+const cleanObjectForJSON = (obj) => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(cleanObjectForJSON);
+  }
+  
+  // Handle plain objects
+  const cleaned = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Skip React-specific properties and DOM elements
+    if (key.startsWith('_') || key.startsWith('__') || 
+        key.includes('react') || key.includes('React') ||
+        value instanceof HTMLElement) {
+      continue;
+    }
+    
+    // Recursively clean nested objects
+    if (value !== null && typeof value === 'object') {
+      try {
+        // Test if this object can be serialized
+        JSON.stringify(value);
+        cleaned[key] = cleanObjectForJSON(value);
+      } catch (e) {
+        // If it can't be serialized, skip it or convert to string
+        cleaned[key] = '[Unserializable Object]';
+      }
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  
+  return cleaned;
+};
+
 const redirectToLogin = () => {
   if (!window.location.pathname.includes('/login')) {
     console.log('[API] Redirecting to login page');
@@ -305,8 +346,15 @@ const apiMethods = {
   
   post: async (endpoint, data = null, config = {}) => {
     try {
-      console.log(`[API POST] ${endpoint}`, { hasData: !!data, dataSize: data ? JSON.stringify(data).length : 0 });
-      const response = await api.post(endpoint, data, config);
+      // SAFE DATA CLEANING: Remove any circular references or React-specific properties
+      const cleanData = data ? cleanObjectForJSON(data) : null;
+      
+      console.log(`[API POST] ${endpoint}`, { 
+        hasData: !!cleanData, 
+        dataSize: cleanData ? JSON.stringify(cleanData).length : 0 
+      });
+      
+      const response = await api.post(endpoint, cleanData, config);
       return response;
     } catch (error) {
       console.error(`[API POST Error] ${endpoint}:`, error.message);
@@ -366,7 +414,8 @@ const apiMethods = {
         return response.data;
       } catch (error) {
         console.error('[Dashboard API] Stats failed:', error);
-        throw error;
+        // Fallback to individual stats aggregation
+        return await apiMethods.dashboard.getAggregatedStats();
       }
     },
 

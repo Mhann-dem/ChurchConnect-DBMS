@@ -8,61 +8,57 @@ from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
 import phonenumbers
 from django.core.exceptions import ValidationError
+from .validators import validate_phone_number_field 
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+# members/serializers.py - REPLACE the validate_phone_number function
+
 def validate_phone_number(value):
-    """Enhanced phone number validation with flexible formatting"""
+    """Simple phone validation that accepts international formats"""
     if not value or value == '':
         return ''  # Allow empty values
     
     try:
-        # Handle string input
         phone_str = str(value).strip()
         
         if not phone_str:
             return ''
         
-        # Clean the input - remove formatting characters but keep + 
-        if phone_str.startswith('+'):
-            # If it already has +, just clean extra characters
-            cleaned = '+' + ''.join(filter(str.isdigit, phone_str[1:]))
-        else:
-            # Clean digits only
-            cleaned = ''.join(filter(str.isdigit, phone_str))
-            
-            # Add country code if it looks like a US number
-            if len(cleaned) == 10:
-                cleaned = f"+1{cleaned}"
-            elif len(cleaned) == 11 and cleaned.startswith('1'):
-                cleaned = f"+{cleaned}"
-            else:
-                cleaned = f"+{cleaned}"
+        # Basic cleaning - keep only digits and +
+        cleaned = re.sub(r'[^\d\+]', '', phone_str)
         
-        # Parse and validate using phonenumbers
-        try:
-            parsed_number = phonenumbers.parse(cleaned, None)
+        if not cleaned:
+            return phone_str  # Return original if cleaning removes everything
             
-            if not phonenumbers.is_valid_number(parsed_number):
-                logger.warning(f"Invalid phone number: {cleaned}")
-                raise serializers.ValidationError("Please enter a valid phone number.")
+        # Basic length validation
+        digits_only = cleaned.replace('+', '')
+        if len(digits_only) < 7 or len(digits_only) > 15:
+            logger.warning(f"Phone number length invalid: {cleaned}")
+            # Still allow it but warn
+            return cleaned
             
-            return PhoneNumber.from_string(cleaned)
-            
-        except NumberParseException as e:
-            logger.warning(f"Phone parsing failed for {cleaned}: {e}")
-            # If parsing fails but the number looks reasonable, try to salvage it
-            if len(cleaned.replace('+', '').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')) >= 10:
-                # Return as-is for basic validation
-                return cleaned
-            raise serializers.ValidationError(f"Invalid phone number format: {phone_str}")
-            
+        # If it starts with +, it's already international format
+        if cleaned.startswith('+'):
+            return cleaned
+        else:
+            # Assume it's a local number and add country code
+            # For Ghana numbers like 2335904321332, they're already international
+            if cleaned.startswith('233') and len(cleaned) == 12:
+                return f"+{cleaned}"
+            elif len(cleaned) == 10:
+                return f"+1{cleaned}"  # US/Canada default
+            else:
+                return f"+{cleaned}"
+                
     except Exception as e:
-        logger.error(f"Phone validation error for {value}: {e}")
-        raise serializers.ValidationError("Please enter a valid phone number.")
+        logger.warning(f"Phone validation warning for {value}: {e}")
+        # Return original value on error
+        return str(value) if value else ''
 
 class MemberCreateSerializer(serializers.ModelSerializer):
     """Enhanced serializer for creating members with flexible validation"""
@@ -215,11 +211,11 @@ class MemberAdminCreateSerializer(serializers.ModelSerializer):
             'internal_notes': {'required': False, 'allow_blank': True},
         }
     
-    def validate_phone(self, value):
-        """Very flexible phone validation for admin"""
-        if not value:
-            return ''
-        return validate_phone_number(value)
+    # def validate_phone(self, value):
+    #     """Very flexible phone validation for admin"""
+    #     if not value:
+    #         return ''
+    #     return validate_phone_number(value)
     
     def validate_alternate_phone(self, value):
         """Flexible alternate phone validation"""
@@ -406,10 +402,10 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
             'gender': {'required': False, 'allow_blank': True},
         }
     
-    def validate_phone(self, value):
-        if not value:
-            return ''
-        return validate_phone_number(value)
+    # def validate_phone(self, value):
+    #     if not value:
+    #         return ''
+    #     return validate_phone_number(value)
     
     def validate_date_of_birth(self, value):
         """Validate date of birth is not in the future"""

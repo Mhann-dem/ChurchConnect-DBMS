@@ -1,3 +1,4 @@
+// pages/admin/PledgesPage.jsx - FIXED VERSION with proper error handling and data flow
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -20,10 +21,7 @@ import { Button, Card, Badge } from '../../components/ui';
 import usePledges from '../../hooks/usePledges';
 import { useToast } from '../../hooks/useToast';
 import { useDebounce } from '../../hooks/useDebounce';
-import pledgesService from '../../services/pledges';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { validatePledgeFilters, validateSearchQuery } from '../../utils/validation';
-import { PLEDGE_FILTERS_DEFAULTS, PAGINATION_OPTIONS } from '../../utils/constants';
 import styles from './AdminPages.module.css';
 
 const PledgesPage = () => {
@@ -49,56 +47,46 @@ const PledgesPage = () => {
     parseInt(searchParams.get('limit')) || 25
   );
 
-  // Filters state with validation
+  // Filters state
   const [filters, setFilters] = useState(() => {
-    try {
-      return {
-        status: searchParams.get('status') || PLEDGE_FILTERS_DEFAULTS.status,
-        frequency: searchParams.get('frequency') || PLEDGE_FILTERS_DEFAULTS.frequency,
-        amountRange: searchParams.get('amountRange') || PLEDGE_FILTERS_DEFAULTS.amountRange,
-        dateRange: searchParams.get('dateRange') || PLEDGE_FILTERS_DEFAULTS.dateRange,
-        memberId: searchParams.get('memberId') || PLEDGE_FILTERS_DEFAULTS.memberId,
-      };
-    } catch (error) {
-      console.error('Error parsing filters from URL:', error);
-      return PLEDGE_FILTERS_DEFAULTS;
-    }
+    return {
+      status: searchParams.get('status') || 'all',
+      frequency: searchParams.get('frequency') || 'all',
+      member_id: searchParams.get('member_id') || null,
+    };
   });
 
   // Debounced search query
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // Memoized hook options
-  const hookOptions = useMemo(() => {
-    const validatedFilters = validatePledgeFilters(filters);
-    const validatedSearch = validateSearchQuery(debouncedSearchQuery);
-    
-    return {
-      search: validatedSearch,
-      filters: validatedFilters,
-      page: currentPage,
-      limit: itemsPerPage
-    };
-  }, [debouncedSearchQuery, filters, currentPage, itemsPerPage]);
+  // Initialize usePledges hook with proper options
+  const pledgesHookOptions = useMemo(() => ({
+    autoFetch: true,
+    enableCache: true,
+    filters: {
+      ...filters,
+      search: debouncedSearchQuery
+    }
+  }), [filters, debouncedSearchQuery]);
 
-  // Pledges hook with error handling
-  const pledgesHook = usePledges(hookOptions);
-  
-  // Safely destructure with defaults
+  // Use pledges hook
   const {
     pledges = [],
-    totalPledges = 0,
-    isLoading = false,
+    loading = false,
     error = null,
     statistics = {},
     pagination = { count: 0, totalPages: 1, currentPage: 1 },
-    refetch = () => Promise.resolve(),
+    fetchPledges,
     createPledge,
     updatePledge,
     deletePledge,
-    fetchStatistics = () => {},
-    exportPledges
-  } = pledgesHook || {};
+    fetchStatistics,
+    exportPledges,
+    updateFilters,
+    updatePagination,
+    clearError,
+    refresh
+  } = usePledges(pledgesHookOptions) || {};
 
   // Update URL params when state changes
   useEffect(() => {
@@ -110,7 +98,7 @@ const PledgesPage = () => {
       if (itemsPerPage !== 25) params.set('limit', itemsPerPage.toString());
       
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== PLEDGE_FILTERS_DEFAULTS[key]) {
+        if (value && value !== 'all' && value !== null) {
           params.set(key, value.toString());
         }
       });
@@ -127,14 +115,25 @@ const PledgesPage = () => {
     return () => clearTimeout(timeoutId);
   }, [debouncedSearchQuery, currentPage, itemsPerPage, filters, searchParams, setSearchParams]);
 
-  // Fetch initial statistics
+  // Update hook filters when local filters change
   useEffect(() => {
-    if (typeof fetchStatistics === 'function') {
-      fetchStatistics().catch(error => {
-        console.error('Error fetching statistics:', error);
+    if (updateFilters) {
+      updateFilters({
+        ...filters,
+        search: debouncedSearchQuery
       });
     }
-  }, [fetchStatistics]);
+  }, [filters, debouncedSearchQuery, updateFilters]);
+
+  // Update hook pagination when local pagination changes
+  useEffect(() => {
+    if (updatePagination) {
+      updatePagination({
+        currentPage,
+        itemsPerPage
+      });
+    }
+  }, [currentPage, itemsPerPage, updatePagination]);
 
   // Pledge management handlers
   const handleCreatePledge = useCallback(async (pledgeData) => {
@@ -144,19 +143,21 @@ const PledgesPage = () => {
     }
 
     try {
-      const newPledge = await createPledge(pledgeData);
-      setShowForm(false);
-      showToast(
-        `Pledge for ${formatCurrency(pledgeData.amount)} created successfully`, 
-        'success'
-      );
+      console.log('[PledgesPage] Creating pledge with data:', pledgeData);
       
-      // Optionally navigate to member's pledges
-      if (newPledge?.member_id) {
-        const shouldNavigate = window.confirm(
-          'Pledge created successfully! Would you like to view this member\'s profile?'
+      const newPledge = await createPledge(pledgeData);
+      
+      if (newPledge) {
+        setShowForm(false);
+        showToast(
+          `Pledge for ${formatCurrency(pledgeData.amount)} created successfully`, 
+          'success'
         );
-        if (shouldNavigate) {
+        
+        // Optionally navigate to member's profile
+        if (newPledge?.member_id && window.confirm(
+          'Pledge created successfully! Would you like to view this member\'s profile?'
+        )) {
           navigate(`/admin/members/${newPledge.member_id}`);
         }
       }
@@ -173,6 +174,8 @@ const PledgesPage = () => {
     }
 
     try {
+      console.log('[PledgesPage] Updating pledge:', pledgeId, pledgeData);
+      
       await updatePledge(pledgeId, pledgeData);
       setSelectedPledge(null);
       setShowForm(false);
@@ -240,7 +243,11 @@ const PledgesPage = () => {
   }, []);
 
   const handleClearFilters = useCallback(() => {
-    setFilters(PLEDGE_FILTERS_DEFAULTS);
+    setFilters({
+      status: 'all',
+      frequency: 'all',
+      member_id: null
+    });
     setCurrentSearchQuery('');
     setCurrentPage(1);
     setSelectedPledges(new Set());
@@ -259,7 +266,7 @@ const PledgesPage = () => {
     setSelectedPledges(new Set());
   }, []);
 
-  // Export handler with enhanced functionality
+  // Export handler
   const handleExportPledges = useCallback(async () => {
     try {
       setIsExporting(true);
@@ -278,7 +285,7 @@ const PledgesPage = () => {
         return;
       }
 
-      // Fallback manual export
+      // Fallback manual export if service method not available
       if (!pledges?.length) {
         showToast('No pledge data available for export', 'warning');
         return;
@@ -307,16 +314,16 @@ const PledgesPage = () => {
           'Created Date'
         ],
         ...exportData.map(pledge => [
-          pledge?.member_name || pledge?.member_details?.full_name || 'N/A',
-          pledge?.member_details?.email || 'N/A',
+          pledge?.member_name || pledge?.member?.name || 'N/A',
+          pledge?.member?.email || 'N/A',
           pledge?.amount || '0',
-          pledge?.frequency_display || pledge?.frequency || 'N/A',
-          pledge?.status_display || pledge?.status || 'N/A',
+          pledge?.frequency || 'N/A',
+          pledge?.status || 'N/A',
           formatDate(pledge?.start_date) || 'N/A',
           formatDate(pledge?.end_date) || 'Ongoing',
           pledge?.total_pledged || '0',
           pledge?.total_received || '0',
-          pledge?.outstanding_amount || '0',
+          (pledge?.total_pledged || 0) - (pledge?.total_received || 0),
           pledge?.notes || '',
           formatDate(pledge?.created_at) || 'N/A'
         ])
@@ -351,12 +358,20 @@ const PledgesPage = () => {
   // Refresh handler
   const handleRefresh = useCallback(async () => {
     try {
-      await Promise.all([refetch(), fetchStatistics()]);
+      if (clearError) clearError();
+      
+      if (refresh) {
+        await refresh();
+      } else if (fetchPledges && fetchStatistics) {
+        await Promise.all([fetchPledges(), fetchStatistics()]);
+      }
+      
       showToast('Pledges data refreshed successfully', 'success');
     } catch (error) {
+      console.error('Refresh error:', error);
       showToast('Failed to refresh data', 'error');
     }
-  }, [refetch, fetchStatistics, showToast]);
+  }, [refresh, fetchPledges, fetchStatistics, clearError, showToast]);
 
   // Selection handlers
   const handlePledgeSelection = useCallback((pledgeId, isSelected) => {
@@ -383,11 +398,9 @@ const PledgesPage = () => {
   // Check if we have any active filters
   const hasActiveFilters = useMemo(() => 
     Object.entries(filters).some(([key, value]) => 
-      value !== PLEDGE_FILTERS_DEFAULTS[key] && 
-      value !== '' && 
-      value !== null && 
-      value !== undefined
-    ), [filters]);
+      value !== 'all' && value !== null && value !== undefined && value !== ''
+    ) || currentSearchQuery.trim() !== '', 
+  [filters, currentSearchQuery]);
 
   // Filter options for the UI
   const filterOptions = useMemo(() => ({
@@ -407,6 +420,8 @@ const PledgesPage = () => {
       { value: 'one-time', label: 'One-time' }
     ]
   }), []);
+
+  const paginationOptions = [10, 25, 50, 100];
 
   // Empty state content
   const EmptyStateContent = useMemo(() => {
@@ -469,29 +484,24 @@ const PledgesPage = () => {
           </Button>
           <Button 
             variant="outline" 
-            onClick={() => window.location.reload()} 
+            onClick={handleRefresh} 
             className={styles.reloadButton}
           >
-            Reload Page
+            Reload Data
           </Button>
         </div>
       </div>
     </div>
-  ), []);
+  ), [handleRefresh]);
 
   // Loading state for initial load
-  if (isLoading && !pledges.length && !error) {
+  if (loading && !pledges.length && !error) {
     return (
       <div className={styles.loadingContainer}>
         <LoadingSpinner size="large" />
         <p>Loading pledges data...</p>
       </div>
     );
-  }
-
-  // Main error state
-  if (error && !pledges.length) {
-    return <ErrorFallback error={error} resetError={refetch} />;
   }
 
   return (
@@ -504,7 +514,7 @@ const PledgesPage = () => {
               <h1 className={styles.pageTitle}>Pledges Management</h1>
               <p className={styles.pageSubtitle}>
                 Track and manage member financial commitments
-                {totalPledges > 0 && ` (${totalPledges.toLocaleString()} total)`}
+                {pagination?.count > 0 && ` (${pagination.count.toLocaleString()} total)`}
               </p>
             </div>
             
@@ -512,8 +522,8 @@ const PledgesPage = () => {
               <Button
                 variant="ghost"
                 onClick={handleRefresh}
-                disabled={isLoading}
-                icon={<RefreshCw size={16} className={isLoading ? styles.spinning : ''} />}
+                disabled={loading}
+                icon={<RefreshCw size={16} className={loading ? styles.spinning : ''} />}
                 title="Refresh data"
               >
                 Refresh
@@ -522,7 +532,7 @@ const PledgesPage = () => {
               <Button
                 variant="outline"
                 onClick={handleExportPledges}
-                disabled={isExporting || isLoading}
+                disabled={isExporting || loading}
                 icon={isExporting ? <LoadingSpinner size="sm" /> : <Download size={16} />}
               >
                 {isExporting ? 'Exporting...' : 'Export'}
@@ -531,7 +541,7 @@ const PledgesPage = () => {
               <Button
                 variant="primary"
                 onClick={() => setShowForm(true)}
-                disabled={isLoading}
+                disabled={loading}
                 icon={<Plus size={16} />}
               >
                 Add Pledge
@@ -544,7 +554,7 @@ const PledgesPage = () => {
         {statistics && Object.keys(statistics).length > 0 && (
           <PledgeStats 
             stats={statistics} 
-            loading={isLoading}
+            loading={loading}
             selectedCount={selectedPledges.size}
           />
         )}
@@ -560,7 +570,7 @@ const PledgesPage = () => {
                 value={currentSearchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className={styles.searchField}
-                disabled={isLoading}
+                disabled={loading}
                 aria-label="Search pledges"
               />
               {currentSearchQuery && (
@@ -579,10 +589,10 @@ const PledgesPage = () => {
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
               className={`${styles.filterButton} ${showFilters ? styles.active : ''}`}
-              disabled={isLoading}
+              disabled={loading}
               icon={<Filter size={16} />}
             >
-              Filters {hasActiveFilters && `(${Object.values(filters).filter(v => v && v !== 'all').length})`}
+              Filters {hasActiveFilters && `(${Object.values(filters).filter(v => v && v !== 'all').length + (currentSearchQuery ? 1 : 0)})`}
             </Button>
           </div>
 
@@ -591,10 +601,10 @@ const PledgesPage = () => {
               value={itemsPerPage}
               onChange={(e) => handlePerPageChange(e.target.value)}
               className={styles.perPageSelect}
-              disabled={isLoading}
+              disabled={loading}
               aria-label="Items per page"
             >
-              {PAGINATION_OPTIONS.map(option => (
+              {paginationOptions.map(option => (
                 <option key={option} value={option}>{option} per page</option>
               ))}
             </select>
@@ -609,7 +619,7 @@ const PledgesPage = () => {
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange({ status: e.target.value })}
-                  disabled={isLoading}
+                  disabled={loading}
                   className={styles.filterSelect}
                   aria-label="Filter by status"
                 >
@@ -623,7 +633,7 @@ const PledgesPage = () => {
                 <select
                   value={filters.frequency}
                   onChange={(e) => handleFilterChange({ frequency: e.target.value })}
-                  disabled={isLoading}
+                  disabled={loading}
                   className={styles.filterSelect}
                   aria-label="Filter by frequency"
                 >
@@ -641,7 +651,7 @@ const PledgesPage = () => {
                     variant="outline"
                     size="sm"
                     onClick={handleClearFilters}
-                    disabled={isLoading}
+                    disabled={loading}
                     icon={<X size={14} />}
                   >
                     Clear Filters
@@ -664,7 +674,7 @@ const PledgesPage = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedPledges(new Set())}
-                  disabled={isLoading}
+                  disabled={loading}
                   icon={<X size={14} />}
                 >
                   Clear Selection
@@ -673,7 +683,7 @@ const PledgesPage = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleExportPledges}
-                  disabled={isExporting || isLoading}
+                  disabled={isExporting || loading}
                   icon={<Download size={14} />}
                 >
                   Export Selected
@@ -695,11 +705,11 @@ const PledgesPage = () => {
               onSelectAll={handleSelectAll}
               onEdit={handleEditPledge}
               onDelete={handleDeletePledge}
-              loading={isLoading}
+              loading={loading}
               pagination={{
                 ...pagination,
                 currentPage,
-                totalPages: Math.ceil(totalPledges / itemsPerPage),
+                totalPages: Math.ceil((pagination?.count || 0) / itemsPerPage),
                 itemsPerPage
               }}
               onPageChange={handlePageChange}
@@ -722,7 +732,11 @@ const PledgesPage = () => {
 
         {/* Pledge Form Modal */}
         {showForm && (
-          <div className={styles.modalOverlay}>
+          <div className={styles.modalOverlay} onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCloseForm();
+            }
+          }}>
             <div className={styles.modalContainer}>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>
@@ -732,7 +746,7 @@ const PledgesPage = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleCloseForm}
-                  disabled={isLoading}
+                  disabled={loading}
                   icon={<X size={16} />}
                   className={styles.modalCloseButton}
                   title="Close form"
@@ -746,7 +760,7 @@ const PledgesPage = () => {
                     handleCreatePledge
                   }
                   onCancel={handleCloseForm}
-                  loading={isLoading}
+                  loading={loading}
                 />
               </div>
             </div>

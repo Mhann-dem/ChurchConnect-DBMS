@@ -1,21 +1,21 @@
-# members/views.py - FIXED VERSION - Recent members endpoint corrected
-
+# members/views.py - FIXED VERSION with corrected phone processing
 import csv
 import json
+import re  # <-- ADD THIS MISSING IMPORT
 from datetime import date, datetime, timedelta
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum, Avg # <-- ADD MISSING IMPORTS HERE
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
+from .validators import validate_phone_for_country
 import logging
 
 logger = logging.getLogger(__name__)
 
-# from .bulk_views import bulk_import_members, get_import_template, test_database_connection
 from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImportLog, BulkImportError
 from .serializers import (
     MemberSerializer, MemberCreateSerializer, MemberUpdateSerializer, MemberAdminCreateSerializer,
@@ -24,22 +24,56 @@ from .serializers import (
     BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
 
+
+# In your views.py, replace the phone processing function:
+
+def process_registration_phone(data: dict, default_country: str = 'GH') -> dict:
+    """
+    Process phone number in registration data with PhoneNumberField support.
+    """
+    if 'phone' not in data or not data['phone']:
+        return data
+    
+    phone_input = str(data['phone']).strip()
+    if not phone_input:
+        return data
+    
+    # PhoneNumberField will handle the formatting automatically
+    # We just need to ensure it's in a format it can parse
+    try:
+        # Clean the input but let PhoneNumberField handle the validation
+        cleaned = re.sub(r'[^\d\+\-\(\)\s]', '', phone_input)
+        data['phone'] = cleaned
+        logger.info(f"[Registration] Phone cleaned: {phone_input} -> {cleaned}")
+    except Exception as e:
+        logger.error(f"[Registration] Phone processing error: {e}")
+    
+    return data
+
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def public_member_registration(request):
-    """Public member registration endpoint"""
+    """Public member registration endpoint with enhanced phone processing"""
     try:
         logger.info(f"[Public Registration] Request from IP: {request.META.get('REMOTE_ADDR')}")
         
-        # Format phone number for Ghana
+        # FIXED: Enhanced phone number processing with international support
         data = request.data.copy()
-        if 'phone' in data and data['phone']:
-            phone = data['phone'].strip()
-            if phone and not phone.startswith('+'):
-                if phone.startswith('0'):
-                    data['phone'] = '+233' + phone[1:]
-                elif len(phone) == 9:
-                    data['phone'] = '+233' + phone
+        
+        # Process phone number with international support
+        data = process_registration_phone(data, default_country='GH')
+        
+        # Also process emergency contact phone if provided
+        if 'emergency_contact_phone' in data and data['emergency_contact_phone']:
+            emergency_phone = str(data['emergency_contact_phone']).strip()
+            if emergency_phone:
+                try:
+                    is_valid, formatted, error = validate_phone_for_country(emergency_phone, 'GH')
+                    if is_valid:
+                        data['emergency_contact_phone'] = formatted
+                except Exception as e:
+                    logger.warning(f"[Registration] Emergency phone processing failed: {e}")
         
         serializer = MemberCreateSerializer(data=data)
         
@@ -166,7 +200,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def create(self, request, *args, **kwargs):
-        """Create member with admin validation"""
+        """Create member with admin validation and phone processing"""
         try:
             if not self._is_admin_user():
                 return Response({
@@ -175,8 +209,23 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             logger.info(f"[MemberViewSet] Admin create from: {request.user}")
             
+            # Process phone numbers in the request data
+            data = request.data.copy()
+            data = process_registration_phone(data, default_country='GH')
+            
+            # Process emergency contact phone if provided
+            if 'emergency_contact_phone' in data and data['emergency_contact_phone']:
+                try:
+                    is_valid, formatted, error = validate_phone_for_country(
+                        data['emergency_contact_phone'], 'GH'
+                    )
+                    if is_valid:
+                        data['emergency_contact_phone'] = formatted
+                except Exception as e:
+                    logger.warning(f"[MemberViewSet] Emergency phone processing failed: {e}")
+            
             serializer = self.get_serializer(
-                data=request.data,
+                data=data,
                 context={'request': request, 'is_admin_creating': True}
             )
             
@@ -214,6 +263,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         """Set last_modified_by on update"""
+        # PhoneNumberField handles phone formatting automatically
         serializer.save(last_modified_by=self.request.user)
     
     def destroy(self, request, *args, **kwargs):
@@ -232,7 +282,6 @@ class MemberViewSet(viewsets.ModelViewSet):
             'message': 'Member deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
     
-    # FIXED: Corrected the @action decorator and method name
     @action(detail=False, methods=['get'])
     def recent(self, request):
         """Get recently registered members - FIXED RESPONSE FORMAT"""
@@ -848,3 +897,34 @@ def get_import_template(request):
     writer.writerow(sample_row)
     
     return response
+
+# Add test endpoint for phone processing
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def test_phone_processing(request):
+    """Test endpoint for phone number processing"""
+    phone_input = request.data.get('phone', '')
+    country = request.data.get('country', 'GH')
+    
+    if not phone_input:
+        return Response({
+            'error': 'Phone number is required'
+        }, status=400)
+    
+    try:
+        is_valid, formatted, error_message = validate_phone_for_country(phone_input, country)
+        
+        return Response({
+            'original': phone_input,
+            'country': country,
+            'is_valid': is_valid,
+            'formatted': formatted,
+            'error': error_message if not is_valid else None,
+            'storage_format': format_phone_for_storage(phone_input) if is_valid else phone_input
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': f'Processing failed: {str(e)}',
+            'original': phone_input
+        }, status=500)

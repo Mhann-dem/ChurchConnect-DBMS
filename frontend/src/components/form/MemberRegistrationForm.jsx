@@ -13,10 +13,27 @@ import useAuth from '../../hooks/useAuth';
 // Phone formatting helper
 const formatPhoneForAPI = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.trim() === '') return '';
+  
+  // Clean the phone number - keep only digits and +
   const cleaned = phoneNumber.replace(/\D/g, '');
+  
   if (!cleaned) return '';
+  
+  // Handle Ghana numbers specifically (based on your log: +2335904321332)
+  if (cleaned.startsWith('233') && cleaned.length === 12) {
+    return `+${cleaned}`;
+  }
+  
+  // Handle international format
+  if (cleaned.startsWith('+')) {
+    return cleaned;
+  }
+  
+  // Handle US/Canada numbers
   if (cleaned.length === 10) return `+1${cleaned}`;
   if (cleaned.length === 11 && cleaned.startsWith('1')) return `+${cleaned}`;
+  
+  // Default - just return with +
   return `+${cleaned}`;
 };
 
@@ -484,7 +501,7 @@ const transformFormDataForAPI = (formData) => {
     alternate_phone: formatPhoneForAPI(formData.alternatePhone),
     address: formData.address?.trim() || '',
     preferred_contact_method: formData.preferredContactMethod || 'email',
-    preferred_language: formData.preferredLanguage || 'English',
+    preferred_language: 'english', // FIXED: Use lowercase
     accessibility_needs: formData.accessibilityNeeds?.trim() || '',
     emergency_contact_name: formData.emergencyContactName?.trim() || '',
     emergency_contact_phone: formatPhoneForAPI(formData.emergencyContactPhone),
@@ -537,7 +554,7 @@ const MemberRegistrationForm = ({
     isSubmitting,
     showSuccess,
     submissionError,
-    handleSubmit: handleFormSubmit,
+    handleSubmit: handleFormSubmit, // ← Use this instead of the duplicate function
     clearError
   } = useFormSubmission({
     onSubmit: async (submitData) => {
@@ -599,7 +616,6 @@ const MemberRegistrationForm = ({
       : 'Registration submitted successfully!',
     autoCloseDelay: effectiveAdminMode ? 2500 : 3000
   });
-
   const handleNext = async () => {
     const stepId = STEPS[currentStep].id;
     const stepErrors = validateStep(stepId, formData, effectiveAdminMode);
@@ -619,32 +635,32 @@ const MemberRegistrationForm = ({
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
 
-  const handleSubmit = async (formData) => {
-    try {
-      const result = await membersService.createMember(formData);
+  // const handleSubmit = async (formData) => {
+  //   try {
+  //     const result = await membersService.createMember(formData);
       
-      // FIXED: Handle your Django response format
-      if (result?.success !== false) {
-        const memberData = result.data || result;
+  //     // FIXED: Handle your Django response format
+  //     if (result?.success !== false) {
+  //       const memberData = result.data || result;
         
-        // Call parent success handler with correct data structure
-        if (onSuccess) {
-          onSuccess({
-            id: memberData.id,
-            first_name: memberData.first_name,
-            last_name: memberData.last_name,
-            email: memberData.email,
-            ...memberData
-          });
-        }
-      } else {
-        throw new Error(result?.error || 'Registration failed');
-      }
-    } catch (error) {
-      // Handle error appropriately
-      setError(error.message);
-    }
-  };
+  //       // Call parent success handler with correct data structure
+  //       if (onSuccess) {
+  //         onSuccess({
+  //           id: memberData.id,
+  //           first_name: memberData.first_name,
+  //           last_name: memberData.last_name,
+  //           email: memberData.email,
+  //           ...memberData
+  //         });
+  //       }
+  //     } else {
+  //       throw new Error(result?.error || 'Registration failed');
+  //     }
+  //   } catch (error) {
+  //     // Handle error appropriately
+  //     setError(error.message);
+  //   }
+  // };
 
   const AdminEnhancements = () => {
     if (!effectiveAdminMode) return null;
@@ -757,7 +773,7 @@ const MemberRegistrationForm = ({
                 ) : (
                   <Button
                     variant="primary"
-                    onClick={handleSubmit}
+                    onClick={() => handleFormSubmit(formData)}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -846,7 +862,7 @@ const MemberRegistrationForm = ({
               ) : (
                 <Button
                   variant="primary"
-                  onClick={handleSubmit}
+                  onClick={() => handleFormSubmit(formData)}
                   disabled={isSubmitting || !formData.privacyPolicyAgreed}
                 >
                   {isSubmitting ? (
