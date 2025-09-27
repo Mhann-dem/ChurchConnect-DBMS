@@ -126,19 +126,30 @@ const transformFormDataForAPI = (formData) => {
 
 // FIXED: Enhanced phone input validation
 const validatePhoneNumber = (phone) => {
-  if (!phone) return null;
+  if (!phone) return ''; // Phone is optional
   
-  const cleaned = phone.replace(/\D/g, '');
+  // Remove all non-digit characters except +
+  const cleanPhone = phone.replace(/[^\d\+]/g, '');
   
-  if (cleaned.length < 10) {
-    return 'Phone number must be at least 10 digits';
+  // Basic validation rules
+  if (cleanPhone.length < 7 || cleanPhone.length > 17) {
+    return 'Phone number must be between 7-17 digits';
   }
   
-  if (cleaned.length > 15) {
-    return 'Phone number is too long';
+  // Check for valid international format
+  if (cleanPhone.startsWith('+')) {
+    // International format: +[country code][number]
+    if (cleanPhone.length < 10) {
+      return 'International phone number too short';
+    }
+  } else {
+    // Local format validation
+    if (!/^\d{7,15}$/.test(cleanPhone)) {
+      return 'Invalid phone number format';
+    }
   }
   
-  return null;
+  return '';
 };
 
 // FIXED: Enhanced date validation

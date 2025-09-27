@@ -372,14 +372,14 @@ const apiMethods = {
 
     getMemberStats: async (range = '30d') => {
       try {
-        console.log(`[Dashboard API] Fetching member stats for range: ${range}`);
-        const response = await apiMethods.get(ENDPOINTS.members.statistics, { 
+        // Use the working endpoint from your Django logs
+        const response = await apiMethods.get('members/statistics/', { 
           params: { range } 
         });
-        console.log('[Dashboard API] Member stats response:', response.data);
+        console.log('[API] Member stats response:', response.data);
         return response.data;
       } catch (error) {
-        console.error('[Dashboard API] Member stats failed:', error);
+        console.error('[API] Member stats failed:', error);
         return { 
           summary: { 
             total_members: 0, 
@@ -1043,6 +1043,38 @@ const batchRequests = async (requests) => {
   }
 };
 
+// Add this to test your API endpoints
+const testAPIs = async () => {
+  const endpoints = [
+    'members/',
+    'members/statistics/',
+    'members/recent/',
+    'groups/statistics/',
+    'families/statistics/'
+  ];
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`http://localhost:8000/api/v1/${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      console.log(`✅ ${endpoint}:`, {
+        status: response.status,
+        hasData: !!data,
+        keys: Object.keys(data),
+        sampleData: data
+      });
+    } catch (error) {
+      console.error(`❌ ${endpoint}:`, error.message);
+    }
+  }
+};
+
 // Request queue for handling rate limits
 class RequestQueue {
   constructor(maxConcurrent = 5, delayMs = 100) {
@@ -1093,5 +1125,6 @@ export {
   redirectToLogin,
   batchRequests,
   requestQueue,
-  pledgesApi
+  pledgesApi,
+  testAPIs
 };

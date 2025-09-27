@@ -153,50 +153,45 @@ class DashboardService {
     );
   }
 
-  // FIXED: Get member statistics using your working endpoint
+  // FIXED: Get member statistics with proper response handling
   async getMemberStats(timeRange = '30d') {
     const cacheKey = this.getCacheKey('member_stats', { range: timeRange });
     return await this.makeRequest(
       async () => {
         console.log('[DashboardService] Fetching member stats...');
         
-        // FIXED: Use the WORKING endpoint that matches your Django logs
+        // Use the correct Django endpoint
         const response = await apiMethods.get('members/statistics/', { 
           params: { range: timeRange } 
         });
         
         console.log('[DashboardService] Member stats raw response:', response.data);
         
-        // FIXED: Handle your Django MemberViewSet.statistics response structure
+        // FIXED: Handle the Django response structure from your views.py
         const data = response.data;
         
-        // Your API returns the structure based on your views.py statistics method
+        // Your Django API returns: { summary: { total_members: X, active_members: Y, ... } }
         return {
-          summary: data.summary || {
-            total_members: 0, 
-            active_members: 0, 
-            inactive_members: 0,
-            recent_registrations: 0,
-            growth_rate: 0
-          },
-          demographics: data.demographics || {},
-          trends: data.trends || {},
+          total_members: data.summary?.total_members || 0,
+          active_members: data.summary?.active_members || 0,
+          inactive_members: data.summary?.inactive_members || 0,
           new_members: data.summary?.recent_registrations || 0,
-          growth_rate: data.summary?.growth_rate || 0
+          growth_rate: data.summary?.growth_rate || 0,
+          // Keep the full response for detailed analysis
+          summary: data.summary || {},
+          demographics: data.demographics || {},
+          trends: data.trends || {}
         };
       },
       cacheKey,
       true,
       { 
-        summary: {
-          total_members: 0, 
-          active_members: 0, 
-          inactive_members: 0,
-          recent_registrations: 0,
-          growth_rate: 0
-        },
+        total_members: 0, 
+        active_members: 0, 
+        inactive_members: 0,
         new_members: 0,
-        growth_rate: 0
+        growth_rate: 0,
+        summary: {}
       }
     );
   }

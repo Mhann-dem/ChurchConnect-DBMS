@@ -74,12 +74,14 @@ const MembersPage = () => {
     };
   }, [debouncedSearchQuery, filters, currentPage, membersPerPage]);
 
-  // Members hook
+  // Members hook - FIXED: Better error handling and data extraction
   const membersHook = useMembers(hookOptions);
   
   const {
     members = [],
     totalMembers = 0,
+    activeMembers = 0,
+    inactiveMembers = 0,
     isLoading = false,
     error = null,
     refetch = () => Promise.resolve(),
@@ -88,12 +90,9 @@ const MembersPage = () => {
     deleteMember = () => Promise.resolve(),
     updateMemberStatus = () => Promise.resolve(),
     totalPages = 1,
-    activeMembers = 0,
-    statistics = {},
-    // Add fallback for refresh function
+    pagination = null,
     refresh: hookRefresh
   } = membersHook || {};
-
 
   // Check if we have any active filters
   const hasActiveFilters = useMemo(() => 
@@ -203,10 +202,8 @@ const MembersPage = () => {
     try {
       console.log('[MembersPage] Bulk action:', action, 'for', memberIds.length, 'members');
 
-      // Use the corrected members service
       const result = await membersService.performBulkAction(action, Array.from(memberIds), actionData);
       
-      // FIXED: Handle your Django response format
       if (result?.success !== false) {
         setSelectedMembers(new Set());
         await refresh(true);
@@ -236,17 +233,14 @@ const MembersPage = () => {
         6000
       );
       
-      // Reset to show imported members
       setSelectedMembers(new Set());
       setCurrentPage(1);
       setCurrentSearchQuery('');
       
-      // Refresh the member list
       if (typeof invalidateCache === 'function') {
         invalidateCache();
       }
       
-      // Wait a moment then refresh
       setTimeout(async () => {
         if (typeof refetch === 'function') {
           await refetch();
@@ -497,7 +491,7 @@ const MembersPage = () => {
             </div>
           </div>
 
-          {/* Stats Summary */}
+          {/* FIXED: Stats Summary with proper data extraction */}
           <div className={styles.statsBar}>
             <div className={styles.statItem}>
               <span className={styles.statValue}>{totalMembers.toLocaleString()}</span>
@@ -506,6 +500,10 @@ const MembersPage = () => {
             <div className={styles.statItem}>
               <span className={styles.statValue}>{activeMembers.toLocaleString()}</span>
               <span className={styles.statLabel}>Active</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>{inactiveMembers.toLocaleString()}</span>
+              <span className={styles.statLabel}>Inactive</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statValue}>{selectedMembers.size}</span>

@@ -38,8 +38,14 @@ const ContactInfo = ({
   });
 
   // Handle phone input changes
-  const handlePhoneChange = (field, value) => {
-    handleSetFieldValue(field, value);
+  const handlePhoneChange = (e) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, phone: value }));
+    
+    if (touched.phone) {
+      const error = validatePhoneNumber(value);
+      setErrors(prev => ({ ...prev, phone: error }));
+    }
   };
 
   return (

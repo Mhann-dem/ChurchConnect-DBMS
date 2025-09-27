@@ -1,8 +1,8 @@
-// frontend/src/hooks/usePerformanceMonitoring.js - SIMPLIFIED VERSION
+// frontend/src/hooks/usePerformanceMonitoring.js - FIXED VERSION
 import { useCallback } from 'react';
 
 export const usePerformanceMonitoring = () => {
-  // Simple tracking that just logs to console
+  // Simple tracking with proper error handling
   const trackApiCall = useCallback(async (apiCallFn, operationName, metadata = {}) => {
     const startTime = performance.now();
     
@@ -10,8 +10,13 @@ export const usePerformanceMonitoring = () => {
       const result = await apiCallFn();
       const duration = performance.now() - startTime;
       
-      if (duration > 2000) { // Log slow operations
-        console.warn(`Slow API call: ${operationName} took ${Math.round(duration)}ms`, metadata);
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        if (duration > 2000) {
+          console.warn(`Slow API call: ${operationName} took ${Math.round(duration)}ms`, metadata);
+        } else {
+          console.log(`API call: ${operationName} completed in ${Math.round(duration)}ms`);
+        }
       }
       
       return result;
@@ -23,7 +28,7 @@ export const usePerformanceMonitoring = () => {
   }, []);
 
   const trackInteraction = useCallback((interactionName, interactionFn) => {
-    // For interactions, just return the function with simple timing
+    // Return the function wrapped with simple timing
     return (...args) => {
       const startTime = performance.now();
       
@@ -31,7 +36,8 @@ export const usePerformanceMonitoring = () => {
         const result = interactionFn(...args);
         const duration = performance.now() - startTime;
         
-        if (duration > 500) { // Log slow interactions
+        // Only log slow interactions in development
+        if (process.env.NODE_ENV === 'development' && duration > 500) {
           console.warn(`Slow interaction: ${interactionName} took ${Math.round(duration)}ms`);
         }
         
@@ -43,16 +49,16 @@ export const usePerformanceMonitoring = () => {
     };
   }, []);
 
-  // Simplified methods that don't cause React import issues
+  // Simple stub methods for compatibility
   return {
     trackApiCall,
     trackInteraction,
-    // Stub methods for compatibility
-    startMeasure: () => performance.now(),
-    endMeasure: () => ({ duration: 0 }),
-    getPerformanceSummary: () => ({ totalMeasures: 0 }),
-    clearMetrics: () => {},
-    cleanup: () => {}
+    // Compatibility stubs
+    startMeasure: useCallback(() => performance.now(), []),
+    endMeasure: useCallback(() => ({ duration: 0 }), []),
+    getPerformanceSummary: useCallback(() => ({ totalMeasures: 0 }), []),
+    clearMetrics: useCallback(() => {}, []),
+    cleanup: useCallback(() => {}, [])
   };
 };
 

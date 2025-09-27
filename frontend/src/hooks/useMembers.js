@@ -28,9 +28,11 @@ export const useMembers = (options = {}) => {
 
   const { search, filters, page, limit, autoFetch, debounceMs } = memoizedOptions;
 
-  // Core state
+  // Core state - FIXED: Added missing state variables
   const [members, setMembers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
+  const [activeMembers, setActiveMembers] = useState(0);
+  const [inactiveMembers, setInactiveMembers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
@@ -113,7 +115,7 @@ export const useMembers = (options = {}) => {
         throw new Error('No authentication token found');
       }
 
-      const baseURL = 'http://localhost:8000';
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const params = new URLSearchParams();
       
       // Add search parameter
@@ -158,9 +160,10 @@ export const useMembers = (options = {}) => {
       }
 
       // FIXED: Handle Django DRF paginated response correctly
-      // Your API returns: { count: 4, next: null, previous: null, results: [...] }
       let membersArray = [];
       let totalCount = 0;
+      let activeCount = 0;
+      let inactiveCount = 0;
       let paginationData = null;
 
       if (data && typeof data === 'object') {
@@ -168,6 +171,11 @@ export const useMembers = (options = {}) => {
           // Standard DRF paginated response
           membersArray = data.results;
           totalCount = data.count || data.results.length;
+          
+          // Calculate active/inactive members from current page results
+          activeCount = membersArray.filter(member => member?.is_active === true).length;
+          inactiveCount = membersArray.filter(member => member?.is_active === false).length;
+          
           paginationData = {
             count: data.count,
             next: data.next,
@@ -179,6 +187,8 @@ export const useMembers = (options = {}) => {
           // Direct array response
           membersArray = data;
           totalCount = data.length;
+          activeCount = data.filter(member => member?.is_active === true).length;
+          inactiveCount = data.filter(member => member?.is_active === false).length;
           paginationData = {
             count: data.length,
             total_pages: 1,
@@ -188,23 +198,31 @@ export const useMembers = (options = {}) => {
           console.warn('[useMembers] Unexpected response format:', data);
           membersArray = [];
           totalCount = 0;
+          activeCount = 0;
+          inactiveCount = 0;
         }
       } else {
         console.warn('[useMembers] Invalid response data:', data);
         membersArray = [];
         totalCount = 0;
+        activeCount = 0;
+        inactiveCount = 0;
       }
       
       console.log('[useMembers] Processed data:', {
         membersCount: membersArray.length,
         totalMembers: totalCount,
+        activeMembers: activeCount,
+        inactiveMembers: inactiveCount,
         firstMember: membersArray[0] ? `${membersArray[0].first_name} ${membersArray[0].last_name}` : 'none',
         pagination: paginationData
       });
 
-      // Update state with correct data
+      // FIXED: Update state with correct data including active/inactive counts
       setMembers(membersArray);
       setTotalMembers(totalCount);
+      setActiveMembers(activeCount);
+      setInactiveMembers(inactiveCount);
       setPagination(paginationData);
       setError(null);
 
@@ -212,6 +230,8 @@ export const useMembers = (options = {}) => {
         success: true, 
         data: membersArray, 
         totalMembers: totalCount,
+        activeMembers: activeCount,
+        inactiveMembers: inactiveCount,
         pagination: paginationData
       };
 
@@ -264,7 +284,7 @@ export const useMembers = (options = {}) => {
         throw new Error('No authentication token found');
       }
 
-      const baseURL = 'http://localhost:8000';
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       
       // FIXED: Use the WORKING endpoint from your Django logs
       const url = `${baseURL}/api/v1/members/recent/?limit=${limit}`;
@@ -353,7 +373,7 @@ export const useMembers = (options = {}) => {
         throw new Error('No authentication token found');
       }
 
-      const baseURL = 'http://localhost:8000';
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const url = `${baseURL}/api/v1/members/`;
 
       console.log('[useMembers] Creating member:', memberData);
@@ -379,7 +399,6 @@ export const useMembers = (options = {}) => {
       console.log('[useMembers] Member created successfully:', result);
 
       // FIXED: Handle your Django MemberViewSet.create() response
-      // Your API might return: { success: true, data: {...}, message: "Member created successfully" }
       let memberData_result = null;
       let message = 'Member created successfully';
 
@@ -437,7 +456,7 @@ export const useMembers = (options = {}) => {
         throw new Error('No authentication token found');
       }
 
-      const baseURL = 'http://localhost:8000';
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const url = `${baseURL}/api/v1/members/${memberId}/`;
 
       console.log('[useMembers] Updating member:', memberId, memberData);
@@ -502,7 +521,7 @@ export const useMembers = (options = {}) => {
         throw new Error('No authentication token found');
       }
 
-      const baseURL = 'http://localhost:8000';
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const url = `${baseURL}/api/v1/members/${memberId}/`;
 
       console.log('[useMembers] Deleting member:', memberId);
@@ -522,10 +541,17 @@ export const useMembers = (options = {}) => {
 
       console.log('[useMembers] Member deleted successfully');
 
-      // Remove from current list immediately
+      // Remove from current list immediately and update counts
       if (mountedRef.current) {
+        const memberToDelete = members.find(m => m.id === memberId);
         setMembers(prev => prev.filter(member => member.id !== memberId));
         setTotalMembers(prev => Math.max(0, prev - 1));
+        
+        if (memberToDelete?.is_active) {
+          setActiveMembers(prev => Math.max(0, prev - 1));
+        } else {
+          setInactiveMembers(prev => Math.max(0, prev - 1));
+        }
       }
 
       return {
@@ -547,7 +573,39 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, members]);
+
+  const updateMemberStatus = useCallback(async (memberId, isActive) => {
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+
+    try {
+      const result = await updateMember(memberId, { is_active: isActive });
+      
+      // Update local counts
+      if (mountedRef.current) {
+        const member = members.find(m => m.id === memberId);
+        if (member) {
+          const wasActive = member.is_active;
+          
+          if (wasActive !== isActive) {
+            if (isActive) {
+              setActiveMembers(prev => prev + 1);
+              setInactiveMembers(prev => Math.max(0, prev - 1));
+            } else {
+              setActiveMembers(prev => Math.max(0, prev - 1));
+              setInactiveMembers(prev => prev + 1);
+            }
+          }
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }, [isAuthenticated, updateMember, members]);
 
   // Auto-fetch effect with proper dependency management
   useEffect(() => {
@@ -569,13 +627,9 @@ export const useMembers = (options = {}) => {
   // Computed values
   const computedValues = useMemo(() => {
     const totalPages = pagination?.total_pages || Math.ceil(totalMembers / limit) || 1;
-    const activeMembers = members.filter(member => member?.is_active === true).length;
-    const inactiveMembers = members.length - activeMembers;
 
     return {
       totalPages,
-      activeMembers,
-      inactiveMembers,
       hasMembers: members.length > 0,
       hasNextPage: pagination?.next !== null,
       hasPrevPage: pagination?.previous !== null,
@@ -601,6 +655,8 @@ export const useMembers = (options = {}) => {
     if (mountedRef.current) {
       setMembers([]);
       setTotalMembers(0);
+      setActiveMembers(0);
+      setInactiveMembers(0);
       setPagination(null);
       setError(null);
       setIsLoading(false);
@@ -617,6 +673,8 @@ export const useMembers = (options = {}) => {
     // Data
     members,
     totalMembers,
+    activeMembers,
+    inactiveMembers,
     pagination,
     
     // Computed values
@@ -631,6 +689,7 @@ export const useMembers = (options = {}) => {
     createMember,
     updateMember,
     deleteMember,
+    updateMemberStatus,
     getRecentMembers,
     
     // Utilities

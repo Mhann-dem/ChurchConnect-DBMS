@@ -1,10 +1,8 @@
-// frontend/src/components/admin/Families/FamilyForm.jsx - Enhanced with validation and error handling
+// frontend/src/components/admin/Families/FamilyForm.jsx - FIXED VERSION
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFamilies } from '../../../hooks/useFamilies';
 import { useMembers } from '../../../hooks/useMembers';
-import { usePerformanceMonitoring } from '../../../hooks/usePerformanceMonitoring';
-import { validateFamilyForm, validateMemberData, useFormValidation } from '../../../utils/validation';
 import ErrorBoundary from '../../shared/ErrorBoundary';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
@@ -14,18 +12,39 @@ import AddMemberModal from './AddMemberModal';
 import './Families.module.css';
 
 const RELATIONSHIP_TYPES = [
-  { value: 'head', label: 'Head of Household', icon: '👑', color: '#3B82F6' },
-  { value: 'spouse', label: 'Spouse', icon: '💑', color: '#EC4899' },
-  { value: 'child', label: 'Child', icon: '🧒', color: '#10B981' },
-  { value: 'dependent', label: 'Dependent', icon: '🤝', color: '#F59E0B' },
-  { value: 'other', label: 'Other', icon: '👤', color: '#6B7280' }
+  { value: 'head', label: 'Head of Household', color: '#3B82F6' },
+  { value: 'spouse', label: 'Spouse', color: '#EC4899' },
+  { value: 'child', label: 'Child', color: '#10B981' },
+  { value: 'dependent', label: 'Dependent', color: '#F59E0B' },
+  { value: 'other', label: 'Other', color: '#6B7280' }
 ];
+
+// Simple validation functions
+const validateFamilyForm = (data) => {
+  const errors = {};
+  
+  if (!data.family_name?.trim()) {
+    errors.family_name = 'Family name is required';
+  }
+  
+  if (data.address && data.address.length > 500) {
+    errors.address = 'Address must be less than 500 characters';
+  }
+  
+  if (data.notes && data.notes.length > 1000) {
+    errors.notes = 'Notes must be less than 1000 characters';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
 
 const FamilyFormContent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
-  const { trackApiCall, trackInteraction } = usePerformanceMonitoring();
 
   const { 
     family, 
@@ -41,60 +60,43 @@ const FamilyFormContent = () => {
 
   const { members: allMembers, fetchMembers, loading: membersLoading } = useMembers();
 
-  // Form validation hook
-  const {
-    data: formData,
-    errors: formErrors,
-    touched,
-    handleChange,
-    handleBlur,
-    validateAll,
-    reset
-  } = useFormValidation(
-    {
-      family_name: '',
-      address: '',
-      notes: '',
-      primary_contact_id: '',
-      initial_members: []
-    },
-    validateFamilyForm
-  );
-
+  // Form state
+  const [formData, setFormData] = useState({
+    family_name: '',
+    address: '',
+    notes: '',
+    primary_contact_id: '',
+    initial_members: []
+  });
+  
   const [familyMembers, setFamilyMembers] = useState([]);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [availableMembers, setAvailableMembers] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [submitErrors, setSubmitErrors] = useState({});
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   // Initialize data
   useEffect(() => {
     const initializeData = async () => {
       try {
         if (isEditing && id) {
-          await trackApiCall(
-            () => fetchFamily(id),
-            'fetch_family_for_edit',
-            { familyId: id }
-          );
+          await fetchFamily(id);
         }
         
-        await trackApiCall(
-          () => fetchMembers({ family_id__isnull: true }),
-          'fetch_available_members'
-        );
+        await fetchMembers({ family_id__isnull: true });
       } catch (error) {
         console.error('Error initializing form data:', error);
       }
     };
 
     initializeData();
-  }, [isEditing, id, fetchFamily, fetchMembers, trackApiCall]);
+  }, [isEditing, id, fetchFamily, fetchMembers]);
 
   // Update form when family data is loaded
   useEffect(() => {
     if (family && isEditing) {
-      reset({
+      setFormData({
         family_name: family.family_name || '',
         address: family.address || '',
         notes: family.notes || '',
@@ -103,7 +105,7 @@ const FamilyFormContent = () => {
       });
       setFamilyMembers(family.family_relationships || []);
     }
-  }, [family, isEditing, reset]);
+  }, [family, isEditing]);
 
   // Update available members
   useEffect(() => {
@@ -117,113 +119,178 @@ const FamilyFormContent = () => {
 
   // Clear errors when form data changes
   useEffect(() => {
-    if (Object.keys(submitErrors).length > 0) {
-      setSubmitErrors({});
-    }
     clearError();
-  }, [formData, clearError, submitErrors]);
+  }, [formData, clearError]);
 
-  const handleInputChange = trackInteraction('form_field_change', (name, value) => {
-    handleChange(name, value);
-  });
+  const handleInputChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
 
   const handleInputBlur = (name) => {
-    handleBlur(name);
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+    
+    // Validate field on blur
+    const validation = validateFamilyForm({ ...formData, [name]: formData[name] });
+    if (validation.errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: validation.errors[name]
+      }));
+    }
   };
 
   const validateForm = () => {
-    const validation = validateAll();
+    const validation = validateFamilyForm(formData);
+    setErrors(validation.errors);
     
     // Additional validation for members
     if (!isEditing && getDisplayMembers().length === 0) {
-      setSubmitErrors(prev => ({
+      setErrors(prev => ({
         ...prev,
         members: 'Please add at least one family member'
       }));
       return false;
     }
 
-    return validation.isValid && Object.keys(submitErrors).length === 0;
+    return validation.isValid && Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = trackInteraction('submit_family_form', async (e) => {
+  const handleCancel = useCallback(() => {
+    try {
+      if (isEditing) {
+        navigate(`/admin/families/${id}`, { replace: true });
+      } else {
+        navigate('/admin/families', { replace: true });
+      }
+    } catch (error) {
+      console.error('Cancel navigation error:', error);
+      // Fallback navigation
+      if (isEditing) {
+        window.location.href = `/admin/families/${id}`;
+      } else {
+        window.location.href = '/admin/families';
+      }
+    }
+  }, [navigate, isEditing, id]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
+      // Scroll to first error
+      const firstErrorField = document.querySelector('.error, [class*="error"]');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
     setSaving(true);
-    setSubmitErrors({});
+    setErrors({});
     
     try {
+      console.log('Submitting family form:', { isEditing, formData });
+      
+      let result;
       if (isEditing) {
-        await trackApiCall(
-          () => updateFamily(id, formData),
-          'update_family',
-          { familyId: id, familyName: formData.family_name }
-        );
-        navigate(`/admin/families/${id}`);
+        result = await updateFamily(id, formData);
+        console.log('Family updated:', result);
+        
+        // Show success message before navigation
+        setTimeout(() => {
+          try {
+            navigate(`/admin/families/${id}`, { replace: true });
+          } catch (navError) {
+            console.error('Navigation error after update:', navError);
+            window.location.href = `/admin/families/${id}`;
+          }
+        }, 1000);
+        
       } else {
-        const newFamily = await trackApiCall(
-          () => createFamily(formData),
-          'create_family',
-          { familyName: formData.family_name, memberCount: formData.initial_members.length }
-        );
-        navigate(`/admin/families/${newFamily.id}`);
+        result = await createFamily(formData);
+        console.log('Family created:', result);
+        
+        // Show success message before navigation
+        setTimeout(() => {
+          try {
+            navigate(`/admin/families/${result.id}`, { replace: true });
+          } catch (navError) {
+            console.error('Navigation error after create:', navError);
+            window.location.href = `/admin/families/${result.id}`;
+          }
+        }, 1000);
       }
+      
     } catch (error) {
+      console.error('Form submission error:', error);
+      
+      // Enhanced error handling
       if (error.response?.data) {
-        setSubmitErrors(error.response.data);
+        const errorData = error.response.data;
+        
+        // Handle field-specific errors
+        if (typeof errorData === 'object' && !errorData.message) {
+          setErrors(errorData);
+          
+          // Scroll to first error field
+          setTimeout(() => {
+            const firstErrorField = document.querySelector('.error, [class*="error"]');
+            if (firstErrorField) {
+              firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        } else {
+          setErrors({ 
+            general: errorData.message || errorData.detail || 'Failed to save family' 
+          });
+        }
       } else {
-        setSubmitErrors({ general: 'An unexpected error occurred. Please try again.' });
+        setErrors({ 
+          general: error.message || 'An unexpected error occurred. Please try again.' 
+        });
       }
     } finally {
       setSaving(false);
     }
-  });
+  };
 
-  const handleAddMember = trackInteraction('add_member_to_family', async (memberData) => {
-    // Validate member data
-    const validation = validateMemberData(
-      memberData, 
-      getDisplayMembers().map(m => m.relationship_type)
-    );
-    
-    if (!validation.isValid) {
-      throw new Error(Object.values(validation.errors)[0]);
-    }
-
+  const handleAddMember = async (memberData) => {
     try {
       if (isEditing) {
-        const newRelationship = await trackApiCall(
-          () => addMemberToFamily(id, validation.sanitizedData),
-          'add_member_existing_family',
-          { familyId: id, relationshipType: memberData.relationship_type }
-        );
+        const newRelationship = await addMemberToFamily(id, memberData);
         setFamilyMembers(prev => [...prev, newRelationship]);
       } else {
         // For new families, add to initial_members array
         handleInputChange('initial_members', [
           ...formData.initial_members, 
-          validation.sanitizedData
+          memberData
         ]);
       }
       setShowAddMemberModal(false);
     } catch (error) {
       console.error('Error adding member:', error);
-      throw error; // Re-throw to be handled by the modal
+      throw error;
     }
-  });
+  };
 
-  const handleRemoveMember = trackInteraction('remove_member_from_family', async (memberId, relationshipId) => {
+  const handleRemoveMember = async (memberId, relationshipId) => {
     try {
       if (isEditing) {
-        await trackApiCall(
-          () => removeMemberFromFamily(id, memberId),
-          'remove_member_existing_family',
-          { familyId: id, memberId }
-        );
+        await removeMemberFromFamily(id, memberId);
         setFamilyMembers(prev => prev.filter(fm => fm.id !== relationshipId));
         
         // Clear primary contact if it was this member
@@ -244,22 +311,18 @@ const FamilyFormContent = () => {
     } catch (error) {
       console.error('Error removing member:', error);
     }
-  });
+  };
 
-  const handleSetPrimaryContact = trackInteraction('set_primary_contact', async (memberId) => {
+  const handleSetPrimaryContact = async (memberId) => {
     try {
       if (isEditing) {
-        await trackApiCall(
-          () => setPrimaryContact(id, memberId),
-          'set_primary_contact_existing_family',
-          { familyId: id, memberId }
-        );
+        await setPrimaryContact(id, memberId);
       }
       handleInputChange('primary_contact_id', memberId);
     } catch (error) {
       console.error('Error setting primary contact:', error);
     }
-  });
+  };
 
   const getDisplayMembers = () => {
     if (isEditing) {
@@ -267,7 +330,7 @@ const FamilyFormContent = () => {
     } else {
       return formData.initial_members.map(im => ({
         id: `temp-${im.member_id}`,
-        member: allMembers.find(m => m.id === im.member_id),
+        member: allMembers?.find(m => m.id === im.member_id),
         relationship_type: im.relationship_type,
         relationship_type_display: RELATIONSHIP_TYPES.find(rt => rt.value === im.relationship_type)?.label,
         notes: im.notes
@@ -317,7 +380,7 @@ const FamilyFormContent = () => {
       {/* Form */}
       <form id="family-form" onSubmit={handleSubmit} className="family-form-content">
         {/* General Error Display */}
-        {(submitErrors.general || submitErrors.non_field_errors) && (
+        {(errors.general || errors.non_field_errors) && (
           <div style={{
             backgroundColor: '#fef2f2',
             border: '1px solid #fecaca',
@@ -327,7 +390,7 @@ const FamilyFormContent = () => {
           }}>
             <h4 style={{ color: '#dc2626', margin: '0 0 8px 0' }}>Error</h4>
             <p style={{ color: '#991b1b', margin: 0 }}>
-              {submitErrors.general || submitErrors.non_field_errors}
+              {errors.general || errors.non_field_errors}
             </p>
           </div>
         )}
@@ -346,14 +409,14 @@ const FamilyFormContent = () => {
                 value={formData.family_name}
                 onChange={(e) => handleInputChange('family_name', e.target.value)}
                 onBlur={() => handleInputBlur('family_name')}
-                className={formErrors.family_name || submitErrors.family_name ? 'error' : ''}
+                className={errors.family_name ? 'error' : ''}
                 placeholder="e.g., The Smith Family"
                 required
                 disabled={saving}
               />
-              {(formErrors.family_name || submitErrors.family_name) && (
+              {errors.family_name && (
                 <span className="error-text">
-                  {formErrors.family_name || submitErrors.family_name}
+                  {errors.family_name}
                 </span>
               )}
             </div>
@@ -366,14 +429,14 @@ const FamilyFormContent = () => {
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 onBlur={() => handleInputBlur('address')}
-                className={formErrors.address || submitErrors.address ? 'error' : ''}
+                className={errors.address ? 'error' : ''}
                 rows="3"
                 placeholder="Family address"
                 disabled={saving}
               />
-              {(formErrors.address || submitErrors.address) && (
+              {errors.address && (
                 <span className="error-text">
-                  {formErrors.address || submitErrors.address}
+                  {errors.address}
                 </span>
               )}
             </div>
@@ -386,14 +449,14 @@ const FamilyFormContent = () => {
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 onBlur={() => handleInputBlur('notes')}
-                className={formErrors.notes || submitErrors.notes ? 'error' : ''}
+                className={errors.notes ? 'error' : ''}
                 rows="4"
                 placeholder="Additional notes about the family"
                 disabled={saving}
               />
-              {(formErrors.notes || submitErrors.notes) && (
+              {errors.notes && (
                 <span className="error-text">
-                  {formErrors.notes || submitErrors.notes}
+                  {errors.notes}
                 </span>
               )}
             </div>
@@ -414,7 +477,7 @@ const FamilyFormContent = () => {
             </div>
 
             {/* Member validation error */}
-            {submitErrors.members && (
+            {errors.members && (
               <div style={{
                 backgroundColor: '#fef2f2',
                 border: '1px solid #fecaca',
@@ -423,7 +486,7 @@ const FamilyFormContent = () => {
                 marginBottom: '20px',
                 color: '#dc2626'
               }}>
-                {submitErrors.members}
+                {errors.members}
               </div>
             )}
 
@@ -460,7 +523,7 @@ const FamilyFormContent = () => {
                                   relationship.relationship_type === 'child' ? 'info' : 'default'
                                 }
                               >
-                                {relationshipType?.icon} {relationship.relationship_type_display}
+                                {relationship.relationship_type_display}
                               </Badge>
                               {isPrimary && (
                                 <Badge variant="success" size="sm">Primary Contact</Badge>

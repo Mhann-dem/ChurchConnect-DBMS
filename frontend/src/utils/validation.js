@@ -1,12 +1,13 @@
 // utils/validation.js
 // Validation utilities for form inputs and data
 
-// ADD THESE FUNCTIONS TO THE END OF YOUR EXISTING utils/validation.js file
-
 import { useState, useCallback } from 'react';
-// ========== ADD THESE MISSING FUNCTIONS ==========
 
-// Base validator class
+// ========== CORE VALIDATION FUNCTIONS ==========
+
+/**
+ * Base validator class for fluent validation chains
+ */
 class BaseValidator {
   constructor(value, field = 'Field') {
     this.value = value;
@@ -42,6 +43,46 @@ class BaseValidator {
     return this;
   }
 
+  email() {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (this.value && !emailRegex.test(this.value)) {
+      this.errors.push(`${this.field} must be a valid email address`);
+    }
+    return this;
+  }
+
+  phone() {
+    if (this.value && !/^[\+]?[\d\s\-\(\)]{7,20}$/.test(this.value)) {
+      this.errors.push(`${this.field} must be a valid phone number`);
+    }
+    return this;
+  }
+
+  numeric(options = {}) {
+    const num = Number(this.value);
+    if (this.value && isNaN(num)) {
+      this.errors.push(`${this.field} must be a number`);
+      return this;
+    }
+
+    if (options.min !== undefined && num < options.min) {
+      this.errors.push(`${this.field} must be at least ${options.min}`);
+    }
+
+    if (options.max !== undefined && num > options.max) {
+      this.errors.push(`${this.field} must be no more than ${options.max}`);
+    }
+
+    return this;
+  }
+
+  date() {
+    if (this.value && isNaN(new Date(this.value).getTime())) {
+      this.errors.push(`${this.field} must be a valid date`);
+    }
+    return this;
+  }
+
   getErrors() {
     return this.errors;
   }
@@ -54,7 +95,23 @@ class BaseValidator {
 // Create validator instance
 export const validate = (value, field) => new BaseValidator(value, field);
 
-// Enhanced sanitization functions
+// ========== SANITIZATION FUNCTIONS ==========
+
+/**
+ * Basic HTML sanitization to prevent XSS attacks
+ * @param {string} input - Input to sanitize
+ * @returns {string} - Sanitized input
+ */
+export const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
+  
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .trim();
+};
+
 export const sanitize = {
   text: (value) => {
     if (!value) return '';
@@ -64,212 +121,20 @@ export const sanitize = {
   html: (value) => {
     if (!value) return '';
     return sanitizeInput(value);
+  },
+  
+  email: (value) => {
+    if (!value) return '';
+    return sanitizeInput(value).toLowerCase().trim();
+  },
+  
+  phone: (value) => {
+    if (!value) return '';
+    return value.replace(/[\s\-\(\)]/g, '');
   }
 };
 
-// Family-specific validation functions
-export const validateFamilyForm = (formData) => {
-  const errors = {};
-  const sanitizedData = { ...formData };
-
-  // Family name validation
-  const familyNameValidator = validate(formData.family_name, 'Family name')
-    .required()
-    .minLength(1)
-    .maxLength(255)
-    .pattern(/^[a-zA-Z0-9\s\-'\.]+$/, 'Family name contains invalid characters');
-
-  if (!familyNameValidator.isValid()) {
-    errors.family_name = familyNameValidator.getErrors()[0];
-  } else {
-    sanitizedData.family_name = sanitize.text(formData.family_name);
-  }
-
-  // Address validation
-  if (formData.address) {
-    const addressValidator = validate(formData.address, 'Address').maxLength(1000);
-    if (!addressValidator.isValid()) {
-      errors.address = addressValidator.getErrors()[0];
-    } else {
-      sanitizedData.address = sanitize.text(formData.address);
-    }
-  }
-
-  // Notes validation
-  if (formData.notes) {
-    const notesValidator = validate(formData.notes, 'Notes').maxLength(2000);
-    if (!notesValidator.isValid()) {
-      errors.notes = notesValidator.getErrors()[0];
-    } else {
-      sanitizedData.notes = sanitize.html(formData.notes);
-    }
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-    sanitizedData
-  };
-};
-
-export const validateMemberData = (memberData, existingRelationships = []) => {
-  const errors = {};
-  const sanitizedData = { ...memberData };
-
-  // Member ID validation
-  if (!memberData.member_id) {
-    errors.member_id = 'Member is required';
-  }
-
-  // Relationship type validation
-  if (!memberData.relationship_type) {
-    errors.relationship_type = 'Relationship type is required';
-  } else {
-    // Check relationship constraints
-    if (memberData.relationship_type === 'head' && existingRelationships.includes('head')) {
-      errors.relationship_type = 'A family can only have one head of household';
-    }
-    
-    if (memberData.relationship_type === 'spouse' && existingRelationships.includes('spouse')) {
-      errors.relationship_type = 'A family can only have one spouse';
-    }
-  }
-
-  // Notes validation
-  if (memberData.notes) {
-    const notesValidator = validate(memberData.notes, 'Notes').maxLength(1000);
-    if (!notesValidator.isValid()) {
-      errors.notes = notesValidator.getErrors()[0];
-    } else {
-      sanitizedData.notes = sanitize.html(memberData.notes);
-    }
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-    sanitizedData
-  };
-};
-
-// Search parameter validation
-export const validateSearchParams = (searchParams) => {
-  const errors = {};
-  const sanitizedParams = {};
-
-  // Search term
-  if (searchParams.search) {
-    const searchValidator = validate(searchParams.search, 'Search term').maxLength(100);
-    if (!searchValidator.isValid()) {
-      errors.search = searchValidator.getErrors()[0];
-    } else {
-      sanitizedParams.search = sanitize.text(searchParams.search);
-    }
-  }
-
-  // Numeric filters
-  ['member_count_min', 'member_count_max'].forEach(param => {
-    if (searchParams[param] !== undefined && searchParams[param] !== '') {
-      const value = parseInt(searchParams[param]);
-      if (isNaN(value) || value < 0) {
-        errors[param] = `${param.replace('_', ' ')} must be a valid positive number`;
-      } else {
-        sanitizedParams[param] = value;
-      }
-    }
-  });
-
-  // Boolean filters
-  ['has_children', 'missing_primary_contact'].forEach(param => {
-    if (searchParams[param] !== undefined && searchParams[param] !== '') {
-      if (!['true', 'false'].includes(searchParams[param])) {
-        errors[param] = `${param.replace('_', ' ')} must be true or false`;
-      } else {
-        sanitizedParams[param] = searchParams[param];
-      }
-    }
-  });
-
-  // Date filters
-  ['created_at__gte', 'created_at__lte'].forEach(param => {
-    if (searchParams[param]) {
-      const date = new Date(searchParams[param]);
-      if (isNaN(date.getTime())) {
-        errors[param] = `${param.replace('__', ' ').replace('_', ' ')} must be a valid date`;
-      } else {
-        sanitizedParams[param] = searchParams[param];
-      }
-    }
-  });
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-    sanitizedParams
-  };
-};
-
-// Form validation hook
-export const useFormValidation = (initialData = {}, validatorFn) => {
-  const [data, setData] = React.useState(initialData);
-  const [errors, setErrors] = React.useState({});
-  const [touched, setTouched] = React.useState({});
-
-  const validateField = React.useCallback((name, value) => {
-    const fieldData = { ...data, [name]: value };
-    const validation = validatorFn(fieldData);
-    
-    setErrors(prev => ({
-      ...prev,
-      [name]: validation.errors[name] || null
-    }));
-    
-    return !validation.errors[name];
-  }, [data, validatorFn]);
-
-  const handleChange = React.useCallback((name, value) => {
-    setData(prev => ({ ...prev, [name]: value }));
-    
-    if (touched[name]) {
-      validateField(name, value);
-    }
-  }, [touched, validateField]);
-
-  const handleBlur = React.useCallback((name) => {
-    setTouched(prev => ({ ...prev, [name]: true }));
-    validateField(name, data[name]);
-  }, [data, validateField]);
-
-  const validateAll = React.useCallback(() => {
-    const validation = validatorFn(data);
-    setErrors(validation.errors);
-    setTouched(
-      Object.keys(data).reduce((acc, key) => ({ ...acc, [key]: true }), {})
-    );
-    return validation;
-  }, [data, validatorFn]);
-
-  const reset = React.useCallback((newData = initialData) => {
-    setData(newData);
-    setErrors({});
-    setTouched({});
-  }, [initialData]);
-
-  return {
-    data,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    validateAll,
-    validateField,
-    reset,
-    isValid: Object.keys(errors).length === 0,
-    hasErrors: Object.keys(errors).some(key => errors[key])
-  };
-};
-
-
+// ========== SPECIFIC VALIDATORS ==========
 
 /**
  * Email validation using regex
@@ -284,14 +149,25 @@ export const validateEmail = (email) => {
 /**
  * Phone number validation (supports multiple formats)
  * @param {string} phone - Phone number to validate
- * @returns {boolean} - True if valid phone format
+ * @returns {string} - Error message or empty string if valid
  */
 export const validatePhone = (phone) => {
-  // Remove all non-digit characters
-  const cleanPhone = phone.replace(/\D/g, '');
+  if (!phone) return ''; // Phone is optional
   
-  // Check if it's a valid length (10-15 digits)
-  return cleanPhone.length >= 10 && cleanPhone.length <= 15;
+  // Remove all non-digit characters for validation
+  const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
+  
+  // Check if it's a valid phone number (7-15 digits as per ITU-T E.164)
+  if (cleanPhone.length < 7 || cleanPhone.length > 15) {
+    return 'Phone number must be between 7-15 digits';
+  }
+  
+  // Check if contains only digits and allowed formatting characters
+  if (!/^[\+]?[\d\s\-\(\)]{7,20}$/.test(phone)) {
+    return 'Invalid phone number format';
+  }
+  
+  return '';
 };
 
 /**
@@ -440,6 +316,27 @@ export const validateRequired = (value) => {
 };
 
 /**
+ * Generic number validation
+ * @param {string|number} value - Value to validate
+ * @param {object} [options] - Validation options
+ * @param {number} [options.min] - Minimum value
+ * @param {number} [options.max] - Maximum value
+ * @returns {boolean} - True if valid number
+ */
+export const validateNumber = (value, { min, max } = {}) => {
+  if (value === null || value === undefined || value === '') return false;
+  const num = Number(value);
+  if (isNaN(num)) return false;
+  
+  if (min !== undefined && num < min) return false;
+  if (max !== undefined && num > max) return false;
+  
+  return true;
+};
+
+// ========== FORM VALIDATION FUNCTIONS ==========
+
+/**
  * Form validation for member registration
  * @param {object} formData - Form data to validate
  * @returns {object} - Validation result with errors
@@ -447,7 +344,7 @@ export const validateRequired = (value) => {
 export const validateMemberForm = (formData) => {
   const errors = {};
 
-  // Required fields
+  // Required fields validation
   if (!validateRequired(formData.firstName)) {
     errors.firstName = 'First name is required';
   } else if (!validateName(formData.firstName)) {
@@ -468,8 +365,11 @@ export const validateMemberForm = (formData) => {
 
   if (!validateRequired(formData.phone)) {
     errors.phone = 'Phone number is required';
-  } else if (!validatePhone(formData.phone)) {
-    errors.phone = 'Please enter a valid phone number';
+  } else {
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) {
+      errors.phone = phoneError;
+    }
   }
 
   if (!validateRequired(formData.dateOfBirth)) {
@@ -532,87 +432,85 @@ export const validateAdminLogin = (loginData) => {
 };
 
 /**
- * Search query validation
- * @param {string} query - Search query to validate
- * @returns {boolean} - True if valid search query
+ * Family form validation
+ * @param {object} data - Family data to validate
+ * @returns {object} - Validation result with errors and sanitized data
  */
-export const validateSearchQuery = (query) => {
-  if (!query || typeof query !== 'string') return false;
+export const validateFamilyForm = (data) => {
+  const errors = {};
   
-  const trimmedQuery = query.trim();
-  return trimmedQuery.length >= 2 && trimmedQuery.length <= 100;
-};
-
-/**
- * URL validation
- * @param {string} url - URL to validate
- * @returns {boolean} - True if valid URL
- */
-export const validateUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
+  if (!data.family_name?.trim()) {
+    errors.family_name = 'Family name is required';
+  } else if (data.family_name.length > 100) {
+    errors.family_name = 'Family name must be less than 100 characters';
   }
-};
-
-/**
- * File validation for uploads
- * @param {File} file - File to validate
- * @param {object} options - Validation options
- * @returns {object} - Validation result
- */
-export const validateFile = (file, options = {}) => {
-  const {
-    maxSize = 5 * 1024 * 1024, // 5MB default
-    allowedTypes = ['image/jpeg', 'image/png', 'image/gif'],
-    allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
-  } = options;
-
-  const result = {
-    isValid: false,
-    error: null
+  
+  if (data.address && data.address.length > 500) {
+    errors.address = 'Address must be less than 500 characters';
+  }
+  
+  if (data.notes && data.notes.length > 1000) {
+    errors.notes = 'Notes must be less than 1000 characters';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedData: {
+      family_name: data.family_name?.trim() || '',
+      address: data.address?.trim() || '',
+      notes: data.notes?.trim() || '',
+      primary_contact_id: data.primary_contact_id || null
+    }
   };
-
-  if (!file) {
-    result.error = 'No file selected';
-    return result;
-  }
-
-  if (file.size > maxSize) {
-    result.error = `File size must be less than ${maxSize / (1024 * 1024)}MB`;
-    return result;
-  }
-
-  if (!allowedTypes.includes(file.type)) {
-    result.error = `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`;
-    return result;
-  }
-
-  const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-  if (!allowedExtensions.includes(fileExtension)) {
-    result.error = `File extension not allowed. Allowed extensions: ${allowedExtensions.join(', ')}`;
-    return result;
-  }
-
-  result.isValid = true;
-  return result;
 };
 
-// Add this function to your existing validation.js file
-export const sanitizeInput = (input) => {
-  if (typeof input !== 'string') return input;
+/**
+ * Member data validation for family relationships
+ * @param {object} memberData - Member relationship data
+ * @param {array} existingRelationships - Existing relationships in family
+ * @returns {object} - Validation result with errors and sanitized data
+ */
+export const validateMemberData = (memberData, existingRelationships = []) => {
+  const errors = {};
   
-  // Basic HTML sanitization - remove script tags and potential XSS
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim();
+  if (!memberData.member_id) {
+    errors.member_id = 'Member selection is required';
+  }
+  
+  if (!memberData.relationship_type) {
+    errors.relationship_type = 'Relationship type is required';
+  } else {
+    // Check for unique relationships
+    if (memberData.relationship_type === 'head' && existingRelationships.includes('head')) {
+      errors.relationship_type = 'Family can only have one head of household';
+    }
+    
+    if (memberData.relationship_type === 'spouse' && existingRelationships.includes('spouse')) {
+      errors.relationship_type = 'Family can only have one spouse';
+    }
+  }
+  
+  if (memberData.notes && memberData.notes.length > 500) {
+    errors.notes = 'Notes must be less than 500 characters';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedData: {
+      member_id: memberData.member_id,
+      relationship_type: memberData.relationship_type,
+      notes: memberData.notes?.trim() || ''
+    }
+  };
 };
 
-// Add these to your validation.js file
+/**
+ * Individual member validation
+ * @param {object} memberData - Member data to validate
+ * @returns {object} - Validation result with errors
+ */
 export const validateMember = (memberData) => {
   const errors = {};
   
@@ -637,8 +535,11 @@ export const validateMember = (memberData) => {
 
   if (!validateRequired(memberData.phone)) {
     errors.phone = 'Phone number is required';
-  } else if (!validatePhone(memberData.phone)) {
-    errors.phone = 'Please enter a valid phone number';
+  } else {
+    const phoneError = validatePhone(memberData.phone);
+    if (phoneError) {
+      errors.phone = phoneError;
+    }
   }
 
   if (!validateRequired(memberData.dateOfBirth)) {
@@ -670,6 +571,117 @@ export const validateMember = (memberData) => {
   return { isValid: Object.keys(errors).length === 0, errors };
 };
 
+// ========== SEARCH AND FILTER VALIDATION ==========
+
+/**
+ * Search query validation
+ * @param {string} query - Search query to validate
+ * @returns {boolean} - True if valid search query
+ */
+export const validateSearchQuery = (query) => {
+  if (!query || typeof query !== 'string') return false;
+  
+  const trimmedQuery = query.trim();
+  return trimmedQuery.length >= 2 && trimmedQuery.length <= 100;
+};
+
+/**
+ * URL validation
+ * @param {string} url - URL to validate
+ * @returns {boolean} - True if valid URL
+ */
+export const validateUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Search parameters validation for API calls
+ * @param {object} params - Search parameters to validate
+ * @returns {object} - Validation result with errors and sanitized params
+ */
+export const validateSearchParams = (params) => {
+  const errors = {};
+  const sanitizedParams = {};
+
+  Object.entries(params).forEach(([key, value]) => {
+    // Skip empty values
+    if (value === null || value === undefined || value === '') {
+      return;
+    }
+
+    switch (key) {
+      case 'page':
+      case 'page_size':
+      case 'member_count_min':
+      case 'member_count_max':
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 0) {
+          errors[key] = 'Must be a positive number';
+        } else {
+          sanitizedParams[key] = numValue;
+        }
+        break;
+        
+      case 'search':
+        if (typeof value === 'string' && value.trim().length > 0) {
+          sanitizedParams[key] = value.trim();
+        }
+        break;
+        
+      case 'has_children':
+      case 'missing_primary_contact':
+        if (value === 'true' || value === 'false') {
+          sanitizedParams[key] = value;
+        } else {
+          errors[key] = 'Must be true or false';
+        }
+        break;
+        
+      case 'created_at__gte':
+      case 'created_at__lte':
+        if (value && !isNaN(new Date(value).getTime())) {
+          sanitizedParams[key] = value;
+        } else {
+          errors[key] = 'Invalid date format';
+        }
+        break;
+        
+      case 'ordering':
+        const validOrderFields = ['family_name', 'created_at', 'updated_at', '-family_name', '-created_at', '-updated_at'];
+        if (validOrderFields.includes(value)) {
+          sanitizedParams[key] = value;
+        } else {
+          errors[key] = 'Invalid ordering field';
+        }
+        break;
+        
+      default:
+        // For other fields, just pass through if they're strings
+        if (typeof value === 'string') {
+          sanitizedParams[key] = value.trim();
+        } else {
+          sanitizedParams[key] = value;
+        }
+    }
+  });
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    sanitizedParams
+  };
+};
+
+/**
+ * Generic filter validation
+ * @param {object} filters - Filters to validate
+ * @returns {object} - Validation result with errors
+ */
 export const validateFilters = (filters) => {
   const errors = {};
   
@@ -705,6 +717,11 @@ export const validateFilters = (filters) => {
   return { isValid: Object.keys(errors).length === 0, errors };
 };
 
+/**
+ * Pledge-specific filter validation
+ * @param {object} filters - Pledge filters to validate
+ * @returns {object} - Validation result with errors
+ */
 export const validatePledgeFilters = (filters) => {
   const errors = {};
   
@@ -758,6 +775,11 @@ export const validatePledgeFilters = (filters) => {
   return { isValid: Object.keys(errors).length === 0, errors };
 };
 
+/**
+ * Report filter validation
+ * @param {object} filters - Report filters to validate
+ * @returns {object} - Validation result with errors
+ */
 export const validateReportFilters = (filters) => {
   const errors = {};
   
@@ -811,27 +833,58 @@ export const validateReportFilters = (filters) => {
   return { isValid: Object.keys(errors).length === 0, errors };
 };
 
-
+// ========== FILE VALIDATION ==========
 
 /**
- * Generic number validation
- * @param {string|number} value - Value to validate
- * @param {object} [options] - Validation options
- * @param {number} [options.min] - Minimum value
- * @param {number} [options.max] - Maximum value
- * @returns {boolean} - True if valid number
+ * File validation for uploads
+ * @param {File} file - File to validate
+ * @param {object} options - Validation options
+ * @returns {object} - Validation result
  */
-export const validateNumber = (value, { min, max } = {}) => {
-  if (value === null || value === undefined || value === '') return false;
-  const num = Number(value);
-  if (isNaN(num)) return false;
-  
-  if (min !== undefined && num < min) return false;
-  if (max !== undefined && num > max) return false;
-  
-  return true;
+export const validateFile = (file, options = {}) => {
+  const {
+    maxSize = 5 * 1024 * 1024, // 5MB default
+    allowedTypes = ['image/jpeg', 'image/png', 'image/gif'],
+    allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
+  } = options;
+
+  const result = {
+    isValid: false,
+    error: null
+  };
+
+  if (!file) {
+    result.error = 'No file selected';
+    return result;
+  }
+
+  if (file.size > maxSize) {
+    result.error = `File size must be less than ${maxSize / (1024 * 1024)}MB`;
+    return result;
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    result.error = `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`;
+    return result;
+  }
+
+  const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+  if (!allowedExtensions.includes(fileExtension)) {
+    result.error = `File extension not allowed. Allowed extensions: ${allowedExtensions.join(', ')}`;
+    return result;
+  }
+
+  result.isValid = true;
+  return result;
 };
 
+// ========== ID VALIDATION ==========
+
+/**
+ * ID validation for database IDs
+ * @param {string|number} id - ID to validate
+ * @returns {object} - Validation result
+ */
 export const validateId = (id) => {
   if (!id) return { isValid: false, error: 'ID is required' };
   
@@ -841,4 +894,105 @@ export const validateId = (id) => {
   }
   
   return { isValid: true, error: null };
+};
+
+// ========== REACT HOOKS ==========
+
+/**
+ * Simple form validation hook
+ * @param {object} initialData - Initial form data
+ * @param {function} validationFn - Validation function
+ * @returns {object} - Form validation utilities
+ */
+export const useFormValidation = (initialData, validationFn) => {
+  const [data, setData] = useState(initialData);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const handleChange = useCallback((name, value) => {
+    setData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear field error when value changes
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  }, [errors]);
+
+  const handleBlur = useCallback((name) => {
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+  }, []);
+
+  const validateAll = useCallback(() => {
+    if (validationFn) {
+      const validation = validationFn(data);
+      setErrors(validation.errors || {});
+      return validation;
+    }
+    return { isValid: true, errors: {} };
+  }, [data, validationFn]);
+
+  const reset = useCallback((newData = initialData) => {
+    setData(newData);
+    setErrors({});
+    setTouched({});
+  }, [initialData]);
+
+  return {
+    data,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validateAll,
+    reset
+  };
+};
+
+export default {
+  // Core validators
+  validate,
+  validateEmail,
+  validatePhone,
+  validatePassword,
+  validateName,
+  validateDate,
+  validateAge,
+  validatePledgeAmount,
+  validateRequired,
+  validateNumber,
+  validateId,
+  
+  // Form validators
+  validateMemberForm,
+  validateAdminLogin,
+  validateFamilyForm,
+  validateMemberData,
+  validateMember,
+  
+  // Search and filter validators
+  validateSearchQuery,
+  validateUrl,
+  validateSearchParams,
+  validateFilters,
+  validatePledgeFilters,
+  validateReportFilters,
+  
+  // File validation
+  validateFile,
+  
+  // Sanitization
+  sanitizeInput,
+  sanitize,
+  
+  // React hook
+  useFormValidation
 };

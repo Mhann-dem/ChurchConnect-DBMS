@@ -189,9 +189,11 @@ const DashboardPage = () => {
         }),
         memberStats: processResult(memberStats, { 
           total_members: 0, 
+          active_members: 0,
+          inactive_members: 0,
           new_members: 0, 
           growth_rate: 0,
-          active_members: 0 
+          summary: {} 
         }),
         pledgeStats: processResult(pledgeStats, { 
           total_amount: 0, 
