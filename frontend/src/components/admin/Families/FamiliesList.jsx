@@ -1,10 +1,9 @@
-// frontend/src/components/admin/Families/FamiliesList.jsx - COMPLETE UI/UX FIX
+// frontend/src/components/admin/Families/FamiliesList.jsx - NAVIGATION & BUTTON FIXES
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFamilies } from '../../../hooks/useFamilies';
 import { useDebounce } from '../../../hooks/useDebounce';
 import ErrorBoundary from '../../shared/ErrorBoundary';
-import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import Badge from '../../ui/Badge';
 import SearchBar from '../../shared/SearchBar';
@@ -14,188 +13,8 @@ import EmptyState from '../../shared/EmptyState';
 import ConfirmDialog from '../../shared/ConfirmDialog';
 import FamilyFilters from './FamilyFilters';
 import BulkActions from './BulkActions';
-import { PlusIcon, FilterIcon, UsersIcon, HomeIcon, PhoneIcon, MailIcon } from 'lucide-react';
-
-// Enhanced styles as CSS-in-JS for immediate application
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f8fafc',
-    padding: '24px'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '32px',
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e2e8f0'
-  },
-  headerContent: {
-    flex: 1
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 8px 0'
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#64748b',
-    margin: 0
-  },
-  headerActions: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center'
-  },
-  controls: {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '12px',
-    marginBottom: '20px',
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e2e8f0'
-  },
-  searchSection: {
-    marginBottom: '16px'
-  },
-  resultsBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    border: '1px solid #e2e8f0'
-  },
-  familiesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-    gap: '20px',
-    marginBottom: '24px'
-  },
-  familyCard: {
-    backgroundColor: 'white',
-    border: '1px solid #e2e8f0',
-    borderRadius: '12px',
-    padding: '20px',
-    transition: 'all 0.2s ease-in-out',
-    cursor: 'pointer',
-    position: 'relative'
-  },
-  familyCardHover: {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 8px 25px 0 rgba(0, 0, 0, 0.12)',
-    borderColor: '#3b82f6'
-  },
-  familyCardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '16px'
-  },
-  familyInfo: {
-    flex: 1
-  },
-  familyName: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: '4px',
-    textDecoration: 'none'
-  },
-  familyNameLink: {
-    color: 'inherit',
-    textDecoration: 'none'
-  },
-  primaryContact: {
-    fontSize: '14px',
-    color: '#64748b',
-    margin: 0
-  },
-  familyStats: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap'
-  },
-  familyDetails: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '12px',
-    marginBottom: '16px'
-  },
-  detailRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px'
-  },
-  detailLabel: {
-    color: '#64748b',
-    fontWeight: '500'
-  },
-  detailValue: {
-    color: '#1e293b',
-    fontWeight: '600'
-  },
-  contactInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    marginBottom: '16px',
-    padding: '12px',
-    backgroundColor: '#f8fafc',
-    borderRadius: '8px'
-  },
-  contactItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px',
-    color: '#475569'
-  },
-  warningBadges: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '12px',
-    flexWrap: 'wrap'
-  },
-  cardActions: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: '16px',
-    borderTop: '1px solid #f1f5f9'
-  },
-  checkbox: {
-    width: '18px',
-    height: '18px',
-    cursor: 'pointer'
-  },
-  actionButtons: {
-    display: 'flex',
-    gap: '8px'
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '12px',
-    zIndex: 10
-  }
-};
+import { PlusIcon, FilterIcon, UsersIcon, HomeIcon, PhoneIcon, MailIcon, RefreshCwIcon } from 'lucide-react';
+import styles from './Families.module.css';
 
 const FamiliesListContent = () => {
   const navigate = useNavigate();
@@ -230,6 +49,7 @@ const FamiliesListContent = () => {
   const [familyToDelete, setFamilyToDelete] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -283,7 +103,7 @@ const FamiliesListContent = () => {
         if (mountedRef.current) {
           clearError();
         }
-      }, 5000);
+      }, 10000);
       
       return () => clearTimeout(timer);
     }
@@ -301,11 +121,6 @@ const FamiliesListContent = () => {
 
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
-  }, []);
-
-  const handlePageSizeChange = useCallback((size) => {
-    setPageSize(size);
-    setCurrentPage(1);
   }, []);
 
   const handleSelectFamily = useCallback((familyId) => {
@@ -371,21 +186,62 @@ const FamiliesListContent = () => {
     }
   }, [families, selectedFamilies, bulkDeleteFamilies, fetchData]);
 
-  // FIXED: Proper navigation with error handling
-  const handleAddFamily = useCallback(() => {
+  // FIXED: Proper button handlers that work with your Button component
+  const handleAddFamily = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Add Family button clicked - navigating to new family form');
+    
     try {
-      console.log('Navigating to family creation...');
       navigate('/admin/families/new');
     } catch (error) {
       console.error('Navigation error:', error);
-      // Fallback navigation
+      // Fallback navigation method
       window.location.href = '/admin/families/new';
     }
   }, [navigate]);
 
+  const handleRefresh = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Refresh button clicked');
+    
+    if (isRefreshing || loading) return;
+    
+    setIsRefreshing(true);
+    try {
+      clearError();
+      await fetchData();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, loading, clearError, fetchData]);
+
+  const handleFilterToggle = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Filter toggle clicked');
+    setShowFilters(!showFilters);
+  }, [showFilters]);
+
+  // FIXED: Card navigation handlers
+  const handleViewFamily = useCallback((e, familyId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/admin/families/${familyId}`);
+  }, [navigate]);
+
+  const handleEditFamily = useCallback((e, familyId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/admin/families/${familyId}/edit`);
+  }, [navigate]);
+
   if (loading && (!families || families.length === 0) && !initialFetchRef.current) {
     return (
-      <div style={styles.container}>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <LoadingSpinner message="Loading families..." />
         </div>
@@ -394,35 +250,116 @@ const FamiliesListContent = () => {
   }
 
   return (
-    <div style={styles.container}>
-      {/* Enhanced Header */}
-      <div style={styles.header}>
-        <div style={styles.headerContent}>
-          <h1 style={styles.title}>
-            <UsersIcon size={32} style={{ display: 'inline', marginRight: '12px', verticalAlign: 'middle' }} />
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '24px' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '32px',
+        backgroundColor: 'white',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            color: '#1e293b',
+            margin: '0 0 8px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <UsersIcon size={32} />
             Family Management
           </h1>
-          <p style={styles.subtitle}>Manage family units and relationships</p>
+          <p style={{ fontSize: '16px', color: '#64748b', margin: 0 }}>
+            Manage family units and relationships
+          </p>
         </div>
-        <div style={styles.headerActions}>
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
+        
+        {/* FIXED: Proper button implementations */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: isRefreshing ? '#9ca3af' : '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: isRefreshing || loading ? 'not-allowed' : 'pointer',
+              opacity: isRefreshing || loading ? 0.6 : 1,
+              transition: 'all 0.2s ease-in-out'
+            }}
+            onMouseEnter={(e) => {
+              if (!isRefreshing && !loading) {
+                e.target.style.backgroundColor = '#059669';
+                e.target.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isRefreshing && !loading) {
+                e.target.style.backgroundColor = '#10b981';
+                e.target.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            <RefreshCwIcon size={18} style={{
+              animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+            }} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+
+          <button
+            onClick={handleFilterToggle}
             disabled={loading}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               padding: '10px 16px',
+              backgroundColor: 'white',
+              color: '#374151',
+              border: '2px solid #d1d5db',
+              borderRadius: '8px',
               fontSize: '14px',
-              fontWeight: '500'
+              fontWeight: '500',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              transition: 'all 0.2s ease-in-out'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.target.style.backgroundColor = '#f3f4f6';
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.color = '#3b82f6';
+                e.target.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.target.style.backgroundColor = 'white';
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.color = '#374151';
+                e.target.style.transform = 'translateY(0)';
+              }
             }}
           >
             <FilterIcon size={18} />
             {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </Button>
-          <Button
-            variant="primary"
+          </button>
+
+          <button
             onClick={handleAddFamily}
             disabled={loading}
             style={{
@@ -430,50 +367,53 @@ const FamiliesListContent = () => {
               alignItems: 'center',
               gap: '8px',
               padding: '12px 20px',
-              fontSize: '14px',
-              fontWeight: '600',
-              backgroundColor: '#3b82f6',
+              backgroundColor: loading ? '#9ca3af' : '#3b82f6',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease-in-out'
+              opacity: loading ? 0.6 : 1,
+              transition: 'all 0.2s ease-in-out',
+              boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)'
             }}
             onMouseEnter={(e) => {
               if (!loading) {
                 e.target.style.backgroundColor = '#2563eb';
-                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!loading) {
                 e.target.style.backgroundColor = '#3b82f6';
                 e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
               }
             }}
           >
             <PlusIcon size={18} />
             Add New Family
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Search and Controls */}
-      <div style={styles.controls}>
-        <div style={styles.searchSection}>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '20px',
+        borderRadius: '12px',
+        marginBottom: '20px',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ marginBottom: showFilters ? '16px' : '0' }}>
           <SearchBar
             value={searchTerm}
             onChange={handleSearch}
             placeholder="Search families by name, contact, address..."
             disabled={loading}
-            style={{
-              width: '100%',
-              fontSize: '16px',
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: '2px solid #e2e8f0',
-              transition: 'border-color 0.2s ease-in-out'
-            }}
           />
         </div>
 
@@ -497,7 +437,16 @@ const FamiliesListContent = () => {
       )}
 
       {/* Results Summary */}
-      <div style={styles.resultsBar}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '16px 20px',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        border: '1px solid #e2e8f0'
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <span style={{ fontWeight: '600', color: '#1e293b' }}>
             {pagination?.count || 0} families found
@@ -510,7 +459,7 @@ const FamiliesListContent = () => {
                 checked={selectedFamilies.length === families.length}
                 onChange={handleSelectAll}
                 disabled={loading}
-                style={styles.checkbox}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
               <span style={{ fontSize: '14px', color: '#64748b' }}>
                 Select all ({families.length})
@@ -522,7 +471,7 @@ const FamiliesListContent = () => {
           <label style={{ fontSize: '14px', color: '#64748b' }}>Show:</label>
           <select 
             value={pageSize} 
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            onChange={(e) => setPageSize(Number(e.target.value))}
             disabled={loading}
             style={{
               padding: '6px 12px',
@@ -556,9 +505,20 @@ const FamiliesListContent = () => {
               {typeof error === 'string' ? error : 'An unexpected error occurred'}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchData}>
+          <button 
+            onClick={fetchData}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: 'white',
+              color: '#dc2626',
+              border: '1px solid #dc2626',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
             Retry
-          </Button>
+          </button>
         </div>
       )}
 
@@ -567,56 +527,85 @@ const FamiliesListContent = () => {
         !loading && (
           <EmptyState
             title="No families found"
-            description={
+            message={
               debouncedSearchTerm
                 ? `No families match your search "${debouncedSearchTerm}"`
                 : "Get started by adding your first family"
             }
-            action={{
-              label: "Add Family",
-              onClick: handleAddFamily
-            }}
+            actionText="Add Family"
+            onAction={handleAddFamily}
           />
         )
       ) : (
         <>
-          <div style={styles.familiesGrid}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: '20px',
+            marginBottom: '24px'
+          }}>
             {families.map((family) => (
               <div
                 key={family.id}
                 style={{
-                  ...styles.familyCard,
-                  ...(hoveredCard === family.id ? styles.familyCardHover : {}),
+                  backgroundColor: 'white',
+                  border: `1px solid ${hoveredCard === family.id ? '#3b82f6' : '#e2e8f0'}`,
+                  borderRadius: '12px',
+                  padding: '20px',
+                  transition: 'all 0.2s ease-in-out',
+                  position: 'relative',
+                  transform: hoveredCard === family.id ? 'translateY(-2px)' : 'translateY(0)',
+                  boxShadow: hoveredCard === family.id ? '0 8px 25px 0 rgba(0, 0, 0, 0.12)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                   opacity: loading ? 0.7 : 1
                 }}
                 onMouseEnter={() => setHoveredCard(family.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 {loading && (
-                  <div style={styles.loadingOverlay}>
-                    <LoadingSpinner size="sm" />
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '12px',
+                    zIndex: 10
+                  }}>
+                    <LoadingSpinner size="small" />
                   </div>
                 )}
 
-                <div style={styles.familyCardHeader}>
-                  <div style={styles.familyInfo}>
-                    <h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: 0 }}>
                       <Link 
                         to={`/admin/families/${family.id}`} 
-                        style={styles.familyNameLink}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
                       >
-                        <span style={styles.familyName}>
-                          <HomeIcon size={18} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+                        <span style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#1e293b',
+                          marginBottom: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <HomeIcon size={18} />
                           {family.family_name}
                         </span>
                       </Link>
                     </h3>
-                    <p style={styles.primaryContact}>
+                    <p style={{ fontSize: '14px', color: '#64748b', margin: '4px 0 0 0' }}>
                       Primary: {family.primary_contact_name || 'Not set'}
                     </p>
                   </div>
-                  <div style={styles.familyStats}>
-                    <Badge variant="secondary">
+                  <div>
+                    <Badge variant="secondary" size="small">
                       {family.member_count || 0} member{(family.member_count || 0) !== 1 ? 's' : ''}
                     </Badge>
                   </div>
@@ -624,15 +613,23 @@ const FamiliesListContent = () => {
 
                 {/* Contact Information */}
                 {(family.primary_contact_email || family.primary_contact_phone) && (
-                  <div style={styles.contactInfo}>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '8px'
+                  }}>
                     {family.primary_contact_email && (
-                      <div style={styles.contactItem}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#475569' }}>
                         <MailIcon size={14} />
                         <span>{family.primary_contact_email}</span>
                       </div>
                     )}
                     {family.primary_contact_phone && (
-                      <div style={styles.contactItem}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#475569' }}>
                         <PhoneIcon size={14} />
                         <span>{family.primary_contact_phone}</span>
                       </div>
@@ -641,74 +638,146 @@ const FamiliesListContent = () => {
                 )}
 
                 {/* Family Details */}
-                <div style={styles.familyDetails}>
-                  <div style={styles.detailRow}>
-                    <span style={styles.detailLabel}>Adults:</span>
-                    <span style={styles.detailValue}>{family.adults_count || 0}</span>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '12px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Adults:</span>
+                    <span style={{ color: '#1e293b', fontWeight: '600' }}>{family.adults_count || 0}</span>
                   </div>
-                  <div style={styles.detailRow}>
-                    <span style={styles.detailLabel}>Children:</span>
-                    <span style={styles.detailValue}>{family.children_count || 0}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Children:</span>
+                    <span style={{ color: '#1e293b', fontWeight: '600' }}>{family.children_count || 0}</span>
                   </div>
-                  <div style={styles.detailRow}>
-                    <span style={styles.detailLabel}>Created:</span>
-                    <span style={styles.detailValue}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Created:</span>
+                    <span style={{ color: '#1e293b', fontWeight: '600' }}>
                       {family.created_at ? new Date(family.created_at).toLocaleDateString() : 'Unknown'}
                     </span>
                   </div>
                 </div>
 
                 {/* Warning Indicators */}
-                <div style={styles.warningBadges}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                   {!family.primary_contact_name && (
-                    <Badge variant="warning" size="sm">No Primary Contact</Badge>
+                    <Badge variant="warning" size="small">No Primary Contact</Badge>
                   )}
                   {(family.member_count || 0) === 0 && (
-                    <Badge variant="error" size="sm">No Members</Badge>
+                    <Badge variant="danger" size="small">No Members</Badge>
                   )}
                 </div>
 
-                {/* Card Actions */}
-                <div style={styles.cardActions}>
+                {/* FIXED: Card Actions with proper buttons */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '16px',
+                  borderTop: '1px solid #f1f5f9'
+                }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={selectedFamilies.includes(family.id)}
                       onChange={() => handleSelectFamily(family.id)}
                       disabled={loading}
-                      style={styles.checkbox}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                     />
                     <span style={{ fontSize: '14px', color: '#64748b' }}>Select</span>
                   </label>
 
-                  <div style={styles.actionButtons}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      as={Link}
-                      to={`/admin/families/${family.id}`}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={(e) => handleViewFamily(e, family.id)}
                       disabled={loading}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: 'transparent',
+                        color: '#6b7280',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = '#f3f4f6';
+                          e.target.style.color = '#374151';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = 'transparent';
+                          e.target.style.color = '#6b7280';
+                        }
+                      }}
                     >
                       View
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      as={Link}
-                      to={`/admin/families/${family.id}/edit`}
+                    </button>
+                    <button
+                      onClick={(e) => handleEditFamily(e, family.id)}
                       disabled={loading}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: 'transparent',
+                        color: '#6b7280',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = '#f3f4f6';
+                          e.target.style.color = '#374151';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = 'transparent';
+                          e.target.style.color = '#6b7280';
+                        }
+                      }}
                     >
                       Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteFamily(family)}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDeleteFamily(family);
+                      }}
                       disabled={loading}
-                      style={{ color: '#dc2626' }}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: 'transparent',
+                        color: '#dc2626',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = '#fef2f2';
+                          e.target.style.color = '#b91c1c';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loading) {
+                          e.target.style.backgroundColor = 'transparent';
+                          e.target.style.color = '#dc2626';
+                        }
+                      }}
                     >
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -716,14 +785,15 @@ const FamiliesListContent = () => {
           </div>
 
           {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
+          {pagination && Math.ceil((pagination.count || 0) / pageSize) > 1 && (
             <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
+              currentPage={pagination.currentPage || currentPage}
+              totalPages={Math.ceil((pagination.count || 0) / pageSize)}
               onPageChange={handlePageChange}
-              totalItems={pagination.count}
+              totalItems={pagination.count || 0}
               itemsPerPage={pageSize}
-              disabled={loading}
+              showItemsPerPage={true}
+              onItemsPerPageChange={setPageSize}
             />
           )}
         </>
@@ -743,8 +813,15 @@ const FamiliesListContent = () => {
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
-        disabled={loading}
       />
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

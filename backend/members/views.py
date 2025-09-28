@@ -165,16 +165,23 @@ class MemberViewSet(viewsets.ModelViewSet):
             # Get filtered queryset
             queryset = self.filter_queryset(self.get_queryset())
             
+            # FIXED: Calculate counts for the response
+            total_count = queryset.count()
+            active_count = queryset.filter(is_active=True).count()
+            inactive_count = total_count - active_count
+            
             # Apply pagination
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
                 paginated_response = self.get_paginated_response(serializer.data)
                 
-                # Add extra metadata
+                # CRITICAL FIX: Add the count fields that your React code expects
                 paginated_response.data.update({
                     'success': True,
-                    'total_count': queryset.count(),
+                    'total_count': total_count,
+                    'active_count': active_count,  # This was missing!
+                    'inactive_count': inactive_count,  # This was missing!
                     'page_size': self.paginator.page_size,
                     'current_page': getattr(self.paginator, 'page', {}).number if hasattr(self.paginator, 'page') else 1
                 })
@@ -188,6 +195,8 @@ class MemberViewSet(viewsets.ModelViewSet):
                 'success': True,
                 'results': serializer.data,
                 'count': len(serializer.data),
+                'active_count': active_count,  # Add this
+                'inactive_count': inactive_count,  # Add this  
                 'next': None,
                 'previous': None
             })
@@ -196,7 +205,10 @@ class MemberViewSet(viewsets.ModelViewSet):
             logger.error(f"[MemberViewSet] List error: {str(e)}", exc_info=True)
             return Response({
                 'success': False,
-                'error': 'Failed to retrieve members'
+                'error': 'Failed to retrieve members',
+                'count': 0,
+                'active_count': 0,  # Add this even in error case
+                'inactive_count': 0  # Add this even in error case
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def create(self, request, *args, **kwargs):
@@ -392,9 +404,10 @@ class MemberViewSet(viewsets.ModelViewSet):
             else:
                 date_threshold = now - timedelta(days=30)
             
-            # Basic counts
+            # FIXED: Basic counts with proper queries
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
+            inactive_members = total_members - active_members
             recent_registrations = Member.objects.filter(
                 registration_date__gte=date_threshold.date()
             ).count()
@@ -445,12 +458,12 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             age_groups['unknown'] += total_members - members_with_birthdate.count()
             
-            # FIXED: Ensure consistent response structure that matches frontend expectations
+            # FIXED: Return the exact structure your React code expects
             stats_data = {
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
-                    'inactive_members': total_members - active_members,
+                    'inactive_members': inactive_members,
                     'recent_registrations': recent_registrations,
                     'growth_rate': round(growth_rate, 2)
                 },
@@ -460,7 +473,11 @@ class MemberViewSet(viewsets.ModelViewSet):
                 },
                 'trends': {
                     'range': range_param
-                }
+                },
+                # CRITICAL: Add these fields that your React code looks for
+                'count': total_members,  # This is what was missing!
+                'active_count': active_members,
+                'inactive_count': inactive_members
             }
             
             logger.info(f"[MemberViewSet] Statistics calculated: {total_members} total, {active_members} active, {recent_registrations} recent")
@@ -477,7 +494,11 @@ class MemberViewSet(viewsets.ModelViewSet):
                     'inactive_members': 0,
                     'recent_registrations': 0,
                     'growth_rate': 0
-                }
+                },
+                # CRITICAL: Even in error case, include count fields
+                'count': 0,
+                'active_count': 0,
+                'inactive_count': 0
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='birthdays')

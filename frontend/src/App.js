@@ -13,6 +13,9 @@ import AdminLayout from './components/layout/AdminLayout';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import Toast from './components/shared/Toast';
 
+// FIXED: Import the debug tool properly
+import MembersDebugTool from './components/debug/MembersDebugTool';
+
 // Lazy-loaded components
 const HomePage = lazy(() => import('./pages/public/HomePage'));
 const RegistrationPage = lazy(() => import('./pages/public/RegistrationPage'));
@@ -80,7 +83,7 @@ const AdminRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
 };
 
-// Main App component - REMOVED duplicate providers
+// Main App component
 function App() {
   const { theme } = useTheme();
   const { toasts } = useToast();
@@ -100,134 +103,137 @@ function App() {
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
-  <HelmetProvider>
-    <div className="app">
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />}>
-            <Route index element={<HomePage />} />
+    <HelmetProvider>
+      <div className="app">
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* FIXED: Add debug route at the top level */}
+            <Route path="/debug/members" element={<MembersDebugTool />} />
             
-            {/* Registration Routes */}
-            <Route path="register" element={<RegistrationPage />} />
-            <Route path="form" element={<RegistrationPage />} />
-            <Route path="member-registration" element={<RegistrationPage />} />
-            
-            {/* Help & Support Routes */}
-            <Route path="help" element={<HelpCenter />} />
-            <Route path="help/faq" element={<FAQ />} />
-            <Route path="faq" element={<FAQ />} />
-            
-            {/* Church Information Pages */}
-            <Route path="events" element={<EventsPage />} />
-            <Route path="ministries" element={<MinistriesPage />} />
-            
-            {/* Feedback & Support */}
-            <Route path="feedback" element={<FeedbackPage />} />
-            
-            {/* Legal Pages */}
-            <Route path="privacy" element={<PrivacyPage />} />
-            <Route path="terms" element={<TermsPage />} />
-            <Route path="cookies" element={<CookiesPage />} />
-            
-            {/* Utility Pages */}
-            <Route path="sitemap" element={<SitemapPage />} />
-            <Route path="accessibility" element={<AccessibilityPage />} />
-            
-            {/* Success Page */}
-            <Route path="thank-you" element={<ThankYouPage />} />
-            <Route path="registration-success" element={<ThankYouPage />} />
-          </Route>
+            {/* Public Routes */}
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<HomePage />} />
+              
+              {/* Registration Routes */}
+              <Route path="register" element={<RegistrationPage />} />
+              <Route path="form" element={<RegistrationPage />} />
+              <Route path="member-registration" element={<RegistrationPage />} />
+              
+              {/* Help & Support Routes */}
+              <Route path="help" element={<HelpCenter />} />
+              <Route path="help/faq" element={<FAQ />} />
+              <Route path="faq" element={<FAQ />} />
+              
+              {/* Church Information Pages */}
+              <Route path="events" element={<EventsPage />} />
+              <Route path="ministries" element={<MinistriesPage />} />
+              
+              {/* Feedback & Support */}
+              <Route path="feedback" element={<FeedbackPage />} />
+              
+              {/* Legal Pages */}
+              <Route path="privacy" element={<PrivacyPage />} />
+              <Route path="terms" element={<TermsPage />} />
+              <Route path="cookies" element={<CookiesPage />} />
+              
+              {/* Utility Pages */}
+              <Route path="sitemap" element={<SitemapPage />} />
+              <Route path="accessibility" element={<AccessibilityPage />} />
+              
+              {/* Success Page */}
+              <Route path="thank-you" element={<ThankYouPage />} />
+              <Route path="registration-success" element={<ThankYouPage />} />
+            </Route>
 
-          {/* Member Login */}
-          <Route path="/login" element={
-            <PublicRoute>
-              <MemberLoginPage />
-            </PublicRoute>
-          } />
+            {/* Member Login */}
+            <Route path="/login" element={
+              <PublicRoute>
+                <MemberLoginPage />
+              </PublicRoute>
+            } />
 
-          {/* Authentication Routes */}
-          <Route path="/admin/login" element={
-            <PublicRoute>
-              <LoginPage />
-            </PublicRoute>
-          } />
-          <Route path="/admin/forgot-password" element={
-            <PublicRoute>
-              <ForgotPasswordPage />
-            </PublicRoute>
-          } />
-          <Route path="/admin/reset-password" element={
-            <PublicRoute>
-              <ResetPasswordPage />
-            </PublicRoute>
-          } />
+            {/* Authentication Routes */}
+            <Route path="/admin/login" element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } />
+            <Route path="/admin/forgot-password" element={
+              <PublicRoute>
+                <ForgotPasswordPage />
+              </PublicRoute>
+            } />
+            <Route path="/admin/reset-password" element={
+              <PublicRoute>
+                <ResetPasswordPage />
+              </PublicRoute>
+            } />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            
-            {/* FIXED: Add the missing events route */}
-            <Route path="events" element={<AdminEventsPage />} />
-            
-            {/* NEW: Add Families Management */}
-            <Route path="families/*" element={<FamiliesPage />} />
-            
-            {/* Member Management */}
-            <Route path="members" element={<MembersPage />} />
-            <Route path="members/:id" element={<MemberDetailPage />} />
-            
-            {/* Group Management */}
-            <Route path="groups" element={<GroupsPage />} />
-            <Route path="groups/:id" element={<GroupDetailPage />} />
-            
-            {/* Pledge Management */}
-            <Route path="pledges" element={<PledgesPage />} />
-            
-            {/* Reports */}
-            <Route path="reports" element={<ReportsPage />} />
-            
-            {/* Settings */}
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }>
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardPage />} />
+              
+              {/* Events route */}
+              <Route path="events" element={<AdminEventsPage />} />
+              
+              {/* Families Management */}
+              <Route path="families/*" element={<FamiliesPage />} />
+              
+              {/* Member Management */}
+              <Route path="members" element={<MembersPage />} />
+              <Route path="members/:id" element={<MemberDetailPage />} />
+              
+              {/* Group Management */}
+              <Route path="groups" element={<GroupsPage />} />
+              <Route path="groups/:id" element={<GroupDetailPage />} />
+              
+              {/* Pledge Management */}
+              <Route path="pledges" element={<PledgesPage />} />
+              
+              {/* Reports */}
+              <Route path="reports" element={<ReportsPage />} />
+              
+              {/* Settings */}
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
 
-          {/* Redirects */}
-          <Route path="/registration" element={<Navigate to="/register" replace />} />
-          <Route path="/join" element={<Navigate to="/register" replace />} />
-          <Route path="/signup" element={<Navigate to="/register" replace />} />
-          <Route path="/contact" element={<Navigate to="/help" replace />} />
-          <Route path="/support" element={<Navigate to="/help" replace />} />
+            {/* Redirects */}
+            <Route path="/registration" element={<Navigate to="/register" replace />} />
+            <Route path="/join" element={<Navigate to="/register" replace />} />
+            <Route path="/signup" element={<Navigate to="/register" replace />} />
+            <Route path="/contact" element={<Navigate to="/help" replace />} />
+            <Route path="/support" element={<Navigate to="/help" replace />} />
 
-          {/* 404 Route */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
+            {/* 404 Route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
 
-      {/* Global Toast Notifications */}
-      <div className="toast-container">
-        {toasts.map((toast) => (
-          <Toast key={toast.id} {...toast} />
-        ))}
-      </div>
+        {/* Global Toast Notifications */}
+        <div className="toast-container">
+          {toasts.map((toast) => (
+            <Toast key={toast.id} {...toast} />
+          ))}
+        </div>
 
-      {/* Accessibility Skip Links */}
-      <div className="skip-links">
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        {isAdminPath && (
-          <a href="#admin-nav" className="skip-link">
-            Skip to navigation
+        {/* Accessibility Skip Links */}
+        <div className="skip-links">
+          <a href="#main-content" className="skip-link">
+            Skip to main content
           </a>
-        )}
+          {isAdminPath && (
+            <a href="#admin-nav" className="skip-link">
+              Skip to navigation
+            </a>
+          )}
+        </div>
       </div>
-    </div>
-  </HelmetProvider>
+    </HelmetProvider>
   );
 }
 

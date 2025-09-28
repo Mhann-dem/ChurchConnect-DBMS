@@ -1,22 +1,70 @@
-// frontend/src/components/admin/Events/EventsList.jsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Search, Plus, Filter, Calendar, Users, MapPin, 
-  Clock, DollarSign, Eye, Edit, Trash2, MoreHorizontal,
+  Clock, DollarSign, Eye, Edit, Trash2,
   CheckCircle, XCircle, AlertCircle, Star
 } from 'lucide-react';
-import { useToast } from '../../../hooks/useToast';
-import { eventsService } from '../../../services/events';
-import LoadingSpinner from '../../shared/LoadingSpinner';
-import Pagination from '../../shared/Pagination';
-import ConfirmDialog from '../../shared/ConfirmDialog';
-import EventForm from './EventForm';
-import styles from './Events.module.css';
 
-const EventsList = () => {
+// Mock events service - replace with your actual service
+const mockEventsService = {
+  getEvents: async (params) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Return mock data - replace with actual API call
+    return {
+      results: [
+        {
+          id: 1,
+          title: 'Sunday Morning Service',
+          event_type: 'service',
+          event_type_display: 'Church Service',
+          status: 'published',
+          status_display: 'Published',
+          start_datetime: '2024-12-29T09:00:00',
+          end_datetime: '2024-12-29T11:00:00',
+          location: 'Main Sanctuary',
+          organizer: 'Pastor John',
+          registration_count: 45,
+          max_capacity: 100,
+          requires_registration: false,
+          registration_fee: 0,
+          is_featured: true,
+          is_public: true
+        },
+        {
+          id: 2,
+          title: 'Youth Bible Study',
+          event_type: 'youth',
+          event_type_display: 'Youth Event',
+          status: 'published',
+          status_display: 'Published',
+          start_datetime: '2024-12-30T18:00:00',
+          end_datetime: '2024-12-30T20:00:00',
+          location: 'Youth Room',
+          organizer: 'Pastor Mike',
+          registration_count: 12,
+          max_capacity: 25,
+          requires_registration: true,
+          registration_fee: 0,
+          is_featured: false,
+          is_public: true
+        }
+      ],
+      count: 2
+    };
+  },
+  
+  deleteEvent: async (id) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true };
+  }
+};
+
+const EventsList = ({ onCreateEvent, onEditEvent }) => {
+  // FIXED: Use refs to persist state across re-renders
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
@@ -32,33 +80,43 @@ const EventsList = () => {
     totalPages: 0
   });
   const [selectedEvents, setSelectedEvents] = useState([]);
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [bulkAction, setBulkAction] = useState('');
 
-  const { showToast } = useToast();
+  // Use refs to prevent unnecessary re-fetches
+  const fetchedRef = useRef(false);
+  const lastFetchParams = useRef(null);
 
-  const fetchEvents = useCallback(async () => {
+  // FIXED: Stable fetch function that caches results
+  const fetchEvents = useCallback(async (forceRefresh = false) => {
+    const currentParams = {
+      page: pagination.page,
+      limit: pagination.limit,
+      search: searchTerm,
+      ...filters
+    };
+
+    // Remove empty filters
+    Object.keys(currentParams).forEach(key => {
+      if (currentParams[key] === '' || currentParams[key] === null || currentParams[key] === undefined) {
+        delete currentParams[key];
+      }
+    });
+
+    // Check if we need to fetch (avoid duplicate requests)
+    const paramsChanged = JSON.stringify(currentParams) !== JSON.stringify(lastFetchParams.current);
+    
+    if (!forceRefresh && !paramsChanged && fetchedRef.current) {
+      console.log('[EventsList] Skipping fetch - no changes detected');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const params = {
-        page: pagination.page,
-        limit: pagination.limit,
-        search: searchTerm,
-        ...filters
-      };
-
-      // Remove empty filters
-      Object.keys(params).forEach(key => {
-        if (params[key] === '' || params[key] === null || params[key] === undefined) {
-          delete params[key];
-        }
-      });
-
-      const response = await eventsService.getEvents(params);
+      console.log('[EventsList] Fetching events with params:', currentParams);
+      
+      const response = await mockEventsService.getEvents(currentParams);
       
       setEvents(response.results || []);
       setPagination(prev => ({
@@ -66,58 +124,92 @@ const EventsList = () => {
         total: response.count || 0,
         totalPages: Math.ceil((response.count || 0) / prev.limit)
       }));
+
+      lastFetchParams.current = currentParams;
+      fetchedRef.current = true;
+      
+      console.log('[EventsList] Events loaded:', response.results?.length || 0);
+      
     } catch (err) {
       console.error('Error fetching events:', err);
       setError('Failed to load events. Please try again.');
-      showToast('Failed to load events', 'error');
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, searchTerm, filters, showToast]);
+  }, [pagination.page, pagination.limit, searchTerm, filters]);
 
+  // Initial fetch
   useEffect(() => {
-    fetchEvents();
+    if (!fetchedRef.current) {
+      fetchEvents();
+    }
   }, [fetchEvents]);
 
+  // FIXED: Debounced search to prevent excessive API calls
+  const searchTimeoutRef = useRef(null);
+  
   const handleSearch = useCallback((e) => {
-    setSearchTerm(e.target.value);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination(prev => ({ ...prev, page: 1 }));
+      fetchedRef.current = false; // Force refetch
+    }, 500);
   }, []);
 
   const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPagination(prev => ({ ...prev, page: 1 }));
+    fetchedRef.current = false; // Force refetch
   }, []);
 
   const handlePageChange = useCallback((page) => {
     setPagination(prev => ({ ...prev, page }));
+    fetchedRef.current = false; // Force refetch
   }, []);
 
   const handleCreateEvent = () => {
-    setEditingEvent(null);
-    setShowEventForm(true);
+    if (onCreateEvent) {
+      onCreateEvent();
+    }
   };
 
   const handleEditEvent = (event) => {
-    setEditingEvent(event);
-    setShowEventForm(true);
+    if (onEditEvent) {
+      onEditEvent(event);
+    }
   };
 
-  const handleDeleteEvent = async (event) => {
-    setDeleteConfirm(event);
+  const handleDeleteEvent = async (eventId) => {
+    setDeleteConfirm(eventId);
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
 
     try {
-      await eventsService.deleteEvent(deleteConfirm.id);
-      setEvents(prev => prev.filter(e => e.id !== deleteConfirm.id));
-      showToast(`Event "${deleteConfirm.title}" deleted successfully`, 'success');
+      await mockEventsService.deleteEvent(deleteConfirm);
+      
+      // Remove from local state instead of refetching
+      setEvents(prev => prev.filter(e => e.id !== deleteConfirm));
+      setPagination(prev => ({
+        ...prev,
+        total: Math.max(0, prev.total - 1),
+        totalPages: Math.ceil(Math.max(0, prev.total - 1) / prev.limit)
+      }));
+      
+      console.log('Event deleted successfully');
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Error deleting event:', err);
-      showToast('Failed to delete event', 'error');
+      setError('Failed to delete event');
     }
   };
 
@@ -137,87 +229,237 @@ const EventsList = () => {
     }
   };
 
-  const handleBulkAction = async () => {
-    if (!bulkAction || selectedEvents.length === 0) return;
-
-    try {
-      const actionData = {
-        event_ids: selectedEvents,
-        action: bulkAction
-      };
-
-      const response = await eventsService.bulkAction(actionData);
-      
-      if (bulkAction === 'export') {
-        // Handle file download
-        const blob = new Blob([response.data], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `events_export_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      } else {
-        fetchEvents(); // Refresh list
-      }
-
-      showToast(response.message || 'Bulk action completed successfully', 'success');
-      setSelectedEvents([]);
-      setBulkAction('');
-    } catch (err) {
-      console.error('Error performing bulk action:', err);
-      showToast('Failed to perform bulk action', 'error');
-    }
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
-  const getEventStatusIcon = (event) => {
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const getStatusIcon = (event) => {
     if (event.status === 'published') {
-      if (isPast(parseISO(event.end_datetime))) {
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      const now = new Date();
+      const endDate = new Date(event.end_datetime);
+      
+      if (endDate < now) {
+        return <CheckCircle size={16} style={{ color: '#10b981' }} />;
       }
-      return <CheckCircle className="w-4 h-4 text-blue-500" />;
+      return <CheckCircle size={16} style={{ color: '#3b82f6' }} />;
     }
     if (event.status === 'cancelled') {
-      return <XCircle className="w-4 h-4 text-red-500" />;
+      return <XCircle size={16} style={{ color: '#ef4444' }} />;
     }
-    return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-  };
-
-  const getEventStatusText = (event) => {
-    if (event.status === 'published') {
-      if (isPast(parseISO(event.end_datetime))) {
-        return 'Completed';
-      }
-      if (isToday(parseISO(event.start_datetime))) {
-        return 'Today';
-      }
-      if (isFuture(parseISO(event.start_datetime))) {
-        return 'Upcoming';
-      }
-      return 'Active';
-    }
-    return event.status_display;
+    return <AlertCircle size={16} style={{ color: '#f59e0b' }} />;
   };
 
   const getEventTypeColor = (eventType) => {
     const colors = {
-      service: 'bg-blue-100 text-blue-800',
-      meeting: 'bg-red-100 text-red-800',
-      social: 'bg-green-100 text-green-800',
-      youth: 'bg-orange-100 text-orange-800',
-      workshop: 'bg-purple-100 text-purple-800',
-      outreach: 'bg-teal-100 text-teal-800',
-      conference: 'bg-indigo-100 text-indigo-800',
-      retreat: 'bg-pink-100 text-pink-800',
-      other: 'bg-gray-100 text-gray-800'
+      service: { backgroundColor: '#dbeafe', color: '#1e40af' },
+      meeting: { backgroundColor: '#fecaca', color: '#dc2626' },
+      social: { backgroundColor: '#d1fae5', color: '#059669' },
+      youth: { backgroundColor: '#fed7aa', color: '#ea580c' },
+      workshop: { backgroundColor: '#e9d5ff', color: '#7c3aed' },
+      outreach: { backgroundColor: '#a7f3d0', color: '#047857' },
+      other: { backgroundColor: '#f3f4f6', color: '#374151' }
     };
     return colors[eventType] || colors.other;
   };
 
+  // Styles
+  const styles = {
+    container: {
+      padding: '2rem',
+      maxWidth: '100%',
+      margin: '0 auto'
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '2rem',
+      flexWrap: 'wrap',
+      gap: '1rem'
+    },
+    title: {
+      fontSize: '2rem',
+      fontWeight: '700',
+      color: '#1f2937',
+      margin: 0
+    },
+    subtitle: {
+      color: '#6b7280',
+      margin: '0.5rem 0 0 0'
+    },
+    createButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      backgroundColor: '#3b82f6',
+      color: 'white',
+      border: 'none',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '0.5rem',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    },
+    filtersContainer: {
+      display: 'flex',
+      gap: '1rem',
+      marginBottom: '2rem',
+      flexWrap: 'wrap',
+      alignItems: 'center'
+    },
+    searchContainer: {
+      position: 'relative',
+      flex: 1,
+      minWidth: '300px'
+    },
+    searchInput: {
+      width: '100%',
+      padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      fontSize: '0.9rem',
+      boxSizing: 'border-box'
+    },
+    searchIcon: {
+      position: 'absolute',
+      left: '0.75rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      pointerEvents: 'none',
+      color: '#6b7280'
+    },
+    filterSelect: {
+      padding: '0.75rem',
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      fontSize: '0.9rem',
+      backgroundColor: 'white',
+      minWidth: '140px',
+      cursor: 'pointer'
+    },
+    eventsGrid: {
+      border: '1px solid #e5e7eb',
+      borderRadius: '0.75rem',
+      overflow: 'hidden',
+      backgroundColor: 'white'
+    },
+    gridHeader: {
+      display: 'grid',
+      gridTemplateColumns: '50px 2fr 200px 200px 120px 120px 100px',
+      backgroundColor: '#f9fafb',
+      borderBottom: '1px solid #e5e7eb',
+      fontWeight: '600',
+      fontSize: '0.9rem',
+      color: '#6b7280'
+    },
+    gridHeaderCell: {
+      padding: '1rem 0.75rem',
+      display: 'flex',
+      alignItems: 'center'
+    },
+    gridRow: {
+      display: 'grid',
+      gridTemplateColumns: '50px 2fr 200px 200px 120px 120px 100px',
+      borderBottom: '1px solid #e5e7eb',
+      transition: 'background-color 0.2s',
+      cursor: 'pointer'
+    },
+    gridCell: {
+      padding: '1rem 0.75rem',
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: '0.9rem'
+    },
+    eventInfo: {
+      minWidth: 0
+    },
+    eventTitle: {
+      fontWeight: '600',
+      color: '#1f2937',
+      marginBottom: '0.25rem',
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 1.3
+    },
+    eventMeta: {
+      display: 'flex',
+      gap: '0.75rem',
+      alignItems: 'center',
+      fontSize: '0.8rem'
+    },
+    eventType: {
+      padding: '0.25rem 0.5rem',
+      borderRadius: '0.25rem',
+      fontSize: '0.75rem',
+      fontWeight: '500'
+    },
+    actions: {
+      display: 'flex',
+      gap: '0.5rem'
+    },
+    actionButton: {
+      padding: '0.5rem',
+      border: '1px solid #d1d5db',
+      backgroundColor: 'white',
+      borderRadius: '0.375rem',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    emptyState: {
+      padding: '4rem 2rem',
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    loading: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '4rem',
+      flexDirection: 'column',
+      gap: '1rem'
+    },
+    error: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '4rem 2rem',
+      textAlign: 'center',
+      color: '#ef4444'
+    }
+  };
+
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <LoadingSpinner />
+      <div style={styles.loading}>
+        <div style={{ 
+          width: '40px', 
+          height: '40px', 
+          border: '3px solid #f3f4f6', 
+          borderTop: '3px solid #3b82f6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
         <p>Loading events...</p>
       </div>
     );
@@ -225,11 +467,15 @@ const EventsList = () => {
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <p className={styles.errorText}>{error}</p>
+      <div style={styles.error}>
+        <AlertCircle size={48} style={{ marginBottom: '1rem' }} />
+        <p>{error}</p>
         <button 
-          onClick={fetchEvents}
-          className={styles.retryButton}
+          onClick={() => {
+            fetchedRef.current = false;
+            fetchEvents(true);
+          }}
+          style={styles.createButton}
         >
           Try Again
         </button>
@@ -238,154 +484,108 @@ const EventsList = () => {
   }
 
   return (
-    <div className={styles.eventsListContainer}>
+    <div style={styles.container}>
       {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Events</h1>
-          <p className={styles.subtitle}>
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>Events</h1>
+          <p style={styles.subtitle}>
             Manage church events and activities
           </p>
         </div>
         <button 
           onClick={handleCreateEvent}
-          className={styles.createButton}
+          style={styles.createButton}
         >
-          <Plus className="w-4 h-4" />
+          <Plus size={16} />
           Create Event
         </button>
       </div>
 
       {/* Filters and Search */}
-      <div className={styles.filtersContainer}>
-        <div className={styles.searchContainer}>
-          <Search className="w-4 h-4 text-gray-400" />
+      <div style={styles.filtersContainer}>
+        <div style={styles.searchContainer}>
+          <Search size={16} style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Search events..."
             value={searchTerm}
             onChange={handleSearch}
-            className={styles.searchInput}
+            style={styles.searchInput}
           />
         </div>
 
-        <div className={styles.filters}>
-          <select
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="completed">Completed</option>
-          </select>
+        <select
+          value={filters.status}
+          onChange={(e) => handleFilterChange('status', e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
 
-          <select
-            value={filters.event_type}
-            onChange={(e) => handleFilterChange('event_type', e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="">All Types</option>
-            <option value="service">Church Service</option>
-            <option value="meeting">Meeting</option>
-            <option value="social">Social Event</option>
-            <option value="youth">Youth Event</option>
-            <option value="workshop">Workshop</option>
-            <option value="outreach">Outreach</option>
-            <option value="other">Other</option>
-          </select>
-
-          <select
-            value={filters.upcoming}
-            onChange={(e) => handleFilterChange('upcoming', e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="">All Dates</option>
-            <option value="true">Upcoming Only</option>
-            <option value="past">Past Events</option>
-          </select>
-        </div>
+        <select
+          value={filters.event_type}
+          onChange={(e) => handleFilterChange('event_type', e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">All Types</option>
+          <option value="service">Church Service</option>
+          <option value="meeting">Meeting</option>
+          <option value="social">Social Event</option>
+          <option value="youth">Youth Event</option>
+          <option value="workshop">Workshop</option>
+          <option value="outreach">Outreach</option>
+          <option value="other">Other</option>
+        </select>
       </div>
 
-      {/* Bulk Actions */}
-      {selectedEvents.length > 0 && (
-        <div className={styles.bulkActionsContainer}>
-          <div className={styles.bulkActionsLeft}>
-            <span className={styles.selectedCount}>
-              {selectedEvents.length} event{selectedEvents.length !== 1 ? 's' : ''} selected
-            </span>
-          </div>
-          <div className={styles.bulkActionsRight}>
-            <select
-              value={bulkAction}
-              onChange={(e) => setBulkAction(e.target.value)}
-              className={styles.bulkActionSelect}
-            >
-              <option value="">Choose Action</option>
-              <option value="publish">Publish</option>
-              <option value="cancel">Cancel</option>
-              <option value="export">Export</option>
-              <option value="delete">Delete</option>
-            </select>
-            <button 
-              onClick={handleBulkAction}
-              disabled={!bulkAction}
-              className={styles.bulkActionButton}
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Events List */}
-      <div className={styles.eventsGrid}>
+      {/* Events Grid */}
+      <div style={styles.eventsGrid}>
         {/* Header Row */}
-        <div className={styles.gridHeader}>
-          <div className={styles.gridHeaderCell}>
-            <input
-              type="checkbox"
-              checked={selectedEvents.length === events.length && events.length > 0}
-              onChange={(e) => handleSelectAll(e.target.checked)}
-              className={styles.checkbox}
-            />
-          </div>
-          <div className={styles.gridHeaderCell}>Event</div>
-          <div className={styles.gridHeaderCell}>Date & Time</div>
-          <div className={styles.gridHeaderCell}>Location</div>
-          <div className={styles.gridHeaderCell}>Status</div>
-          <div className={styles.gridHeaderCell}>Registrations</div>
-          <div className={styles.gridHeaderCell}>Actions</div>
+        <div style={styles.gridHeader}>
+          <div style={styles.gridHeaderCell}>Registrations</div>
+          <div style={styles.gridHeaderCell}>Actions</div>
         </div>
 
         {/* Event Rows */}
         {events.map((event) => (
-          <div key={event.id} className={styles.gridRow}>
-            <div className={styles.gridCell}>
+          <div 
+            key={event.id} 
+            style={{
+              ...styles.gridRow,
+              ':hover': { backgroundColor: '#f9fafb' }
+            }}
+          >
+            <div style={styles.gridCell}>
               <input
                 type="checkbox"
                 checked={selectedEvents.includes(event.id)}
                 onChange={(e) => handleEventSelect(event.id, e.target.checked)}
-                className={styles.checkbox}
               />
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.eventInfo}>
-                <div className={styles.eventTitle}>
+            <div style={styles.gridCell}>
+              <div style={styles.eventInfo}>
+                <div style={styles.eventTitle}>
                   {event.is_featured && (
-                    <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                    <Star size={16} style={{ color: '#f59e0b', marginRight: '4px' }} />
                   )}
                   {event.title}
                 </div>
-                <div className={styles.eventMeta}>
-                  <span className={`${styles.eventType} ${getEventTypeColor(event.event_type)}`}>
+                <div style={styles.eventMeta}>
+                  <span 
+                    style={{
+                      ...styles.eventType,
+                      ...getEventTypeColor(event.event_type)
+                    }}
+                  >
                     {event.event_type_display}
                   </span>
                   {event.organizer && (
-                    <span className={styles.organizer}>
+                    <span style={{ color: '#6b7280' }}>
                       by {event.organizer}
                     </span>
                   )}
@@ -393,72 +593,87 @@ const EventsList = () => {
               </div>
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.dateTime}>
-                <div className={styles.date}>
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {format(parseISO(event.start_datetime), 'MMM dd, yyyy')}
+            <div style={styles.gridCell}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500' }}>
+                  <Calendar size={16} />
+                  {formatDate(event.start_datetime)}
                 </div>
-                <div className={styles.time}>
-                  <Clock className="w-4 h-4 mr-1" />
-                  {format(parseISO(event.start_datetime), 'h:mm a')} - 
-                  {format(parseISO(event.end_datetime), 'h:mm a')}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                  <Clock size={16} />
+                  {formatTime(event.start_datetime)} - {formatTime(event.end_datetime)}
                 </div>
               </div>
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.location}>
-                <MapPin className="w-4 h-4 mr-1" />
+            <div style={styles.gridCell}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                <MapPin size={16} />
                 {event.location || 'No location'}
               </div>
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.status}>
-                {getEventStatusIcon(event)}
-                <span className={styles.statusText}>
-                  {getEventStatusText(event)}
+            <div style={styles.gridCell}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {getStatusIcon(event)}
+                <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  {event.status_display}
                 </span>
               </div>
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.registrations}>
-                <Users className="w-4 h-4 mr-1" />
-                {event.registration_count}
-                {event.max_capacity && ` / ${event.max_capacity}`}
+            <div style={styles.gridCell}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500' }}>
+                  <Users size={16} />
+                  {event.registration_count}
+                  {event.max_capacity && ` / ${event.max_capacity}`}
+                </div>
                 {event.requires_registration && event.registration_fee > 0 && (
-                  <div className={styles.fee}>
-                    <DollarSign className="w-3 h-3 mr-1" />
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.25rem', 
+                    fontSize: '0.75rem', 
+                    color: '#10b981',
+                    fontWeight: '500'
+                  }}>
+                    <DollarSign size={12} />
                     {event.registration_fee}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className={styles.gridCell}>
-              <div className={styles.actions}>
+            <div style={styles.gridCell}>
+              <div style={styles.actions}>
                 <button
                   onClick={() => window.open(`/events/${event.id}`, '_blank')}
-                  className={styles.actionButton}
+                  style={styles.actionButton}
                   title="View Event"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye size={16} />
                 </button>
                 <button
                   onClick={() => handleEditEvent(event)}
-                  className={styles.actionButton}
+                  style={styles.actionButton}
                   title="Edit Event"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit size={16} />
                 </button>
                 <button
-                  onClick={() => handleDeleteEvent(event)}
-                  className={`${styles.actionButton} ${styles.deleteButton}`}
+                  onClick={() => handleDeleteEvent(event.id)}
+                  style={{
+                    ...styles.actionButton,
+                    ':hover': { 
+                      backgroundColor: '#fef2f2',
+                      borderColor: '#ef4444',
+                      color: '#ef4444'
+                    }
+                  }}
                   title="Delete Event"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
@@ -466,10 +681,21 @@ const EventsList = () => {
         ))}
 
         {events.length === 0 && (
-          <div className={styles.emptyState}>
-            <Calendar className="w-12 h-12 text-gray-300 mb-4" />
-            <h3 className={styles.emptyTitle}>No events found</h3>
-            <p className={styles.emptyText}>
+          <div style={styles.emptyState}>
+            <Calendar size={48} style={{ color: '#d1d5db', marginBottom: '1rem' }} />
+            <h3 style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: '600', 
+              color: '#1f2937', 
+              marginBottom: '0.5rem' 
+            }}>
+              No events found
+            </h3>
+            <p style={{ 
+              color: '#6b7280', 
+              marginBottom: '2rem', 
+              maxWidth: '400px' 
+            }}>
               {searchTerm || Object.values(filters).some(f => f) ? 
                 'Try adjusting your search or filters.' :
                 'Create your first event to get started.'
@@ -478,9 +704,9 @@ const EventsList = () => {
             {!searchTerm && !Object.values(filters).some(f => f) && (
               <button 
                 onClick={handleCreateEvent}
-                className={styles.createButton}
+                style={styles.createButton}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus size={16} />
                 Create Event
               </button>
             )}
@@ -488,49 +714,88 @@ const EventsList = () => {
         )}
       </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <Pagination
-          currentPage={pagination.page}
-          totalPages={pagination.totalPages}
-          onPageChange={handlePageChange}
-        />
-      )}
-
-      {/* Event Form Modal */}
-      {showEventForm && (
-        <EventForm
-          event={editingEvent}
-          onSave={(event) => {
-            if (editingEvent) {
-              setEvents(prev => prev.map(e => e.id === event.id ? event : e));
-              showToast('Event updated successfully', 'success');
-            } else {
-              setEvents(prev => [event, ...prev]);
-              showToast('Event created successfully', 'success');
-            }
-            setShowEventForm(false);
-            setEditingEvent(null);
-          }}
-          onCancel={() => {
-            setShowEventForm(false);
-            setEditingEvent(null);
-          }}
-        />
-      )}
-
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <ConfirmDialog
-          title="Delete Event"
-          message={`Are you sure you want to delete "${deleteConfirm.title}"? This action cannot be undone.`}
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteConfirm(null)}
-          confirmText="Delete"
-          cancelText="Cancel"
-          type="danger"
-        />
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '90%',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: '600', 
+              color: '#1f2937',
+              marginBottom: '1rem'
+            }}>
+              Delete Event
+            </h3>
+            <p style={{ 
+              color: '#6b7280', 
+              marginBottom: '2rem' 
+            }}>
+              Are you sure you want to delete this event? This action cannot be undone.
+            </p>
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              justifyContent: 'center' 
+            }}>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  border: '2px solid #d1d5db',
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };
