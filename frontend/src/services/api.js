@@ -799,49 +799,199 @@ const apiMethods = {
 
   // Family API methods
   families: {
+    // List families with filters and pagination
     list: async (params = {}) => {
-      const response = await apiMethods.get(ENDPOINTS.families.list, { params });
-      return response.data;
+      try {
+        console.log('[API] Fetching families list with params:', params);
+        const response = await apiMethods.get(ENDPOINTS.families.list, { params });
+        console.log('[API] Families list response:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching families:', error);
+        throw error;
+      }
     },
 
+    // Create new family
     create: async (familyData) => {
-      const response = await apiMethods.post(ENDPOINTS.families.create, familyData);
-      return response.data;
+      try {
+        console.log('[API] Creating family:', familyData);
+        const response = await apiMethods.post(ENDPOINTS.families.create, familyData);
+        console.log('[API] Family created:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error creating family:', error);
+        throw error;
+      }
     },
 
+    // Get single family by ID
     get: async (id) => {
-      const response = await apiMethods.get(ENDPOINTS.families.detail(id));
-      return response.data;
+      try {
+        console.log('[API] Fetching family:', id);
+        const response = await apiMethods.get(ENDPOINTS.families.detail(id));
+        console.log('[API] Family details:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching family:', error);
+        throw error;
+      }
     },
 
+    // Update family (full update)
     update: async (id, familyData) => {
-      const response = await apiMethods.put(ENDPOINTS.families.update(id), familyData);
-      return response.data;
+      try {
+        console.log('[API] Updating family:', id, familyData);
+        const response = await apiMethods.put(ENDPOINTS.families.update(id), familyData);
+        console.log('[API] Family updated:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error updating family:', error);
+        throw error;
+      }
     },
 
+    // Partial update family
+    patch: async (id, familyData) => {
+      try {
+        console.log('[API] Patching family:', id, familyData);
+        const response = await apiMethods.patch(ENDPOINTS.families.update(id), familyData);
+        console.log('[API] Family patched:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error patching family:', error);
+        throw error;
+      }
+    },
+
+    // Delete family
     delete: async (id) => {
-      const response = await apiMethods.delete(ENDPOINTS.families.delete(id));
-      return response.data;
+      try {
+        console.log('[API] Deleting family:', id);
+        const response = await apiMethods.delete(ENDPOINTS.families.delete(id));
+        console.log('[API] Family deleted successfully');
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error deleting family:', error);
+        throw error;
+      }
     },
 
+    // Get family members
     getMembers: async (id) => {
-      const response = await apiMethods.get(ENDPOINTS.families.members(id));
-      return response.data;
+      try {
+        console.log('[API] Fetching family members:', id);
+        const response = await apiMethods.get(ENDPOINTS.families.members(id));
+        console.log('[API] Family members:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching family members:', error);
+        throw error;
+      }
     },
 
+    // Add member to family
     addMember: async (familyId, memberData) => {
-      const response = await apiMethods.post(ENDPOINTS.families.addMember(familyId), memberData);
-      return response.data;
+      try {
+        console.log('[API] Adding member to family:', familyId, memberData);
+        const response = await apiMethods.post(
+          ENDPOINTS.families.addMember(familyId),
+          memberData
+        );
+        console.log('[API] Member added to family:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error adding member to family:', error);
+        throw error;
+      }
     },
 
+    // Remove member from family
     removeMember: async (familyId, memberId) => {
-      const response = await apiMethods.delete(ENDPOINTS.families.removeMember(familyId, memberId));
-      return response.data;
+      try {
+        console.log('[API] Removing member from family:', familyId, memberId);
+        const response = await apiMethods.delete(
+          ENDPOINTS.families.removeMember(familyId, memberId)
+        );
+        console.log('[API] Member removed from family');
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error removing member from family:', error);
+        throw error;
+      }
     },
 
+    // Set primary contact for family
+    setPrimaryContact: async (familyId, memberId) => {
+      try {
+        console.log('[API] Setting primary contact:', familyId, memberId);
+        const response = await apiMethods.post(
+          ENDPOINTS.families.setPrimaryContact(familyId),
+          { member_id: memberId }
+        );
+        console.log('[API] Primary contact set:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error setting primary contact:', error);
+        throw error;
+      }
+    },
+
+    // Get family statistics
     getStats: async () => {
-      const response = await apiMethods.get(ENDPOINTS.families.statistics);
-      return response.data;
+      try {
+        console.log('[API] Fetching family statistics');
+        const response = await apiMethods.get(ENDPOINTS.families.statistics);
+        console.log('[API] Family statistics:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching family statistics:', error);
+        throw error;
+      }
+    },
+
+    // Get recent families
+    getRecent: async (days = 30) => {
+      try {
+        console.log('[API] Fetching recent families, days:', days);
+        const response = await apiMethods.get(ENDPOINTS.families.recent, {
+          params: { days }
+        });
+        console.log('[API] Recent families:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching recent families:', error);
+        throw error;
+      }
+    },
+
+    // Get families needing attention
+    getNeedingAttention: async () => {
+      try {
+        console.log('[API] Fetching families needing attention');
+        const response = await apiMethods.get(ENDPOINTS.families.needingAttention);
+        console.log('[API] Families needing attention:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error fetching families needing attention:', error);
+        throw error;
+      }
+    },
+
+    // Bulk operations (delete, export)
+    bulkOperations: async (operation, familyIds) => {
+      try {
+        console.log('[API] Bulk operation:', operation, 'on families:', familyIds);
+        const response = await apiMethods.post(ENDPOINTS.families.bulkOperations, {
+          operation,
+          family_ids: familyIds
+        });
+        console.log('[API] Bulk operation completed:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('[API] Error in bulk operation:', error);
+        throw error;
+      }
     }
   },
 

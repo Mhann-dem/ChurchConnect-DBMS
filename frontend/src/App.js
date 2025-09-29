@@ -132,7 +132,6 @@ function App() {
               <Route path="registration-success" element={<ThankYouPage />} />
             </Route>
 
-
             {/* Authentication Routes */}
             <Route path="/admin/login" element={
               <PublicRoute>
@@ -159,8 +158,8 @@ function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               
-              {/* Events route */}
-              <Route path="/admin/events" element={<AdminEventsPage />} />
+              {/* Events route - FIXED: Removed duplicate */}
+              <Route path="events" element={<AdminEventsPage />} />
               
               {/* Families Management */}
               <Route path="families/*" element={<FamiliesPage />} />
