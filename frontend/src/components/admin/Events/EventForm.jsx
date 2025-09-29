@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// frontend/src/components/admin/Events/EventForm.jsx - FIXED: Input focus & scrolling issues
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Calendar, MapPin, Users, DollarSign, Tag, Clock, 
-  Save, AlertCircle, CheckCircle, Loader 
+  Save, AlertCircle 
 } from 'lucide-react';
 
 const EventForm = ({ event, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const modalRef = useRef(null);
   
-  // FIXED: Use single form state object to prevent re-render issues
+  // FIXED: Single state object - prevents re-render issues
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -38,8 +40,17 @@ const EventForm = ({ event, onSave, onCancel }) => {
   // Format date for datetime-local input
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toISOString().slice(0, 16);
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (e) {
+      return '';
+    }
   };
 
   // Initialize form data when event prop changes
@@ -85,116 +96,97 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   }, [event]);
 
-  // FIXED: Single change handler with no dependencies to prevent recreation
-  const handleInputChange = useCallback((field, value) => {
+  // FIXED: Stable change handler - doesn't recreate on every render
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [name]: newValue
     }));
     
-    // Clear field error when user starts typing - use functional update to avoid dependency
-    setErrors(prev => {
-      if (prev[field]) {
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[field];
+        delete newErrors[name];
         return newErrors;
-      }
-      return prev;
-    });
-  }, []); // Empty dependency array prevents recreation
-
-  // Validation helper functions
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const isValidUrl = (url) => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
+      });
     }
   };
 
-  // FIXED: Validation function that reads current state without dependencies
-  const validateForm = useCallback(() => {
-    // Read current formData from state instead of closure
-    const currentFormData = formData;
+  // Validation
+  const validateForm = () => {
     const newErrors = {};
 
-    // Required fields validation
-    if (!currentFormData.title?.trim()) {
+    if (!formData.title?.trim()) {
       newErrors.title = 'Event title is required';
     }
 
-    if (!currentFormData.start_datetime) {
+    if (!formData.start_datetime) {
       newErrors.start_datetime = 'Start date and time is required';
     }
 
-    if (!currentFormData.end_datetime) {
+    if (!formData.end_datetime) {
       newErrors.end_datetime = 'End date and time is required';
     }
 
-    // Date validation
-    if (currentFormData.start_datetime && currentFormData.end_datetime) {
-      const startDate = new Date(currentFormData.start_datetime);
-      const endDate = new Date(currentFormData.end_datetime);
+    if (formData.start_datetime && formData.end_datetime) {
+      const startDate = new Date(formData.start_datetime);
+      const endDate = new Date(formData.end_datetime);
       
       if (startDate >= endDate) {
         newErrors.end_datetime = 'End time must be after start time';
       }
 
-      // Check if dates are in the past (for new events)
       if (!event && startDate < new Date()) {
         newErrors.start_datetime = 'Start time cannot be in the past';
       }
     }
 
-    // Registration deadline validation
-    if (currentFormData.registration_deadline && currentFormData.start_datetime) {
-      const deadlineDate = new Date(currentFormData.registration_deadline);
-      const startDate = new Date(currentFormData.start_datetime);
+    if (formData.registration_deadline && formData.start_datetime) {
+      const deadlineDate = new Date(formData.registration_deadline);
+      const startDate = new Date(formData.start_datetime);
       
       if (deadlineDate > startDate) {
         newErrors.registration_deadline = 'Registration deadline cannot be after event start time';
       }
     }
 
-    // Email validation
-    if (currentFormData.contact_email && !isValidEmail(currentFormData.contact_email)) {
-      newErrors.contact_email = 'Please enter a valid email address';
-    }
-
-    // URL validation
-    if (currentFormData.image_url && !isValidUrl(currentFormData.image_url)) {
-      newErrors.image_url = 'Please enter a valid URL';
-    }
-
-    if (currentFormData.external_registration_url && !isValidUrl(currentFormData.external_registration_url)) {
-      newErrors.external_registration_url = 'Please enter a valid URL';
+    if (formData.contact_email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.contact_email)) {
+        newErrors.contact_email = 'Please enter a valid email address';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, event]);
+  };
 
   // Form submission
-  const handleSubmit = useCallback(async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     console.log('[EventForm] Form submission started');
     
     if (!validateForm()) {
       console.log('[EventForm] Validation failed:', errors);
+      // Scroll to first error
+      if (modalRef.current) {
+        const firstErrorField = Object.keys(errors)[0];
+        const errorElement = modalRef.current.querySelector(`[name="${firstErrorField}"]`);
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
       return;
     }
 
     setLoading(true);
 
     try {
-      // Prepare data for submission
       const submitData = {
         title: formData.title?.trim(),
         description: formData.description?.trim() || null,
@@ -229,10 +221,9 @@ const EventForm = ({ event, onSave, onCancel }) => {
     } finally {
       setLoading(false);
     }
-  }, [formData, validateForm, onSave, errors]);
+  };
 
-  // FIXED: Memoized event type options to prevent recreations
-  const eventTypeOptions = useMemo(() => [
+  const eventTypeOptions = [
     { value: 'service', label: 'Church Service' },
     { value: 'workshop', label: 'Workshop' },
     { value: 'meeting', label: 'Meeting' },
@@ -250,10 +241,10 @@ const EventForm = ({ event, onSave, onCancel }) => {
     { value: 'wedding', label: 'Wedding' },
     { value: 'funeral', label: 'Memorial Service' },
     { value: 'other', label: 'Other' }
-  ], []);
+  ];
 
-  // FIXED: Memoized styles to prevent recreation
-  const styles = useMemo(() => ({
+  // FIXED: Proper scrollable modal styles
+  const styles = {
     overlay: {
       position: 'fixed',
       top: 0,
@@ -265,17 +256,19 @@ const EventForm = ({ event, onSave, onCancel }) => {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '20px'
+      padding: '20px',
+      overflowY: 'auto' // FIXED: Allow overlay to scroll
     },
     modal: {
       backgroundColor: 'white',
       borderRadius: '12px',
       maxWidth: '900px',
       width: '100%',
-      maxHeight: '90vh',
+      maxHeight: '90vh', // FIXED: Limit height
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      margin: 'auto' // FIXED: Center in overlay
     },
     header: {
       display: 'flex',
@@ -287,7 +280,7 @@ const EventForm = ({ event, onSave, onCancel }) => {
     },
     content: {
       flex: 1,
-      overflowY: 'auto',
+      overflowY: 'auto', // FIXED: Scrollable content
       padding: '24px'
     },
     footer: {
@@ -306,15 +299,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
       borderRadius: '8px',
       border: '1px solid #e5e7eb'
     },
-    sectionTitle: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      fontSize: '18px',
-      fontWeight: '600',
-      color: '#1f2937',
-      marginBottom: '20px'
-    },
     formGroup: {
       marginBottom: '20px'
     },
@@ -331,171 +315,34 @@ const EventForm = ({ event, onSave, onCancel }) => {
       border: '2px solid #d1d5db',
       borderRadius: '8px',
       fontSize: '14px',
-      transition: 'border-color 0.2s, box-shadow 0.2s',
+      transition: 'border-color 0.2s',
       outline: 'none',
       backgroundColor: 'white',
       boxSizing: 'border-box'
     },
     inputError: {
-      borderColor: '#ef4444',
-      boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)'
-    },
-    errorText: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-      marginTop: '6px',
-      color: '#ef4444',
-      fontSize: '12px'
+      borderColor: '#ef4444'
     },
     grid: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gap: '20px'
-    },
-    button: {
-      padding: '12px 24px',
-      borderRadius: '8px',
-      fontSize: '14px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      border: 'none'
-    },
-    primaryButton: {
-      backgroundColor: '#3b82f6',
-      color: 'white'
-    },
-    secondaryButton: {
-      backgroundColor: 'white',
-      color: '#374151',
-      border: '2px solid #d1d5db'
-    },
-    checkboxLabel: {
-      display: 'flex',
-      alignItems: 'center',
-      fontSize: '14px',
-      color: '#374151',
-      cursor: 'pointer',
-      padding: '8px'
-    },
-    checkbox: {
-      marginRight: '12px',
-      width: '18px',
-      height: '18px',
-      accentColor: '#3b82f6',
-      cursor: 'pointer'
     }
-  }), []);
+  };
 
-  // FIXED: FormField component that doesn't cause parent re-renders
-  const FormField = React.memo(({ 
-    label, 
-    field, 
-    required = false, 
-    type = 'text',
-    as = 'input',
-    options = null,
-    description = null
-  }) => {
-    const hasError = !!errors[field];
-    const inputStyle = hasError ? { ...styles.input, ...styles.inputError } : styles.input;
-    const value = formData[field] || '';
-
-    // Create stable onChange handler for this specific field
-    const onChange = React.useMemo(() => {
-      return (e) => {
-        const newValue = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        handleInputChange(field, newValue);
-      };
-    }, [field]);
-
-    return (
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
-        </label>
-        {description && (
-          <p style={{
-            fontSize: '12px',
-            color: '#6b7280',
-            marginBottom: '6px',
-            fontStyle: 'italic'
-          }}>
-            {description}
-          </p>
-        )}
-        
-        {as === 'textarea' ? (
-          <textarea
-            value={value}
-            onChange={onChange}
-            style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
-            disabled={loading}
-            rows={4}
-          />
-        ) : as === 'select' ? (
-          <select
-            value={value}
-            onChange={onChange}
-            style={inputStyle}
-            disabled={loading}
-          >
-            {options?.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : type === 'checkbox' ? (
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={!!value}
-              onChange={onChange}
-              style={styles.checkbox}
-              disabled={loading}
-            />
-            {label}
-          </label>
-        ) : (
-          <input
-            type={type}
-            value={value}
-            onChange={onChange}
-            style={inputStyle}
-            disabled={loading}
-            {...(type === 'number' && { 
-              min: '0', 
-              step: field.includes('fee') ? '0.01' : '1' 
-            })}
-          />
-        )}
-        
-        {hasError && (
-          <div style={styles.errorText}>
-            <AlertCircle size={12} />
-            {errors[field]}
-          </div>
-        )}
-      </div>
-    );
-  });
+  // FIXED: Close on overlay click, but not on modal click
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  };
 
   return (
-    <div style={styles.overlay} onClick={(e) => e.target === e.currentTarget && onCancel()}>
-      <div style={styles.modal}>
+    <div style={styles.overlay} onClick={handleOverlayClick}>
+      <div style={styles.modal} ref={modalRef}>
         {/* Header */}
         <div style={styles.header}>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            margin: 0
-          }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
             {event ? 'Edit Event' : 'Create New Event'}
           </h2>
           <button 
@@ -513,242 +360,463 @@ const EventForm = ({ event, onSave, onCancel }) => {
           </button>
         </div>
 
-        {/* Content */}
-        <div style={styles.content}>
+        {/* Content - SCROLLABLE */}
+        <form onSubmit={handleSubmit} style={styles.content}>
           {/* Basic Information */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Tag size={20} />
               Basic Information
             </h3>
 
-            <FormField
-              label="Event Title"
-              field="title"
-              required
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>
+                Event Title <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                style={errors.title ? { ...styles.input, ...styles.inputError } : styles.input}
+                disabled={loading}
+                placeholder="Enter event title"
+              />
+              {errors.title && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                  <AlertCircle size={12} />
+                  {errors.title}
+                </div>
+              )}
+            </div>
 
-            <FormField
-              label="Event Type"
-              field="event_type"
-              as="select"
-              options={eventTypeOptions}
-              required
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Event Type <span style={{ color: '#ef4444' }}>*</span></label>
+              <select
+                name="event_type"
+                value={formData.event_type}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+              >
+                {eventTypeOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <FormField
-              label="Description"
-              field="description"
-              as="textarea"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                style={{ ...styles.input, minHeight: '100px', resize: 'vertical' }}
+                disabled={loading}
+                rows={4}
+                placeholder="Describe the event..."
+              />
+            </div>
 
-            <FormField
-              label="Status"
-              field="status"
-              as="select"
-              options={[
-                { value: 'draft', label: 'Draft' },
-                { value: 'published', label: 'Published' },
-                { value: 'cancelled', label: 'Cancelled' },
-                { value: 'postponed', label: 'Postponed' }
-              ]}
-              required
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Status <span style={{ color: '#ef4444' }}>*</span></label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="postponed">Postponed</option>
+              </select>
+            </div>
           </div>
 
           {/* Date and Time */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Calendar size={20} />
               Date and Time
             </h3>
 
             <div style={styles.grid}>
-              <FormField
-                label="Start Date & Time"
-                field="start_datetime"
-                type="datetime-local"
-                required
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
+                  Start Date & Time <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  name="start_datetime"
+                  value={formData.start_datetime}
+                  onChange={handleChange}
+                  style={errors.start_datetime ? { ...styles.input, ...styles.inputError } : styles.input}
+                  disabled={loading}
+                />
+                {errors.start_datetime && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                    <AlertCircle size={12} />
+                    {errors.start_datetime}
+                  </div>
+                )}
+              </div>
 
-              <FormField
-                label="End Date & Time"
-                field="end_datetime"
-                type="datetime-local"
-                required
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>
+                  End Date & Time <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  name="end_datetime"
+                  value={formData.end_datetime}
+                  onChange={handleChange}
+                  style={errors.end_datetime ? { ...styles.input, ...styles.inputError } : styles.input}
+                  disabled={loading}
+                />
+                {errors.end_datetime && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                    <AlertCircle size={12} />
+                    {errors.end_datetime}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <FormField
-              label="Registration Deadline"
-              field="registration_deadline"
-              type="datetime-local"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Registration Deadline</label>
+              <input
+                type="datetime-local"
+                name="registration_deadline"
+                value={formData.registration_deadline}
+                onChange={handleChange}
+                style={errors.registration_deadline ? { ...styles.input, ...styles.inputError } : styles.input}
+                disabled={loading}
+              />
+              {errors.registration_deadline && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                  <AlertCircle size={12} />
+                  {errors.registration_deadline}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Location */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPin size={20} />
               Location
             </h3>
 
-            <FormField
-              label="Location"
-              field="location"
-            />
-
-            <FormField
-              label="Location Details"
-              field="location_details"
-              as="textarea"
-              description="Additional location details or directions"
-            />
-          </div>
-
-          {/* Registration */}
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
-              <Users size={20} />
-              Registration
-            </h3>
-
-            <FormField
-              label="Requires Registration"
-              field="requires_registration"
-              type="checkbox"
-            />
-
-            <FormField
-              label="Show on Public Calendar"
-              field="is_public"
-              type="checkbox"
-            />
-
-            <FormField
-              label="Feature This Event"
-              field="is_featured"
-              type="checkbox"
-            />
-
-            <div style={styles.grid}>
-              <FormField
-                label="Maximum Capacity"
-                field="max_capacity"
-                type="number"
-                description="Leave empty for unlimited"
-              />
-
-              <FormField
-                label="Registration Fee"
-                field="registration_fee"
-                type="number"
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Location</label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+                placeholder="e.g., Main Sanctuary, Fellowship Hall"
               />
             </div>
 
-            <div style={styles.grid}>
-              <FormField
-                label="Minimum Age"
-                field="age_min"
-                type="number"
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Location Details</label>
+              <textarea
+                name="location_details"
+                value={formData.location_details}
+                onChange={handleChange}
+                style={{ ...styles.input, minHeight: '80px', resize: 'vertical' }}
+                disabled={loading}
+                rows={3}
+                placeholder="Additional location details or directions..."
               />
+            </div>
+          </div>
 
-              <FormField
-                label="Maximum Age"
-                field="age_max"
-                type="number"
-              />
+          {/* Registration Settings */}
+          <div style={styles.section}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Users size={20} />
+              Registration Settings
+            </h3>
+
+            <div style={styles.formGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: '#374151', cursor: 'pointer', padding: '8px' }}>
+                <input
+                  type="checkbox"
+                  name="requires_registration"
+                  checked={formData.requires_registration}
+                  onChange={handleChange}
+                  style={{ marginRight: '12px', width: '18px', height: '18px', accentColor: '#3b82f6', cursor: 'pointer' }}
+                  disabled={loading}
+                />
+                Requires Registration
+              </label>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: '#374151', cursor: 'pointer', padding: '8px' }}>
+                <input
+                  type="checkbox"
+                  name="is_public"
+                  checked={formData.is_public}
+                  onChange={handleChange}
+                  style={{ marginRight: '12px', width: '18px', height: '18px', accentColor: '#3b82f6', cursor: 'pointer' }}
+                  disabled={loading}
+                />
+                Show on Public Calendar
+              </label>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: '#374151', cursor: 'pointer', padding: '8px' }}>
+                <input
+                  type="checkbox"
+                  name="is_featured"
+                  checked={formData.is_featured}
+                  onChange={handleChange}
+                  style={{ marginRight: '12px', width: '18px', height: '18px', accentColor: '#3b82f6', cursor: 'pointer' }}
+                  disabled={loading}
+                />
+                Feature This Event
+              </label>
+            </div>
+
+            <div style={styles.grid}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Maximum Capacity</label>
+                <input
+                  type="number"
+                  name="max_capacity"
+                  value={formData.max_capacity}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                  min="0"
+                  placeholder="Leave empty for unlimited"
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Registration Fee ($)</label>
+                <input
+                  type="number"
+                  name="registration_fee"
+                  value={formData.registration_fee}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div style={styles.grid}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Minimum Age</label>
+                <input
+                  type="number"
+                  name="age_min"
+                  value={formData.age_min}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                  min="0"
+                  placeholder="No minimum"
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Maximum Age</label>
+                <input
+                  type="number"
+                  name="age_max"
+                  value={formData.age_max}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                  min="0"
+                  placeholder="No maximum"
+                />
+              </div>
             </div>
           </div>
 
           {/* Organizer Information */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Users size={20} />
               Organizer Information
             </h3>
 
-            <FormField
-              label="Organizer"
-              field="organizer"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Organizer</label>
+              <input
+                type="text"
+                name="organizer"
+                value={formData.organizer}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+                placeholder="Person or group organizing this event"
+              />
+            </div>
 
             <div style={styles.grid}>
-              <FormField
-                label="Contact Email"
-                field="contact_email"
-                type="email"
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Contact Email</label>
+                <input
+                  type="email"
+                  name="contact_email"
+                  value={formData.contact_email}
+                  onChange={handleChange}
+                  style={errors.contact_email ? { ...styles.input, ...styles.inputError } : styles.input}
+                  disabled={loading}
+                  placeholder="contact@church.org"
+                />
+                {errors.contact_email && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                    <AlertCircle size={12} />
+                    {errors.contact_email}
+                  </div>
+                )}
+              </div>
 
-              <FormField
-                label="Contact Phone"
-                field="contact_phone"
-                type="tel"
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Contact Phone</label>
+                <input
+                  type="tel"
+                  name="contact_phone"
+                  value={formData.contact_phone}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Additional Settings */}
+          {/* Additional Details */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Tag size={20} />
-              Additional Settings
+              Additional Details
             </h3>
 
-            <FormField
-              label="Prerequisites"
-              field="prerequisites"
-              as="textarea"
-              description="Requirements, items to bring, or preparation needed"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Prerequisites</label>
+              <textarea
+                name="prerequisites"
+                value={formData.prerequisites}
+                onChange={handleChange}
+                style={{ ...styles.input, minHeight: '80px', resize: 'vertical' }}
+                disabled={loading}
+                rows={3}
+                placeholder="Requirements, items to bring, or preparation needed..."
+              />
+            </div>
 
-            <FormField
-              label="Tags"
-              field="tags"
-              description="Comma-separated tags for categorization"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Tags</label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+                placeholder="youth, worship, community (comma-separated)"
+              />
+            </div>
 
-            <FormField
-              label="Event Image URL"
-              field="image_url"
-              type="url"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Event Image URL</label>
+              <input
+                type="url"
+                name="image_url"
+                value={formData.image_url}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
 
-            <FormField
-              label="External Registration URL"
-              field="external_registration_url"
-              type="url"
-              description="Link to external registration system (optional)"
-            />
+            <div style={styles.formGroup}>
+              <label style={styles.label}>External Registration URL</label>
+              <input
+                type="url"
+                name="external_registration_url"
+                value={formData.external_registration_url}
+                onChange={handleChange}
+                style={styles.input}
+                disabled={loading}
+                placeholder="https://example.com/register"
+              />
+            </div>
           </div>
-        </div>
+        </form>
 
-        {/* Footer */}
+        {/* Footer - FIXED POSITION */}
         <div style={styles.footer}>
           <button
             type="button"
             onClick={onCancel}
             style={{
-              ...styles.button,
-              ...styles.secondaryButton
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: '2px solid #d1d5db',
+              backgroundColor: 'white',
+              color: '#374151'
             }}
             disabled={loading}
           >
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
             onClick={handleSubmit}
             style={{
-              ...styles.button,
-              ...styles.primaryButton,
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: 'none',
+              backgroundColor: '#3b82f6',
+              color: 'white',
               opacity: loading ? 0.7 : 1
             }}
             disabled={loading}
           >
-            {loading && <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />}
-            <Save size={16} />
-            {event ? 'Update Event' : 'Create Event'}
+            {loading ? (
+              <>Processing...</>
+            ) : (
+              <>
+                <Save size={16} />
+                {event ? 'Update Event' : 'Create Event'}
+              </>
+            )}
           </button>
         </div>
       </div>

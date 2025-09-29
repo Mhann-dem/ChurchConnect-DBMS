@@ -15,6 +15,7 @@ import Toast from './components/shared/Toast';
 
 // FIXED: Import the debug tool properly
 import MembersDebugTool from './components/debug/MembersDebugTool';
+import PublicEventsPage from './pages/public/EventsPage';
 
 // Lazy-loaded components
 const HomePage = lazy(() => import('./pages/public/HomePage'));
@@ -25,7 +26,6 @@ const HelpCenter = lazy(() => import('./pages/help/HelpCenter'));
 const FAQ = lazy(() => import('./pages/help/FAQ'));
 
 // Additional public pages
-const EventsPage = lazy(() => import('./pages/public/EventsPage'));
 const MinistriesPage = lazy(() => import('./pages/public/MinistriesPage'));
 const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/public/TermsPage'));
@@ -53,19 +53,6 @@ const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
 // NEW: Add FamiliesPage import
 const FamiliesPage = lazy(() => import('./pages/admin/FamiliesPage'));
 
-// Member login page
-const MemberLoginPage = lazy(() => import('./pages/auth/MemberLoginPage'));
-
-// FIXED: Move ProtectedRoute components outside to prevent recreation
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
-};
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -125,7 +112,7 @@ function App() {
               <Route path="faq" element={<FAQ />} />
               
               {/* Church Information Pages */}
-              <Route path="events" element={<EventsPage />} />
+              <Route path="events" element={<PublicEventsPage />} />
               <Route path="ministries" element={<MinistriesPage />} />
               
               {/* Feedback & Support */}
@@ -145,12 +132,6 @@ function App() {
               <Route path="registration-success" element={<ThankYouPage />} />
             </Route>
 
-            {/* Member Login */}
-            <Route path="/login" element={
-              <PublicRoute>
-                <MemberLoginPage />
-              </PublicRoute>
-            } />
 
             {/* Authentication Routes */}
             <Route path="/admin/login" element={
@@ -179,7 +160,7 @@ function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               
               {/* Events route */}
-              <Route path="events" element={<AdminEventsPage />} />
+              <Route path="/admin/events" element={<AdminEventsPage />} />
               
               {/* Families Management */}
               <Route path="families/*" element={<FamiliesPage />} />

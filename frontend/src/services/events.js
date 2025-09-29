@@ -1,17 +1,17 @@
-// frontend/src/services/events.js - COMPLETELY FIXED VERSION
-import api from './api';
+// frontend/src/services/events.js - FIXED VERSION WITH REAL BACKEND INTEGRATION
+import apiMethods from './api';
 
 class EventsService {
   constructor() {
-    this.baseEndpoint = '/events';
+    this.baseEndpoint = 'events/events'; // Based on your Django URLs: /api/v1/events/events/
     this.cache = new Map();
-    this.pendingRequests = new Map();
+    this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
   }
 
-  // FIXED: Get events with comprehensive error handling
+  // FIXED: Get events from your Django backend
   async getEvents(params = {}) {
     try {
-      console.log('[EventsService] Fetching events with params:', params);
+      console.log('[EventsService] Fetching events from Django backend:', params);
       
       // Clean up parameters - remove empty values
       const cleanParams = {};
@@ -21,16 +21,15 @@ class EventsService {
         }
       });
       
-      console.log('[EventsService] Clean parameters:', cleanParams);
-      
-      const response = await api.get(`${this.baseEndpoint}/events/`, { 
+      // Use your Django API endpoint pattern from the server logs
+      const response = await apiMethods.get(`${this.baseEndpoint}/`, { 
         params: cleanParams,
         timeout: 30000
       });
       
-      console.log('[EventsService] Raw API response:', response);
+      console.log('[EventsService] Django API response:', response);
       
-      // Handle different response structures safely
+      // Handle Django REST framework pagination response
       let eventsData = {
         results: [],
         count: 0,
@@ -40,7 +39,7 @@ class EventsService {
       
       if (response && response.data) {
         if (response.data.results && Array.isArray(response.data.results)) {
-          // DRF pagination response
+          // Standard DRF pagination response
           eventsData = {
             results: response.data.results,
             count: response.data.count || response.data.results.length,
@@ -55,28 +54,12 @@ class EventsService {
             next: null,
             previous: null
           };
-        } else if (response.data.events && Array.isArray(response.data.events)) {
-          // Custom events property
-          eventsData = {
-            results: response.data.events,
-            count: response.data.total || response.data.events.length,
-            next: response.data.next || null,
-            previous: response.data.previous || null
-          };
-        } else if (typeof response.data === 'object' && response.data.data) {
-          // Nested data structure
-          eventsData = {
-            results: Array.isArray(response.data.data) ? response.data.data : [],
-            count: response.data.count || response.data.total || 0,
-            next: response.data.next || null,
-            previous: response.data.previous || null
-          };
         }
       }
       
       console.log('[EventsService] Processed events data:', eventsData);
       
-      // Ensure each event has required properties
+      // Ensure each event has required properties with proper defaults
       eventsData.results = eventsData.results.map(event => ({
         ...event,
         id: event.id || event.pk,
@@ -84,41 +67,50 @@ class EventsService {
         start_datetime: event.start_datetime || event.start_date,
         end_datetime: event.end_datetime || event.end_date,
         status: event.status || 'draft',
+        status_display: event.status_display || this.getStatusDisplay(event.status || 'draft'),
         event_type: event.event_type || 'other',
-        registration_count: event.registration_count || 0,
+        event_type_display: event.event_type_display || this.getEventTypeDisplay(event.event_type || 'other'),
+        registration_count: event.registration_count || event.registrations_count || 0,
         is_public: event.is_public !== undefined ? event.is_public : true,
         is_featured: event.is_featured || false,
-        requires_registration: event.requires_registration || false
+        requires_registration: event.requires_registration || false,
+        location: event.location || '',
+        organizer: event.organizer || '',
+        description: event.description || '',
+        max_capacity: event.max_capacity || null,
+        registration_fee: event.registration_fee || 0,
+        created_at: event.created_at,
+        updated_at: event.updated_at
       }));
       
       return eventsData;
       
     } catch (error) {
-      console.error('[EventsService] Error getting events:', error);
-      throw this.enhanceError(error, 'Failed to fetch events');
+      console.error('[EventsService] Error fetching events from Django:', error);
+      throw this.enhanceError(error, 'Failed to fetch events from server');
     }
   }
 
-  // FIXED: Get single event with comprehensive handling
+  // FIXED: Get single event from Django
   async getEvent(id) {
     try {
-      console.log('[EventsService] Fetching event:', id);
+      console.log('[EventsService] Fetching event from Django:', id);
       
       if (!id) {
         throw new Error('Event ID is required');
       }
       
-      const response = await api.get(`${this.baseEndpoint}/events/${id}/`, {
+      const response = await apiMethods.get(`${this.baseEndpoint}/${id}/`, {
         timeout: 15000
       });
       
-      console.log('[EventsService] Event response:', response);
+      console.log('[EventsService] Django event response:', response);
       
       if (!response || !response.data) {
-        throw new Error('No event data received');
+        throw new Error('No event data received from server');
       }
       
-      // Ensure event has required properties
+      // Process event data with proper defaults
       const eventData = {
         ...response.data,
         id: response.data.id || response.data.pk,
@@ -126,7 +118,10 @@ class EventsService {
         start_datetime: response.data.start_datetime || response.data.start_date,
         end_datetime: response.data.end_datetime || response.data.end_date,
         status: response.data.status || 'draft',
-        event_type: response.data.event_type || 'other'
+        status_display: response.data.status_display || this.getStatusDisplay(response.data.status || 'draft'),
+        event_type: response.data.event_type || 'other',
+        event_type_display: response.data.event_type_display || this.getEventTypeDisplay(response.data.event_type || 'other'),
+        registration_count: response.data.registration_count || response.data.registrations_count || 0
       };
       
       return { 
@@ -135,21 +130,21 @@ class EventsService {
       };
       
     } catch (error) {
-      console.error('[EventsService] Error getting event:', error);
+      console.error('[EventsService] Error fetching event from Django:', error);
       throw this.enhanceError(error, 'Failed to fetch event details');
     }
   }
 
-  // FIXED: Create event with comprehensive validation and error handling
+  // FIXED: Create event in Django
   async createEvent(data) {
     try {
-      console.log('[EventsService] Creating event with data:', data);
+      console.log('[EventsService] Creating event in Django:', data);
       
       if (!data) {
         throw new Error('Event data is required');
       }
       
-      // Validate required fields before sending
+      // Validate required fields
       const validation = this.validateEventData(data);
       if (!validation.isValid) {
         const errorMessage = `Validation failed: ${Object.values(validation.errors).join(', ')}`;
@@ -157,35 +152,35 @@ class EventsService {
         throw new Error(errorMessage);
       }
       
-      // Prepare data for submission
-      const submitData = this.prepareEventData(data);
-      console.log('[EventsService] Prepared data for submission:', submitData);
+      // Prepare data for Django API
+      const submitData = this.prepareEventDataForDjango(data);
+      console.log('[EventsService] Prepared data for Django:', submitData);
       
-      const response = await api.post(`${this.baseEndpoint}/events/`, submitData, {
+      const response = await apiMethods.post(`${this.baseEndpoint}/`, submitData, {
         timeout: 30000,
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      console.log('[EventsService] Event created successfully:', response.data);
+      console.log('[EventsService] Django event creation response:', response.data);
       
       if (!response || !response.data) {
-        throw new Error('No response data received after creation');
+        throw new Error('No response data received from server after creation');
       }
       
       return response.data;
       
     } catch (error) {
-      console.error('[EventsService] Error creating event:', error);
+      console.error('[EventsService] Error creating event in Django:', error);
       throw this.enhanceError(error, 'Failed to create event');
     }
   }
 
-  // FIXED: Update event with proper handling
+  // FIXED: Update event in Django
   async updateEvent(id, data) {
     try {
-      console.log('[EventsService] Updating event:', id, 'with data:', data);
+      console.log('[EventsService] Updating event in Django:', id, data);
       
       if (!id) {
         throw new Error('Event ID is required');
@@ -203,58 +198,58 @@ class EventsService {
         throw new Error(errorMessage);
       }
       
-      // Prepare data for submission
-      const submitData = this.prepareEventData(data);
-      console.log('[EventsService] Prepared data for update:', submitData);
+      // Prepare data for Django API
+      const submitData = this.prepareEventDataForDjango(data);
+      console.log('[EventsService] Prepared data for Django update:', submitData);
       
-      const response = await api.put(`${this.baseEndpoint}/events/${id}/`, submitData, {
+      const response = await apiMethods.put(`${this.baseEndpoint}/${id}/`, submitData, {
         timeout: 30000,
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      console.log('[EventsService] Event updated successfully:', response.data);
+      console.log('[EventsService] Django event update response:', response.data);
       
       if (!response || !response.data) {
-        throw new Error('No response data received after update');
+        throw new Error('No response data received from server after update');
       }
       
       return response.data;
       
     } catch (error) {
-      console.error('[EventsService] Error updating event:', error);
+      console.error('[EventsService] Error updating event in Django:', error);
       throw this.enhanceError(error, 'Failed to update event');
     }
   }
 
-  // FIXED: Delete event with proper confirmation
+  // FIXED: Delete event from Django
   async deleteEvent(id) {
     try {
-      console.log('[EventsService] Deleting event:', id);
+      console.log('[EventsService] Deleting event from Django:', id);
       
       if (!id) {
         throw new Error('Event ID is required');
       }
       
-      const response = await api.delete(`${this.baseEndpoint}/events/${id}/`, {
+      const response = await apiMethods.delete(`${this.baseEndpoint}/${id}/`, {
         timeout: 15000
       });
       
-      console.log('[EventsService] Event deleted successfully:', response);
+      console.log('[EventsService] Django event deletion response:', response);
       
       return { success: true, data: response.data || {} };
       
     } catch (error) {
-      console.error('[EventsService] Error deleting event:', error);
+      console.error('[EventsService] Error deleting event from Django:', error);
       throw this.enhanceError(error, 'Failed to delete event');
     }
   }
 
-  // FIXED: Get calendar events with proper error handling
+  // FIXED: Get calendar events from Django
   async getCalendarEvents(params = {}) {
     try {
-      console.log('[EventsService] Fetching calendar events:', params);
+      console.log('[EventsService] Fetching calendar events from Django:', params);
       
       const cleanParams = {};
       Object.keys(params).forEach(key => {
@@ -263,7 +258,8 @@ class EventsService {
         }
       });
       
-      const response = await api.get(`${this.baseEndpoint}/events/calendar/`, { 
+      // Use Django calendar endpoint from your logs
+      const response = await apiMethods.get(`${this.baseEndpoint}/calendar/`, { 
         params: cleanParams,
         timeout: 30000
       });
@@ -273,51 +269,30 @@ class EventsService {
         count: response.data?.count || (response.data?.length || 0)
       };
       
-      console.log('[EventsService] Calendar events loaded:', calendarData);
+      console.log('[EventsService] Django calendar events loaded:', calendarData);
       
       return calendarData;
       
     } catch (error) {
-      console.error('[EventsService] Error getting calendar events:', error);
+      console.error('[EventsService] Error getting calendar events from Django:', error);
       throw this.enhanceError(error, 'Failed to fetch calendar events');
     }
   }
 
-  // FIXED: Get upcoming events
-  async getUpcomingEvents(days = 30, limit = 50) {
-    try {
-      console.log('[EventsService] Fetching upcoming events:', { days, limit });
-      
-      const response = await api.get(`${this.baseEndpoint}/events/upcoming/`, { 
-        params: { days, limit },
-        timeout: 15000
-      });
-      
-      return {
-        results: response.data?.results || response.data || [],
-        count: response.data?.count || (response.data?.length || 0),
-        days_ahead: days
-      };
-      
-    } catch (error) {
-      console.error('[EventsService] Error getting upcoming events:', error);
-      throw this.enhanceError(error, 'Failed to fetch upcoming events');
-    }
-  }
-
-  // FIXED: Get statistics with comprehensive error handling
+  // FIXED: Get event statistics from Django
   async getEventStatistics() {
     try {
-      console.log('[EventsService] Fetching event statistics');
+      console.log('[EventsService] Fetching event statistics from Django');
       
-      const response = await api.get(`${this.baseEndpoint}/events/statistics/`, {
+      // Use Django statistics endpoint from your logs
+      const response = await apiMethods.get(`${this.baseEndpoint}/statistics/`, {
         timeout: 15000
       });
       
       return response.data;
       
     } catch (error) {
-      console.error('[EventsService] Error getting statistics:', error);
+      console.error('[EventsService] Error getting statistics from Django:', error);
       
       // Return fallback stats instead of throwing
       const fallbackStats = {
@@ -338,15 +313,15 @@ class EventsService {
         monthly_stats: []
       };
       
-      console.log('[EventsService] Returning fallback statistics');
+      console.log('[EventsService] Returning fallback statistics due to error:', error.message);
       return fallbackStats;
     }
   }
 
-  // FIXED: Register for event
+  // FIXED: Register for event in Django
   async registerForEvent(eventId, registrationData) {
     try {
-      console.log('[EventsService] Registering for event:', eventId, registrationData);
+      console.log('[EventsService] Registering for event in Django:', eventId, registrationData);
       
       if (!eventId) {
         throw new Error('Event ID is required');
@@ -356,50 +331,25 @@ class EventsService {
         throw new Error('Member ID is required for registration');
       }
       
-      const response = await api.post(`${this.baseEndpoint}/events/${eventId}/register/`, registrationData, {
+      // Use Django registration endpoint from your views
+      const response = await apiMethods.post(`${this.baseEndpoint}/${eventId}/register/`, registrationData, {
         timeout: 30000
       });
       
-      console.log('[EventsService] Registration successful:', response.data);
+      console.log('[EventsService] Django registration response:', response.data);
       
       return response.data;
       
     } catch (error) {
-      console.error('[EventsService] Registration error:', error);
+      console.error('[EventsService] Registration error in Django:', error);
       throw this.enhanceError(error, 'Failed to register for event');
     }
   }
 
-  // FIXED: Export events
-  async exportEvents(params = {}) {
-    try {
-      console.log('[EventsService] Exporting events:', params);
-      
-      const cleanParams = {};
-      Object.keys(params).forEach(key => {
-        if (params[key] !== '' && params[key] !== null && params[key] !== undefined) {
-          cleanParams[key] = params[key];
-        }
-      });
-      
-      const response = await api.get(`${this.baseEndpoint}/events/export/`, { 
-        params: cleanParams, 
-        responseType: 'blob',
-        timeout: 60000
-      });
-      
-      return response.data;
-      
-    } catch (error) {
-      console.error('[EventsService] Export error:', error);
-      throw this.enhanceError(error, 'Failed to export events');
-    }
-  }
-
-  // FIXED: Bulk actions with proper validation
+  // FIXED: Bulk actions using Django endpoint
   async bulkAction(actionData) {
     try {
-      console.log('[EventsService] Performing bulk action:', actionData);
+      console.log('[EventsService] Performing bulk action in Django:', actionData);
       
       if (!actionData || !actionData.action || !Array.isArray(actionData.event_ids)) {
         throw new Error('Invalid bulk action data');
@@ -409,31 +359,33 @@ class EventsService {
         throw new Error('No events selected for bulk action');
       }
       
-      const response = await api.post(`${this.baseEndpoint}/events/bulk_action/`, actionData, {
+      // Use Django bulk action endpoint from your views
+      const response = await apiMethods.post(`${this.baseEndpoint}/bulk_action/`, actionData, {
         timeout: 60000
       });
       
-      console.log('[EventsService] Bulk action completed:', response.data);
+      console.log('[EventsService] Django bulk action response:', response.data);
       
       return response.data;
       
     } catch (error) {
-      console.error('[EventsService] Bulk action error:', error);
+      console.error('[EventsService] Bulk action error in Django:', error);
       throw this.enhanceError(error, 'Bulk action failed');
     }
   }
 
-  // FIXED: Prepare event data for submission
-  prepareEventData(eventData) {
-    // Create a clean copy of the data
+  // Helper: Prepare event data for Django API format
+  prepareEventDataForDjango(eventData) {
     const prepared = { ...eventData };
     
-    // Convert string numbers to proper types
+    // Convert string numbers to proper types for Django
     if (prepared.max_capacity !== null && prepared.max_capacity !== undefined && prepared.max_capacity !== '') {
       prepared.max_capacity = parseInt(prepared.max_capacity);
       if (isNaN(prepared.max_capacity)) {
         prepared.max_capacity = null;
       }
+    } else {
+      prepared.max_capacity = null;
     }
     
     if (prepared.age_min !== null && prepared.age_min !== undefined && prepared.age_min !== '') {
@@ -441,6 +393,8 @@ class EventsService {
       if (isNaN(prepared.age_min)) {
         prepared.age_min = null;
       }
+    } else {
+      prepared.age_min = null;
     }
     
     if (prepared.age_max !== null && prepared.age_max !== undefined && prepared.age_max !== '') {
@@ -448,6 +402,8 @@ class EventsService {
       if (isNaN(prepared.age_max)) {
         prepared.age_max = null;
       }
+    } else {
+      prepared.age_max = null;
     }
     
     if (prepared.registration_fee !== null && prepared.registration_fee !== undefined && prepared.registration_fee !== '') {
@@ -455,9 +411,11 @@ class EventsService {
       if (isNaN(prepared.registration_fee)) {
         prepared.registration_fee = 0;
       }
+    } else {
+      prepared.registration_fee = 0;
     }
     
-    // Clean up empty strings - convert to null for optional fields
+    // Clean up empty strings - convert to null for Django optional fields
     const optionalFields = [
       'description', 'location', 'location_details', 'organizer',
       'contact_email', 'contact_phone', 'prerequisites', 'tags',
@@ -470,12 +428,12 @@ class EventsService {
       }
     });
     
-    // Ensure boolean fields are properly typed
+    // Ensure boolean fields are properly typed for Django
     prepared.is_public = Boolean(prepared.is_public);
     prepared.is_featured = Boolean(prepared.is_featured);
     prepared.requires_registration = Boolean(prepared.requires_registration);
     
-    // Ensure required fields have defaults
+    // Ensure required fields have defaults for Django
     if (!prepared.status) {
       prepared.status = 'draft';
     }
@@ -487,7 +445,42 @@ class EventsService {
     return prepared;
   }
 
-  // FIXED: Enhanced data validation
+  // Helper: Get display names for Django choice fields
+  getStatusDisplay(status) {
+    const statusDisplayMap = {
+      'draft': 'Draft',
+      'published': 'Published',
+      'cancelled': 'Cancelled',
+      'postponed': 'Postponed',
+      'completed': 'Completed'
+    };
+    return statusDisplayMap[status] || status;
+  }
+
+  getEventTypeDisplay(eventType) {
+    const typeDisplayMap = {
+      'service': 'Church Service',
+      'meeting': 'Meeting',
+      'social': 'Social Event',
+      'youth': 'Youth Event',
+      'workshop': 'Workshop',
+      'outreach': 'Outreach',
+      'conference': 'Conference',
+      'retreat': 'Retreat',
+      'fundraiser': 'Fundraiser',
+      'kids': 'Kids Event',
+      'seniors': 'Seniors Event',
+      'prayer': 'Prayer Meeting',
+      'bible_study': 'Bible Study',
+      'baptism': 'Baptism',
+      'wedding': 'Wedding',
+      'funeral': 'Memorial Service',
+      'other': 'Other'
+    };
+    return typeDisplayMap[eventType] || eventType;
+  }
+
+  // Enhanced data validation for Django backend
   validateEventData(eventData) {
     const errors = {};
     
@@ -526,56 +519,6 @@ class EventsService {
       }
     }
     
-    // Registration deadline validation
-    if (eventData.registration_deadline && eventData.start_datetime) {
-      const deadlineDate = new Date(eventData.registration_deadline);
-      const startDate = new Date(eventData.start_datetime);
-      
-      if (isNaN(deadlineDate.getTime())) {
-        errors.registration_deadline = 'Invalid registration deadline format';
-      } else if (!isNaN(startDate.getTime()) && deadlineDate > startDate) {
-        errors.registration_deadline = 'Registration deadline cannot be after event start time';
-      }
-    }
-    
-    // Numeric validations
-    if (eventData.age_min !== undefined && eventData.age_min !== null && eventData.age_min !== '') {
-      const minAge = parseInt(eventData.age_min);
-      if (isNaN(minAge) || minAge < 0 || minAge > 120) {
-        errors.age_min = 'Minimum age must be between 0 and 120';
-      }
-    }
-    
-    if (eventData.age_max !== undefined && eventData.age_max !== null && eventData.age_max !== '') {
-      const maxAge = parseInt(eventData.age_max);
-      if (isNaN(maxAge) || maxAge < 0 || maxAge > 120) {
-        errors.age_max = 'Maximum age must be between 0 and 120';
-      }
-    }
-    
-    if (eventData.age_min && eventData.age_max) {
-      const minAge = parseInt(eventData.age_min);
-      const maxAge = parseInt(eventData.age_max);
-      
-      if (!isNaN(minAge) && !isNaN(maxAge) && minAge > maxAge) {
-        errors.age_max = 'Maximum age cannot be less than minimum age';
-      }
-    }
-    
-    if (eventData.max_capacity !== undefined && eventData.max_capacity !== null && eventData.max_capacity !== '') {
-      const capacity = parseInt(eventData.max_capacity);
-      if (isNaN(capacity) || capacity < 1) {
-        errors.max_capacity = 'Maximum capacity must be at least 1';
-      }
-    }
-    
-    if (eventData.registration_fee !== undefined && eventData.registration_fee !== null && eventData.registration_fee !== '') {
-      const fee = parseFloat(eventData.registration_fee);
-      if (isNaN(fee) || fee < 0) {
-        errors.registration_fee = 'Registration fee cannot be negative';
-      }
-    }
-    
     // Email validation
     if (eventData.contact_email && !this.isValidEmail(eventData.contact_email)) {
       errors.contact_email = 'Please enter a valid email address';
@@ -588,19 +531,6 @@ class EventsService {
     
     if (eventData.external_registration_url && !this.isValidUrl(eventData.external_registration_url)) {
       errors.external_registration_url = 'Please enter a valid URL';
-    }
-    
-    // Text length validation
-    if (eventData.description && eventData.description.length > 2000) {
-      errors.description = 'Description cannot exceed 2000 characters';
-    }
-    
-    if (eventData.location && eventData.location.length > 200) {
-      errors.location = 'Location cannot exceed 200 characters';
-    }
-    
-    if (eventData.organizer && eventData.organizer.length > 100) {
-      errors.organizer = 'Organizer name cannot exceed 100 characters';
     }
     
     return {
@@ -624,23 +554,23 @@ class EventsService {
     }
   }
   
-  // FIXED: Enhanced error handling with detailed context
+  // Enhanced error handling with Django-specific error parsing
   enhanceError(error, defaultMessage = 'An error occurred') {
     const enhancedError = new Error();
     
     if (error.response) {
-      // Server responded with error status
       enhancedError.status = error.response.status;
       enhancedError.data = error.response.data;
       
       switch (error.response.status) {
         case 400:
+          // Handle Django validation errors
           if (error.response.data?.detail) {
             enhancedError.message = error.response.data.detail;
           } else if (error.response.data?.error) {
             enhancedError.message = error.response.data.error;
           } else if (typeof error.response.data === 'object') {
-            // Handle validation errors
+            // Handle Django field validation errors
             const validationErrors = [];
             Object.entries(error.response.data).forEach(([field, messages]) => {
               if (Array.isArray(messages)) {
@@ -666,25 +596,11 @@ class EventsService {
           break;
           
         case 404:
-          enhancedError.message = 'The requested resource was not found. Please check if the event still exists.';
-          break;
-          
-        case 409:
-          enhancedError.message = 'Conflict occurred. The resource may have been modified by another user.';
-          break;
-          
-        case 429:
-          enhancedError.message = 'Too many requests. Please wait a moment and try again.';
+          enhancedError.message = 'The requested event was not found.';
           break;
           
         case 500:
           enhancedError.message = 'Server error. Please try again later.';
-          break;
-          
-        case 502:
-        case 503:
-        case 504:
-          enhancedError.message = 'Service temporarily unavailable. Please try again later.';
           break;
           
         default:
@@ -693,11 +609,9 @@ class EventsService {
                                    `Server error: ${error.response.status}`;
       }
     } else if (error.request) {
-      // Network error
-      enhancedError.message = 'Network error. Please check your connection and ensure the backend is running.';
+      enhancedError.message = 'Network error. Please check your connection and ensure the backend server is running.';
       enhancedError.isNetworkError = true;
     } else {
-      // Other error
       enhancedError.message = error.message || defaultMessage;
     }
     
@@ -705,15 +619,50 @@ class EventsService {
     return enhancedError;
   }
 
-  // Subscribe method for real-time updates (placeholder)
-  subscribe(eventType, callback) {
-    console.log(`[EventsService] Subscribe to ${eventType} events`);
-    
-    // This would be implemented with WebSocket or similar
-    // For now, return a mock unsubscribe function
-    return () => {
-      console.log(`[EventsService] Unsubscribed from ${eventType} events`);
+  // Format event for calendar display
+  formatEventForCalendar(events) {
+    return events.map(event => ({
+      id: event.id,
+      title: event.title,
+      start: event.start_datetime,
+      end: event.end_datetime,
+      backgroundColor: this.getEventTypeColor(event.event_type),
+      borderColor: this.getEventTypeColor(event.event_type),
+      textColor: '#ffffff',
+      extendedProps: {
+        ...event,
+        status: event.status,
+        event_type: event.event_type,
+        location: event.location,
+        organizer: event.organizer,
+        registration_count: event.registration_count,
+        max_capacity: event.max_capacity
+      }
+    }));
+  }
+
+  // Get color for event type
+  getEventTypeColor(eventType) {
+    const colors = {
+      service: '#3b82f6',
+      meeting: '#ef4444',
+      social: '#10b981',
+      youth: '#f59e0b',
+      workshop: '#8b5cf6',
+      outreach: '#06b6d4',
+      conference: '#3b82f6',
+      retreat: '#10b981',
+      fundraiser: '#f59e0b',
+      kids: '#f97316',
+      seniors: '#6b7280',
+      prayer: '#6366f1',
+      bible_study: '#0ea5e9',
+      baptism: '#059669',
+      wedding: '#ec4899',
+      funeral: '#6b7280',
+      other: '#6b7280'
     };
+    return colors[eventType] || colors.other;
   }
 }
 

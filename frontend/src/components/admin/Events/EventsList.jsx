@@ -1,71 +1,19 @@
+// frontend/src/components/admin/Events/EventsList.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Search, Plus, Filter, Calendar, Users, MapPin, 
   Clock, DollarSign, Eye, Edit, Trash2,
-  CheckCircle, XCircle, AlertCircle, Star
+  CheckCircle, XCircle, AlertCircle, Star,
+  Upload, Download, RefreshCw
 } from 'lucide-react';
-
-// Mock events service - replace with your actual service
-const mockEventsService = {
-  getEvents: async (params) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Return mock data - replace with actual API call
-    return {
-      results: [
-        {
-          id: 1,
-          title: 'Sunday Morning Service',
-          event_type: 'service',
-          event_type_display: 'Church Service',
-          status: 'published',
-          status_display: 'Published',
-          start_datetime: '2024-12-29T09:00:00',
-          end_datetime: '2024-12-29T11:00:00',
-          location: 'Main Sanctuary',
-          organizer: 'Pastor John',
-          registration_count: 45,
-          max_capacity: 100,
-          requires_registration: false,
-          registration_fee: 0,
-          is_featured: true,
-          is_public: true
-        },
-        {
-          id: 2,
-          title: 'Youth Bible Study',
-          event_type: 'youth',
-          event_type_display: 'Youth Event',
-          status: 'published',
-          status_display: 'Published',
-          start_datetime: '2024-12-30T18:00:00',
-          end_datetime: '2024-12-30T20:00:00',
-          location: 'Youth Room',
-          organizer: 'Pastor Mike',
-          registration_count: 12,
-          max_capacity: 25,
-          requires_registration: true,
-          registration_fee: 0,
-          is_featured: false,
-          is_public: true
-        }
-      ],
-      count: 2
-    };
-  },
-  
-  deleteEvent: async (id) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
-  }
-};
+import { useEvents } from '../../../hooks/useEvents';
+import { useToast } from '../../../hooks/useToast';
+import LoadingSpinner from '../../shared/LoadingSpinner';
+import EventForm from './EventForm';
+import BulkImportModal from './BulkImportModal';
 
 const EventsList = ({ onCreateEvent, onEditEvent }) => {
-  // FIXED: Use refs to persist state across re-renders
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: '',
@@ -73,117 +21,87 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
     upcoming: '',
     featured: ''
   });
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0
-  });
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkAction, setBulkAction] = useState('');
 
-  // Use refs to prevent unnecessary re-fetches
-  const fetchedRef = useRef(false);
-  const lastFetchParams = useRef(null);
+  // Use the events hook with filters
+  const {
+    events,
+    loading,
+    error,
+    pagination,
+    fetchEvents,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    performBulkAction,
+    setPage,
+    clearError,
+    refreshEvents
+  } = useEvents({
+    search: searchTerm,
+    ...filters
+  });
 
-  // FIXED: Stable fetch function that caches results
-  const fetchEvents = useCallback(async (forceRefresh = false) => {
-    const currentParams = {
-      page: pagination.page,
-      limit: pagination.limit,
-      search: searchTerm,
-      ...filters
-    };
+  const { showToast } = useToast();
 
-    // Remove empty filters
-    Object.keys(currentParams).forEach(key => {
-      if (currentParams[key] === '' || currentParams[key] === null || currentParams[key] === undefined) {
-        delete currentParams[key];
-      }
-    });
-
-    // Check if we need to fetch (avoid duplicate requests)
-    const paramsChanged = JSON.stringify(currentParams) !== JSON.stringify(lastFetchParams.current);
-    
-    if (!forceRefresh && !paramsChanged && fetchedRef.current) {
-      console.log('[EventsList] Skipping fetch - no changes detected');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('[EventsList] Fetching events with params:', currentParams);
-      
-      const response = await mockEventsService.getEvents(currentParams);
-      
-      setEvents(response.results || []);
-      setPagination(prev => ({
-        ...prev,
-        total: response.count || 0,
-        totalPages: Math.ceil((response.count || 0) / prev.limit)
-      }));
-
-      lastFetchParams.current = currentParams;
-      fetchedRef.current = true;
-      
-      console.log('[EventsList] Events loaded:', response.results?.length || 0);
-      
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError('Failed to load events. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [pagination.page, pagination.limit, searchTerm, filters]);
-
-  // Initial fetch
-  useEffect(() => {
-    if (!fetchedRef.current) {
-      fetchEvents();
-    }
-  }, [fetchEvents]);
-
-  // FIXED: Debounced search to prevent excessive API calls
+  // Debounced search
   const searchTimeoutRef = useRef(null);
   
   const handleSearch = useCallback((e) => {
     const value = e.target.value;
     setSearchTerm(value);
     
-    // Clear existing timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
     
-    // Set new timeout for debounced search
     searchTimeoutRef.current = setTimeout(() => {
-      setPagination(prev => ({ ...prev, page: 1 }));
-      fetchedRef.current = false; // Force refetch
+      setPage(1); // Reset to first page when searching
     }, 500);
-  }, []);
+  }, [setPage]);
 
   const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchedRef.current = false; // Force refetch
-  }, []);
+    setPage(1);
+  }, [setPage]);
 
-  const handlePageChange = useCallback((page) => {
-    setPagination(prev => ({ ...prev, page }));
-    fetchedRef.current = false; // Force refetch
-  }, []);
-
+  // Event handlers
   const handleCreateEvent = () => {
     if (onCreateEvent) {
       onCreateEvent();
+    } else {
+      setEditingEvent(null);
+      setShowEventForm(true);
     }
   };
 
   const handleEditEvent = (event) => {
     if (onEditEvent) {
       onEditEvent(event);
+    } else {
+      setEditingEvent(event);
+      setShowEventForm(true);
+    }
+  };
+
+  const handleSaveEvent = async (eventData) => {
+    try {
+      if (editingEvent) {
+        await updateEvent(editingEvent.id, eventData);
+        showToast('Event updated successfully', 'success');
+      } else {
+        await createEvent(eventData);
+        showToast('Event created successfully', 'success');
+      }
+      setShowEventForm(false);
+      setEditingEvent(null);
+    } catch (error) {
+      showToast(error.message || 'Failed to save event', 'error');
     }
   };
 
@@ -195,21 +113,14 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
     if (!deleteConfirm) return;
 
     try {
-      await mockEventsService.deleteEvent(deleteConfirm);
-      
-      // Remove from local state instead of refetching
-      setEvents(prev => prev.filter(e => e.id !== deleteConfirm));
-      setPagination(prev => ({
-        ...prev,
-        total: Math.max(0, prev.total - 1),
-        totalPages: Math.ceil(Math.max(0, prev.total - 1) / prev.limit)
-      }));
-      
-      console.log('Event deleted successfully');
+      await deleteEvent(deleteConfirm);
+      showToast('Event deleted successfully', 'success');
       setDeleteConfirm(null);
-    } catch (err) {
-      console.error('Error deleting event:', err);
-      setError('Failed to delete event');
+      
+      // Remove from selected events if it was selected
+      setSelectedEvents(prev => prev.filter(id => id !== deleteConfirm));
+    } catch (error) {
+      showToast(error.message || 'Failed to delete event', 'error');
     }
   };
 
@@ -229,7 +140,49 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
     }
   };
 
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedEvents.length === 0) {
+      showToast('Please select events and an action', 'warning');
+      return;
+    }
+
+    try {
+      const result = await performBulkAction(selectedEvents, bulkAction);
+      
+      if (bulkAction === 'export') {
+        // Handle file download
+        const url = window.URL.createObjectURL(new Blob([result]));
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `events_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showToast('Events exported successfully', 'success');
+      } else {
+        showToast(`Bulk action completed: ${result.message || 'Success'}`, 'success');
+      }
+      
+      setSelectedEvents([]);
+      setBulkAction('');
+    } catch (error) {
+      showToast(error.message || 'Bulk action failed', 'error');
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      await refreshEvents();
+      showToast('Events refreshed', 'success');
+    } catch (error) {
+      showToast('Failed to refresh events', 'error');
+    }
+  };
+
+  // Utility functions
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -239,6 +192,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
   };
 
   const formatTime = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -248,6 +202,8 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
   };
 
   const getStatusIcon = (event) => {
+    if (!event) return null;
+    
     if (event.status === 'published') {
       const now = new Date();
       const endDate = new Date(event.end_datetime);
@@ -271,6 +227,16 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       youth: { backgroundColor: '#fed7aa', color: '#ea580c' },
       workshop: { backgroundColor: '#e9d5ff', color: '#7c3aed' },
       outreach: { backgroundColor: '#a7f3d0', color: '#047857' },
+      conference: { backgroundColor: '#dbeafe', color: '#1e40af' },
+      retreat: { backgroundColor: '#d1fae5', color: '#059669' },
+      fundraiser: { backgroundColor: '#fef3c7', color: '#92400e' },
+      kids: { backgroundColor: '#fed7aa', color: '#ea580c' },
+      seniors: { backgroundColor: '#f1f5f9', color: '#475569' },
+      prayer: { backgroundColor: '#e0e7ff', color: '#4338ca' },
+      bible_study: { backgroundColor: '#f0f9ff', color: '#0369a1' },
+      baptism: { backgroundColor: '#ecfdf5', color: '#059669' },
+      wedding: { backgroundColor: '#fdf2f8', color: '#be185d' },
+      funeral: { backgroundColor: '#f1f5f9', color: '#475569' },
       other: { backgroundColor: '#f3f4f6', color: '#374151' }
     };
     return colors[eventType] || colors.other;
@@ -291,6 +257,9 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       flexWrap: 'wrap',
       gap: '1rem'
     },
+    headerLeft: {
+      flex: 1
+    },
     title: {
       fontSize: '2rem',
       fontWeight: '700',
@@ -301,7 +270,12 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       color: '#6b7280',
       margin: '0.5rem 0 0 0'
     },
-    createButton: {
+    headerActions: {
+      display: 'flex',
+      gap: '12px',
+      alignItems: 'center'
+    },
+    actionButton: {
       display: 'inline-flex',
       alignItems: 'center',
       gap: '0.5rem',
@@ -313,6 +287,11 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       fontWeight: '500',
       cursor: 'pointer',
       transition: 'all 0.2s'
+    },
+    secondaryButton: {
+      backgroundColor: 'white',
+      color: '#374151',
+      border: '1px solid #d1d5db'
     },
     filtersContainer: {
       display: 'flex',
@@ -350,6 +329,16 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       backgroundColor: 'white',
       minWidth: '140px',
       cursor: 'pointer'
+    },
+    bulkActionsContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem',
+      backgroundColor: '#f9fafb',
+      border: '1px solid #e5e7eb',
+      borderRadius: '0.5rem',
+      marginBottom: '1rem'
     },
     eventsGrid: {
       border: '1px solid #e5e7eb',
@@ -411,7 +400,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       display: 'flex',
       gap: '0.5rem'
     },
-    actionButton: {
+    actionButtonSmall: {
       padding: '0.5rem',
       border: '1px solid #d1d5db',
       backgroundColor: 'white',
@@ -446,20 +435,27 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
       padding: '4rem 2rem',
       textAlign: 'center',
       color: '#ef4444'
+    },
+    pagination: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: '2rem',
+      padding: '1rem 0'
     }
   };
 
-  if (loading) {
+  // Clear error when component mounts
+  useEffect(() => {
+    if (error) {
+      clearError();
+    }
+  }, [error, clearError]);
+
+  if (loading && events.length === 0) {
     return (
       <div style={styles.loading}>
-        <div style={{ 
-          width: '40px', 
-          height: '40px', 
-          border: '3px solid #f3f4f6', 
-          borderTop: '3px solid #3b82f6',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
+        <LoadingSpinner size="large" />
         <p>Loading events...</p>
       </div>
     );
@@ -471,11 +467,8 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
         <AlertCircle size={48} style={{ marginBottom: '1rem' }} />
         <p>{error}</p>
         <button 
-          onClick={() => {
-            fetchedRef.current = false;
-            fetchEvents(true);
-          }}
-          style={styles.createButton}
+          onClick={handleRefresh}
+          style={styles.actionButton}
         >
           Try Again
         </button>
@@ -487,19 +480,36 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <div>
+        <div style={styles.headerLeft}>
           <h1 style={styles.title}>Events</h1>
           <p style={styles.subtitle}>
-            Manage church events and activities
+            Manage church events and activities ({pagination.total} total)
           </p>
         </div>
-        <button 
-          onClick={handleCreateEvent}
-          style={styles.createButton}
-        >
-          <Plus size={16} />
-          Create Event
-        </button>
+        <div style={styles.headerActions}>
+          <button 
+            onClick={handleRefresh}
+            style={{...styles.actionButton, ...styles.secondaryButton}}
+            disabled={loading}
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+          <button 
+            onClick={() => setShowBulkImport(true)}
+            style={{...styles.actionButton, ...styles.secondaryButton}}
+          >
+            <Upload size={16} />
+            Import
+          </button>
+          <button 
+            onClick={handleCreateEvent}
+            style={styles.actionButton}
+          >
+            <Plus size={16} />
+            Create Event
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -524,6 +534,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
           <option value="draft">Draft</option>
           <option value="published">Published</option>
           <option value="cancelled">Cancelled</option>
+          <option value="postponed">Postponed</option>
         </select>
 
         <select
@@ -538,14 +549,75 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
           <option value="youth">Youth Event</option>
           <option value="workshop">Workshop</option>
           <option value="outreach">Outreach</option>
+          <option value="conference">Conference</option>
+          <option value="retreat">Retreat</option>
+          <option value="fundraiser">Fundraiser</option>
+          <option value="kids">Kids Event</option>
+          <option value="seniors">Seniors Event</option>
+          <option value="prayer">Prayer Meeting</option>
+          <option value="bible_study">Bible Study</option>
           <option value="other">Other</option>
         </select>
+
+        <select
+          value={filters.upcoming}
+          onChange={(e) => handleFilterChange('upcoming', e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">All Events</option>
+          <option value="true">Upcoming Only</option>
+          <option value="false">Past Events</option>
+        </select>
       </div>
+
+      {/* Bulk Actions */}
+      {selectedEvents.length > 0 && (
+        <div style={styles.bulkActionsContainer}>
+          <div>
+            <strong>{selectedEvents.length}</strong> event{selectedEvents.length !== 1 ? 's' : ''} selected
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <select
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value)}
+              style={styles.filterSelect}
+            >
+              <option value="">Select Action</option>
+              <option value="publish">Publish</option>
+              <option value="cancel">Cancel</option>
+              <option value="delete">Delete</option>
+              <option value="export">Export</option>
+            </select>
+            <button
+              onClick={handleBulkAction}
+              disabled={!bulkAction}
+              style={{
+                ...styles.actionButton,
+                opacity: bulkAction ? 1 : 0.5,
+                cursor: bulkAction ? 'pointer' : 'not-allowed'
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Events Grid */}
       <div style={styles.eventsGrid}>
         {/* Header Row */}
         <div style={styles.gridHeader}>
+          <div style={styles.gridHeaderCell}>
+            <input
+              type="checkbox"
+              checked={events.length > 0 && selectedEvents.length === events.length}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+            />
+          </div>
+          <div style={styles.gridHeaderCell}>Event</div>
+          <div style={styles.gridHeaderCell}>Date & Time</div>
+          <div style={styles.gridHeaderCell}>Location</div>
+          <div style={styles.gridHeaderCell}>Status</div>
           <div style={styles.gridHeaderCell}>Registrations</div>
           <div style={styles.gridHeaderCell}>Actions</div>
         </div>
@@ -558,6 +630,8 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
               ...styles.gridRow,
               ':hover': { backgroundColor: '#f9fafb' }
             }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
           >
             <div style={styles.gridCell}>
               <input
@@ -582,7 +656,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
                       ...getEventTypeColor(event.event_type)
                     }}
                   >
-                    {event.event_type_display}
+                    {event.event_type_display || event.event_type}
                   </span>
                   {event.organizer && (
                     <span style={{ color: '#6b7280' }}>
@@ -617,7 +691,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {getStatusIcon(event)}
                 <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>
-                  {event.status_display}
+                  {event.status_display || event.status}
                 </span>
               </div>
             </div>
@@ -626,7 +700,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500' }}>
                   <Users size={16} />
-                  {event.registration_count}
+                  {event.registration_count || 0}
                   {event.max_capacity && ` / ${event.max_capacity}`}
                 </div>
                 {event.requires_registration && event.registration_fee > 0 && (
@@ -649,14 +723,14 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
               <div style={styles.actions}>
                 <button
                   onClick={() => window.open(`/events/${event.id}`, '_blank')}
-                  style={styles.actionButton}
+                  style={styles.actionButtonSmall}
                   title="View Event"
                 >
                   <Eye size={16} />
                 </button>
                 <button
                   onClick={() => handleEditEvent(event)}
-                  style={styles.actionButton}
+                  style={styles.actionButtonSmall}
                   title="Edit Event"
                 >
                   <Edit size={16} />
@@ -664,14 +738,18 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
                 <button
                   onClick={() => handleDeleteEvent(event.id)}
                   style={{
-                    ...styles.actionButton,
-                    ':hover': { 
-                      backgroundColor: '#fef2f2',
-                      borderColor: '#ef4444',
-                      color: '#ef4444'
-                    }
+                    ...styles.actionButtonSmall,
+                    color: '#ef4444'
                   }}
                   title="Delete Event"
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#fef2f2';
+                    e.target.style.borderColor = '#ef4444';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'white';
+                    e.target.style.borderColor = '#d1d5db';
+                  }}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -704,7 +782,7 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
             {!searchTerm && !Object.values(filters).some(f => f) && (
               <button 
                 onClick={handleCreateEvent}
-                style={styles.createButton}
+                style={styles.actionButton}
               >
                 <Plus size={16} />
                 Create Event
@@ -713,6 +791,66 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div style={styles.pagination}>
+          <div>
+            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} events
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setPage(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+              style={{
+                ...styles.actionButtonSmall,
+                opacity: pagination.page <= 1 ? 0.5 : 1,
+                cursor: pagination.page <= 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Previous
+            </button>
+            <span style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center' }}>
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setPage(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+              style={{
+                ...styles.actionButtonSmall,
+                opacity: pagination.page >= pagination.totalPages ? 0.5 : 1,
+                cursor: pagination.page >= pagination.totalPages ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Event Form Modal */}
+      {showEventForm && (
+        <EventForm
+          event={editingEvent}
+          onSave={handleSaveEvent}
+          onCancel={() => {
+            setShowEventForm(false);
+            setEditingEvent(null);
+          }}
+        />
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkImport && (
+        <BulkImportModal
+          onClose={() => setShowBulkImport(false)}
+          onSuccess={(result) => {
+            setShowBulkImport(false);
+            showToast(`Successfully imported ${result.successful} events`, 'success');
+            refreshEvents();
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
@@ -787,15 +925,6 @@ const EventsList = ({ onCreateEvent, onEditEvent }) => {
           </div>
         </div>
       )}
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

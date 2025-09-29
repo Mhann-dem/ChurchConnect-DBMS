@@ -1,242 +1,91 @@
-// frontend/src/pages/admin/EventsPage.jsx - FIXED VERSION
+// frontend/src/pages/admin/EventsPage.jsx - UPDATED: Proper EventForm integration
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
-  Calendar, 
-  List, 
-  Plus, 
-  Filter, 
-  RefreshCw, 
-  Download, 
-  TrendingUp,
-  Users,
-  AlertCircle,
-  Eye,
-  BarChart3,
-  Clock,
-  MapPin,
-  Star,
-  Edit,
-  Trash2,
-  CheckCircle,
-  XCircle
+  Calendar, Plus, RefreshCw, TrendingUp, Users, Star,
+  Edit, Trash2, CheckCircle, XCircle, AlertCircle, MapPin, Clock
 } from 'lucide-react';
-import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
 import { eventsService } from '../../services/events';
 import { useToast } from '../../hooks/useToast';
 import EventForm from '../../components/admin/Events/EventForm';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 
-// Enhanced Modal component
-const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      const handleEscape = (e) => {
-        if (e.key === 'Escape') onClose();
-      };
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-        document.body.style.overflow = 'unset';
-      };
-    }
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const modalStyles = {
-    overlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
-    },
-    content: {
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      padding: '0',
-      maxWidth: size === 'lg' ? '900px' : '600px',
-      width: '100%',
-      maxHeight: '90vh',
-      overflowY: 'auto',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-    }
-  };
-
-  return (
-    <div style={modalStyles.overlay} onClick={onClose}>
-      <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
-    </div>
-  );
-};
-
-const EventsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { showToast } = useToast();
-  
-  // State management
+const AdminEventsPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('list');
-  const [searchTerm, setSearchTerm] = useState('');
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState([]);
   const [deleteEvent, setDeleteEvent] = useState(null);
-  const [filters, setFilters] = useState({
-    status: '',
-    event_type: '',
-    upcoming: '',
-    featured: ''
-  });
+  const [refreshing, setRefreshing] = useState(false);
   
-  // Stats
+  const { showToast } = useToast();
+  
   const [eventStats, setEventStats] = useState({
     total: 0,
     upcoming: 0,
     thisMonth: 0,
-    featured: 0,
-    totalRegistrations: 0,
-    avgAttendance: 0
+    featured: 0
   });
-  const [refreshing, setRefreshing] = useState(false);
 
-  // FIXED: Proper event fetching
+  // Fetch events from Django backend
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params = {
-        search: searchTerm,
-        ...filters
-      };
-
-      // Remove empty filters
-      Object.keys(params).forEach(key => {
-        if (params[key] === '' || params[key] === null || params[key] === undefined) {
-          delete params[key];
-        }
+      console.log('[AdminEventsPage] Fetching events from Django');
+      
+      const response = await eventsService.getEvents({
+        ordering: '-created_at'
       });
-
-      console.log('[EventsPage] Fetching events with params:', params);
       
-      const response = await eventsService.getEvents(params);
-      console.log('[EventsPage] Events response:', response);
+      console.log('[AdminEventsPage] Events response:', response);
       
-      // Handle different response structures
-      let eventsData = [];
-      if (response.results && Array.isArray(response.results)) {
-        eventsData = response.results;
-      } else if (Array.isArray(response.data)) {
-        eventsData = response.data;
-      } else if (Array.isArray(response)) {
-        eventsData = response;
-      }
-
+      const eventsData = response.results || response.data || [];
       setEvents(eventsData);
-      calculateStats(eventsData);
+      
+      // Calculate stats
+      const now = new Date();
+      const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      
+      setEventStats({
+        total: eventsData.length,
+        upcoming: eventsData.filter(e => new Date(e.start_datetime) > now).length,
+        thisMonth: eventsData.filter(e => {
+          const eventDate = new Date(e.start_datetime);
+          return eventDate >= thisMonth && eventDate < nextMonth;
+        }).length,
+        featured: eventsData.filter(e => e.is_featured).length
+      });
       
     } catch (err) {
-      console.error('[EventsPage] Error fetching events:', err);
-      const errorMessage = err.response?.status === 404 
-        ? 'Events API not found. Please check backend configuration.'
-        : err.message || 'Failed to fetch events';
-      
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
+      console.error('[AdminEventsPage] Error fetching events:', err);
+      setError('Failed to load events. Please check your backend connection.');
+      showToast('Failed to load events', 'error');
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, filters, showToast]);
+  }, [showToast]);
 
-  // Calculate event statistics
-  const calculateStats = useCallback((eventsList) => {
-    if (!Array.isArray(eventsList)) {
-      setEventStats({
-        total: 0,
-        upcoming: 0,
-        thisMonth: 0,
-        featured: 0,
-        totalRegistrations: 0,
-        avgAttendance: 0
-      });
-      return;
-    }
-    
-    const now = new Date();
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    
-    const upcomingEvents = eventsList.filter(event => {
-      try {
-        return event.start_datetime && new Date(event.start_datetime) > now;
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    const thisMonthEvents = eventsList.filter(event => {
-      try {
-        const eventDate = new Date(event.start_datetime);
-        return eventDate >= thisMonth && eventDate < nextMonth;
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    const featuredEvents = eventsList.filter(event => 
-      event.is_featured === true || event.featured === true
-    );
-    
-    const totalRegistrations = eventsList.reduce((sum, event) => {
-      const count = event.registration_count || 0;
-      return sum + (typeof count === 'number' ? count : 0);
-    }, 0);
-
-    setEventStats({
-      total: eventsList.length,
-      upcoming: upcomingEvents.length,
-      thisMonth: thisMonthEvents.length,
-      featured: featuredEvents.length,
-      totalRegistrations,
-      avgAttendance: eventsList.length > 0 ? Math.round(totalRegistrations / eventsList.length) : 0
-    });
-  }, []);
-
-  // Initial data fetch
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // Event handlers
   const handleCreateEvent = useCallback(() => {
-    console.log('[EventsPage] Create event clicked');
+    console.log('[AdminEventsPage] Create event clicked');
     setEditingEvent(null);
     setShowEventForm(true);
   }, []);
 
   const handleEditEvent = useCallback((event) => {
-    console.log('[EventsPage] Edit event clicked:', event);
+    console.log('[AdminEventsPage] Edit event clicked:', event);
     setEditingEvent(event);
     setShowEventForm(true);
   }, []);
 
   const handleDeleteEvent = useCallback((event) => {
-    console.log('[EventsPage] Delete event clicked:', event);
+    console.log('[AdminEventsPage] Delete event clicked:', event);
     setDeleteEvent(event);
   }, []);
 
@@ -244,23 +93,29 @@ const EventsPage = () => {
     if (!deleteEvent) return;
     
     try {
-      console.log('[EventsPage] Confirming delete for:', deleteEvent.id);
+      console.log('[AdminEventsPage] Confirming delete for:', deleteEvent.id);
       await eventsService.deleteEvent(deleteEvent.id);
       setEvents(prev => prev.filter(e => e.id !== deleteEvent.id));
       showToast('Event deleted successfully', 'success');
       setDeleteEvent(null);
       
-      // Refresh stats
+      // Update stats
       const updatedEvents = events.filter(e => e.id !== deleteEvent.id);
-      calculateStats(updatedEvents);
+      const now = new Date();
+      setEventStats({
+        total: updatedEvents.length,
+        upcoming: updatedEvents.filter(e => new Date(e.start_datetime) > now).length,
+        thisMonth: eventStats.thisMonth - 1,
+        featured: updatedEvents.filter(e => e.is_featured).length
+      });
     } catch (err) {
       console.error('Error deleting event:', err);
       showToast(err.message || 'Failed to delete event', 'error');
     }
-  }, [deleteEvent, showToast, events, calculateStats]);
+  }, [deleteEvent, showToast, events, eventStats.thisMonth]);
 
   const handleRefresh = useCallback(() => {
-    console.log('[EventsPage] Refresh clicked');
+    console.log('[AdminEventsPage] Refresh clicked');
     setRefreshing(true);
     fetchEvents().finally(() => setRefreshing(false));
   }, [fetchEvents]);
@@ -268,7 +123,7 @@ const EventsPage = () => {
   // FIXED: Form submission handler
   const handleFormSubmit = useCallback(async (formData) => {
     try {
-      console.log('[EventsPage] Form submit:', formData);
+      console.log('[AdminEventsPage] Form submit:', formData);
       
       let savedEvent;
       if (editingEvent) {
@@ -284,49 +139,53 @@ const EventsPage = () => {
       setShowEventForm(false);
       setEditingEvent(null);
       
-      // Refresh stats
+      // Refresh to get updated stats
       fetchEvents();
       
     } catch (error) {
       console.error('Form submit error:', error);
       showToast(error.message || 'Failed to save event', 'error');
+      throw error; // Re-throw so form can handle it
     }
   }, [editingEvent, showToast, fetchEvents]);
 
   const handleFormCancel = useCallback(() => {
-    console.log('[EventsPage] Form cancelled');
+    console.log('[AdminEventsPage] Form cancelled');
     setShowEventForm(false);
     setEditingEvent(null);
   }, []);
 
-  // Utility functions
-  const getEventStatusIcon = (event) => {
-    if (event.status === 'published') {
-      if (event.end_datetime && isPast(parseISO(event.end_datetime))) {
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      }
-      return <CheckCircle className="w-4 h-4 text-blue-500" />;
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return 'Invalid date';
     }
-    if (event.status === 'cancelled') {
-      return <XCircle className="w-4 h-4 text-red-500" />;
-    }
-    return <AlertCircle className="w-4 h-4 text-yellow-500" />;
   };
 
-  const getEventStatusText = (event) => {
-    if (event.status === 'published') {
-      if (event.end_datetime && isPast(parseISO(event.end_datetime))) {
-        return 'Completed';
-      }
-      if (event.start_datetime && isToday(parseISO(event.start_datetime))) {
-        return 'Today';
-      }
-      if (event.start_datetime && isFuture(parseISO(event.start_datetime))) {
-        return 'Upcoming';
-      }
-      return 'Active';
+  const formatTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    } catch (e) {
+      return 'Invalid time';
     }
-    return event.status_display || event.status || 'Unknown';
+  };
+
+  const getEventStatusIcon = (event) => {
+    if (event.status === 'published') {
+      if (event.end_datetime && new Date(event.end_datetime) < new Date()) {
+        return <CheckCircle size={16} style={{ color: '#10b981' }} />;
+      }
+      return <CheckCircle size={16} style={{ color: '#3b82f6' }} />;
+    }
+    if (event.status === 'cancelled') {
+      return <XCircle size={16} style={{ color: '#ef4444' }} />;
+    }
+    return <AlertCircle size={16} style={{ color: '#f59e0b' }} />;
   };
 
   // Loading state
@@ -341,7 +200,7 @@ const EventsPage = () => {
         gap: '16px'
       }}>
         <LoadingSpinner size="lg" />
-        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events...</p>
+        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading events from server...</p>
       </div>
     );
   }
@@ -364,19 +223,7 @@ const EventsPage = () => {
           minHeight: '60vh',
           textAlign: 'center'
         }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '24px',
-            fontSize: '32px'
-          }}>
-            ⚠️
-          </div>
+          <AlertCircle size={64} style={{ color: '#ef4444', marginBottom: '16px' }} />
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b', marginBottom: '16px' }}>
             Events Loading Error
           </h2>
@@ -449,7 +296,9 @@ const EventsPage = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '16px'
+          marginBottom: '16px',
+          flexWrap: 'wrap',
+          gap: '16px'
         }}>
           <div>
             <h1 style={{ 
@@ -572,7 +421,7 @@ const EventsPage = () => {
               <TrendingUp size={20} style={{ color: 'white' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Upcoming Events</h3>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Upcoming</h3>
               <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.upcoming}</span>
             </div>
           </div>
@@ -598,7 +447,7 @@ const EventsPage = () => {
               <Star size={20} style={{ color: 'white' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Featured Events</h3>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: 0 }}>Featured</h3>
               <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{eventStats.featured}</span>
             </div>
           </div>
@@ -617,50 +466,49 @@ const EventsPage = () => {
         {events.length > 0 ? (
           <div>
             <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-              Events ({events.length})
+              All Events ({events.length})
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {events.map((event, index) => (
-                <div key={event.id || index} style={{
+              {events.map((event) => (
+                <div key={event.id} style={{
                   padding: '16px',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  background: '#f9fafb'
+                  background: '#f9fafb',
+                  transition: 'all 0.2s'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-                        {event.is_featured && <Star size={16} style={{ color: '#f59e0b', marginRight: '8px' }} />}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '16px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {event.is_featured && <Star size={16} style={{ color: '#f59e0b' }} />}
                         {event.title || 'Untitled Event'}
                       </h4>
-                      <div style={{ display: 'flex', gap: '16px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', gap: '16px', marginBottom: '8px', flexWrap: 'wrap' }}>
                         {event.start_datetime && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280' }}>
                             <Calendar size={14} />
-                            <span style={{ fontSize: '14px', color: '#6b7280' }}>
-                              {format(parseISO(event.start_datetime), 'MMM dd, yyyy h:mm a')}
-                            </span>
+                            <span>{formatDate(event.start_datetime)} at {formatTime(event.start_datetime)}</span>
                           </div>
                         )}
                         {event.location && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280' }}>
                             <MapPin size={14} />
-                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{event.location}</span>
+                            <span>{event.location}</span>
                           </div>
                         )}
                       </div>
                       {event.description && (
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.5' }}>
                           {event.description.length > 150 ? 
                             `${event.description.substring(0, 150)}...` : 
                             event.description
                           }
                         </p>
                       )}
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {getEventStatusIcon(event)}
                         <span style={{ fontSize: '12px', fontWeight: '500' }}>
-                          {getEventStatusText(event)}
+                          {event.status_display || event.status}
                         </span>
                         {event.event_type && (
                           <span style={{
@@ -673,17 +521,15 @@ const EventsPage = () => {
                             {event.event_type_display || event.event_type}
                           </span>
                         )}
-                        {(event.registration_count) && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {event.registration_count > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#6b7280' }}>
                             <Users size={12} />
-                            <span style={{ fontSize: '12px' }}>
-                              {event.registration_count} registered
-                            </span>
+                            <span>{event.registration_count} registered</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                       <button
                         onClick={() => handleEditEvent(event)}
                         style={{
@@ -696,7 +542,14 @@ const EventsPage = () => {
                           fontSize: '12px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          gap: '4px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#e5e7eb';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = '#f3f4f6';
                         }}
                         title="Edit Event"
                       >
@@ -715,7 +568,14 @@ const EventsPage = () => {
                           fontSize: '12px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          gap: '4px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#fee2e2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = '#fef2f2';
                         }}
                         title="Delete Event"
                       >
@@ -768,20 +628,13 @@ const EventsPage = () => {
         )}
       </div>
 
-      {/* Event Form Modal */}
+      {/* Event Form Modal - FIXED INTEGRATION */}
       {showEventForm && (
-        <Modal
-          isOpen={showEventForm}
-          onClose={handleFormCancel}
-          title={editingEvent ? 'Edit Event' : 'Create New Event'}
-          size="lg"
-        >
-          <EventForm
-            event={editingEvent}
-            onSave={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        </Modal>
+        <EventForm
+          event={editingEvent}
+          onSave={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -853,8 +706,14 @@ const EventsPage = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default EventsPage;
+export default AdminEventsPage;

@@ -1,4 +1,4 @@
-// hooks/useMembers.js - FIXED VERSION with Correct Django API Integration
+// hooks/useMembers.js - FIXED VERSION for Your Django API
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
@@ -28,7 +28,7 @@ export const useMembers = (options = {}) => {
 
   const { search, filters, page, limit, autoFetch, debounceMs } = memoizedOptions;
 
-  // Core state - FIXED: Added missing state variables
+  // Core state - FIXED: Initialize with proper defaults
   const [members, setMembers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
   const [activeMembers, setActiveMembers] = useState(0);
@@ -109,7 +109,7 @@ export const useMembers = (options = {}) => {
         forceRefresh
       });
 
-      // FIXED: Use correct authentication and API endpoint
+      // Get authentication token
       const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token found');
@@ -130,12 +130,11 @@ export const useMembers = (options = {}) => {
 
       // Add filters to params
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== '' && value !== null && value !== undefined) {
+        if (value && value !== '' && value !== null && value !== undefined && value !== 'all') {
           params.set(key, value.toString());
         }
       });
 
-      // FIXED: Use the exact endpoint from your Django logs
       const url = `${baseURL}/api/v1/members/?${params.toString()}`;
       console.log('[useMembers] Fetching URL:', url);
 
@@ -159,7 +158,7 @@ export const useMembers = (options = {}) => {
         return { success: false, error: 'Component unmounted' };
       }
 
-      // FIXED: Handle Django DRF paginated response correctly
+      // CRITICAL FIX: Process Django DRF paginated response correctly
       let membersArray = [];
       let totalCount = 0;
       let activeCount = 0;
@@ -167,24 +166,28 @@ export const useMembers = (options = {}) => {
       let paginationData = null;
 
       if (data && typeof data === 'object') {
+        // FIXED: Your Django API returns active_count and inactive_count at the ROOT level
         if (data.results && Array.isArray(data.results)) {
-          // Standard DRF paginated response
           membersArray = data.results;
           totalCount = data.count || data.results.length;
           
-          // Calculate active/inactive members from current page results
-          activeCount = membersArray.filter(member => member?.is_active === true).length;
-          inactiveCount = membersArray.filter(member => member?.is_active === false).length;
+          // CRITICAL FIX: Read from the correct fields your Django API returns
+          activeCount = data.active_count !== undefined ? data.active_count : 
+                       membersArray.filter(member => member?.is_active === true).length;
+          
+          inactiveCount = data.inactive_count !== undefined ? data.inactive_count :
+                         membersArray.filter(member => member?.is_active === false).length;
           
           paginationData = {
             count: data.count,
             next: data.next,
             previous: data.previous,
             total_pages: Math.ceil(totalCount / limit),
-            current_page: page
+            current_page: page,
+            success: data.success
           };
         } else if (Array.isArray(data)) {
-          // Direct array response
+          // Fallback: direct array response
           membersArray = data;
           totalCount = data.length;
           activeCount = data.filter(member => member?.is_active === true).length;
@@ -194,19 +197,7 @@ export const useMembers = (options = {}) => {
             total_pages: 1,
             current_page: 1
           };
-        } else {
-          console.warn('[useMembers] Unexpected response format:', data);
-          membersArray = [];
-          totalCount = 0;
-          activeCount = 0;
-          inactiveCount = 0;
         }
-      } else {
-        console.warn('[useMembers] Invalid response data:', data);
-        membersArray = [];
-        totalCount = 0;
-        activeCount = 0;
-        inactiveCount = 0;
       }
       
       console.log('[useMembers] Processed data:', {
@@ -218,7 +209,7 @@ export const useMembers = (options = {}) => {
         pagination: paginationData
       });
 
-      // FIXED: Update state with correct data including active/inactive counts
+      // CRITICAL FIX: Update state with correct data
       setMembers(membersArray);
       setTotalMembers(totalCount);
       setActiveMembers(activeCount);
@@ -267,8 +258,8 @@ export const useMembers = (options = {}) => {
     cancelRequests
   ]);
 
-  // FIXED: Get recent members with correct Django API handling
-  const getRecentMembers = useCallback(async (limit = 5) => {
+  // FIXED: Get recent members
+  const getRecentMembers = useCallback(async (limitParam = 5) => {
     if (!isAuthenticated) {
       return { success: false, error: 'Authentication required' };
     }
@@ -285,9 +276,7 @@ export const useMembers = (options = {}) => {
       }
 
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      
-      // FIXED: Use the WORKING endpoint from your Django logs
-      const url = `${baseURL}/api/v1/members/recent/?limit=${limit}`;
+      const url = `${baseURL}/api/v1/members/recent/?limit=${limitParam}`;
       
       console.log('[useMembers] Recent members URL:', url);
 
@@ -305,35 +294,25 @@ export const useMembers = (options = {}) => {
       const data = await response.json();
       console.log('[useMembers] Recent members API response:', data);
 
-      // FIXED: Handle your Django MemberViewSet.recent() response format
-      // Your API returns: { success: true, results: [...], count: 4, limit: 5 }
       let results = [];
       let count = 0;
 
       if (data && typeof data === 'object') {
         if (data.success && data.results && Array.isArray(data.results)) {
-          // Your Django response format
           results = data.results;
           count = data.count || data.results.length;
         } else if (Array.isArray(data)) {
-          // Fallback: direct array
           results = data;
           count = data.length;
         } else if (data.results && Array.isArray(data.results)) {
-          // Standard DRF response
           results = data.results;
           count = data.count || data.results.length;
-        } else {
-          console.warn('[useMembers] Unexpected recent members response format:', data);
-          results = [];
-          count = 0;
         }
       }
 
       console.log('[useMembers] Recent members processed:', { 
         results: results.length, 
-        count,
-        firstMember: results[0] ? `${results[0].first_name} ${results[0].last_name}` : 'none'
+        count
       });
 
       return {
@@ -358,7 +337,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
-  // CRUD Operations with better error handling
+  // Create member
   const createMember = useCallback(async (memberData) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -398,20 +377,7 @@ export const useMembers = (options = {}) => {
       const result = await response.json();
       console.log('[useMembers] Member created successfully:', result);
 
-      // FIXED: Handle your Django MemberViewSet.create() response
-      let memberData_result = null;
-      let message = 'Member created successfully';
-
-      if (result && typeof result === 'object') {
-        if (result.success !== false) {
-          memberData_result = result.data || result;
-          message = result.message || message;
-        } else {
-          throw new Error(result.error || 'Creation failed');
-        }
-      } else {
-        memberData_result = result;
-      }
+      const memberDataResult = result.data || result;
 
       // Force refresh to get updated list
       setTimeout(() => {
@@ -422,8 +388,8 @@ export const useMembers = (options = {}) => {
 
       return {
         success: true,
-        data: memberData_result,
-        message: message
+        data: memberDataResult,
+        message: result.message || 'Member created successfully'
       };
 
     } catch (err) {
@@ -442,6 +408,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated, fetchMembers]);
 
+  // Update member
   const updateMember = useCallback(async (memberId, memberData) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -507,6 +474,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
+  // Delete member
   const deleteMember = useCallback(async (memberId) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -575,6 +543,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated, members]);
 
+  // Update member status
   const updateMemberStatus = useCallback(async (memberId, isActive) => {
     if (!isAuthenticated) {
       throw new Error('Authentication required');
@@ -607,7 +576,7 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated, updateMember, members]);
 
-  // Auto-fetch effect with proper dependency management
+  // Auto-fetch effect
   useEffect(() => {
     if (!autoFetch || !isAuthenticated) {
       console.log('[useMembers] Auto-fetch disabled or not authenticated');
@@ -621,7 +590,7 @@ export const useMembers = (options = {}) => {
       limit
     });
 
-    fetchMembers({ silent: true });
+    fetchMembers({ silent: false });
   }, [autoFetch, isAuthenticated, debouncedSearch, JSON.stringify(filters), page, limit, fetchMembers]);
 
   // Computed values
@@ -665,7 +634,7 @@ export const useMembers = (options = {}) => {
   }, []);
 
   const invalidateCache = useCallback(() => {
-    console.log('[useMembers] Cache invalidated (forcing next fetch)');
+    console.log('[useMembers] Cache invalidated');
     lastFetchRef.current = null;
   }, []);
 
@@ -698,7 +667,7 @@ export const useMembers = (options = {}) => {
     resetState,
     invalidateCache,
     
-    // Additional methods for compatibility
+    // Additional methods
     refetch: refresh,
     getMember: (id) => members.find(m => m.id === id)
   };
