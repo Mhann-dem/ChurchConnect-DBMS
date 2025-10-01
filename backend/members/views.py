@@ -157,59 +157,161 @@ class MemberViewSet(viewsets.ModelViewSet):
             (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])
         )
     
+
     def list(self, request, *args, **kwargs):
-        """List members with enhanced pagination info"""
+        """
+        List members with enhanced pagination info and comprehensive count fields
+        FIXED: Returns all count variations for maximum frontend compatibility
+        """
         try:
-            logger.info(f"[MemberViewSet] List request from: {request.user}")
+            logger.info(f"[MemberViewSet] List request from: {request.user.email}")
+            logger.info(f"[MemberViewSet] Query params: {request.query_params.dict()}")
             
-            # Get filtered queryset
-            queryset = self.filter_queryset(self.get_queryset())
+            # Get the base queryset BEFORE any filtering
+            base_queryset = self.get_queryset()
             
-            # FIXED: Calculate counts for the response
-            total_count = queryset.count()
-            active_count = queryset.filter(is_active=True).count()
-            inactive_count = total_count - active_count
+            # Calculate TOTAL counts (without filters) - for overall stats
+            total_members_count = base_queryset.count()
+            total_active_count = base_queryset.filter(is_active=True).count()
+            total_inactive_count = total_members_count - total_active_count
+            
+            # Now apply filters from request
+            filtered_queryset = self.filter_queryset(base_queryset)
+            
+            # Get filtered counts - what's actually shown
+            filtered_count = filtered_queryset.count()
+            filtered_active = filtered_queryset.filter(is_active=True).count()
+            filtered_inactive = filtered_count - filtered_active
+            
+            logger.info(
+                f"[MemberViewSet] Counts - "
+                f"Total DB: {total_members_count} (active: {total_active_count}), "
+                f"Filtered: {filtered_count} (active: {filtered_active})"
+            )
             
             # Apply pagination
-            page = self.paginate_queryset(queryset)
+            page = self.paginate_queryset(filtered_queryset)
+            
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
                 paginated_response = self.get_paginated_response(serializer.data)
                 
-                # CRITICAL FIX: Add the count fields that your React code expects
-                paginated_response.data.update({
-                    'success': True,
-                    'total_count': total_count,
-                    'active_count': active_count,  # This was missing!
-                    'inactive_count': inactive_count,  # This was missing!
-                    'page_size': self.paginator.page_size,
-                    'current_page': getattr(self.paginator, 'page', {}).number if hasattr(self.paginator, 'page') else 1
-                })
+                # === CRITICAL FIX ===
+                # Add ALL count variations at root level for frontend compatibility
+                response_data = paginated_response.data
                 
-                logger.info(f"[MemberViewSet] Returned {len(serializer.data)} members")
-                return paginated_response
+                # Standard DRF pagination fields
+                response_data['count'] = filtered_count
+                response_data['next'] = response_data.get('next')
+                response_data['previous'] = response_data.get('previous')
+                response_data['results'] = response_data.get('results', [])
+                
+                # Additional count fields - ALL VARIATIONS
+                # Filtered counts (what matches current search/filters)
+                response_data['active_count'] = filtered_active
+                response_data['inactive_count'] = filtered_inactive
+                response_data['filtered_count'] = filtered_count
+                response_data['filtered_active'] = filtered_active
+                response_data['filtered_inactive'] = filtered_inactive
+                
+                # Total counts (overall database stats without filters)
+                response_data['total_count'] = total_members_count
+                response_data['total_members'] = total_members_count
+                response_data['total_active'] = total_active_count
+                response_data['total_inactive'] = total_inactive_count
+                response_data['active_members'] = total_active_count
+                response_data['inactive_members'] = total_inactive_count
+                
+                # Pagination metadata
+                response_data['page_size'] = self.paginator.page_size
+                response_data['current_page'] = getattr(
+                    getattr(self.paginator, 'page', None), 
+                    'number', 
+                    1
+                )
+                response_data['total_pages'] = (
+                    response_data.get('total_pages') or 
+                    ((filtered_count + self.paginator.page_size - 1) // self.paginator.page_size)
+                )
+                
+                # API metadata
+                response_data['success'] = True
+                
+                logger.info(
+                    f"[MemberViewSet] Returned {len(serializer.data)} members "
+                    f"on page {response_data.get('current_page')} "
+                    f"of {response_data.get('total_pages')}"
+                )
+                
+                # DEBUG: Log actual response structure
+                logger.debug(f"[MemberViewSet] Response keys: {list(response_data.keys())}")
+                logger.debug(f"[MemberViewSet] Count: {response_data['count']}")
+                logger.debug(f"[MemberViewSet] Active: {response_data['active_count']}")
+                logger.debug(f"[MemberViewSet] Total: {response_data['total_members']}")
+                
+                return Response(response_data)
             
-            # Non-paginated response
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({
+            # Non-paginated response (when pagination is disabled)
+            serializer = self.get_serializer(filtered_queryset, many=True)
+            
+            non_paginated_response = {
                 'success': True,
                 'results': serializer.data,
-                'count': len(serializer.data),
-                'active_count': active_count,  # Add this
-                'inactive_count': inactive_count,  # Add this  
+                
+                # Standard count
+                'count': filtered_count,
+                
+                # Filtered counts - ALL VARIATIONS
+                'active_count': filtered_active,
+                'inactive_count': filtered_inactive,
+                'filtered_count': filtered_count,
+                'filtered_active': filtered_active,
+                'filtered_inactive': filtered_inactive,
+                
+                # Total counts - ALL VARIATIONS
+                'total_count': total_members_count,
+                'total_members': total_members_count,
+                'total_active': total_active_count,
+                'total_inactive': total_inactive_count,
+                'active_members': total_active_count,
+                'inactive_members': total_inactive_count,
+                
+                # Pagination markers
                 'next': None,
-                'previous': None
-            })
+                'previous': None,
+                'page_size': None,
+                'current_page': 1,
+                'total_pages': 1
+            }
+            
+            return Response(non_paginated_response)
             
         except Exception as e:
             logger.error(f"[MemberViewSet] List error: {str(e)}", exc_info=True)
-            return Response({
+            
+            # Return safe defaults on error
+            error_response = {
                 'success': False,
                 'error': 'Failed to retrieve members',
+                
+                # All count fields set to 0
                 'count': 0,
-                'active_count': 0,  # Add this even in error case
-                'inactive_count': 0  # Add this even in error case
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'active_count': 0,
+                'inactive_count': 0,
+                'total_count': 0,
+                'total_members': 0,
+                'total_active': 0,
+                'total_inactive': 0,
+                'active_members': 0,
+                'inactive_members': 0,
+                
+                # Empty results
+                'results': [],
+                'next': None,
+                'previous': None
+            }
+            
+            return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def create(self, request, *args, **kwargs):
         """Create member with admin validation and phone processing"""
@@ -385,7 +487,11 @@ class MemberViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='statistics')
     def statistics(self, request):
-        """Get comprehensive member statistics - FIXED RESPONSE FORMAT"""
+        """
+        Get comprehensive member statistics
+        FIXED: Returns counts at BOTH root level AND nested summary level
+        for compatibility with different frontend code paths
+        """
         try:
             range_param = request.query_params.get('range', '30d')
             logger.info(f"[MemberViewSet] Statistics request, range: {range_param}")
@@ -393,37 +499,47 @@ class MemberViewSet(viewsets.ModelViewSet):
             now = timezone.now()
             
             # Parse range parameter
-            if range_param == '7d':
-                date_threshold = now - timedelta(days=7)
-            elif range_param == '30d':
-                date_threshold = now - timedelta(days=30)
-            elif range_param == '90d':
-                date_threshold = now - timedelta(days=90)
-            elif range_param == '1y':
-                date_threshold = now - timedelta(days=365)
-            else:
-                date_threshold = now - timedelta(days=30)
+            range_map = {
+                '7d': 7,
+                '30d': 30,
+                '90d': 90,
+                '1y': 365,
+                'all': None
+            }
+            days = range_map.get(range_param, 30)
             
-            # FIXED: Basic counts with proper queries
+            if days:
+                date_threshold = now - timedelta(days=days)
+            else:
+                date_threshold = None
+            
+            # === CORE COUNTS - These are what matter ===
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             inactive_members = total_members - active_members
-            recent_registrations = Member.objects.filter(
-                registration_date__gte=date_threshold.date()
-            ).count()
+            
+            # Recent registrations
+            if date_threshold:
+                recent_registrations = Member.objects.filter(
+                    registration_date__gte=date_threshold.date()
+                ).count()
+            else:
+                recent_registrations = total_members
             
             # Calculate growth rate
-            previous_period_start = date_threshold - (now - date_threshold)
-            previous_period_registrations = Member.objects.filter(
-                registration_date__gte=previous_period_start.date(),
-                registration_date__lt=date_threshold.date()
-            ).count()
-            
             growth_rate = 0
-            if previous_period_registrations > 0:
-                growth_rate = ((recent_registrations - previous_period_registrations) / previous_period_registrations) * 100
-            elif recent_registrations > 0:
-                growth_rate = 100.0
+            if date_threshold:
+                previous_period_start = date_threshold - (now - date_threshold)
+                previous_period_registrations = Member.objects.filter(
+                    registration_date__gte=previous_period_start.date(),
+                    registration_date__lt=date_threshold.date()
+                ).count()
+                
+                if previous_period_registrations > 0:
+                    growth_rate = ((recent_registrations - previous_period_registrations) 
+                                / previous_period_registrations) * 100
+                elif recent_registrations > 0:
+                    growth_rate = 100.0
             
             # Gender demographics
             gender_stats = Member.objects.values('gender').annotate(count=Count('id'))
@@ -435,7 +551,11 @@ class MemberViewSet(viewsets.ModelViewSet):
             # Age demographics
             today = timezone.now().date()
             age_groups = {
-                'under_18': 0, '18_35': 0, '36_55': 0, '56_plus': 0, 'unknown': 0
+                'under_18': 0,
+                '18_35': 0,
+                '36_55': 0,
+                '56_plus': 0,
+                'unknown': 0
             }
             
             members_with_birthdate = Member.objects.filter(date_of_birth__isnull=False)
@@ -458,8 +578,22 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             age_groups['unknown'] += total_members - members_with_birthdate.count()
             
-            # FIXED: Return the exact structure your React code expects
+            # === CRITICAL FIX ===
+            # Return counts at MULTIPLE levels for maximum frontend compatibility
             stats_data = {
+                # ROOT LEVEL - For React useMembers hook
+                'count': total_members,
+                'total_count': total_members,
+                'active_count': active_members,
+                'inactive_count': inactive_members,
+                'total_members': total_members,
+                'active_members': active_members,
+                'inactive_members': inactive_members,
+                'new_members': recent_registrations,
+                'recent_registrations': recent_registrations,
+                'growth_rate': round(growth_rate, 2),
+                
+                # NESTED SUMMARY - For dashboard components
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
@@ -467,27 +601,58 @@ class MemberViewSet(viewsets.ModelViewSet):
                     'recent_registrations': recent_registrations,
                     'growth_rate': round(growth_rate, 2)
                 },
+                
+                # DEMOGRAPHICS
                 'demographics': {
                     'gender': gender_breakdown,
                     'age_groups': age_groups
                 },
+                
+                # METADATA
                 'trends': {
-                    'range': range_param
+                    'range': range_param,
+                    'date_threshold': date_threshold.isoformat() if date_threshold else None
                 },
-                # CRITICAL: Add these fields that your React code looks for
-                'count': total_members,  # This is what was missing!
-                'active_count': active_members,
-                'inactive_count': inactive_members
+                
+                # API metadata
+                'success': True,
+                'timestamp': now.isoformat()
             }
             
-            logger.info(f"[MemberViewSet] Statistics calculated: {total_members} total, {active_members} active, {recent_registrations} recent")
+            logger.info(
+                f"[MemberViewSet] Statistics SUCCESS - "
+                f"Total: {total_members}, Active: {active_members}, "
+                f"Recent: {recent_registrations}"
+            )
+            
+            # DEBUG: Log the actual response structure
+            logger.debug(f"[MemberViewSet] Response keys: {list(stats_data.keys())}")
+            logger.debug(f"[MemberViewSet] Root count: {stats_data['count']}")
+            logger.debug(f"[MemberViewSet] Root active_count: {stats_data['active_count']}")
             
             return Response(stats_data)
             
         except Exception as e:
-            logger.error(f"[MemberViewSet] Statistics error: {str(e)}", exc_info=True)
-            return Response({
+            logger.error(f"[MemberViewSet] Statistics ERROR: {str(e)}", exc_info=True)
+            
+            # Return safe defaults even on error
+            error_response = {
+                'success': False,
                 'error': 'Failed to get statistics',
+                
+                # Root level defaults
+                'count': 0,
+                'total_count': 0,
+                'active_count': 0,
+                'inactive_count': 0,
+                'total_members': 0,
+                'active_members': 0,
+                'inactive_members': 0,
+                'new_members': 0,
+                'recent_registrations': 0,
+                'growth_rate': 0,
+                
+                # Nested defaults
                 'summary': {
                     'total_members': 0,
                     'active_members': 0,
@@ -495,11 +660,13 @@ class MemberViewSet(viewsets.ModelViewSet):
                     'recent_registrations': 0,
                     'growth_rate': 0
                 },
-                # CRITICAL: Even in error case, include count fields
-                'count': 0,
-                'active_count': 0,
-                'inactive_count': 0
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'demographics': {
+                    'gender': {},
+                    'age_groups': {}
+                }
+            }
+            
+            return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='birthdays')
     def birthdays(self, request):

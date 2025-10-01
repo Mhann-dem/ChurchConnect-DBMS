@@ -1,3 +1,4 @@
+// App.js - FIXED ROUTING
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
@@ -12,10 +13,6 @@ import AdminLayout from './components/layout/AdminLayout';
 // Shared components
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import Toast from './components/shared/Toast';
-
-// FIXED: Import the debug tool properly
-import MembersDebugTool from './components/debug/MembersDebugTool';
-import PublicEventsPage from './pages/public/EventsPage';
 
 // Lazy-loaded components
 const HomePage = lazy(() => import('./pages/public/HomePage'));
@@ -34,6 +31,9 @@ const FeedbackPage = lazy(() => import('./pages/public/FeedbackPage'));
 const SitemapPage = lazy(() => import('./pages/public/SitemapPage'));
 const AccessibilityPage = lazy(() => import('./pages/public/AccessibilityPage'));
 
+// FIXED: Public events page
+const PublicEventsPage = lazy(() => import('./pages/public/EventsPage'));
+
 // Admin components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
@@ -46,17 +46,17 @@ const GroupDetailPage = lazy(() => import('./pages/admin/GroupDetailPage'));
 const PledgesPage = lazy(() => import('./pages/admin/PledgesPage'));
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
-
-// FIXED: Add the missing AdminEventsPage import
-const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
-
-// NEW: Add FamiliesPage import
 const FamiliesPage = lazy(() => import('./pages/admin/FamiliesPage'));
 
+// FIXED: Admin events page
+const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
+
+// Debug tool
+const MembersDebugTool = lazy(() => import('./components/debug/MembersDebugTool'));
+import MembersPageTest from './pages/admin/MembersPageTest';
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
   return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
 };
 
@@ -70,23 +70,19 @@ const AdminRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/admin/login" replace />;
 };
 
-// Main App component
 function App() {
   const { theme } = useTheme();
   const { toasts } = useToast();
   const location = useLocation();
 
-  // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Track page views for analytics
   useEffect(() => {
     console.log('Page view:', location.pathname);
   }, [location]);
 
-  // Determine if current path is admin-related
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
@@ -94,17 +90,21 @@ function App() {
       <div className="app">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            {/* FIXED: Add debug route at the top level */}
+            {/* Debug Route */}
             <Route path="/debug/members" element={<MembersDebugTool />} />
             
-            {/* Public Routes */}
+            {/* ============================================ */}
+            {/* PUBLIC ROUTES - NO AUTHENTICATION REQUIRED */}
+            {/* ============================================ */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<HomePage />} />
               
               {/* Registration Routes */}
               <Route path="register" element={<RegistrationPage />} />
               <Route path="form" element={<RegistrationPage />} />
-              <Route path="member-registration" element={<RegistrationPage />} />
+              
+              {/* FIXED: Public Events - Anyone can view */}
+              <Route path="events" element={<PublicEventsPage />} />
               
               {/* Help & Support Routes */}
               <Route path="help" element={<HelpCenter />} />
@@ -112,7 +112,6 @@ function App() {
               <Route path="faq" element={<FAQ />} />
               
               {/* Church Information Pages */}
-              <Route path="events" element={<PublicEventsPage />} />
               <Route path="ministries" element={<MinistriesPage />} />
               
               {/* Feedback & Support */}
@@ -132,7 +131,9 @@ function App() {
               <Route path="registration-success" element={<ThankYouPage />} />
             </Route>
 
-            {/* Authentication Routes */}
+            {/* ============================================ */}
+            {/* AUTHENTICATION ROUTES */}
+            {/* ============================================ */}
             <Route path="/admin/login" element={
               <PublicRoute>
                 <LoginPage />
@@ -149,7 +150,9 @@ function App() {
               </PublicRoute>
             } />
 
-            {/* Admin Routes */}
+            {/* ============================================ */}
+            {/* ADMIN ROUTES - AUTHENTICATION REQUIRED */}
+            {/* ============================================ */}
             <Route path="/admin" element={
               <AdminRoute>
                 <AdminLayout />
@@ -158,7 +161,7 @@ function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               
-              {/* Events route - FIXED: Removed duplicate */}
+              {/* FIXED: Admin Events - Staff only */}
               <Route path="events" element={<AdminEventsPage />} />
               
               {/* Families Management */}
@@ -167,6 +170,7 @@ function App() {
               {/* Member Management */}
               <Route path="members" element={<MembersPage />} />
               <Route path="members/:id" element={<MemberDetailPage />} />
+              <Route path="members-test" element={<MembersPageTest />} />
               
               {/* Group Management */}
               <Route path="groups" element={<GroupsPage />} />

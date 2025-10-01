@@ -1,34 +1,17 @@
-// hooks/useMembers.js - FIXED VERSION with Correct Django API Integration
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
 
-/**
- * Fixed useMembers hook that correctly handles your Django API responses
- */
 export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
   
-  // Memoize options to prevent infinite re-renders
-  const memoizedOptions = useMemo(() => ({
-    search: options.search || '',
-    filters: options.filters || {},
-    page: options.page || 1,
-    limit: options.limit || 25,
-    autoFetch: options.autoFetch !== false,
-    debounceMs: options.debounceMs || 300,
-  }), [
-    options.search,
-    JSON.stringify(options.filters || {}),
-    options.page,
-    options.limit,
-    options.autoFetch,
-    options.debounceMs
-  ]);
-
-  const { search, filters, page, limit, autoFetch, debounceMs } = memoizedOptions;
-
-  // Core state - FIXED: Added missing state variables
+  // Extract options - DON'T destructure filters yet
+  const search = options.search || '';
+  const page = options.page || 1;
+  const limit = options.limit || 25;
+  const autoFetch = options.autoFetch !== false;
+  
+  // State
   const [members, setMembers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
   const [activeMembers, setActiveMembers] = useState(0);
@@ -37,16 +20,23 @@ export const useMembers = (options = {}) => {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
 
-  // Refs for managing state
+  // Refs
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
-  const lastFetchRef = useRef(null);
 
-  // Debounce search term
-  const debouncedSearch = useDebounce(search, debounceMs);
+  // Debounce search
+  const debouncedSearch = useDebounce(search, 300);
 
-  // Cleanup on unmount
+  // Extract filter values for dependencies
+  const filterStatus = options.filters?.status || 'all';
+  const filterGender = options.filters?.gender || '';
+  const filterAgeRange = options.filters?.ageRange || '';
+  const filterJoinedAfter = options.filters?.joinedAfter || '';
+  const filterJoinedBefore = options.filters?.joinedBefore || '';
+
+  // Cleanup
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       if (abortControllerRef.current) {
@@ -55,651 +45,112 @@ export const useMembers = (options = {}) => {
     };
   }, []);
 
-  // Cancel ongoing requests
-  const cancelRequests = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-    return abortControllerRef.current.signal;
-  }, []);
-
-  // FIXED: Main fetch function with correct Django API handling
-  const fetchMembers = useCallback(async (fetchOptions = {}) => {
-    const { forceRefresh = false, silent = false } = fetchOptions;
-
+  // Main fetch function
+  const fetchMembers = useCallback(async () => {
     if (!isAuthenticated) {
-      console.warn('[useMembers] Not authenticated, skipping fetch');
-      if (mountedRef.current) {
-        setError('Authentication required');
-        setIsLoading(false);
-      }
-      return { success: false, error: 'Authentication required' };
-    }
-
-    // Generate fetch key to prevent duplicate requests
-    const fetchKey = JSON.stringify({ 
-      search: debouncedSearch, 
-      filters, 
-      page, 
-      limit,
-      timestamp: forceRefresh ? Date.now() : 0
-    });
-
-    // Prevent duplicate requests
-    if (!forceRefresh && lastFetchRef.current === fetchKey) {
-      console.log('[useMembers] Preventing duplicate fetch');
-      return { success: true, fromCache: true };
-    }
-
-    try {
-      const signal = cancelRequests();
-      lastFetchRef.current = fetchKey;
-
-      if (mountedRef.current && !silent) {
-        setIsLoading(true);
-        setError(null);
-      }
-
-      console.log('[useMembers] Fetching members with params:', {
-        search: debouncedSearch,
-        filters,
-        page,
-        limit,
-        forceRefresh
-      });
-
-      // FIXED: Use correct authentication and API endpoint
-      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      const params = new URLSearchParams();
-      
-      // Add search parameter
-      if (debouncedSearch) {
-        params.set('search', debouncedSearch);
-      }
-      
-      // Add pagination
-      params.set('page', page.toString());
-      params.set('page_size', limit.toString());
-      params.set('ordering', '-registration_date');
-
-      // Add filters to params
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== '' && value !== null && value !== undefined) {
-          params.set(key, value.toString());
-        }
-      });
-
-      // FIXED: Use the exact endpoint from your Django logs
-      const url = `${baseURL}/api/v1/members/?${params.toString()}`;
-      console.log('[useMembers] Fetching URL:', url);
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        signal
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('[useMembers] Raw API Response:', data);
-
-      if (!mountedRef.current) {
-        console.log('[useMembers] Component unmounted, ignoring result');
-        return { success: false, error: 'Component unmounted' };
-      }
-
-      // FIXED: Handle Django DRF paginated response correctly
-      let membersArray = [];
-      let totalCount = 0;
-      let activeCount = 0;
-      let inactiveCount = 0;
-      let paginationData = null;
-
-      if (data && typeof data === 'object') {
-        if (data.results && Array.isArray(data.results)) {
-          // Standard DRF paginated response
-          membersArray = data.results;
-          totalCount = data.count || data.results.length;
-          
-          // Calculate active/inactive members from current page results
-          activeCount = membersArray.filter(member => member?.is_active === true).length;
-          inactiveCount = membersArray.filter(member => member?.is_active === false).length;
-          
-          paginationData = {
-            count: data.count,
-            next: data.next,
-            previous: data.previous,
-            total_pages: Math.ceil(totalCount / limit),
-            current_page: page
-          };
-        } else if (Array.isArray(data)) {
-          // Direct array response
-          membersArray = data;
-          totalCount = data.length;
-          activeCount = data.filter(member => member?.is_active === true).length;
-          inactiveCount = data.filter(member => member?.is_active === false).length;
-          paginationData = {
-            count: data.length,
-            total_pages: 1,
-            current_page: 1
-          };
-        } else {
-          console.warn('[useMembers] Unexpected response format:', data);
-          membersArray = [];
-          totalCount = 0;
-          activeCount = 0;
-          inactiveCount = 0;
-        }
-      } else {
-        console.warn('[useMembers] Invalid response data:', data);
-        membersArray = [];
-        totalCount = 0;
-        activeCount = 0;
-        inactiveCount = 0;
-      }
-      
-      console.log('[useMembers] Processed data:', {
-        membersCount: membersArray.length,
-        totalMembers: totalCount,
-        activeMembers: activeCount,
-        inactiveMembers: inactiveCount,
-        firstMember: membersArray[0] ? `${membersArray[0].first_name} ${membersArray[0].last_name}` : 'none',
-        pagination: paginationData
-      });
-
-      // FIXED: Update state with correct data including active/inactive counts
-      setMembers(membersArray);
-      setTotalMembers(totalCount);
-      setActiveMembers(activeCount);
-      setInactiveMembers(inactiveCount);
-      setPagination(paginationData);
-      setError(null);
-
-      return { 
-        success: true, 
-        data: membersArray, 
-        totalMembers: totalCount,
-        activeMembers: activeCount,
-        inactiveMembers: inactiveCount,
-        pagination: paginationData
-      };
-
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        console.log('[useMembers] Request was cancelled');
-        return { success: false, error: 'Request cancelled' };
-      }
-
-      const errorMessage = err?.response?.data?.error || 
-                          err?.response?.data?.detail || 
-                          err?.message || 
-                          'Failed to fetch members';
-
-      console.error('[useMembers] Fetch error:', errorMessage, err);
-
-      if (mountedRef.current) {
-        setError(errorMessage);
-      }
-
-      return { success: false, error: errorMessage };
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [
-    isAuthenticated, 
-    debouncedSearch, 
-    filters, 
-    page, 
-    limit, 
-    cancelRequests
-  ]);
-
-  // FIXED: Get recent members with correct Django API handling
-  const getRecentMembers = useCallback(async (limit = 5) => {
-    if (!isAuthenticated) {
-      return { success: false, error: 'Authentication required' };
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      console.log('[useMembers] Fetching recent members...');
-      
-      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      
-      // FIXED: Use the WORKING endpoint from your Django logs
-      const url = `${baseURL}/api/v1/members/recent/?limit=${limit}`;
-      
-      console.log('[useMembers] Recent members URL:', url);
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('[useMembers] Recent members API response:', data);
-
-      // FIXED: Handle your Django MemberViewSet.recent() response format
-      // Your API returns: { success: true, results: [...], count: 4, limit: 5 }
-      let results = [];
-      let count = 0;
-
-      if (data && typeof data === 'object') {
-        if (data.success && data.results && Array.isArray(data.results)) {
-          // Your Django response format
-          results = data.results;
-          count = data.count || data.results.length;
-        } else if (Array.isArray(data)) {
-          // Fallback: direct array
-          results = data;
-          count = data.length;
-        } else if (data.results && Array.isArray(data.results)) {
-          // Standard DRF response
-          results = data.results;
-          count = data.count || data.results.length;
-        } else {
-          console.warn('[useMembers] Unexpected recent members response format:', data);
-          results = [];
-          count = 0;
-        }
-      }
-
-      console.log('[useMembers] Recent members processed:', { 
-        results: results.length, 
-        count,
-        firstMember: results[0] ? `${results[0].first_name} ${results[0].last_name}` : 'none'
-      });
-
-      return {
-        success: true,
-        data: results,
-        total: count
-      };
-
-    } catch (error) {
-      const errorMessage = error?.message || 'Failed to fetch recent members';
-      console.error('[useMembers] Recent members error:', errorMessage);
-      
-      if (mountedRef.current) {
-        setError(errorMessage);
-      }
-      
-      return { success: false, error: errorMessage };
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [isAuthenticated]);
-
-  // CRUD Operations with better error handling
-  const createMember = useCallback(async (memberData) => {
-    if (!isAuthenticated) {
-      throw new Error('Authentication required');
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      const url = `${baseURL}/api/v1/members/`;
-
-      console.log('[useMembers] Creating member:', memberData);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...memberData,
-          registration_source: 'admin_portal'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('[useMembers] Member created successfully:', result);
-
-      // FIXED: Handle your Django MemberViewSet.create() response
-      let memberData_result = null;
-      let message = 'Member created successfully';
-
-      if (result && typeof result === 'object') {
-        if (result.success !== false) {
-          memberData_result = result.data || result;
-          message = result.message || message;
-        } else {
-          throw new Error(result.error || 'Creation failed');
-        }
-      } else {
-        memberData_result = result;
-      }
-
-      // Force refresh to get updated list
-      setTimeout(() => {
-        if (mountedRef.current) {
-          fetchMembers({ forceRefresh: true, silent: true });
-        }
-      }, 1000);
-
-      return {
-        success: true,
-        data: memberData_result,
-        message: message
-      };
-
-    } catch (err) {
-      const errorMessage = err?.message || 'Failed to create member';
-      console.error('[useMembers] Create member error:', errorMessage, err);
-      
-      if (mountedRef.current) {
-        setError(errorMessage);
-      }
-      
-      throw new Error(errorMessage);
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [isAuthenticated, fetchMembers]);
-
-  const updateMember = useCallback(async (memberId, memberData) => {
-    if (!isAuthenticated) {
-      throw new Error('Authentication required');
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      const url = `${baseURL}/api/v1/members/${memberId}/`;
-
-      console.log('[useMembers] Updating member:', memberId, memberData);
-
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(memberData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('[useMembers] Member updated successfully');
-
-      // Update the specific member in the list
-      if (mountedRef.current) {
-        setMembers(prev => prev.map(member => 
-          member.id === memberId ? { ...member, ...result } : member
-        ));
-      }
-
-      return {
-        success: true,
-        data: result,
-        message: 'Member updated successfully'
-      };
-
-    } catch (err) {
-      const errorMessage = err?.message || 'Failed to update member';
-      console.error('[useMembers] Update member error:', errorMessage);
-      
-      if (mountedRef.current) {
-        setError(errorMessage);
-      }
-      
-      throw new Error(errorMessage);
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [isAuthenticated]);
-
-  const deleteMember = useCallback(async (memberId) => {
-    if (!isAuthenticated) {
-      throw new Error('Authentication required');
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      const url = `${baseURL}/api/v1/members/${memberId}/`;
-
-      console.log('[useMembers] Deleting member:', memberId);
-
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
-      }
-
-      console.log('[useMembers] Member deleted successfully');
-
-      // Remove from current list immediately and update counts
-      if (mountedRef.current) {
-        const memberToDelete = members.find(m => m.id === memberId);
-        setMembers(prev => prev.filter(member => member.id !== memberId));
-        setTotalMembers(prev => Math.max(0, prev - 1));
-        
-        if (memberToDelete?.is_active) {
-          setActiveMembers(prev => Math.max(0, prev - 1));
-        } else {
-          setInactiveMembers(prev => Math.max(0, prev - 1));
-        }
-      }
-
-      return {
-        success: true,
-        message: 'Member deleted successfully'
-      };
-
-    } catch (err) {
-      const errorMessage = err?.message || 'Failed to delete member';
-      console.error('[useMembers] Delete member error:', errorMessage);
-      
-      if (mountedRef.current) {
-        setError(errorMessage);
-      }
-      
-      throw new Error(errorMessage);
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [isAuthenticated, members]);
-
-  const updateMemberStatus = useCallback(async (memberId, isActive) => {
-    if (!isAuthenticated) {
-      throw new Error('Authentication required');
-    }
-
-    try {
-      const result = await updateMember(memberId, { is_active: isActive });
-      
-      // Update local counts
-      if (mountedRef.current) {
-        const member = members.find(m => m.id === memberId);
-        if (member) {
-          const wasActive = member.is_active;
-          
-          if (wasActive !== isActive) {
-            if (isActive) {
-              setActiveMembers(prev => prev + 1);
-              setInactiveMembers(prev => Math.max(0, prev - 1));
-            } else {
-              setActiveMembers(prev => Math.max(0, prev - 1));
-              setInactiveMembers(prev => prev + 1);
-            }
-          }
-        }
-      }
-      
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }, [isAuthenticated, updateMember, members]);
-
-  // Auto-fetch effect with proper dependency management
-  useEffect(() => {
-    if (!autoFetch || !isAuthenticated) {
-      console.log('[useMembers] Auto-fetch disabled or not authenticated');
+      console.warn('[useMembers] Not authenticated');
       return;
     }
 
-    console.log('[useMembers] Auto-fetch triggered', {
-      search: debouncedSearch,
-      filters,
-      page,
-      limit
-    });
+    try {
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
 
-    fetchMembers({ silent: true });
-  }, [autoFetch, isAuthenticated, debouncedSearch, JSON.stringify(filters), page, limit, fetchMembers]);
-
-  // Computed values
-  const computedValues = useMemo(() => {
-    const totalPages = pagination?.total_pages || Math.ceil(totalMembers / limit) || 1;
-
-    return {
-      totalPages,
-      hasMembers: members.length > 0,
-      hasNextPage: pagination?.next !== null,
-      hasPrevPage: pagination?.previous !== null,
-      isFirstPage: page === 1,
-      isLastPage: page >= totalPages
-    };
-  }, [members, pagination, totalMembers, limit, page]);
-
-  // Utility functions
-  const clearError = useCallback(() => {
-    if (mountedRef.current) {
+      setIsLoading(true);
       setError(null);
+
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      params.set('page', page);
+      params.set('page_size', limit);
+      params.set('ordering', '-registration_date');
+      
+      if (filterStatus && filterStatus !== 'all') {
+        params.set('is_active', filterStatus === 'active' ? 'true' : 'false');
+      }
+
+      const url = `${baseURL}/api/v1/members/?${params}`;
+      console.log('[useMembers] Fetching:', url);
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        signal: abortControllerRef.current.signal
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      
+      if (!mountedRef.current) return;
+
+      console.log('[useMembers] ✓ Data received:', {
+        total: data.total_members || data.count,
+        active: data.active_count,
+        results: data.results?.length
+      });
+
+      // Update state
+      setMembers(data.results || []);
+      setTotalMembers(data.total_members || data.count || 0);
+      setActiveMembers(data.active_members || data.active_count || 0);
+      setInactiveMembers(data.inactive_members || data.inactive_count || 0);
+      setPagination({
+        count: data.total_members || data.count || 0,
+        next: data.next,
+        previous: data.previous,
+        total_pages: Math.ceil((data.total_members || data.count || 0) / limit) || 1
+      });
+
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('[useMembers] Request cancelled');
+        return;
+      }
+      console.error('[useMembers] Error:', err);
+      if (mountedRef.current) {
+        setError(err.message);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [isAuthenticated, debouncedSearch, filterStatus, page, limit]);
 
-  const refresh = useCallback(async (silent = false) => {
-    console.log('[useMembers] Manual refresh requested');
-    return fetchMembers({ forceRefresh: true, silent });
-  }, [fetchMembers]);
-
-  const resetState = useCallback(() => {
-    console.log('[useMembers] Resetting state');
-    if (mountedRef.current) {
-      setMembers([]);
-      setTotalMembers(0);
-      setActiveMembers(0);
-      setInactiveMembers(0);
-      setPagination(null);
-      setError(null);
-      setIsLoading(false);
+  // Auto-fetch effect
+  useEffect(() => {
+    if (autoFetch && isAuthenticated) {
+      console.log('[useMembers] Triggering fetch');
+      fetchMembers();
     }
-    lastFetchRef.current = null;
-  }, []);
+  }, [autoFetch, isAuthenticated, fetchMembers]);
 
-  const invalidateCache = useCallback(() => {
-    console.log('[useMembers] Cache invalidated (forcing next fetch)');
-    lastFetchRef.current = null;
-  }, []);
+  const totalPages = useMemo(() => 
+    Math.ceil(totalMembers / limit) || 1,
+    [totalMembers, limit]
+  );
 
   return {
-    // Data
     members,
     totalMembers,
     activeMembers,
     inactiveMembers,
     pagination,
-    
-    // Computed values
-    ...computedValues,
-    
-    // State
+    totalPages,
     isLoading,
     error,
-    
-    // Actions
-    fetchMembers,
-    createMember,
-    updateMember,
-    deleteMember,
-    updateMemberStatus,
-    getRecentMembers,
-    
-    // Utilities
-    refresh,
-    clearError,
-    resetState,
-    invalidateCache,
-    
-    // Additional methods for compatibility
-    refetch: refresh,
-    getMember: (id) => members.find(m => m.id === id)
+    refresh: fetchMembers,
+    hasMembers: members.length > 0
   };
 };
+
+export default useMembers;

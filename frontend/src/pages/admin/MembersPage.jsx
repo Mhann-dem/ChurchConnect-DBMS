@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Search, Filter, Users, UserPlus, Download, RefreshCw, X, AlertCircle } from 'lucide-react';
 import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
@@ -91,7 +91,7 @@ const LoadingSpinner = ({ size = 'md' }) => (
       borderRadius: '50%',
       animation: 'spin 1s linear infinite'
     }} />
-    <style jsx>{`
+    <style>{`
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -126,16 +126,31 @@ const MembersPage = () => {
   // Debounced search
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // FIXED: Stable hook options
+  // AFTER - Add ALL filter properties as dependencies
   const hookOptions = useMemo(() => ({
     search: debouncedSearchQuery,
-    filters: filters,
+    filters: {
+      status: filters.status,
+      gender: filters.gender,
+      ageRange: filters.ageRange,
+      joinedAfter: filters.joinedAfter,
+      joinedBefore: filters.joinedBefore
+    },
     page: currentPage,
     limit: membersPerPage,
     autoFetch: true
-  }), [debouncedSearchQuery, filters, currentPage, membersPerPage]);
+  }), [
+    debouncedSearchQuery, 
+    filters.status,
+    filters.gender,
+    filters.ageRange,
+    filters.joinedAfter,
+    filters.joinedBefore,
+    currentPage, 
+    membersPerPage
+  ]);
 
-  // FIXED: Use members hook correctly
+  // Call useMembers hook with memoized options
   const {
     members = [],
     totalMembers = 0,
@@ -144,17 +159,15 @@ const MembersPage = () => {
     isLoading = false,
     error = null,
     refresh,
-    clearError,
     totalPages = 1
   } = useMembers(hookOptions) || {};
 
-  console.log('[MembersPage] Hook data:', {
-    membersLength: members?.length,
-    totalMembers,
-    activeMembers,
-    isLoading,
-    error
-  });
+  // Type-safe values
+  const safeMembers = Array.isArray(members) ? members : [];
+  const safeTotalMembers = Number(totalMembers) || 0;
+  const safeActiveMembers = Number(activeMembers) || 0;
+  const safeInactiveMembers = Number(inactiveMembers) || 0;
+  const safeTotalPages = Number(totalPages) || 1;
 
   // Update URL when state changes
   useEffect(() => {
@@ -203,9 +216,7 @@ const MembersPage = () => {
 
   const handleRefresh = useCallback(async () => {
     try {
-      if (clearError) clearError();
       showToast('Refreshing member list...', 'info');
-      
       if (refresh) {
         await refresh();
         showToast('Member list refreshed successfully', 'success');
@@ -214,14 +225,11 @@ const MembersPage = () => {
       console.error('[MembersPage] Refresh error:', error);
       showToast('Failed to refresh data', 'error');
     }
-  }, [refresh, clearError, showToast]);
+  }, [refresh, showToast]);
 
   const handleRegistrationSuccess = useCallback(async (newMember) => {
-    console.log('[MembersPage] Registration success:', newMember);
-    
     setShowRegistrationForm(false);
     showToast('Member registered successfully!', 'success');
-    
     if (refresh) {
       setTimeout(() => refresh(), 1000);
     }
@@ -229,8 +237,6 @@ const MembersPage = () => {
 
   const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
     try {
-      console.log('[MembersPage] Bulk action:', action);
-      // Implementation will depend on your bulk actions service
       showToast(`Bulk ${action} completed successfully`, 'success');
       setSelectedMembers(new Set());
       if (refresh) refresh();
@@ -254,15 +260,15 @@ const MembersPage = () => {
 
   const handleSelectAll = useCallback((selectAll) => {
     if (selectAll) {
-      const memberIds = members.map(member => member?.id).filter(Boolean);
+      const memberIds = safeMembers.map(member => member?.id).filter(Boolean);
       setSelectedMembers(new Set(memberIds));
     } else {
       setSelectedMembers(new Set());
     }
-  }, [members]);
+  }, [safeMembers]);
 
   // Loading state
-  if (isLoading && !members.length) {
+  if (isLoading && safeMembers.length === 0) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -287,7 +293,7 @@ const MembersPage = () => {
   }
 
   // Error state
-  if (error && !members.length) {
+  if (error && safeMembers.length === 0) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -303,7 +309,7 @@ const MembersPage = () => {
           minHeight: '400px'
         }}>
           <Card style={{ padding: '48px', textAlign: 'center', maxWidth: '500px' }}>
-            <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
+            <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px', margin: '0 auto 16px' }} />
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b', marginBottom: '16px' }}>
               Error Loading Members
             </h2>
@@ -319,6 +325,8 @@ const MembersPage = () => {
       </div>
     );
   }
+
+  const hasActiveFilters = Object.values(filters).some(v => v && v !== 'all');
 
   return (
     <div style={{
@@ -398,19 +406,19 @@ const MembersPage = () => {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>
-                {totalMembers.toLocaleString()}
+                {safeTotalMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Total Members</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669' }}>
-                {activeMembers.toLocaleString()}
+                {safeActiveMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Active</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>
-                {inactiveMembers.toLocaleString()}
+                {safeInactiveMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Inactive</div>
             </div>
@@ -484,7 +492,7 @@ const MembersPage = () => {
               disabled={isLoading}
               icon={<Filter size={16} />}
             >
-              Filters {Object.values(filters).some(v => v && v !== 'all') ? '(Active)' : ''}
+              Filters {hasActiveFilters ? '(Active)' : ''}
             </Button>
           </div>
 
@@ -511,122 +519,46 @@ const MembersPage = () => {
 
         {/* Filters Panel */}
         {showFilters && (
-          <Card style={{ padding: '24px' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              marginBottom: '16px'
-            }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                  Gender
-                </label>
-                <select
-                  value={filters.gender}
-                  onChange={(e) => handleFilterChange({ gender: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    outline: 'none'
-                  }}
-                >
-                  <option value="">All Genders</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange({ status: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    outline: 'none'
-                  }}
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                  Age Range
-                </label>
-                <select
-                  value={filters.ageRange}
-                  onChange={(e) => handleFilterChange({ ageRange: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    outline: 'none'
-                  }}
-                >
-                  <option value="">All Ages</option>
-                  <option value="0-17">Under 18</option>
-                  <option value="18-35">18-35</option>
-                  <option value="36-55">36-55</option>
-                  <option value="56+">56+</option>
-                </select>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <Button variant="outline" onClick={handleClearFilters}>
-                Clear Filters
-              </Button>
-              <Button variant="ghost" onClick={() => setShowFilters(false)}>
-                Hide Filters
-              </Button>
-            </div>
-          </Card>
+          <MemberFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+            totalMembers={safeTotalMembers}
+            filteredCount={safeMembers.length}
+          />
         )}
 
         {/* Bulk Actions */}
         {selectedMembers.size > 0 && (
           <BulkActions
-            selectedMembers={selectedMembers}
+            selectedMembers={Array.from(selectedMembers)}
             onClearSelection={() => setSelectedMembers(new Set())}
             onBulkAction={handleBulkAction}
-            totalMembers={totalMembers}
-            allMembers={members}
+            totalMembers={safeTotalMembers}
+            allMembers={safeMembers}
             disabled={isLoading}
           />
         )}
 
         {/* Main Content */}
         <div style={{ flex: 1 }}>
-          {members.length === 0 && !isLoading ? (
+          {safeMembers.length === 0 && !isLoading ? (
             <Card style={{ padding: '48px', textAlign: 'center' }}>
               <UserPlus size={64} style={{ color: '#d1d5db', margin: '0 auto 24px' }} />
               <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
-                {debouncedSearchQuery || Object.values(filters).some(v => v && v !== 'all') 
+                {debouncedSearchQuery || hasActiveFilters 
                   ? 'No Members Found' 
                   : 'No Members Registered Yet'
                 }
               </h3>
               <p style={{ color: '#6b7280', marginBottom: '32px' }}>
-                {debouncedSearchQuery || Object.values(filters).some(v => v && v !== 'all')
+                {debouncedSearchQuery || hasActiveFilters
                   ? 'No members match your current search criteria. Try adjusting your filters.'
                   : 'Get started by adding your first church member to the database.'
                 }
               </p>
               
-              {debouncedSearchQuery || Object.values(filters).some(v => v && v !== 'all') ? (
+              {debouncedSearchQuery || hasActiveFilters ? (
                 <Button onClick={handleClearFilters} variant="outline">
                   <X size={16} />
                   Clear Search & Filters
@@ -645,13 +577,13 @@ const MembersPage = () => {
           ) : (
             <>
               <MembersList
-                members={members}
+                members={safeMembers}
                 selectedMembers={selectedMembers}
                 onMemberSelection={handleMemberSelection}
                 onSelectAll={handleSelectAll}
                 currentPage={currentPage}
-                totalPages={totalPages}
-                totalMembers={totalMembers}
+                totalPages={safeTotalPages}
+                totalMembers={safeTotalMembers}
                 membersPerPage={membersPerPage}
                 onPageChange={handlePageChange}
                 isLoading={isLoading}
@@ -660,7 +592,7 @@ const MembersPage = () => {
               />
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {safeTotalPages > 1 && (
                 <div style={{
                   display: 'flex',
                   justifyContent: 'center',
@@ -677,40 +609,19 @@ const MembersPage = () => {
                   </Button>
                   
                   <span style={{ color: '#6b7280', fontSize: '14px' }}>
-                    Page {currentPage} of {totalPages}
+                    Page {currentPage} of {safeTotalPages}
                   </span>
                   
                   <Button
                     variant="outline"
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage >= totalPages || isLoading}
+                    disabled={currentPage >= safeTotalPages || isLoading}
                   >
                     Next
                   </Button>
                 </div>
               )}
             </>
-          )}
-          
-          {/* Loading overlay for pagination */}
-          {isLoading && members.length > 0 && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000
-            }}>
-              <Card style={{ padding: '24px', textAlign: 'center' }}>
-                <LoadingSpinner />
-                <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading...</p>
-              </Card>
-            </div>
           )}
         </div>
 

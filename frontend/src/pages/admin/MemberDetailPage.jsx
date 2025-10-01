@@ -1,1285 +1,588 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  UserPlus, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  User, 
-  RefreshCw,
-  Settings,
-  Download,
-  Plus,
-  X
+  ArrowLeft, Edit, Trash2, UserPlus, Calendar, Phone, Mail, 
+  MapPin, User, RefreshCw, Download, Plus, X, AlertCircle
 } from 'lucide-react';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
-import Avatar from '../../components/ui/Avatar';
-import Tabs from '../../components/ui/Tabs';
-import Modal from '../../components/shared/Modal';
-import ConfirmDialog from '../../components/shared/ConfirmDialog';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import Toast from '../../components/shared/Toast';
-import ErrorBoundary from '../../components/shared/ErrorBoundary';
-import MemberForm from '../../components/admin/Members/MemberForm';
-import { useToast } from '../../hooks/useToast';
-import { useMembers } from '../../hooks/useMembers';
-import { useGroups } from '../../hooks/useGroups';
-import usePledges from '../../hooks/usePledges';
-import { formatPhoneNumber, formatDate, formatCurrency } from '../../utils/formatters';
-import { validateMember, validateId } from '../../utils/validation';
-import membersService from '../../services/members';
-import groupsService from '../../services/groups';
-import pledgesService from '../../services/pledges';
-import styles from './AdminPages.module.css';
 
-// Enhanced error boundary component for individual sections
-const SectionErrorBoundary = ({ children, fallback, sectionName, onRetry }) => {
-  const [hasError, setHasError] = useState(false);
-  const [error, setError] = useState(null);
+// Utility functions
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  const cleaned = phone.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) return `(${match[1]}) ${match[2]}-${match[3]}`;
+  return phone;
+};
 
-  useEffect(() => {
-    setHasError(false);
-    setError(null);
-  }, [children]);
-
-  if (hasError) {
-    return (
-      <div className={styles.sectionError}>
-        <div className={styles.errorContent}>
-          <h4>Error loading {sectionName}</h4>
-          <p>{error?.message || 'An unexpected error occurred'}</p>
-          {onRetry && (
-            <Button size="sm" onClick={onRetry} variant="outline">
-              Try Again
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
+const formatDate = (dateString) => {
+  if (!dateString) return '';
   try {
-    return children;
-  } catch (error) {
-    console.error(`Error in ${sectionName}:`, error);
-    setHasError(true);
-    setError(error);
-    return fallback || (
-      <div className={styles.sectionError}>
-        Error loading {sectionName}
-      </div>
-    );
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch {
+    return dateString;
   }
 };
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount || 0);
+};
+
+// Simple UI Components
+const Card = ({ children, className = '', style = {} }) => (
+  <div style={{
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    padding: '24px',
+    ...style
+  }} className={className}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, variant = 'default', size = 'md', onClick, disabled = false, icon, ...props }) => {
+  const variants = {
+    default: { background: '#3b82f6', color: 'white' },
+    outline: { background: 'white', color: '#374151', border: '1px solid #d1d5db' },
+    ghost: { background: 'transparent', color: '#6b7280' },
+    danger: { background: '#ef4444', color: 'white' },
+    primary: { background: '#3b82f6', color: 'white' }
+  };
+
+  const sizes = {
+    sm: { padding: '6px 12px', fontSize: '14px' },
+    md: { padding: '10px 20px', fontSize: '16px' },
+    lg: { padding: '14px 28px', fontSize: '18px' }
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        borderRadius: '8px',
+        fontWeight: '500',
+        border: 'none',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
+        transition: 'all 0.2s',
+        ...variants[variant],
+        ...sizes[size]
+      }}
+      {...props}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+};
+
+const Badge = ({ children, variant = 'default' }) => {
+  const variants = {
+    success: { background: '#d1fae5', color: '#065f46' },
+    danger: { background: '#fee2e2', color: '#991b1b' },
+    primary: { background: '#dbeafe', color: '#1e40af' },
+    secondary: { background: '#f3f4f6', color: '#4b5563' },
+    info: { background: '#e0e7ff', color: '#3730a3' }
+  };
+
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '4px 12px',
+      borderRadius: '9999px',
+      fontSize: '12px',
+      fontWeight: '500',
+      ...variants[variant]
+    }}>
+      {children}
+    </span>
+  );
+};
+
+const LoadingSpinner = ({ size = 'md' }) => {
+  const sizes = { sm: '20px', md: '40px', lg: '60px' };
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+      <div style={{
+        width: sizes[size],
+        height: sizes[size],
+        border: '3px solid #e5e7eb',
+        borderTop: '3px solid #3b82f6',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite'
+      }} />
+      <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+};
+
+const Tabs = ({ tabs, activeTab, onTabChange }) => (
+  <div style={{ borderBottom: '2px solid #e5e7eb' }}>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {tabs.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => onTabChange(tab.key)}
+          style={{
+            padding: '12px 24px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === tab.key ? '2px solid #3b82f6' : '2px solid transparent',
+            color: activeTab === tab.key ? '#3b82f6' : '#6b7280',
+            fontWeight: activeTab === tab.key ? '600' : '400',
+            cursor: 'pointer',
+            marginBottom: '-2px',
+            transition: 'all 0.2s'
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 const MemberDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { showToast } = useToast();
-  
-  // Refs for cleanup and abort controllers
-  const abortControllerRef = useRef();
-  const isMountedRef = useRef(true);
+  const mountedRef = useRef(true);
+  const abortControllerRef = useRef(null);
 
-  // Enhanced ID validation
-  const validatedId = useMemo(() => {
-    try {
-      return validateId(id);
-    } catch (error) {
-      console.error('Invalid member ID:', error);
-      return null;
-    }
-  }, [id]);
-
-  // State management
+  // State
   const [member, setMember] = useState(null);
-  const [activeTab, setActiveTab] = useState(location.hash?.slice(1) || 'overview');
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isAddToGroupModalOpen, setIsAddToGroupModalOpen] = useState(false);
-  const [isAddPledgeModalOpen, setIsAddPledgeModalOpen] = useState(false);
-  const [memberActivity, setMemberActivity] = useState([]);
-  const [memberPledges, setMemberPledges] = useState([]);
   const [memberGroups, setMemberGroups] = useState([]);
-  const [availableGroups, setAvailableGroups] = useState([]);
+  const [memberPledges, setMemberPledges] = useState([]);
+  const [memberActivity, setMemberActivity] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [loadingStates, setLoadingStates] = useState({
-    member: false,
-    activity: false,
-    pledges: false,
-    groups: false,
-    availableGroups: false
-  });
-  const [errors, setErrors] = useState({
-    member: null,
-    activity: null,
-    pledges: null,
-    groups: null
-  });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  // Hooks with error handling
-  const membersHook = useMembers();
-  const groupsHook = useGroups();
-  const pledgesHook = usePledges();
-
-  const {
-    loading: hookLoading = false,
-    error: hookError = null,
-    getMember,
-    updateMember,
-    deleteMember,
-    getMemberActivity,
-    getMemberPledges,
-    getMemberGroups,
-    addMemberToGroup,
-    removeMemberFromGroup,
-    refetch: refetchMembers
-  } = membersHook || {};
-
-  const {
-    groups = [],
-    getAvailableGroupsForMember
-  } = groupsHook || {};
-
-  const {
-    createPledge
-  } = pledgesHook || {};
-
-  // Component cleanup
+  // Cleanup
   useEffect(() => {
-    isMountedRef.current = true;
+    mountedRef.current = true;
     return () => {
-      isMountedRef.current = false;
+      mountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
   }, []);
 
-  // Enhanced ID validation with navigation
-  useEffect(() => {
-    if (!validatedId) {
-      showToast('Invalid member ID provided', 'error');
-      navigate('/admin/members', { replace: true });
-      return;
-    }
-  }, [validatedId, navigate, showToast]);
-
-  // Update URL hash when tab changes
-  useEffect(() => {
-    const newHash = `#${activeTab}`;
-    if (location.hash !== newHash) {
-      window.history.replaceState(null, '', `${location.pathname}${newHash}`);
-    }
-  }, [activeTab, location]);
-
-  // Safe data access with enhanced validation
-  const safeMember = useMemo(() => {
-    if (!member) return null;
-    
-    try {
-      return validateMember(member);
-    } catch (error) {
-      console.error('Member validation error:', error);
-      // Return original member data if validation fails but log the error
-      return member;
-    }
-  }, [member]);
-
-  // Enhanced error handling helper
-  const handleError = useCallback((error, section, fallback = null) => {
-    if (!isMountedRef.current) return fallback;
-    
-    console.error(`Error in ${section}:`, error);
-    setErrors(prev => ({ ...prev, [section]: error.message }));
-    
-    if (error.name !== 'AbortError') {
-      showToast(`Failed to load ${section}`, 'error');
-    }
-    
-    return fallback;
-  }, [showToast]);
-
-  // Enhanced data loading with direct service integration
-  const loadMemberData = useCallback(async (memberId, options = {}) => {
-    if (!memberId || !isMountedRef.current) return;
-
-    const { forceRefresh = false } = options;
+  // Fetch member data
+  const fetchMemberData = useCallback(async () => {
+    if (!id) return;
 
     try {
-      // Cancel any existing requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      
       abortControllerRef.current = new AbortController();
-      const signal = abortControllerRef.current.signal;
 
-      setLoadingStates(prev => ({ ...prev, member: true }));
-      setErrors(prev => ({ ...prev, member: null }));
+      setIsLoading(true);
+      setError(null);
 
-      console.log(`[MemberDetailPage] Loading member data for ID: ${memberId}`);
-      
-      // Use membersService directly if hooks are unavailable
-      let memberData;
-      if (getMember && typeof getMember === 'function') {
-        memberData = await getMember(memberId, { signal, forceRefresh });
-      } else {
-        console.log('[MemberDetailPage] Using direct service call for member data');
-        const result = await membersService.getMember(memberId);
-        if (result.success) {
-          memberData = result.data;
-        } else {
-          throw new Error(result.error || 'Failed to fetch member');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+      // Fetch member details
+      const response = await fetch(`${baseURL}/api/v1/members/${id}/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        signal: abortControllerRef.current.signal
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Member not found');
         }
-      }
-      
-      if (!isMountedRef.current || signal.aborted) return;
-      
-      if (!memberData) {
-        throw new Error('Member not found');
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      setMember(memberData);
-      console.log('[MemberDetailPage] Member data loaded:', memberData);
-
-      // Load additional data in parallel with direct service calls
-      const loadAdditionalData = async () => {
-        const promises = [];
-        
-        // Load member activity
-        promises.push(
-          (async () => {
-            try {
-              // For now, return empty array as this endpoint might not be implemented
-              return { type: 'activity', data: [] };
-            } catch (err) {
-              return { type: 'activity', error: err };
-            }
-          })()
-        );
-        
-        // Load member pledges using pledgesService
-        promises.push(
-          (async () => {
-            try {
-              const result = await pledgesService.getMemberPledges(memberId);
-              if (result.success) {
-                return { type: 'pledges', data: result.data?.results || result.data || [] };
-              } else {
-                throw new Error(result.error || 'Failed to load pledges');
-              }
-            } catch (err) {
-              return { type: 'pledges', error: err };
-            }
-          })()
-        );
-        
-        // Load member groups using groupsService
-        promises.push(
-          (async () => {
-            try {
-              // This would need to be implemented in groupsService as getMemberGroups
-              // For now, return empty array
-              return { type: 'groups', data: [] };
-            } catch (err) {
-              return { type: 'groups', error: err };
-            }
-          })()
-        );
-
-        // Load available groups for member using groupsService
-        promises.push(
-          (async () => {
-            try {
-              const result = await groupsService.getGroups({ member_not_in: memberId });
-              if (result.success) {
-                return { type: 'availableGroups', data: result.data?.results || result.data || [] };
-              } else {
-                throw new Error(result.error || 'Failed to load available groups');
-              }
-            } catch (err) {
-              return { type: 'availableGroups', error: err };
-            }
-          })()
-        );
-
-        const results = await Promise.allSettled(promises);
-        
-        if (!isMountedRef.current || signal.aborted) return;
-        
-        results.forEach(result => {
-          if (result.status === 'fulfilled') {
-            const { type, data, error } = result.value;
-            
-            if (error) {
-              handleError(error, type, []);
-            } else {
-              switch (type) {
-                case 'activity':
-                  setMemberActivity(Array.isArray(data) ? data : []);
-                  break;
-                case 'pledges':
-                  setMemberPledges(Array.isArray(data) ? data : []);
-                  break;
-                case 'groups':
-                  setMemberGroups(Array.isArray(data) ? data : []);
-                  break;
-                case 'availableGroups':
-                  setAvailableGroups(Array.isArray(data) ? data : []);
-                  break;
-              }
-            }
-          }
-        });
-      };
-
-      await loadAdditionalData();
+      const data = await response.json();
       
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('[MemberDetailPage] Data loading aborted');
-        return;
-      }
+      if (!mountedRef.current) return;
       
-      console.error('Failed to load member data:', error);
+      setMember(data);
+
+      // Fetch additional data in parallel
+      Promise.allSettled([
+        // Fetch groups (if endpoint exists)
+        fetch(`${baseURL}/api/v1/members/${id}/groups/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.ok ? r.json() : []),
+        
+        // Fetch pledges
+        fetch(`${baseURL}/api/v1/pledges/?member=${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.ok ? r.json() : { results: [] }),
+        
+        // Fetch activity (if endpoint exists)
+        fetch(`${baseURL}/api/v1/members/${id}/activity/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.ok ? r.json() : [])
+      ]).then(results => {
+        if (!mountedRef.current) return;
+        
+        if (results[0].status === 'fulfilled') {
+          setMemberGroups(Array.isArray(results[0].value) ? results[0].value : results[0].value?.results || []);
+        }
+        if (results[1].status === 'fulfilled') {
+          setMemberPledges(results[1].value?.results || []);
+        }
+        if (results[2].status === 'fulfilled') {
+          setMemberActivity(Array.isArray(results[2].value) ? results[2].value : []);
+        }
+      });
+
+    } catch (err) {
+      if (err.name === 'AbortError') return;
       
-      if (isMountedRef.current) {
-        if (error.message === 'Member not found' || error.message?.includes('404')) {
-          showToast('Member not found', 'error');
-          navigate('/admin/members', { replace: true });
-        } else {
-          setErrors(prev => ({ ...prev, member: error.message }));
-          showToast(error.message || 'Failed to load member data', 'error');
+      console.error('Error fetching member:', err);
+      
+      if (mountedRef.current) {
+        setError(err.message);
+        if (err.message === 'Member not found') {
+          setTimeout(() => navigate('/admin/members'), 2000);
         }
       }
     } finally {
-      if (isMountedRef.current) {
-        setLoadingStates(prev => ({ ...prev, member: false }));
+      if (mountedRef.current) {
+        setIsLoading(false);
       }
     }
-  }, [
-    getMember, 
-    handleError,
-    showToast, 
-    navigate
-  ]);
+  }, [id, navigate]);
 
-  // Initial data load
   useEffect(() => {
-    if (validatedId && isMountedRef.current) {
-      loadMemberData(validatedId);
-    }
-  }, [validatedId, loadMemberData]);
+    fetchMemberData();
+  }, [fetchMemberData]);
 
-  // Enhanced refresh handler
-  const handleRefresh = useCallback(async () => {
-    if (!validatedId) return;
-    
-    console.log('[MemberDetailPage] Manual refresh triggered');
-    setIsRefreshing(true);
-    
-    try {
-      await loadMemberData(validatedId, { forceRefresh: true });
-      
-      if (refetchMembers) {
-        await refetchMembers();
-      }
-      
-      showToast('Data refreshed successfully', 'success');
-    } catch (error) {
-      console.error('[MemberDetailPage] Refresh error:', error);
-      showToast('Failed to refresh data', 'error');
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [validatedId, loadMemberData, refetchMembers, showToast]);
-
-  // Enhanced member edit handler with direct service integration
-  const handleEditMember = useCallback(async (updatedData) => {
-    if (!validatedId) return;
-
-    try {
-      console.log('[MemberDetailPage] Updating member:', updatedData);
-      
-      let updatedMember;
-      if (updateMember && typeof updateMember === 'function') {
-        updatedMember = await updateMember(validatedId, updatedData);
-      } else {
-        console.log('[MemberDetailPage] Using direct service call for member update');
-        const result = await membersService.updateMember(validatedId, updatedData);
-        if (result.success) {
-          updatedMember = result.data;
-        } else {
-          throw new Error(result.error || 'Failed to update member');
-        }
-      }
-      
-      if (isMountedRef.current) {
-        setMember(updatedMember);
-        setIsEditModalOpen(false);
-        showToast('Member updated successfully', 'success');
-        
-        // Optionally refresh the full data to ensure consistency
-        if (refetchMembers && typeof refetchMembers === 'function') {
-          refetchMembers();
-        }
-      }
-    } catch (error) {
-      console.error('Update error:', error);
-      showToast(error.message || 'Failed to update member', 'error');
-    }
-  }, [validatedId, updateMember, showToast, refetchMembers]);
-
-  // Enhanced member deletion handler with direct service integration
-  const handleDeleteMember = useCallback(async () => {
-    if (!validatedId) return;
+  // Delete member
+  const handleDelete = async () => {
+    if (!id) return;
 
     setIsDeleting(true);
     try {
-      if (deleteMember && typeof deleteMember === 'function') {
-        await deleteMember(validatedId);
-      } else {
-        console.log('[MemberDetailPage] Using direct service call for member deletion');
-        const result = await membersService.deleteMember(validatedId);
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to delete member');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${baseURL}/api/v1/members/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      }
-      
-      if (isMountedRef.current) {
-        setIsDeleteDialogOpen(false);
-        showToast('Member deleted successfully', 'success');
-        navigate('/admin/members');
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-      showToast(error.message || 'Failed to delete member', 'error');
+      });
+
+      if (!response.ok) throw new Error('Failed to delete member');
+
+      navigate('/admin/members');
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete member: ' + err.message);
     } finally {
-      if (isMountedRef.current) {
-        setIsDeleting(false);
-      }
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
-  }, [validatedId, deleteMember, showToast, navigate]);
-
-  // Add member to group handler with direct service integration
-  const handleAddToGroup = useCallback(async (groupId) => {
-    if (!validatedId) return;
-
-    try {
-      // Use groupsService directly to add member to group
-      const result = await groupsService.addMemberToGroup(groupId, {
-        member_id: validatedId,
-        role: '',
-        status: 'active'
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to add member to group');
-      }
-      
-      // Refresh member groups - we'll need to implement this in groupsService
-      // For now, we'll reload all data
-      await loadMemberData(validatedId, { forceRefresh: true });
-      
-      setIsAddToGroupModalOpen(false);
-      showToast('Member added to group successfully', 'success');
-    } catch (error) {
-      console.error('Add to group error:', error);
-      showToast(error.message || 'Failed to add member to group', 'error');
-    }
-  }, [validatedId, loadMemberData, showToast]);
-
-  // Remove member from group handler with direct service integration
-  const handleRemoveFromGroup = useCallback(async (groupId) => {
-    if (!validatedId) return;
-
-    try {
-      // Use groupsService directly to remove member from group
-      const result = await groupsService.removeMemberFromGroup(groupId, validatedId);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to remove member from group');
-      }
-      
-      // Refresh member groups
-      await loadMemberData(validatedId, { forceRefresh: true });
-      
-      showToast('Member removed from group successfully', 'success');
-    } catch (error) {
-      console.error('Remove from group error:', error);
-      showToast(error.message || 'Failed to remove member from group', 'error');
-    }
-  }, [validatedId, loadMemberData, showToast]);
-
-  // Add pledge handler with direct service integration
-  const handleAddPledge = useCallback(async (pledgeData) => {
-    if (!validatedId) return;
-
-    try {
-      // Use pledgesService directly to create pledge
-      const result = await pledgesService.createPledge({ 
-        ...pledgeData, 
-        member_id: validatedId 
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to add pledge');
-      }
-      
-      // Refresh member pledges
-      const pledgesResult = await pledgesService.getMemberPledges(validatedId);
-      if (pledgesResult.success) {
-        setMemberPledges(Array.isArray(pledgesResult.data?.results) ? pledgesResult.data.results : 
-                        Array.isArray(pledgesResult.data) ? pledgesResult.data : []);
-      }
-      
-      setIsAddPledgeModalOpen(false);
-      showToast('Pledge added successfully', 'success');
-    } catch (error) {
-      console.error('Add pledge error:', error);
-      showToast(error.message || 'Failed to add pledge', 'error');
-    }
-  }, [validatedId, showToast]);
-
-  // Status badge component
-  const StatusBadge = useCallback(({ isActive }) => (
-    <Badge variant={isActive ? 'success' : 'secondary'}>
-      {isActive ? 'Active' : 'Inactive'}
-    </Badge>
-  ), []);
-
-  // Contact method badge component
-  const ContactMethodBadge = useCallback(({ method }) => {
-    const variants = {
-      email: 'primary',
-      phone: 'info',
-      sms: 'success',
-      mail: 'secondary',
-      no_contact: 'danger'
-    };
-    
-    const labels = {
-      email: 'Email',
-      phone: 'Phone',
-      sms: 'SMS',
-      mail: 'Mail',
-      no_contact: 'No Contact'
-    };
-
-    return (
-      <Badge variant={variants[method] || 'secondary'}>
-        {labels[method] || method}
-      </Badge>
-    );
-  }, []);
-
-  // Overview tab content with enhanced error handling
-  const OverviewTab = useCallback(() => {
-    if (!safeMember) return null;
-
-    return (
-      <SectionErrorBoundary 
-        sectionName="overview"
-        onRetry={() => loadMemberData(validatedId, { forceRefresh: true })}
-      >
-        <div className={styles.memberOverview}>
-          {/* Member Header */}
-          <div className={styles.memberHeader}>
-            <div className={styles.memberInfo}>
-              <Avatar
-                src={safeMember.photo_url}
-                alt={`${safeMember.first_name} ${safeMember.last_name}`}
-                size="xlarge"
-                className={styles.memberAvatar}
-              />
-              
-              <div className={styles.memberDetails}>
-                <h2 className={styles.memberName}>
-                  {safeMember.first_name} {safeMember.last_name}
-                  {safeMember.preferred_name && (
-                    <span className={styles.preferredName}>
-                      "{safeMember.preferred_name}"
-                    </span>
-                  )}
-                </h2>
-                <p className={styles.memberEmail}>{safeMember.email}</p>
-                <div className={styles.memberBadges}>
-                  <StatusBadge isActive={safeMember.is_active} />
-                  <ContactMethodBadge method={safeMember.preferred_contact_method} />
-                </div>
-              </div>
-            </div>
-            
-            <div className={styles.memberActions}>
-              <Button
-                variant="ghost"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                icon={<RefreshCw size={16} className={isRefreshing ? styles.spinning : ''} />}
-                title="Refresh member data"
-              >
-                {isRefreshing ? 'Refreshing...' : 'Refresh'}
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => setIsEditModalOpen(true)}
-                icon={<Edit size={16} />}
-              >
-                Edit Member
-              </Button>
-              
-              <Button
-                variant="danger"
-                onClick={() => setIsDeleteDialogOpen(true)}
-                icon={<Trash2 size={16} />}
-              >
-                Delete Member
-              </Button>
-            </div>
-          </div>
-
-          {/* Member Information Cards */}
-          <div className={styles.memberGrid}>
-            <Card className={styles.infoCard}>
-              <div className={styles.cardHeader}>
-                <h3><Mail size={18} /> Contact Information</h3>
-              </div>
-              <div className={styles.cardBody}>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Email:</span>
-                  <span className={styles.value}>
-                    <a href={`mailto:${safeMember.email}`} className={styles.emailLink}>
-                      {safeMember.email}
-                    </a>
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Phone:</span>
-                  <span className={styles.value}>
-                    {safeMember.phone ? (
-                      <a href={`tel:${safeMember.phone}`} className={styles.phoneLink}>
-                        {formatPhoneNumber(safeMember.phone)}
-                      </a>
-                    ) : 'Not provided'}
-                  </span>
-                </div>
-                
-                {safeMember.alternate_phone && (
-                  <div className={styles.infoRow}>
-                    <span className={styles.label}>Alternate Phone:</span>
-                    <span className={styles.value}>
-                      <a href={`tel:${safeMember.alternate_phone}`} className={styles.phoneLink}>
-                        {formatPhoneNumber(safeMember.alternate_phone)}
-                      </a>
-                    </span>
-                  </div>
-                )}
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Address:</span>
-                  <span className={styles.value}>
-                    {safeMember.address || 'Not provided'}
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Preferred Contact:</span>
-                  <span className={styles.value}>
-                    <ContactMethodBadge method={safeMember.preferred_contact_method} />
-                  </span>
-                </div>
-              </div>
-            </Card>
-
-            <Card className={styles.infoCard}>
-              <div className={styles.cardHeader}>
-                <h3><User size={18} /> Personal Information</h3>
-              </div>
-              <div className={styles.cardBody}>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Date of Birth:</span>
-                  <span className={styles.value}>
-                    {formatDate(safeMember.date_of_birth) || 'Not provided'}
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Gender:</span>
-                  <span className={styles.value}>
-                    {safeMember.gender || 'Not specified'}
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Preferred Language:</span>
-                  <span className={styles.value}>
-                    {safeMember.preferred_language || 'English'}
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Registration Date:</span>
-                  <span className={styles.value}>
-                    {formatDate(safeMember.registration_date) || 'Unknown'}
-                  </span>
-                </div>
-                
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>Last Updated:</span>
-                  <span className={styles.value}>
-                    {formatDate(safeMember.last_updated) || 'Never'}
-                  </span>
-                </div>
-              </div>
-            </Card>
-            
-            {safeMember.accessibility_needs && (
-              <Card className={styles.infoCard}>
-                <div className={styles.cardHeader}>
-                  <h3>Accessibility Needs</h3>
-                </div>
-                <div className={styles.cardBody}>
-                  <p>{safeMember.accessibility_needs}</p>
-                </div>
-              </Card>
-            )}
-          </div>
-        </div>
-      </SectionErrorBoundary>
-    );
-  }, [safeMember, StatusBadge, ContactMethodBadge, handleRefresh, isRefreshing, loadMemberData, validatedId]);
-
-  // Enhanced Groups tab content with full functionality
-  const GroupsTab = useCallback(() => (
-    <SectionErrorBoundary 
-      sectionName="groups"
-      onRetry={() => getMemberGroups && getMemberGroups(validatedId)}
-    >
-      <div className={styles.memberGroups}>
-        <div className={styles.tabHeader}>
-          <h3>Ministry Groups</h3>
-          <Button
-            variant="primary"
-            size="small"
-            icon={<UserPlus size={16} />}
-            onClick={() => setIsAddToGroupModalOpen(true)}
-            disabled={!availableGroups.length}
-          >
-            Add to Group
-          </Button>
-        </div>
-        
-        {errors.groups && (
-          <div className={styles.errorMessage}>
-            <p>Error loading groups: {errors.groups}</p>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => getMemberGroups && getMemberGroups(validatedId)}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
-        
-        <div className={styles.groupsList}>
-          {memberGroups.length === 0 ? (
-            <div className={styles.emptyState}>
-              <UserPlus size={48} className={styles.emptyIcon} />
-              <p>This member is not part of any ministry groups.</p>
-              <Button 
-                variant="outline" 
-                size="small"
-                onClick={() => setIsAddToGroupModalOpen(true)}
-                disabled={!availableGroups.length}
-              >
-                Add to Group
-              </Button>
-            </div>
-          ) : (
-            memberGroups.map((group) => (
-              <Card key={group.id} className={styles.groupCard}>
-                <div className={styles.groupInfo}>
-                  <h4 className={styles.groupName}>{group.name}</h4>
-                  <p className={styles.groupDescription}>{group.description}</p>
-                  <div className={styles.groupMeta}>
-                    <span className={styles.joinDate}>
-                      Joined: {formatDate(group.join_date)}
-                    </span>
-                    {group.role && (
-                      <Badge variant="primary">{group.role}</Badge>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.groupActions}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveFromGroup(group.id)}
-                    icon={<X size={14} />}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
-    </SectionErrorBoundary>
-  ), [memberGroups, availableGroups, errors.groups, getMemberGroups, validatedId, handleRemoveFromGroup]);
-
-  // Enhanced Pledges tab content with full functionality
-  const PledgesTab = useCallback(() => (
-    <SectionErrorBoundary 
-      sectionName="pledges"
-      onRetry={() => getMemberPledges && getMemberPledges(validatedId)}
-    >
-      <div className={styles.memberPledges}>
-        <div className={styles.tabHeader}>
-          <h3>Financial Pledges</h3>
-          <Button
-            variant="primary"
-            size="small"
-            icon={<Plus size={16} />}
-            onClick={() => setIsAddPledgeModalOpen(true)}
-          >
-            Add Pledge
-          </Button>
-        </div>
-        
-        {errors.pledges && (
-          <div className={styles.errorMessage}>
-            <p>Error loading pledges: {errors.pledges}</p>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => getMemberPledges && getMemberPledges(validatedId)}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
-        
-        <div className={styles.pledgesList}>
-          {memberPledges.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Calendar size={48} className={styles.emptyIcon} />
-              <p>This member has no recorded pledges.</p>
-              <Button 
-                variant="outline" 
-                size="small"
-                onClick={() => setIsAddPledgeModalOpen(true)}
-              >
-                Add Pledge
-              </Button>
-            </div>
-          ) : (
-            memberPledges.map((pledge) => (
-              <Card key={pledge.id} className={styles.pledgeCard}>
-                <div className={styles.pledgeInfo}>
-                  <div className={styles.pledgeAmount}>
-                    {formatCurrency(pledge.amount)}
-                  </div>
-                  <div className={styles.pledgeDetails}>
-                    <span className={styles.pledgeFrequency}>
-                      {pledge.frequency_display || pledge.frequency}
-                    </span>
-                    <span className={styles.pledgeDates}>
-                      {formatDate(pledge.start_date)} - {
-                        pledge.end_date ? formatDate(pledge.end_date) : 'Ongoing'
-                      }
-                    </span>
-                  </div>
-                  <Badge variant={pledge.status === 'active' ? 'success' : 'secondary'}>
-                    {pledge.status}
-                  </Badge>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
-    </SectionErrorBoundary>
-  ), [memberPledges, errors.pledges, getMemberPledges, validatedId]);
-
-  // Enhanced Activity tab content
-  const ActivityTab = useCallback(() => (
-    <SectionErrorBoundary 
-      sectionName="activity"
-      onRetry={() => getMemberActivity && getMemberActivity(validatedId)}
-    >
-      <div className={styles.memberActivity}>
-        <div className={styles.tabHeader}>
-          <h3>Recent Activity</h3>
-          <Button
-            variant="outline"
-            size="small"
-            icon={<Download size={16} />}
-          >
-            Export Activity
-          </Button>
-        </div>
-        
-        {errors.activity && (
-          <div className={styles.errorMessage}>
-            <p>Error loading activity: {errors.activity}</p>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => getMemberActivity && getMemberActivity(validatedId)}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
-        
-        <div className={styles.activityList}>
-          {memberActivity.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Calendar size={48} className={styles.emptyIcon} />
-              <p>No recent activity recorded.</p>
-            </div>
-          ) : (
-            memberActivity.map((activity, index) => (
-              <div key={activity.id || index} className={styles.activityItem}>
-                <div className={styles.activityIcon}>
-                  <div className={styles.activityDot}></div>
-                </div>
-                <div className={styles.activityContent}>
-                  <div className={styles.activityText}>
-                    {activity.description}
-                  </div>
-                  <div className={styles.activityTime}>
-                    {formatDate(activity.timestamp)}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </SectionErrorBoundary>
-  ), [memberActivity, errors.activity, getMemberActivity, validatedId]);
-
-  // Add to Group Modal Content
-  const AddToGroupModal = useCallback(() => (
-    <Modal
-      isOpen={isAddToGroupModalOpen}
-      onClose={() => setIsAddToGroupModalOpen(false)}
-      title="Add Member to Group"
-      size="medium"
-    >
-      <div className={styles.addToGroupContent}>
-        <p>Select a group to add {safeMember?.first_name} {safeMember?.last_name} to:</p>
-        
-        <div className={styles.groupOptions}>
-          {availableGroups.length === 0 ? (
-            <div className={styles.emptyState}>
-              <UserPlus size={32} className={styles.emptyIcon} />
-              <p>No available groups to join.</p>
-            </div>
-          ) : (
-            availableGroups.map((group) => (
-              <div key={group.id} className={styles.groupOption}>
-                <div className={styles.groupInfo}>
-                  <h4>{group.name}</h4>
-                  <p>{group.description}</p>
-                  <span className={styles.memberCount}>
-                    {group.member_count || 0} members
-                  </span>
-                </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleAddToGroup(group.id)}
-                >
-                  Add to Group
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
-        
-        <div className={styles.modalActions}>
-          <Button
-            variant="outline"
-            onClick={() => setIsAddToGroupModalOpen(false)}
-          >
-            Cancel
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  ), [isAddToGroupModalOpen, safeMember, availableGroups, handleAddToGroup]);
-
-  // Add Pledge Modal Content (simplified form)
-  const AddPledgeModal = useCallback(() => {
-    const [pledgeAmount, setPledgeAmount] = useState('');
-    const [pledgeFrequency, setPledgeFrequency] = useState('monthly');
-    const [pledgeStartDate, setPledgeStartDate] = useState('');
-    const [pledgeEndDate, setPledgeEndDate] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmitPledge = async (e) => {
-      e.preventDefault();
-      if (!pledgeAmount || !pledgeStartDate) return;
-
-      setIsSubmitting(true);
-      try {
-        await handleAddPledge({
-          amount: parseFloat(pledgeAmount),
-          frequency: pledgeFrequency,
-          start_date: pledgeStartDate,
-          end_date: pledgeEndDate || null,
-          status: 'active'
-        });
-        
-        // Reset form
-        setPledgeAmount('');
-        setPledgeFrequency('monthly');
-        setPledgeStartDate('');
-        setPledgeEndDate('');
-      } catch (error) {
-        // Error handled in handleAddPledge
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-    return (
-      <Modal
-        isOpen={isAddPledgeModalOpen}
-        onClose={() => setIsAddPledgeModalOpen(false)}
-        title="Add New Pledge"
-        size="medium"
-      >
-        <form onSubmit={handleSubmitPledge} className={styles.pledgeForm}>
-          <div className={styles.formGroup}>
-            <label htmlFor="pledgeAmount">Pledge Amount *</label>
-            <input
-              type="number"
-              id="pledgeAmount"
-              value={pledgeAmount}
-              onChange={(e) => setPledgeAmount(e.target.value)}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-              required
-              className={styles.formInput}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="pledgeFrequency">Frequency</label>
-            <select
-              id="pledgeFrequency"
-              value={pledgeFrequency}
-              onChange={(e) => setPledgeFrequency(e.target.value)}
-              className={styles.formSelect}
-            >
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="annually">Annually</option>
-              <option value="one_time">One Time</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="pledgeStartDate">Start Date *</label>
-            <input
-              type="date"
-              id="pledgeStartDate"
-              value={pledgeStartDate}
-              onChange={(e) => setPledgeStartDate(e.target.value)}
-              required
-              className={styles.formInput}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="pledgeEndDate">End Date (Optional)</label>
-            <input
-              type="date"
-              id="pledgeEndDate"
-              value={pledgeEndDate}
-              onChange={(e) => setPledgeEndDate(e.target.value)}
-              className={styles.formInput}
-            />
-          </div>
-
-          <div className={styles.modalActions}>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsAddPledgeModalOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting || !pledgeAmount || !pledgeStartDate}
-            >
-              {isSubmitting ? 'Adding...' : 'Add Pledge'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-    );
-  }, [isAddPledgeModalOpen, handleAddPledge]);
+  };
 
   // Loading state
-  if (loadingStates.member || hookLoading) {
+  if (isLoading) {
     return (
-      <div className={styles.loadingContainer}>
-        <LoadingSpinner size="large" />
-        <p>Loading member details...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center' }}>
+          <LoadingSpinner size="lg" />
+          <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading member details...</p>
+        </div>
       </div>
     );
   }
 
   // Error state
-  if (hookError || errors.member) {
+  if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <h2>Error Loading Member</h2>
-        <p>{hookError || errors.member}</p>
-        <div className={styles.errorActions}>
-          <Button onClick={() => loadMemberData(validatedId, { forceRefresh: true })}>
-            Try Again
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin/members')}
-            icon={<ArrowLeft size={16} />}
-          >
-            Back to Members
-          </Button>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <Card style={{ maxWidth: '500px', textAlign: 'center' }}>
+          <AlertCircle size={48} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Error Loading Member</h2>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>{error}</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <Button onClick={fetchMemberData} variant="primary">Try Again</Button>
+            <Button onClick={() => navigate('/admin/members')} variant="outline">Back to Members</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!member) return null;
+
+  // Overview Tab Content
+  const OverviewTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Mail size={18} /> Contact Information
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Email</div>
+              <a href={`mailto:${member.email}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>{member.email}</a>
+            </div>
+            {member.phone && (
+              <div>
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Phone</div>
+                <a href={`tel:${member.phone}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>{formatPhoneNumber(member.phone)}</a>
+              </div>
+            )}
+            {member.address && (
+              <div>
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Address</div>
+                <div>{member.address}</div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <User size={18} /> Personal Information
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {member.date_of_birth && (
+              <div>
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Date of Birth</div>
+                <div>{formatDate(member.date_of_birth)}</div>
+              </div>
+            )}
+            {member.gender && (
+              <div>
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Gender</div>
+                <div style={{ textTransform: 'capitalize' }}>{member.gender}</div>
+              </div>
+            )}
+            <div>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Status</div>
+              <Badge variant={member.is_active ? 'success' : 'danger'}>
+                {member.is_active ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calendar size={18} /> Membership
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Registration Date</div>
+              <div>{formatDate(member.registration_date)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Last Updated</div>
+              <div>{formatDate(member.updated_at)}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // Groups Tab
+  const GroupsTab = () => (
+    <div>
+      {memberGroups.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px' }}>
+          <UserPlus size={48} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
+          <p style={{ color: '#6b7280' }}>Not a member of any groups yet</p>
         </div>
-      </div>
-    );
-  }
+      ) : (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {memberGroups.map(group => (
+            <Card key={group.id}>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>{group.name}</h4>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>{group.description}</p>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
-  // Member not found
-  if (!safeMember) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Member Not Found</h2>
-        <p>The requested member could not be found.</p>
-        <Button
-          onClick={() => navigate('/admin/members')}
-          icon={<ArrowLeft size={16} />}
-        >
-          Back to Members
-        </Button>
-      </div>
-    );
-  }
+  // Pledges Tab
+  const PledgesTab = () => (
+    <div>
+      {memberPledges.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px' }}>
+          <Calendar size={48} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
+          <p style={{ color: '#6b7280' }}>No pledges recorded</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {memberPledges.map(pledge => (
+            <Card key={pledge.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                <div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#3b82f6' }}>
+                    {formatCurrency(pledge.amount)}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                    {pledge.frequency} • {formatDate(pledge.start_date)}
+                  </div>
+                </div>
+                <Badge variant={pledge.status === 'active' ? 'success' : 'secondary'}>
+                  {pledge.status}
+                </Badge>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
-  // Tab configuration
-  const tabsData = [
+  // Activity Tab
+  const ActivityTab = () => (
+    <div>
+      {memberActivity.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px' }}>
+          <Calendar size={48} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
+          <p style={{ color: '#6b7280' }}>No recent activity</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {memberActivity.map((activity, idx) => (
+            <Card key={idx}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', marginTop: '6px' }} />
+                <div style={{ flex: 1 }}>
+                  <div>{activity.description}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                    {formatDate(activity.timestamp)}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const tabs = [
     { key: 'overview', label: 'Overview', content: <OverviewTab /> },
     { key: 'groups', label: `Groups (${memberGroups.length})`, content: <GroupsTab /> },
     { key: 'pledges', label: `Pledges (${memberPledges.length})`, content: <PledgesTab /> },
     { key: 'activity', label: 'Activity', content: <ActivityTab /> }
   ];
 
+  const activeTabContent = tabs.find(t => t.key === activeTab)?.content;
+
   return (
-    <ErrorBoundary
-      fallback={({ error, resetError }) => (
-        <div className={styles.errorContainer}>
-          <h2>Something went wrong</h2>
-          <p>{error?.message || 'An unexpected error occurred'}</p>
-          <div className={styles.errorActions}>
-            <Button onClick={resetError}>Try Again</Button>
-            <Button variant="outline" onClick={() => navigate('/admin/members')}>
-              Back to Members
-            </Button>
-          </div>
-        </div>
-      )}
-    >
-      <div className={styles.memberDetailPage}>
-        {/* Page Header */}
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumbs}>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/admin/members')}
-              icon={<ArrowLeft size={16} />}
-              className={styles.backButton}
-            >
-              Back to Members
-            </Button>
-          </div>
-          <h1 className={styles.pageTitle}>Member Details</h1>
-        </div>
-
-        {/* Page Content */}
-        <div className={styles.pageContent}>
-          <Tabs
-            tabs={tabsData}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            className={styles.memberTabs}
-          />
-        </div>
-
-        {/* Edit Member Modal */}
-        {isEditModalOpen && (
-          <Modal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            title="Edit Member"
-            size="large"
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '24px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ marginBottom: '24px' }}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/admin/members')}
+            icon={<ArrowLeft size={16} />}
+            style={{ marginBottom: '16px' }}
           >
-            <MemberForm
-              member={safeMember}
-              onSubmit={handleEditMember}
-              onCancel={() => setIsEditModalOpen(false)}
-              isEditing={true}
-            />
-          </Modal>
-        )}
+            Back to Members
+          </Button>
+
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h1 style={{ fontSize: '32px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                  {member.first_name} {member.last_name}
+                </h1>
+                <p style={{ color: '#6b7280', margin: '0 0 12px 0' }}>{member.email}</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Badge variant={member.is_active ? 'success' : 'danger'}>
+                    {member.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                  {member.preferred_contact_method && (
+                    <Badge variant="info">{member.preferred_contact_method}</Badge>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button variant="ghost" onClick={fetchMemberData} icon={<RefreshCw size={16} />}>
+                  Refresh
+                </Button>
+                <Button variant="outline" onClick={() => setShowEditModal(true)} icon={<Edit size={16} />}>
+                  Edit
+                </Button>
+                <Button variant="danger" onClick={() => setShowDeleteDialog(true)} icon={<Trash2 size={16} />}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <Card style={{ padding: '0' }}>
+          <div style={{ padding: '0 24px' }}>
+            <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          <div style={{ padding: '24px' }}>
+            {activeTabContent}
+          </div>
+        </Card>
 
         {/* Delete Confirmation Dialog */}
-        {isDeleteDialogOpen && (
-          <ConfirmDialog
-            isOpen={isDeleteDialogOpen}
-            onClose={() => setIsDeleteDialogOpen(false)}
-            onConfirm={handleDeleteMember}
-            title="Delete Member"
-            message={`Are you sure you want to delete ${safeMember.first_name} ${safeMember.last_name}? This action cannot be undone.`}
-            confirmText="Delete"
-            cancelText="Cancel"
-            variant="danger"
-            loading={isDeleting}
-          />
+        {showDeleteDialog && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <Card style={{ maxWidth: '500px', margin: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>Delete Member</h2>
+              <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+                Are you sure you want to delete {member.first_name} {member.last_name}? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+                  Cancel
+                </Button>
+                <Button variant="danger" onClick={handleDelete} disabled={isDeleting}>
+                  {isDeleting ? 'Deleting...' : 'Delete Member'}
+                </Button>
+              </div>
+            </Card>
+          </div>
         )}
-
-        {/* Add to Group Modal */}
-        <AddToGroupModal />
-
-        {/* Add Pledge Modal */}
-        <AddPledgeModal />
-
-        <Toast />
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 

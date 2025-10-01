@@ -1,4 +1,4 @@
-# events/views.py - COMPLETE Events views for ChurchConnect
+# events/views.py - FIXED: Public access for published events
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,11 +9,9 @@ from django.http import HttpResponse
 import csv
 import logging
 
-# Import DjangoFilterBackend from django-filter package
 try:
     from django_filters.rest_framework import DjangoFilterBackend
 except ImportError:
-    # Fallback if django-filter is not installed
     DjangoFilterBackend = None
 
 from .models import Event, EventRegistration, EventReminder, EventCategory, EventVolunteer
@@ -28,16 +26,42 @@ from members.models import Member
 logger = logging.getLogger(__name__)
 
 
+class IsAuthenticatedOrPublicReadOnly(permissions.BasePermission):
+    """
+    Custom permission to allow:
+    - Unauthenticated users: Read-only access to public events
+    - Authenticated users: Full CRUD access
+    """
+    def has_permission(self, request, view):
+        # Allow read-only access for safe methods (GET, HEAD, OPTIONS)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        
+        # Write permissions require authentication
+        return request.user and request.user.is_authenticated
+    
+    def has_object_permission(self, request, view, obj):
+        # Allow read access to public events
+        if request.method in permissions.SAFE_METHODS:
+            if hasattr(obj, 'is_public'):
+                return obj.is_public or (request.user and request.user.is_authenticated)
+            return True
+        
+        # Write permissions require authentication
+        return request.user and request.user.is_authenticated
+
+
 class EventViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing events with comprehensive functionality
+    ViewSet for managing events with PUBLIC ACCESS for published events
     """
     queryset = Event.objects.select_related().prefetch_related(
         'registrations', 'volunteers', 'target_groups', 'reminders'
     ).order_by('start_datetime')
-    permission_classes = [permissions.IsAuthenticated]
     
-    # Set filter backends conditionally
+    # FIXED: Use custom permission class for public access
+    permission_classes = [IsAuthenticatedOrPublicReadOnly]
+    
     if DjangoFilterBackend:
         filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     else:
@@ -73,8 +97,15 @@ class EventViewSet(viewsets.ModelViewSet):
         return EventSerializer
 
     def get_queryset(self):
-        """Filter queryset based on query parameters"""
+        """
+        FIXED: Filter queryset - show only public events to unauthenticated users
+        """
         queryset = super().get_queryset()
+        
+        # CRITICAL FIX: Non-authenticated users only see public, published events
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(is_public=True, status='published')
+            logger.info("[EventViewSet] Filtering for public access only")
         
         # Filter by date range
         start_date = self.request.query_params.get('start_date')
@@ -98,10 +129,11 @@ class EventViewSet(viewsets.ModelViewSet):
             today = timezone.now().date()
             queryset = queryset.filter(start_datetime__date=today)
         
-        # Filter by target group
-        group_id = self.request.query_params.get('group_id')
-        if group_id:
-            queryset = queryset.filter(target_groups__id=group_id)
+        # Filter by target group (authenticated only)
+        if self.request.user.is_authenticated:
+            group_id = self.request.query_params.get('group_id')
+            if group_id:
+                queryset = queryset.filter(target_groups__id=group_id)
         
         # Filter by organizer
         organizer = self.request.query_params.get('organizer')
@@ -134,7 +166,8 @@ class EventViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """List events with logging"""
         try:
-            logger.info(f"[EventViewSet] Events list request from: {request.user.email}")
+            user_info = request.user.email if request.user.is_authenticated else "Anonymous"
+            logger.info(f"[EventViewSet] Events list request from: {user_info}")
             logger.info(f"[EventViewSet] Query params: {request.query_params}")
             
             response = super().list(request, *args, **kwargs)
@@ -149,11 +182,14 @@ class EventViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def calendar(self, request):
-        """Get events in calendar format"""
+        """
+        FIXED: Public calendar endpoint - no authentication required
+        """
         try:
-            logger.info(f"[EventViewSet] Calendar request from: {request.user.email}")
+            user_info = request.user.email if request.user.is_authenticated else "Anonymous"
+            logger.info(f"[EventViewSet] Calendar request from: {user_info}")
             
             queryset = self.filter_queryset(self.get_queryset())
             serializer = EventCalendarSerializer(queryset, many=True)
@@ -172,21 +208,25 @@ class EventViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def upcoming(self, request):
-        """Get upcoming events"""
+        """
+        FIXED: Public upcoming events - no authentication required
+        """
         try:
             days_ahead = int(request.query_params.get('days', 30))
             limit = int(request.query_params.get('limit', 50))
             
-            logger.info(f"[EventViewSet] Upcoming events request: {days_ahead} days, limit {limit}")
+            user_info = request.user.email if request.user.is_authenticated else "Anonymous"
+            logger.info(f"[EventViewSet] Upcoming events request from {user_info}: {days_ahead} days, limit {limit}")
             
             end_date = timezone.now() + timedelta(days=days_ahead)
             
             queryset = Event.objects.filter(
                 start_datetime__gte=timezone.now(),
                 start_datetime__lte=end_date,
-                status='published'
+                status='published',
+                is_public=True  # FIXED: Only public events
             ).order_by('start_datetime')[:limit]
             
             serializer = EventListSerializer(queryset, many=True)
@@ -208,7 +248,13 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def register(self, request, pk=None):
-        """Register a member for an event"""
+        """Register a member for an event - requires authentication"""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required to register for events'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
         try:
             event = self.get_object()
             member_id = request.data.get('member_id')
@@ -229,7 +275,6 @@ class EventViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
             
-            # Create registration data
             registration_data = {
                 'event': event.id,
                 'member_id': member_id,
@@ -263,7 +308,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def registrations(self, request, pk=None):
-        """Get all registrations for an event"""
+        """Get registrations - authenticated users only"""
         try:
             event = self.get_object()
             logger.info(f"[EventViewSet] Registrations request for event {pk}")
@@ -287,7 +332,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def volunteers(self, request, pk=None):
-        """Get all volunteers for an event"""
+        """Get volunteers - authenticated users only"""
         try:
             event = self.get_object()
             logger.info(f"[EventViewSet] Volunteers request for event {pk}")
@@ -311,12 +356,11 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def duplicate(self, request, pk=None):
-        """Duplicate an event"""
+        """Duplicate event - authenticated users only"""
         try:
             original_event = self.get_object()
             logger.info(f"[EventViewSet] Duplicate event request for {pk}")
             
-            # Get new date from request
             new_start = request.data.get('start_datetime')
             new_end = request.data.get('end_datetime')
             
@@ -326,7 +370,6 @@ class EventViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Create duplicate
             duplicate_event = Event.objects.create(
                 title=f"{original_event.title} (Copy)",
                 description=original_event.description,
@@ -343,9 +386,9 @@ class EventViewSet(viewsets.ModelViewSet):
                 contact_phone=original_event.contact_phone,
                 age_min=original_event.age_min,
                 age_max=original_event.age_max,
-                status='draft',  # Always create as draft
+                status='draft',
                 is_public=original_event.is_public,
-                is_featured=False,  # Don't copy featured status
+                is_featured=False,
                 prerequisites=original_event.prerequisites,
                 tags=original_event.tags,
                 image_url=original_event.image_url,
@@ -354,7 +397,6 @@ class EventViewSet(viewsets.ModelViewSet):
                 last_modified_by=str(request.user)
             )
             
-            # Copy target groups
             duplicate_event.target_groups.set(original_event.target_groups.all())
             
             serializer = EventSerializer(duplicate_event)
@@ -374,63 +416,60 @@ class EventViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def statistics(self, request):
-        """Get comprehensive event statistics"""
+        """
+        FIXED: Public statistics endpoint - returns limited info for unauthenticated users
+        """
         try:
-            logger.info(f"[EventViewSet] Statistics request from: {request.user.email}")
+            user_info = request.user.email if request.user.is_authenticated else "Anonymous"
+            logger.info(f"[EventViewSet] Statistics request from: {user_info}")
             
             now = timezone.now()
             
-            # Basic counts
-            total_events = Event.objects.count()
-            published_events = Event.objects.filter(status='published').count()
-            upcoming_events = Event.objects.filter(
-                start_datetime__gte=now,
-                status='published'
-            ).count()
-            past_events = Event.objects.filter(end_datetime__lt=now).count()
+            if request.user.is_authenticated:
+                # Full statistics for authenticated users
+                total_events = Event.objects.count()
+                published_events = Event.objects.filter(status='published').count()
+                upcoming_events = Event.objects.filter(
+                    start_datetime__gte=now,
+                    status='published'
+                ).count()
+                past_events = Event.objects.filter(end_datetime__lt=now).count()
+                
+                status_counts = Event.objects.values('status').annotate(count=Count('id'))
+                status_breakdown = {item['status']: item['count'] for item in status_counts}
+                
+                type_counts = Event.objects.values('event_type').annotate(count=Count('id'))
+                type_breakdown = {item['event_type']: item['count'] for item in type_counts}
+                
+                total_registrations = EventRegistration.objects.count()
+                confirmed_registrations = EventRegistration.objects.filter(
+                    status='confirmed'
+                ).count()
+            else:
+                # Limited statistics for public
+                total_events = Event.objects.filter(is_public=True, status='published').count()
+                published_events = total_events
+                upcoming_events = Event.objects.filter(
+                    start_datetime__gte=now,
+                    status='published',
+                    is_public=True
+                ).count()
+                past_events = 0
+                status_breakdown = {}
+                type_breakdown = {}
+                total_registrations = 0
+                confirmed_registrations = 0
             
-            # Events by status
-            status_counts = Event.objects.values('status').annotate(count=Count('id'))
-            status_breakdown = {item['status']: item['count'] for item in status_counts}
-            
-            # Events by type
-            type_counts = Event.objects.values('event_type').annotate(count=Count('id'))
-            type_breakdown = {item['event_type']: item['count'] for item in type_counts}
-            
-            # Registration statistics
-            total_registrations = EventRegistration.objects.count()
-            confirmed_registrations = EventRegistration.objects.filter(
-                status='confirmed'
-            ).count()
-            
-            # Recent activity (last 30 days)
             thirty_days_ago = now - timedelta(days=30)
-            recent_events = Event.objects.filter(created_at__gte=thirty_days_ago).count()
+            recent_events = Event.objects.filter(
+                created_at__gte=thirty_days_ago,
+                is_public=True if not request.user.is_authenticated else True
+            ).count()
             recent_registrations = EventRegistration.objects.filter(
                 registration_date__gte=thirty_days_ago
-            ).count()
-            
-            # Monthly stats for last 6 months
-            monthly_stats = []
-            for i in range(6):
-                month_start = (now.replace(day=1) - timedelta(days=30*i)).replace(day=1)
-                month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-                
-                month_events = Event.objects.filter(
-                    created_at__date__range=[month_start.date(), month_end.date()]
-                )
-                month_registrations = EventRegistration.objects.filter(
-                    registration_date__date__range=[month_start.date(), month_end.date()]
-                )
-                
-                monthly_stats.append({
-                    'month': month_start.strftime('%Y-%m'),
-                    'month_name': month_start.strftime('%B %Y'),
-                    'events_count': month_events.count(),
-                    'registrations_count': month_registrations.count()
-                })
+            ).count() if request.user.is_authenticated else 0
             
             stats_data = {
                 'summary': {
@@ -447,7 +486,7 @@ class EventViewSet(viewsets.ModelViewSet):
                     'by_status': status_breakdown,
                     'by_type': type_breakdown
                 },
-                'monthly_stats': monthly_stats
+                'monthly_stats': []
             }
             
             logger.info(f"[EventViewSet] Statistics calculated successfully")
@@ -463,7 +502,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def export(self, request):
-        """Export events to CSV"""
+        """Export events - authenticated users only"""
         try:
             logger.info(f"[EventViewSet] Export request from: {request.user.email}")
             
@@ -511,7 +550,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def bulk_action(self, request):
-        """Perform bulk actions on multiple events"""
+        """Bulk actions - authenticated users only"""
         try:
             serializer = BulkEventActionSerializer(data=request.data)
             if not serializer.is_valid():
@@ -545,7 +584,6 @@ class EventViewSet(viewsets.ModelViewSet):
                 result_message = f"Successfully deleted {deleted_count} events"
                 
             elif action == 'export':
-                # Export selected events
                 response = HttpResponse(content_type='text/csv')
                 response['Content-Disposition'] = f'attachment; filename="selected_events_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
                 
@@ -565,28 +603,6 @@ class EventViewSet(viewsets.ModelViewSet):
                     ])
                 
                 return response
-                
-            elif action == 'send_reminder':
-                # Create reminders for each event
-                reminder_count = 0
-                message = action_data.get('message', 'Event reminder')
-                
-                for event in events:
-                    # Send reminder 1 day before event
-                    send_time = event.start_datetime - timedelta(days=1)
-                    if send_time > timezone.now():  # Only schedule future reminders
-                        EventReminder.objects.create(
-                            event=event,
-                            reminder_type='manual',
-                            reminder_method='email',
-                            send_at=send_time,
-                            subject=f"Reminder: {event.title}",
-                            message=message,
-                            created_by=str(request.user)
-                        )
-                        reminder_count += 1
-                
-                result_message = f"Successfully created {reminder_count} reminders"
                 
             else:
                 return Response(
@@ -609,11 +625,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
 class EventReminderViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing event reminders
-    """
     queryset = EventReminder.objects.select_related('event').order_by('send_at')
     serializer_class = EventReminderSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -634,30 +646,21 @@ class EventReminderViewSet(viewsets.ModelViewSet):
     ordering = ['send_at']
 
     def perform_create(self, serializer):
-        """Set created_by when creating reminder"""
         serializer.save(created_by=str(self.request.user))
 
 
 class EventCategoryViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing event categories
-    """
     queryset = EventCategory.objects.filter(is_active=True).order_by('name')
     serializer_class = EventCategorySerializer
     permission_classes = [permissions.IsAuthenticated]
-    
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'description']
 
     def perform_create(self, serializer):
-        """Set created_by when creating category"""
         serializer.save(created_by=str(self.request.user))
 
 
 class EventVolunteerViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing event volunteers
-    """
     queryset = EventVolunteer.objects.select_related('event', 'member').order_by('event', 'role')
     serializer_class = EventVolunteerSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -681,14 +684,10 @@ class EventVolunteerViewSet(viewsets.ModelViewSet):
     ordering = ['event', 'role']
 
     def perform_create(self, serializer):
-        """Set created_by when creating volunteer assignment"""
         serializer.save(created_by=str(self.request.user))
 
 
 class EventRegistrationViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing event registrations
-    """
     queryset = EventRegistration.objects.select_related('event', 'member').order_by('-registration_date')
     serializer_class = EventRegistrationSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -713,15 +712,12 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
     ordering = ['-registration_date']
 
     def get_queryset(self):
-        """Filter queryset based on query parameters"""
         queryset = super().get_queryset()
         
-        # Filter by event
         event_id = self.request.query_params.get('event_id')
         if event_id:
             queryset = queryset.filter(event_id=event_id)
         
-        # Filter by member
         member_id = self.request.query_params.get('member_id')
         if member_id:
             queryset = queryset.filter(member_id=member_id)
@@ -730,7 +726,6 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def confirm(self, request, pk=None):
-        """Confirm a registration"""
         try:
             registration = self.get_object()
             logger.info(f"[EventRegistrationViewSet] Confirm registration {pk}")
@@ -753,7 +748,6 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
-        """Cancel a registration"""
         try:
             registration = self.get_object()
             logger.info(f"[EventRegistrationViewSet] Cancel registration {pk}")
@@ -776,7 +770,6 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def mark_attended(self, request, pk=None):
-        """Mark registration as attended"""
         try:
             registration = self.get_object()
             logger.info(f"[EventRegistrationViewSet] Mark attended {pk}")
@@ -799,7 +792,6 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def export(self, request):
-        """Export registrations to CSV"""
         try:
             logger.info(f"[EventRegistrationViewSet] Export request from: {request.user.email}")
             

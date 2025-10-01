@@ -167,18 +167,59 @@ class DashboardService {
         
         console.log('[DashboardService] Member stats raw response:', response.data);
         
-        // FIXED: Handle the Django response structure from your views.py
+        // FIXED: Handle ALL possible response structures
         const data = response.data;
         
-        // Your Django API returns: { summary: { total_members: X, active_members: Y, ... } }
+        // Try to extract counts from multiple possible locations
+        let totalMembers = 0;
+        let activeMembers = 0;
+        let inactiveMembers = 0;
+        let newMembers = 0;
+        let growthRate = 0;
+        
+        // Priority 1: Root level fields (new format)
+        if (data.total_members !== undefined) {
+          totalMembers = data.total_members || data.count || data.total_count || 0;
+          activeMembers = data.active_members || data.active_count || 0;
+          inactiveMembers = data.inactive_members || data.inactive_count || 0;
+          newMembers = data.new_members || data.recent_registrations || 0;
+          growthRate = data.growth_rate || 0;
+        } 
+        // Priority 2: Summary object (old format)
+        else if (data.summary) {
+          totalMembers = data.summary.total_members || 0;
+          activeMembers = data.summary.active_members || 0;
+          inactiveMembers = data.summary.inactive_members || 0;
+          newMembers = data.summary.recent_registrations || data.summary.new_members || 0;
+          growthRate = data.summary.growth_rate || 0;
+        }
+        
+        console.log('[DashboardService] Extracted member stats:', {
+          totalMembers,
+          activeMembers,
+          inactiveMembers,
+          newMembers,
+          growthRate
+        });
+        
         return {
-          total_members: data.summary?.total_members || 0,
-          active_members: data.summary?.active_members || 0,
-          inactive_members: data.summary?.inactive_members || 0,
-          new_members: data.summary?.recent_registrations || 0,
-          growth_rate: data.summary?.growth_rate || 0,
-          // Keep the full response for detailed analysis
-          summary: data.summary || {},
+          // Root level for easy access
+          total_members: totalMembers,
+          active_members: activeMembers,
+          inactive_members: inactiveMembers,
+          new_members: newMembers,
+          growth_rate: growthRate,
+          
+          // Keep original structure for compatibility
+          summary: {
+            total_members: totalMembers,
+            active_members: activeMembers,
+            inactive_members: inactiveMembers,
+            recent_registrations: newMembers,
+            growth_rate: growthRate
+          },
+          
+          // Additional fields
           demographics: data.demographics || {},
           trends: data.trends || {}
         };
@@ -191,7 +232,13 @@ class DashboardService {
         inactive_members: 0,
         new_members: 0,
         growth_rate: 0,
-        summary: {}
+        summary: {
+          total_members: 0,
+          active_members: 0,
+          inactive_members: 0,
+          recent_registrations: 0,
+          growth_rate: 0
+        }
       }
     );
   }
