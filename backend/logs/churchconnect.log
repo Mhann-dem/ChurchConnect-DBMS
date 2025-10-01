@@ -34688,3 +34688,502 @@ INFO 2025-10-01 04:23:59,301 views [MemberViewSet] Query params: {'search': 'Bob
 INFO 2025-10-01 04:23:59,329 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 1 (active: 1)
 INFO 2025-10-01 04:23:59,360 views [MemberViewSet] Returned 1 members on page 1 of 1
 INFO 2025-10-01 04:23:59,361 basehttp "GET /api/v1/members/?search=Bob&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 628
+INFO 2025-10-01 12:01:06,876 autoreload Watching for file changes with StatReloader
+INFO 2025-10-01 12:01:36,205 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-01 12:01:37,112 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-01 12:02:10,849 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-01 12:02:10,941 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-01 12:02:10,957 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-01 12:02:10,977 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-01 12:02:22,914 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:24,075 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:25,244 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-01 12:02:25,260 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-01 12:02:27,300 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,303 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,306 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,312 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,313 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,318 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,319 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,327 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,327 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,328 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,334 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,340 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,341 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,342 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,343 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,345 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,348 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,351 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,356 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,356 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,359 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,362 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,364 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,378 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,385 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,417 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:27,700 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-01 12:02:27,733 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:27,799 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:27,952 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:27,982 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:27,984 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-01 12:02:28,108 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-01 12:02:28,179 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-01 12:02:28,221 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-01 12:02:28,233 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-01 12:02:28,457 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-01 12:02:28,494 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-01 12:02:28,495 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-01 12:02:28,562 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-01 12:02:28,562 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-01 12:02:28,605 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 109
+INFO 2025-10-01 12:02:28,608 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-01 12:02:28,610 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-01 12:02:28,615 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-01 12:02:28,662 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-01 12:02:28,714 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-01 12:02:28,898 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:28,910 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:28,961 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-01 12:02:28,964 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 12:02:28,965 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:29,032 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-01 12:02:29,049 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-01 12:02:29,110 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-01 12:02:29,148 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-01 12:02:29,167 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-01 12:02:29,222 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:29,269 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 109
+INFO 2025-10-01 12:02:29,283 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-01 12:02:29,323 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-01 12:02:29,344 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-01 12:02:29,376 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-01 12:02:29,465 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-01 12:02:29,499 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-01 12:02:29,528 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-01 12:02:29,578 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:29,595 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-01 12:02:29,596 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-01 12:02:29,601 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-01 12:02:29,612 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 12:02:29,795 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 12:02:29,926 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 12:02:36,521 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:36,525 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:36,756 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:36,756 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:02:36,770 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:02:36,784 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:02:36,784 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:02:36,819 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&is_active=true HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:36,821 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&is_active=true HTTP/1.1" 200 0
+INFO 2025-10-01 12:02:36,912 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:02:36,913 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'is_active': 'true'}
+INFO 2025-10-01 12:02:36,924 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:02:36,930 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:02:36,930 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&is_active=true HTTP/1.1" 200 3442
+INFO 2025-10-01 12:30:23,840 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:23,844 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:23,889 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:30:23,940 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:30:23,944 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:30:45,028 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:30:45,242 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-01 12:30:45,738 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:45,739 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:45,770 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:30:45,820 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:30:45,822 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:30:45,951 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:45,952 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:45,974 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:30:46,014 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:30:46,020 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:30:52,643 basehttp "OPTIONS /api/v1/members/?search=J&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:30:52,851 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:52,852 views [MemberViewSet] Query params: {'search': 'J', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:52,871 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 6 (active: 6)
+INFO 2025-10-01 12:30:52,887 views [MemberViewSet] Returned 6 members on page 1 of 1
+INFO 2025-10-01 12:30:52,887 basehttp "GET /api/v1/members/?search=J&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 2191
+INFO 2025-10-01 12:30:53,825 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:53,835 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:53,838 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:30:53,870 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:30:53,872 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:30:56,273 basehttp "OPTIONS /api/v1/members/?search=Jona&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:30:56,351 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:56,351 views [MemberViewSet] Query params: {'search': 'Jona', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:56,370 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 1 (active: 1)
+INFO 2025-10-01 12:30:56,389 views [MemberViewSet] Returned 1 members on page 1 of 1
+INFO 2025-10-01 12:30:56,389 basehttp "GET /api/v1/members/?search=Jona&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 646
+INFO 2025-10-01 12:30:57,785 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:57,785 views [MemberViewSet] Query params: {'search': 'J', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:57,798 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 6 (active: 6)
+INFO 2025-10-01 12:30:57,819 views [MemberViewSet] Returned 6 members on page 1 of 1
+INFO 2025-10-01 12:30:57,819 basehttp "GET /api/v1/members/?search=J&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 2191
+INFO 2025-10-01 12:30:59,351 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:30:59,351 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:30:59,365 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:30:59,391 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:30:59,391 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:31:02,447 basehttp "OPTIONS /api/v1/members/?search=Bo&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:31:02,513 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:31:02,513 views [MemberViewSet] Query params: {'search': 'Bo', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:31:02,532 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 4 (active: 4)
+INFO 2025-10-01 12:31:02,563 views [MemberViewSet] Returned 4 members on page 1 of 1
+INFO 2025-10-01 12:31:02,565 basehttp "GET /api/v1/members/?search=Bo&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 1543
+INFO 2025-10-01 12:31:03,486 basehttp "OPTIONS /api/v1/members/?search=Bob&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:31:03,566 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:31:03,567 views [MemberViewSet] Query params: {'search': 'Bob', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:31:03,580 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 1 (active: 1)
+INFO 2025-10-01 12:31:03,598 views [MemberViewSet] Returned 1 members on page 1 of 1
+INFO 2025-10-01 12:31:03,598 basehttp "GET /api/v1/members/?search=Bob&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 628
+INFO 2025-10-01 12:31:07,135 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:31:07,136 views [MemberViewSet] Query params: {'search': 'Bo', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:31:07,154 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 4 (active: 4)
+INFO 2025-10-01 12:31:07,175 views [MemberViewSet] Returned 4 members on page 1 of 1
+INFO 2025-10-01 12:31:07,177 basehttp "GET /api/v1/members/?search=Bo&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 1543
+INFO 2025-10-01 12:31:07,675 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:31:07,675 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:31:07,692 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:31:07,725 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:31:07,725 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:37:00,477 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:37:00,478 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:37:00,505 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:37:00,535 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:37:00,552 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:38:25,299 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-01 12:38:25,627 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:38:25,629 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:38:25,663 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:38:25,723 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:38:25,726 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:38:37,301 basehttp "OPTIONS /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:38:37,408 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:38:37,408 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:38:37,426 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:38:37,459 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:38:37,473 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:38:43,042 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:38:43,042 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:38:43,062 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:38:43,093 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:38:43,104 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:39:08,904 basehttp "OPTIONS /api/v1/members/?search=G&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:39:08,981 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:39:08,981 views [MemberViewSet] Query params: {'search': 'G', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:39:09,035 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 6 (active: 6)
+INFO 2025-10-01 12:39:09,067 views [MemberViewSet] Returned 6 members on page 1 of 1
+INFO 2025-10-01 12:39:09,068 basehttp "GET /api/v1/members/?search=G&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 2217
+INFO 2025-10-01 12:39:09,447 basehttp "OPTIONS /api/v1/members/?search=Go&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-01 12:39:09,531 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:39:09,531 views [MemberViewSet] Query params: {'search': 'Go', 'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:39:09,564 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 1 (active: 1)
+INFO 2025-10-01 12:39:09,584 views [MemberViewSet] Returned 1 members on page 1 of 1
+INFO 2025-10-01 12:39:09,597 basehttp "GET /api/v1/members/?search=Go&page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 639
+INFO 2025-10-01 12:39:14,358 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:39:14,358 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:39:14,375 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:39:14,412 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:39:14,414 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:43:22,573 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:43:22,573 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:43:22,607 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:43:22,640 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:43:22,640 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:44:50,070 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:44:50,070 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:44:50,093 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:44:50,120 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:44:50,124 basehttp - Broken pipe from ('127.0.0.1', 65498)
+INFO 2025-10-01 12:44:50,399 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:44:50,399 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:44:50,416 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:44:50,452 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:44:50,455 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:45:10,763 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-01 12:45:11,053 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:45:11,054 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:45:11,078 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:45:11,111 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:45:11,113 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:45:55,096 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:45:55,096 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:45:55,116 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:45:55,136 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:45:55,136 basehttp - Broken pipe from ('127.0.0.1', 58458)
+INFO 2025-10-01 12:45:55,686 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:45:55,688 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:45:55,733 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:45:55,800 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:45:55,805 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:46:04,956 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:46:04,956 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:46:04,975 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:46:05,014 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:46:05,025 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:46:24,505 basehttp "OPTIONS /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:24,505 basehttp "OPTIONS /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:24,648 basehttp - Broken pipe from ('127.0.0.1', 64151)
+INFO 2025-10-01 12:46:24,648 basehttp "GET /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/ HTTP/1.1" 200 888
+INFO 2025-10-01 12:46:24,656 basehttp "OPTIONS /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/groups/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:24,659 basehttp "OPTIONS /api/v1/pledges/?member=00535933-f1ef-48fb-ba96-f1a464ff0625 HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:24,662 basehttp "OPTIONS /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/activity/ HTTP/1.1" 200 0
+WARNING 2025-10-01 12:46:24,700 log Not Found: /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/groups/
+WARNING 2025-10-01 12:46:24,701 basehttp "GET /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/groups/ HTTP/1.1" 404 23173
+INFO 2025-10-01 12:46:24,797 basehttp "GET /api/v1/pledges/?member=00535933-f1ef-48fb-ba96-f1a464ff0625 HTTP/1.1" 200 52
+WARNING 2025-10-01 12:46:24,810 log Not Found: /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/activity/
+WARNING 2025-10-01 12:46:24,811 basehttp "GET /api/v1/members/00535933-f1ef-48fb-ba96-f1a464ff0625/activity/ HTTP/1.1" 404 23179
+INFO 2025-10-01 12:46:46,915 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:46,926 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-01 12:46:46,995 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:46:46,997 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:46:47,022 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:46:47,044 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:46:47,044 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:46:47,052 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:46:47,060 basehttp - Broken pipe from ('127.0.0.1', 57384)
+INFO 2025-10-01 12:46:47,092 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:46:47,158 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:46:47,162 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:46:47,275 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 12:46:47,506 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 12:46:52,284 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:46:52,284 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:46:52,317 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:46:52,322 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:46:52,335 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:46:52,384 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:46:52,410 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:46:52,418 basehttp - Broken pipe from ('127.0.0.1', 58676)
+INFO 2025-10-01 12:46:52,457 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:46:52,462 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:47:16,990 basehttp "OPTIONS /api/v1/groups/43573668-21d0-4d6f-a551-cf8f0e302a97/ HTTP/1.1" 200 0
+INFO 2025-10-01 12:47:17,310 basehttp "PUT /api/v1/groups/43573668-21d0-4d6f-a551-cf8f0e302a97/ HTTP/1.1" 200 595
+INFO 2025-10-01 12:47:33,761 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-01 12:47:33,762 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-01 12:47:33,865 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 12:47:34,058 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 12:47:38,475 basehttp "OPTIONS /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 0
+INFO 2025-10-01 12:47:38,579 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 12:47:43,365 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:47:43,367 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:47:43,387 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:47:43,430 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:47:43,434 basehttp - Broken pipe from ('127.0.0.1', 53508)
+INFO 2025-10-01 12:47:43,460 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:47:43,460 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:47:43,495 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:47:43,526 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:47:43,526 basehttp - Broken pipe from ('127.0.0.1', 63673)
+INFO 2025-10-01 12:56:44,315 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 0
+INFO 2025-10-01 12:56:44,315 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 0
+INFO 2025-10-01 12:56:44,511 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:56:44,511 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-01 12:56:44,550 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:56:44,584 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:56:44,584 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 3442
+INFO 2025-10-01 12:56:49,916 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:56:49,917 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:56:49,933 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:56:49,964 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:56:49,967 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:57:03,034 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:57:03,035 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:57:03,141 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:57:03,260 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:57:03,266 basehttp - Broken pipe from ('127.0.0.1', 53122)
+INFO 2025-10-01 12:57:03,328 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:57:03,334 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 12:57:03,383 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:57:03,445 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:57:03,456 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 12:57:03,503 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 12:57:03,796 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 12:57:06,967 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 12:57:08,381 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 12:57:08,382 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-01 12:57:08,396 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 12:57:08,433 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 12:57:08,436 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 3442
+INFO 2025-10-01 13:05:32,531 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-01 13:05:32,547 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-10-01 13:05:32,667 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-01 13:05:32,667 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-01 13:05:32,667 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-01 13:05:32,667 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-10-01 13:05:32,680 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-10-01 13:05:33,231 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-01 13:05:33,264 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-01 13:05:33,380 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-01 13:05:33,401 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-10-01 13:05:33,508 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-01 13:05:33,509 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-01 13:05:33,641 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-01 13:05:42,987 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:43,029 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-01 13:05:43,036 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-01 13:05:44,944 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-01 13:05:44,995 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:44,997 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:44,999 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:45,015 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-01 13:05:45,111 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-01 13:05:45,136 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-01 13:05:45,150 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-01 13:05:45,186 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-01 13:05:45,225 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-01 13:05:45,226 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-01 13:05:45,242 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-01 13:05:45,293 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:45,300 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-01 13:05:45,380 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-01 13:05:45,395 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-01 13:05:45,398 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-01 13:05:45,440 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-01 13:05:45,471 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-01 13:05:45,473 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:05:45,474 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 109
+INFO 2025-10-01 13:05:45,551 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-01 13:05:45,689 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-01 13:05:45,690 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:45,707 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-01 13:05:45,719 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-01 13:05:45,721 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:45,735 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-01 13:05:45,778 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:45,782 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-01 13:05:45,795 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-01 13:05:45,812 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-01 13:05:45,826 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-01 13:05:45,833 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-01 13:05:45,900 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-01 13:05:45,938 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-01 13:05:45,945 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-01 13:05:45,988 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-01 13:05:46,023 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:46,065 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 109
+INFO 2025-10-01 13:05:46,098 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:05:46,113 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-01 13:05:46,213 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:46,257 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-01 13:05:46,259 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-01 13:05:46,425 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:05:47,522 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:05:52,130 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:52,132 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:05:52,167 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:05:52,168 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:05:52,176 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:05:52,221 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:05:52,239 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:05:52,250 basehttp - Broken pipe from ('127.0.0.1', 49895)
+INFO 2025-10-01 13:05:52,270 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:05:52,272 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:05:58,199 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 13:05:58,292 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 13:05:59,859 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 13:06:01,259 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:01,259 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:01,274 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:01,274 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:01,274 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:01,275 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-01 13:06:01,275 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:01,309 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:01,310 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:01,312 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:01,312 basehttp - Broken pipe from ('127.0.0.1', 64345)
+INFO 2025-10-01 13:06:01,334 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:01,338 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:01,339 basehttp - Broken pipe from ('127.0.0.1', 62990)
+INFO 2025-10-01 13:06:01,339 basehttp - Broken pipe from ('127.0.0.1', 63337)
+INFO 2025-10-01 13:06:01,568 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:01,568 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-01 13:06:01,583 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:01,607 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:01,607 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 3442
+INFO 2025-10-01 13:06:21,549 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 13:06:22,616 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:22,623 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:22,681 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:22,744 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:22,746 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:22,764 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:22,777 basehttp - Broken pipe from ('127.0.0.1', 58728)
+INFO 2025-10-01 13:06:22,817 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:22,901 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:22,906 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:06:23,168 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 13:06:23,513 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-01 13:06:31,214 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 13:06:32,092 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 13:06:32,195 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 13:06:32,857 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:32,857 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:32,858 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:32,858 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:32,875 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:32,876 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:32,899 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:32,902 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:32,904 basehttp - Broken pipe from ('127.0.0.1', 51383)
+INFO 2025-10-01 13:06:32,907 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:06:39,842 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:06:39,843 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:06:39,868 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:06:39,914 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:06:39,917 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:07:08,091 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:07:08,202 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:07:08,371 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:07:08,458 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:07:08,494 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:07:08,634 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:07:16,023 basehttp "OPTIONS /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-01 13:07:16,023 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-10-01 13:07:16,184 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:07:16,202 basehttp "GET /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-01 13:07:16,416 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-01 13:07:16,420 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 2041
+INFO 2025-10-01 13:07:18,954 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:07:18,954 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:07:18,976 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:07:18,977 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:07:18,992 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:07:18,992 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:07:19,030 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:07:19,045 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:07:19,046 basehttp - Broken pipe from ('127.0.0.1', 58282)
+INFO 2025-10-01 13:07:19,046 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:08:27,566 basehttp "OPTIONS /api/v1/pledges/export/?search=&status=all&frequency=all&format=csv&includeFilters=true&filters[status]=all&filters[frequency]=all HTTP/1.1" 200 0
+WARNING 2025-10-01 13:08:27,574 log Not Found: /api/v1/pledges/export/
+WARNING 2025-10-01 13:08:27,574 basehttp "GET /api/v1/pledges/export/?search=&status=all&frequency=all&format=csv&includeFilters=true&filters[status]=all&filters[frequency]=all HTTP/1.1" 404 23
+INFO 2025-10-01 13:08:34,679 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:08:34,679 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:08:34,705 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:08:34,738 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:08:34,747 basehttp - Broken pipe from ('127.0.0.1', 53131)
+INFO 2025-10-01 13:08:34,903 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-01 13:08:34,903 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-01 13:08:34,930 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-01 13:08:34,949 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-01 13:08:34,963 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-01 13:08:46,608 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:08:46,651 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:08:46,774 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:08:46,846 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:08:46,970 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:08:47,071 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:08:53,070 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 110
+INFO 2025-10-01 13:09:08,964 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:09:08,996 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:09:09,124 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:09:09,200 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-01 13:09:09,259 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-01 13:09:09,367 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098

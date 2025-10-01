@@ -1,3 +1,4 @@
+// frontend/src/hooks/useMembers.js - ENHANCED VERSION
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
@@ -5,11 +6,12 @@ import { useDebounce } from './useDebounce';
 export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
   
-  // Extract options - DON'T destructure filters yet
+  // Extract options
   const search = options.search || '';
   const page = options.page || 1;
   const limit = options.limit || 25;
   const autoFetch = options.autoFetch !== false;
+  const initialFilters = options.filters || {};
   
   // State
   const [members, setMembers] = useState([]);
@@ -28,11 +30,11 @@ export const useMembers = (options = {}) => {
   const debouncedSearch = useDebounce(search, 300);
 
   // Extract filter values for dependencies
-  const filterStatus = options.filters?.status || 'all';
-  const filterGender = options.filters?.gender || '';
-  const filterAgeRange = options.filters?.ageRange || '';
-  const filterJoinedAfter = options.filters?.joinedAfter || '';
-  const filterJoinedBefore = options.filters?.joinedBefore || '';
+  const filterStatus = initialFilters.status || 'all';
+  const filterGender = initialFilters.gender || '';
+  const filterAgeRange = initialFilters.ageRange || '';
+  const filterJoinedAfter = initialFilters.joinedAfter || '';
+  const filterJoinedBefore = initialFilters.joinedBefore || '';
 
   // Cleanup
   useEffect(() => {
@@ -45,8 +47,8 @@ export const useMembers = (options = {}) => {
     };
   }, []);
 
-  // Main fetch function
-  const fetchMembers = useCallback(async () => {
+  // FIXED: Main fetch function that accepts optional filter parameters
+  const fetchMembers = useCallback(async (customFilters = {}) => {
     if (!isAuthenticated) {
       console.warn('[useMembers] Not authenticated');
       return;
@@ -71,9 +73,17 @@ export const useMembers = (options = {}) => {
       params.set('page_size', limit);
       params.set('ordering', '-registration_date');
       
+      // Apply default filters
       if (filterStatus && filterStatus !== 'all') {
         params.set('is_active', filterStatus === 'active' ? 'true' : 'false');
       }
+
+      // Apply custom filters passed as parameter
+      Object.entries(customFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.set(key, value);
+        }
+      });
 
       const url = `${baseURL}/api/v1/members/?${params}`;
       console.log('[useMembers] Fetching:', url);
@@ -92,7 +102,7 @@ export const useMembers = (options = {}) => {
       
       if (!mountedRef.current) return;
 
-      console.log('[useMembers] ✓ Data received:', {
+      console.log('[useMembers] Data received:', {
         total: data.total_members || data.count,
         active: data.active_count,
         results: data.results?.length
@@ -129,7 +139,7 @@ export const useMembers = (options = {}) => {
   // Auto-fetch effect
   useEffect(() => {
     if (autoFetch && isAuthenticated) {
-      console.log('[useMembers] Triggering fetch');
+      console.log('[useMembers] Triggering auto-fetch');
       fetchMembers();
     }
   }, [autoFetch, isAuthenticated, fetchMembers]);
@@ -147,8 +157,10 @@ export const useMembers = (options = {}) => {
     pagination,
     totalPages,
     isLoading,
+    loading: isLoading, // Alias for backwards compatibility
     error,
-    refresh: fetchMembers,
+    fetchMembers,      // Now accepts optional filter parameters
+    refresh: fetchMembers, // Alias for convenience
     hasMembers: members.length > 0
   };
 };

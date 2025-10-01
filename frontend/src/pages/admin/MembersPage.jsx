@@ -1,156 +1,477 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Filter, Users, UserPlus, Download, RefreshCw, X, AlertCircle } from 'lucide-react';
-import MemberRegistrationForm from '../../components/form/MemberRegistrationForm';
-import BulkActions from '../../components/admin/Members/BulkActions';
-import MembersList from '../../components/admin/Members/MembersList';
-import MemberFilters from '../../components/admin/Members/MemberFilters';
+import { Plus, Search, Download, RefreshCw, X, Users, Upload } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import { useMembers } from '../../hooks/useMembers';
 import { useDebounce } from '../../hooks/useDebounce';
 
-// Simple UI Components
-const Card = ({ children, className = '', style = {} }) => (
-  <div 
-    style={{
-      background: 'white',
-      borderRadius: '12px',
-      border: '1px solid #e5e7eb',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-      ...style
-    }}
-    className={className}
-  >
-    {children}
-  </div>
-);
-
-const Button = ({ children, variant = 'default', size = 'md', onClick, disabled = false, className = '', icon, ...props }) => {
-  const baseStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    borderRadius: '8px',
-    fontWeight: '500',
-    border: 'none',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    transition: 'all 0.2s',
-    opacity: disabled ? 0.6 : 1
-  };
-
-  const variants = {
-    default: {
-      background: '#3b82f6',
-      color: 'white',
-      padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '14px 28px' : '10px 20px',
-      fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-    },
-    outline: {
-      background: 'white',
-      color: '#374151',
-      border: '1px solid #d1d5db',
-      padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '14px 28px' : '10px 20px',
-      fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-    },
-    ghost: {
-      background: 'transparent',
-      color: '#6b7280',
-      padding: size === 'sm' ? '4px 8px' : size === 'lg' ? '10px 20px' : '6px 12px',
-      fontSize: size === 'sm' ? '12px' : size === 'lg' ? '16px' : '14px'
-    },
-    primary: {
-      background: '#3b82f6',
-      color: 'white',
-      padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '14px 28px' : '10px 20px',
-      fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-    }
+// Simplified Member Card Component
+const MemberCard = ({ member, isSelected, onSelect, onNavigate }) => {
+  const formatPhone = (phone) => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : phone;
   };
 
   return (
-    <button
-      style={{ ...baseStyle, ...variants[variant] }}
-      onClick={onClick}
-      disabled={disabled}
-      className={className}
-      {...props}
+    <div
+      style={{
+        background: isSelected ? '#eff6ff' : 'white',
+        border: `2px solid ${isSelected ? '#3b82f6' : '#e5e7eb'}`,
+        borderRadius: '12px',
+        padding: '20px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.borderColor = '#cbd5e1';
+          e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.borderColor = '#e5e7eb';
+          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        }
+      }}
     >
-      {icon}
-      {children}
-    </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+        <div style={{ display: 'flex', gap: '12px', flex: 1 }} onClick={() => onNavigate(member.id)}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: '600',
+            fontSize: '18px',
+            flexShrink: 0
+          }}>
+            {member.first_name?.[0]}{member.last_name?.[0]}
+          </div>
+          
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: '0 0 4px 0',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {member.first_name} {member.last_name}
+            </h3>
+            <span style={{
+              display: 'inline-block',
+              fontSize: '11px',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontWeight: '500',
+              backgroundColor: member.is_active ? '#d1fae5' : '#fee2e2',
+              color: member.is_active ? '#065f46' : '#991b1b'
+            }}>
+              {member.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        </div>
+        
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onSelect(member.id)}
+          onClick={(e) => e.stopPropagation()}
+          style={{ 
+            cursor: 'pointer', 
+            width: '18px', 
+            height: '18px', 
+            accentColor: '#3b82f6',
+            flexShrink: 0
+          }}
+        />
+      </div>
+
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '6px', 
+        fontSize: '14px', 
+        color: '#6b7280' 
+      }} onClick={() => onNavigate(member.id)}>
+        {member.email && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>📧</span>
+            <span style={{ 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap' 
+            }}>
+              {member.email}
+            </span>
+          </div>
+        )}
+        {member.phone && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>📱</span>
+            <span>{formatPhone(member.phone)}</span>
+          </div>
+        )}
+        {member.registration_date && (
+          <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+            Joined: {new Date(member.registration_date).toLocaleDateString()}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
+// Bulk Import Modal Component
+const BulkImportModal = ({ isOpen, onClose, onImportComplete }) => {
+  const [file, setFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [result, setResult] = useState(null);
+  const fileInputRef = React.useRef(null);
 
-const LoadingSpinner = ({ size = 'md' }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-    <div style={{
-      width: size === 'sm' ? '20px' : size === 'lg' ? '40px' : '30px',
-      height: size === 'sm' ? '20px' : size === 'lg' ? '40px' : '30px',
-      border: '2px solid #e5e7eb',
-      borderTop: '2px solid #3b82f6',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite'
-    }} />
-    <style>{`
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+  const downloadTemplate = () => {
+    const headers = 'First Name,Last Name,Email,Phone,Date of Birth,Gender,Address';
+    const sample = 'John,Doe,john@example.com,555-0123,1990-01-15,Male,123 Main St';
+    const csv = headers + '\n' + sample;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'member_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+    setImporting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${baseURL}/api/v1/members/bulk_import/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setResult({
+          success: true,
+          imported: data.data.imported,
+          failed: data.data.failed,
+          total: data.data.total || (data.data.imported + data.data.failed)
+        });
+        if (onImportComplete) onImportComplete(data);
+      } else {
+        setResult({ success: false, error: data.error || 'Import failed' });
       }
-    `}</style>
-  </div>
-);
+    } catch (error) {
+      setResult({ success: false, error: error.message });
+    } finally {
+      setImporting(false);
+    }
+  };
 
+  const resetAndClose = () => {
+    setResult(null);
+    setFile(null);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '24px'
+    }} onClick={resetAndClose}>
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        maxWidth: '500px',
+        width: '100%',
+        padding: '24px',
+        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
+      }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '20px' 
+        }}>
+          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+            Import Members
+          </h3>
+          <button 
+            onClick={resetAndClose} 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              padding: '4px',
+              borderRadius: '4px'
+            }}
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {!result ? (
+          <>
+            <p style={{ color: '#6b7280', marginBottom: '20px', lineHeight: '1.5' }}>
+              Upload a CSV file with member information. Download our template to ensure correct formatting.
+            </p>
+
+            <button
+              onClick={downloadTemplate}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                background: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                marginBottom: '20px',
+                fontWeight: '500',
+                width: '100%',
+                justifyContent: 'center'
+              }}
+            >
+              <Download size={16} />
+              Download CSV Template
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={(e) => setFile(e.target.files[0])}
+              style={{ display: 'none' }}
+            />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                cursor: 'pointer',
+                marginBottom: '16px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <Upload size={20} />
+              Choose CSV File
+            </button>
+
+            {file && (
+              <div style={{
+                background: '#f3f4f6',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                border: '1px solid #e5e7eb'
+              }}>
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '500' }}>
+                  Selected file:
+                </p>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                  {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                </p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={resetAndClose}
+                style={{
+                  padding: '8px 16px',
+                  background: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={!file || importing}
+                style={{
+                  padding: '8px 16px',
+                  background: !file || importing ? '#9ca3af' : '#3b82f6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: 'white',
+                  cursor: !file || importing ? 'not-allowed' : 'pointer',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {importing && (
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #ffffff40',
+                    borderTop: '2px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                )}
+                {importing ? 'Importing...' : 'Import Members'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              {result.success ? (
+                <>
+                  <div style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#10b981'
+                  }}>
+                    ✓
+                  </div>
+                  <h4 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '600' }}>
+                    Import Complete!
+                  </h4>
+                  <div style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginTop: '16px',
+                    textAlign: 'left'
+                  }}>
+                    <p style={{ margin: 0, color: '#15803d', fontSize: '14px' }}>
+                      <strong>Imported:</strong> {result.imported} members
+                    </p>
+                    {result.failed > 0 && (
+                      <p style={{ margin: '4px 0 0', color: '#dc2626', fontSize: '14px' }}>
+                        <strong>Failed:</strong> {result.failed} records
+                      </p>
+                    )}
+                    <p style={{ margin: '4px 0 0', color: '#15803d', fontSize: '14px' }}>
+                      <strong>Total processed:</strong> {result.total}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#ef4444'
+                  }}>
+                    ✕
+                  </div>
+                  <h4 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '600' }}>
+                    Import Failed
+                  </h4>
+                  <p style={{ color: '#ef4444', margin: '8px 0 0', fontSize: '14px' }}>
+                    {result.error}
+                  </p>
+                </>
+              )}
+            </div>
+            <button
+              onClick={resetAndClose}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: '#3b82f6',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Close
+            </button>
+          </>
+        )}
+        
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+};
 const MembersPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
   
-  // UI State
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState(new Set());
   const [currentSearchQuery, setCurrentSearchQuery] = useState(searchParams.get('search') || '');
-  const [showFilters, setShowFilters] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-
-  // Pagination and filter state
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const [membersPerPage, setMembersPerPage] = useState(parseInt(searchParams.get('limit')) || 25);
+  const [membersPerPage, setMembersPerPage] = useState(25);
   const [filters, setFilters] = useState({
     gender: searchParams.get('gender') || '',
-    ageRange: searchParams.get('ageRange') || '',
-    status: searchParams.get('status') || 'all',
-    joinedAfter: searchParams.get('joinedAfter') || '',
-    joinedBefore: searchParams.get('joinedBefore') || ''
+    status: searchParams.get('status') || 'all'
   });
 
-  // Debounced search
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // AFTER - Add ALL filter properties as dependencies
   const hookOptions = useMemo(() => ({
     search: debouncedSearchQuery,
     filters: {
       status: filters.status,
-      gender: filters.gender,
-      ageRange: filters.ageRange,
-      joinedAfter: filters.joinedAfter,
-      joinedBefore: filters.joinedBefore
+      gender: filters.gender
     },
     page: currentPage,
     limit: membersPerPage,
     autoFetch: true
-  }), [
-    debouncedSearchQuery, 
-    filters.status,
-    filters.gender,
-    filters.ageRange,
-    filters.joinedAfter,
-    filters.joinedBefore,
-    currentPage, 
-    membersPerPage
-  ]);
+  }), [debouncedSearchQuery, filters.status, filters.gender, currentPage, membersPerPage]);
 
-  // Call useMembers hook with memoized options
   const {
     members = [],
     totalMembers = 0,
@@ -162,236 +483,133 @@ const MembersPage = () => {
     totalPages = 1
   } = useMembers(hookOptions) || {};
 
-  // Type-safe values
   const safeMembers = Array.isArray(members) ? members : [];
-  const safeTotalMembers = Number(totalMembers) || 0;
-  const safeActiveMembers = Number(activeMembers) || 0;
-  const safeInactiveMembers = Number(inactiveMembers) || 0;
-  const safeTotalPages = Number(totalPages) || 1;
 
-  // Update URL when state changes
-  useEffect(() => {
-    const params = new URLSearchParams();
-    
-    if (debouncedSearchQuery) params.set('search', debouncedSearchQuery);
-    if (currentPage > 1) params.set('page', currentPage.toString());
-    if (membersPerPage !== 25) params.set('limit', membersPerPage.toString());
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value && value !== 'all' && value !== '') {
-        params.set(key, value.toString());
-      }
-    });
-
-    setSearchParams(params, { replace: true });
-  }, [debouncedSearchQuery, currentPage, membersPerPage, filters, setSearchParams]);
-
-  // Handlers
   const handleSearch = useCallback((query) => {
     setCurrentSearchQuery(query || '');
     setCurrentPage(1);
   }, []);
 
-  const handleFilterChange = useCallback((newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    setCurrentPage(1);
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters({
-      gender: '',
-      ageRange: '',
-      status: 'all',
-      joinedAfter: '',
-      joinedBefore: ''
-    });
-    setCurrentSearchQuery('');
-    setCurrentPage(1);
-  }, []);
-
-  const handlePageChange = useCallback((page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
   const handleRefresh = useCallback(async () => {
-    try {
-      showToast('Refreshing member list...', 'info');
-      if (refresh) {
-        await refresh();
-        showToast('Member list refreshed successfully', 'success');
-      }
-    } catch (error) {
-      console.error('[MembersPage] Refresh error:', error);
-      showToast('Failed to refresh data', 'error');
-    }
-  }, [refresh, showToast]);
-
-  const handleRegistrationSuccess = useCallback(async (newMember) => {
-    setShowRegistrationForm(false);
-    showToast('Member registered successfully!', 'success');
     if (refresh) {
-      setTimeout(() => refresh(), 1000);
+      await refresh();
+      showToast('Members list refreshed', 'success');
     }
   }, [refresh, showToast]);
-
-  const handleBulkAction = useCallback(async (action, memberIds, actionData = {}) => {
-    try {
-      showToast(`Bulk ${action} completed successfully`, 'success');
-      setSelectedMembers(new Set());
-      if (refresh) refresh();
-    } catch (error) {
-      console.error('[MembersPage] Bulk action error:', error);
-      showToast(`Bulk ${action} failed`, 'error');
-    }
-  }, [refresh, showToast]);
-
-  const handleMemberSelection = useCallback((memberId, isSelected) => {
-    setSelectedMembers(prev => {
-      const newSelection = new Set(prev);
-      if (isSelected) {
-        newSelection.add(memberId);
-      } else {
-        newSelection.delete(memberId);
-      }
-      return newSelection;
-    });
-  }, []);
 
   const handleSelectAll = useCallback((selectAll) => {
     if (selectAll) {
-      const memberIds = safeMembers.map(member => member?.id).filter(Boolean);
-      setSelectedMembers(new Set(memberIds));
+      setSelectedMembers(new Set(safeMembers.map(m => m.id)));
     } else {
       setSelectedMembers(new Set());
     }
   }, [safeMembers]);
 
-  // Loading state
-  if (isLoading && safeMembers.length === 0) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#f8fafc',
-        padding: '24px'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '400px'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <LoadingSpinner size="lg" />
-            <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading members...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error && safeMembers.length === 0) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#f8fafc',
-        padding: '24px'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '400px'
-        }}>
-          <Card style={{ padding: '48px', textAlign: 'center', maxWidth: '500px' }}>
-            <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px', margin: '0 auto 16px' }} />
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b', marginBottom: '16px' }}>
-              Error Loading Members
-            </h2>
-            <p style={{ color: '#dc2626', marginBottom: '32px' }}>
-              {error}
-            </p>
-            <Button onClick={handleRefresh} variant="primary">
-              <RefreshCw size={16} />
-              Try Again
-            </Button>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const hasActiveFilters = Object.values(filters).some(v => v && v !== 'all');
+  const handleImportComplete = useCallback((data) => {
+    showToast(`Imported ${data.data.imported} members successfully!`, 'success');
+    setShowImportModal(false);
+    if (refresh) {
+      setTimeout(() => refresh(), 1000);
+    }
+  }, [refresh, showToast]);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f8fafc',
-      padding: '24px'
-    }}>
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px'
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '24px' }}>
+      <div style={{ 
+        maxWidth: '1400px', 
+        margin: '0 auto', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '24px' 
       }}>
         
-        {/* Page Header */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px'
+        {/* Header Section */}
+        <div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            marginBottom: '16px', 
+            flexWrap: 'wrap', 
+            gap: '16px' 
           }}>
             <div>
-              <h1 style={{
-                fontSize: '32px',
-                fontWeight: 'bold',
-                color: '#1f2937',
-                margin: '0 0 8px 0'
+              <h1 style={{ 
+                fontSize: '32px', 
+                fontWeight: 'bold', 
+                color: '#1f2937', 
+                margin: '0 0 8px 0' 
               }}>
                 Members
               </h1>
-              <p style={{ color: '#6b7280', margin: 0 }}>
+              <p style={{ color: '#6b7280', margin: 0, fontSize: '15px' }}>
                 Manage church members and their information
               </p>
             </div>
             
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <Button
-                variant="ghost"
+              <button
                 onClick={handleRefresh}
                 disabled={isLoading}
-                icon={<RefreshCw size={16} style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  background: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  opacity: isLoading ? 0.6 : 1
+                }}
               >
+                <RefreshCw size={16} style={{
+                  animation: isLoading ? 'spin 1s linear infinite' : 'none'
+                }} />
                 Refresh
-              </Button>
+              </button>
               
-              <Button
-                variant="outline"
-                onClick={() => setIsExporting(true)}
-                disabled={isLoading || isExporting}
-                icon={<Download size={16} />}
+              <button
+                onClick={() => setShowImportModal(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  background: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  fontSize: '14px'
+                }}
               >
-                {isExporting ? 'Exporting...' : 'Export'}
-              </Button>
+                <Upload size={16} />
+                Import CSV
+              </button>
               
-              <Button
-                variant="primary"
-                onClick={() => setShowRegistrationForm(true)}
-                disabled={isLoading}
-                icon={<Plus size={16} />}
+              <button
+                onClick={() => navigate('/register')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  boxShadow: '0 2px 4px rgba(59,130,246,0.3)'
+                }}
               >
+                <Plus size={16} />
                 Add Member
-              </Button>
+              </button>
             </div>
           </div>
 
@@ -399,30 +617,30 @@ const MembersPage = () => {
           <div style={{
             display: 'flex',
             gap: '24px',
-            flexWrap: 'wrap',
             padding: '16px 0',
             borderTop: '1px solid #e5e7eb',
-            borderBottom: '1px solid #e5e7eb'
+            borderBottom: '1px solid #e5e7eb',
+            flexWrap: 'wrap'
           }}>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', minWidth: '100px' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>
-                {safeTotalMembers.toLocaleString()}
+                {totalMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Total Members</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', minWidth: '100px' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669' }}>
-                {safeActiveMembers.toLocaleString()}
+                {activeMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Active</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', minWidth: '100px' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>
-                {safeInactiveMembers.toLocaleString()}
+                {inactiveMembers.toLocaleString()}
               </div>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>Inactive</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', minWidth: '100px' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#7c3aed' }}>
                 {selectedMembers.size}
               </div>
@@ -431,261 +649,256 @@ const MembersPage = () => {
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1', minWidth: '300px' }}>
-            <div style={{
-              position: 'relative',
-              flex: '1',
-              maxWidth: '400px'
-            }}>
-              <Search size={16} style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#6b7280'
-              }} />
-              <input
-                type="text"
-                placeholder="Search members by name, email, phone..."
-                value={currentSearchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px 10px 40px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-                disabled={isLoading}
-              />
-              {currentSearchQuery && (
-                <button
-                  onClick={() => handleSearch('')}
-                  style={{
-                    position: 'absolute',
-                    right: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#6b7280'
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              disabled={isLoading}
-              icon={<Filter size={16} />}
-            >
-              Filters {hasActiveFilters ? '(Active)' : ''}
-            </Button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <select
-              value={membersPerPage}
-              onChange={(e) => setMembersPerPage(Number(e.target.value))}
+        {/* Search and Controls */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '250px', maxWidth: '500px' }}>
+            <Search size={16} style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#6b7280'
+            }} />
+            <input
+              type="text"
+              placeholder="Search members by name, email, phone..."
+              value={currentSearchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
               style={{
-                padding: '8px 12px',
+                width: '100%',
+                padding: '10px 40px 10px 40px',
                 border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '14px',
+                borderRadius: '8px',
+                fontSize: '15px',
                 outline: 'none'
               }}
               disabled={isLoading}
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-              <option value={100}>100 per page</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <MemberFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-            totalMembers={safeTotalMembers}
-            filteredCount={safeMembers.length}
-          />
-        )}
-
-        {/* Bulk Actions */}
-        {selectedMembers.size > 0 && (
-          <BulkActions
-            selectedMembers={Array.from(selectedMembers)}
-            onClearSelection={() => setSelectedMembers(new Set())}
-            onBulkAction={handleBulkAction}
-            totalMembers={safeTotalMembers}
-            allMembers={safeMembers}
-            disabled={isLoading}
-          />
-        )}
-
-        {/* Main Content */}
-        <div style={{ flex: 1 }}>
-          {safeMembers.length === 0 && !isLoading ? (
-            <Card style={{ padding: '48px', textAlign: 'center' }}>
-              <UserPlus size={64} style={{ color: '#d1d5db', margin: '0 auto 24px' }} />
-              <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
-                {debouncedSearchQuery || hasActiveFilters 
-                  ? 'No Members Found' 
-                  : 'No Members Registered Yet'
-                }
-              </h3>
-              <p style={{ color: '#6b7280', marginBottom: '32px' }}>
-                {debouncedSearchQuery || hasActiveFilters
-                  ? 'No members match your current search criteria. Try adjusting your filters.'
-                  : 'Get started by adding your first church member to the database.'
-                }
-              </p>
-              
-              {debouncedSearchQuery || hasActiveFilters ? (
-                <Button onClick={handleClearFilters} variant="outline">
-                  <X size={16} />
-                  Clear Search & Filters
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => setShowRegistrationForm(true)}
-                  size="lg"
-                  variant="primary"
-                >
-                  <Plus size={20} />
-                  Add First Member
-                </Button>
-              )}
-            </Card>
-          ) : (
-            <>
-              <MembersList
-                members={safeMembers}
-                selectedMembers={selectedMembers}
-                onMemberSelection={handleMemberSelection}
-                onSelectAll={handleSelectAll}
-                currentPage={currentPage}
-                totalPages={safeTotalPages}
-                totalMembers={safeTotalMembers}
-                membersPerPage={membersPerPage}
-                onPageChange={handlePageChange}
-                isLoading={isLoading}
-                searchQuery={debouncedSearchQuery}
-                onNavigateToMember={(id) => navigate(`/admin/members/${id}`)}
-              />
-
-              {/* Pagination */}
-              {safeTotalPages > 1 && (
-                <div style={{
+            />
+            {currentSearchQuery && (
+              <button
+                onClick={() => handleSearch('')}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
                   display: 'flex',
-                  justifyContent: 'center',
                   alignItems: 'center',
-                  gap: '12px',
-                  marginTop: '24px'
-                }}>
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage <= 1 || isLoading}
-                  >
-                    Previous
-                  </Button>
-                  
-                  <span style={{ color: '#6b7280', fontSize: '14px' }}>
-                    Page {currentPage} of {safeTotalPages}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage >= safeTotalPages || isLoading}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+                  color: '#6b7280'
+                }}
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+          
+          <select
+            value={membersPerPage}
+            onChange={(e) => setMembersPerPage(Number(e.target.value))}
+            style={{
+              padding: '10px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+            disabled={isLoading}
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
+          </select>
         </div>
 
-        {/* Registration Form Modal */}
-        {showRegistrationForm && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px'
+        {/* Members Grid */}
+        {isLoading && safeMembers.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '48px', 
+            background: 'white', 
+            borderRadius: '12px' 
           }}>
             <div style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '0',
-              maxWidth: '800px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '24px',
-                borderBottom: '1px solid #e5e7eb'
-              }}>
-                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                  Register New Member
-                </h2>
-                <button
-                  onClick={() => setShowRegistrationForm(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    borderRadius: '4px'
-                  }}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              
-              <div style={{ flex: 1, overflow: 'auto', padding: '24px' }}>
-                <MemberRegistrationForm
-                  isAdminMode={true}
-                  onSuccess={handleRegistrationSuccess}
-                  onCancel={() => setShowRegistrationForm(false)}
-                  disabled={isLoading}
-                />
-              </div>
+              width: '40px',
+              height: '40px',
+              border: '3px solid #e5e7eb',
+              borderTop: '3px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <p style={{ color: '#6b7280' }}>Loading members...</p>
+          </div>
+        ) : safeMembers.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '48px', 
+            background: 'white', 
+            borderRadius: '12px',
+            border: '1px solid #e5e7eb'
+          }}>
+            <Users size={64} style={{ color: '#d1d5db', margin: '0 auto 24px' }} />
+            <h3 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: '600' }}>
+              No Members Found
+            </h3>
+            <p style={{ color: '#6b7280', marginBottom: '32px', fontSize: '15px' }}>
+              {currentSearchQuery 
+                ? 'No members match your search criteria. Try adjusting your search.' 
+                : 'Get started by adding your first member or importing from CSV.'}
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/register')}
+                style={{
+                  padding: '12px 24px',
+                  background: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Plus size={20} />
+                Add First Member
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                style={{
+                  padding: '12px 24px',
+                  background: 'white',
+                  color: '#3b82f6',
+                  border: '1px solid #3b82f6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Upload size={20} />
+                Import CSV
+              </button>
             </div>
           </div>
+        ) : (
+          <>
+            {/* Select All Checkbox */}
+            {safeMembers.length > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 16px',
+                background: 'white',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={selectedMembers.size === safeMembers.length && safeMembers.length > 0}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: '#3b82f6' }}
+                />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                  {selectedMembers.size > 0 
+                    ? `${selectedMembers.size} of ${safeMembers.length} selected` 
+                    : `Select all ${safeMembers.length} members`}
+                </span>
+              </div>
+            )}
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: '20px'
+            }}>
+              {safeMembers.map(member => (
+                <MemberCard
+                  key={member.id}
+                  member={member}
+                  isSelected={selectedMembers.has(member.id)}
+                  onSelect={(id) => {
+                    setSelectedMembers(prev => {
+                      const newSet = new Set(prev);
+                      if (newSet.has(id)) newSet.delete(id);
+                      else newSet.add(id);
+                      return newSet;
+                    });
+                  }}
+                  onNavigate={(id) => navigate(`/admin/members/${id}`)}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                gap: '12px', 
+                marginTop: '24px' 
+              }}>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1 || isLoading}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    cursor: currentPage <= 1 || isLoading ? 'not-allowed' : 'pointer',
+                    fontWeight: '500',
+                    opacity: currentPage <= 1 || isLoading ? 0.5 : 1
+                  }}
+                >
+                  Previous
+                </button>
+                <span style={{ padding: '8px 16px', color: '#6b7280', fontSize: '14px' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages || isLoading}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    cursor: currentPage >= totalPages || isLoading ? 'not-allowed' : 'pointer',
+                    fontWeight: '500',
+                    opacity: currentPage >= totalPages || isLoading ? 0.5 : 1
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
+
+        <BulkImportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImportComplete={handleImportComplete}
+        />
+
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     </div>
   );

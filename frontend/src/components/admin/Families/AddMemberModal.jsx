@@ -1,4 +1,4 @@
-// frontend/src/components/admin/Families/AddMemberModal.jsx - Updated with success handler
+// frontend/src/components/admin/Families/AddMemberModal.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { useMembers } from '../../../hooks/useMembers';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
@@ -23,7 +23,8 @@ const AddMemberModal = ({
   availableMembers = [],
   existingRelationships = [] 
 }) => {
-  const { members, fetchMembers, loading } = useMembers();
+  // FIXED: Use refresh function from useMembers and rename it
+  const { members, isLoading: loading, refresh: fetchMembers } = useMembers({ autoFetch: false });
   const [selectedMember, setSelectedMember] = useState('');
   const [relationshipType, setRelationshipType] = useState('');
   const [notes, setNotes] = useState('');
@@ -57,10 +58,10 @@ const AddMemberModal = ({
     autoCloseDelay: 2000
   });
 
+  // FIXED: Fetch members when modal opens
   useEffect(() => {
     if (isOpen && (!availableMembers || availableMembers.length === 0)) {
-      // Fetch members without families
-      fetchMembers({ family_id__isnull: true });
+      fetchMembers();
     }
   }, [isOpen, availableMembers, fetchMembers]);
 
