@@ -1,9 +1,10 @@
+// frontend/src/components/admin/Families/FamilyForm.jsx - COMPLETE FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFamilies } from '../../../hooks/useFamilies';
 import { useMembers } from '../../../hooks/useMembers';
+import AddMemberModal from './AddMemberModal';
 
-// Enhanced Family Form with better UX
 const FamilyForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -55,7 +56,7 @@ const FamilyForm = () => {
   useEffect(() => {
     if (isEditing && id) {
       fetchFamily(id);
-      setCurrentStep(4); // Go to review step for editing
+      setCurrentStep(4);
     }
     fetchMembers({ family_id__isnull: true });
   }, [isEditing, id, fetchFamily, fetchMembers]);
@@ -128,13 +129,11 @@ const FamilyForm = () => {
 
   const handleAddMember = (memberData) => {
     if (isEditing) {
-      // Handle editing case
       addMemberToFamily(id, memberData).then((newRelationship) => {
         setFamilyMembers(prev => [...prev, newRelationship]);
         setShowAddMemberModal(false);
       });
     } else {
-      // Handle new family case
       const member = allMembers.find(m => m.id === memberData.member_id);
       if (member) {
         setFormData(prev => ({
@@ -188,9 +187,19 @@ const FamilyForm = () => {
         navigate(`/admin/families/${id}`);
       } else {
         const newFamily = await createFamily(formData);
-        navigate(`/admin/families/${newFamily.id}`);
+        console.log('Created family response:', newFamily); // Debug log
+        
+        // Check if we got an ID back
+        if (newFamily && newFamily.id) {
+          navigate(`/admin/families/${newFamily.id}`);
+        } else {
+          // Fallback: go to families list if no ID
+          console.error('No ID in family response:', newFamily);
+          navigate('/admin/families');
+        }
       }
     } catch (error) {
+      console.error('Submit error:', error);
       if (error.response?.data) {
         setErrors(error.response.data);
       }
@@ -636,7 +645,6 @@ const FamilyForm = () => {
             </div>
 
             <div style={{ display: 'grid', gap: '24px' }}>
-              {/* Family Information */}
               <div style={{
                 backgroundColor: 'white',
                 border: '2px solid #E5E7EB',
@@ -666,7 +674,6 @@ const FamilyForm = () => {
                 </div>
               </div>
 
-              {/* Family Members */}
               {getDisplayMembers().length > 0 && (
                 <div style={{
                   backgroundColor: 'white',
@@ -722,7 +729,6 @@ const FamilyForm = () => {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div style={{
               display: 'flex',
               gap: '12px',
@@ -950,47 +956,14 @@ const FamilyForm = () => {
           </form>
         </div>
 
-        {/* Add Member Modal would go here */}
-        {showAddMemberModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '24px',
-              maxWidth: '500px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }}>
-              <h3 style={{ margin: '0 0 16px 0' }}>Add Family Member</h3>
-              <p>Add Member Modal Component would be rendered here</p>
-              <button
-                onClick={() => setShowAddMemberModal(false)}
-                style={{
-                  backgroundColor: '#EF4444',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Add Member Modal - FIXED */}
+        <AddMemberModal
+          isOpen={showAddMemberModal}
+          onClose={() => setShowAddMemberModal(false)}
+          onAddMember={handleAddMember}
+          availableMembers={availableMembers}
+          existingRelationships={getDisplayMembers().map(m => m.relationship_type)}
+        />
       </div>
     </div>
   );

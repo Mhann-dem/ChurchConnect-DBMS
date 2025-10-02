@@ -222,9 +222,10 @@ class FamilySummarySerializer(serializers.ModelSerializer):
         source='primary_contact.get_full_name', 
         read_only=True
     )
-    member_count = serializers.ReadOnlyField()
-    children_count = serializers.ReadOnlyField()
-    adults_count = serializers.ReadOnlyField()
+    # These will come from annotations, not properties
+    member_count = serializers.IntegerField(read_only=True)
+    children_count = serializers.IntegerField(read_only=True)
+    adults_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Family
@@ -335,4 +336,6 @@ class CreateFamilySerializer(serializers.ModelSerializer):
                     notes=member_data.get('notes', '')
                 )
             
+            # Refresh to get all related data
+            family.refresh_from_db()
             return family

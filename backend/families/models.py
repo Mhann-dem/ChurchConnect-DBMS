@@ -11,7 +11,7 @@ class Family(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     family_name = models.CharField(max_length=255)
     primary_contact = models.ForeignKey(
-        'members.Member',  # Use string reference to avoid circular import
+        'members.Member',
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
@@ -55,25 +55,22 @@ class Family(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
-    @property
-    def member_count(self):
+    # CHANGED: Convert @property to regular methods to avoid conflicts with .annotate()
+    def get_member_count(self):
         """Total number of members in the family"""
         return self.family_relationships.count()
 
-    @property
-    def children_count(self):
+    def get_children_count(self):
         """Number of children in the family"""
         return self.family_relationships.filter(relationship_type='child').count()
 
-    @property
-    def adults_count(self):
+    def get_adults_count(self):
         """Number of adults (head and spouse) in the family"""
         return self.family_relationships.filter(
             relationship_type__in=['head', 'spouse']
         ).count()
 
-    @property
-    def dependents_count(self):
+    def get_dependents_count(self):
         """Number of dependents in the family"""
         return self.family_relationships.filter(relationship_type='dependent').count()
 
@@ -123,14 +120,13 @@ class Family(models.Model):
         """Get a summary of the family structure"""
         return {
             'family_name': self.family_name,
-            'total_members': self.member_count,
-            'adults': self.adults_count,
-            'children': self.children_count,
-            'dependents': self.dependents_count,
+            'total_members': self.get_member_count(),
+            'adults': self.get_adults_count(),
+            'children': self.get_children_count(),
+            'dependents': self.get_dependents_count(),
             'primary_contact': self.get_contact_info(),
             'created_date': self.created_at.date()
         }
-
 
 class FamilyRelationship(models.Model):
     """Represents the relationship between a member and a family"""
