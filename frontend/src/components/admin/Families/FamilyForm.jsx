@@ -186,13 +186,37 @@ const FamilyForm = () => {
         await updateFamily(id, formData);
         navigate(`/admin/families/${id}`);
       } else {
+        console.log('[FamilyForm] Submitting family data:', formData);
         const newFamily = await createFamily(formData);
-        navigate(`/admin/families/${newFamily.id}`);
+        
+        console.log('[FamilyForm] Family created successfully:', newFamily);
+        
+        // Ensure we have an ID
+        const familyId = newFamily?.id;
+        if (!familyId) {
+          throw new Error('No family ID returned from server');
+        }
+        
+        // Navigate to the new family's detail page
+        setTimeout(() => {
+          navigate(`/admin/families/${familyId}`);
+        }, 500);
       }
     } catch (error) {
+      console.error('[FamilyForm] Error creating family:', error);
+      
+      // Display validation errors if any
       if (error.response?.data) {
         setErrors(error.response.data);
       }
+      
+      // Show user-friendly error message
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Failed to create family. Please try again.';
+      
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }

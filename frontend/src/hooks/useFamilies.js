@@ -58,12 +58,23 @@ export const useFamilies = () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('[useFamilies] Creating family with data:', familyData);
       const response = await familiesService.createFamily(familyData);
+      
+      // Handle both response.data and direct response
+      const newFamily = response.data || response;
+      
+      console.log('[useFamilies] Family created:', newFamily);
       showToast('Family created successfully', 'success');
-      return response.data;
+      
+      return newFamily;
     } catch (err) {
-      setError(err.response?.data || 'Failed to create family');
-      showToast('Error creating family', 'error');
+      console.error('[useFamilies] Error creating family:', err);
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          'Failed to create family';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
       throw err;
     } finally {
       setLoading(false);

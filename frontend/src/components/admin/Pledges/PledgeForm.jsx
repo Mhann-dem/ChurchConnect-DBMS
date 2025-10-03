@@ -60,7 +60,13 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     clearError
   } = useFormSubmission({
     onSubmit: async (formData) => {
+      // DEBUG: Log form data before validation
+      console.log('[PledgeForm DEBUG] Raw form data:', formData);
+      console.log('[PledgeForm DEBUG] member_id:', formData.member_id);
+      console.log('[PledgeForm DEBUG] member_id type:', typeof formData.member_id);
+      
       if (!formData.member_id) {
+        console.error('[PledgeForm DEBUG] member_id is missing!');
         throw new Error('Please select a member');
       }
 
@@ -77,7 +83,9 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         // Don't send calculated_total - not in serializer
       };
 
-      console.log('PledgeForm: Submitting data:', submissionData);
+      console.log('[PledgeForm DEBUG] Submission data:', JSON.stringify(submissionData, null, 2));
+      console.log('[PledgeForm DEBUG] Member UUID:', submissionData.member);
+      
       return await onSubmit(submissionData);
     },
     onClose: onCancel,

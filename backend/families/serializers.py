@@ -1,5 +1,5 @@
 # backend/churchconnect/families/serializers.py
-
+import logging
 from rest_framework import serializers
 from django.db import transaction
 from .models import Family, FamilyRelationship
@@ -306,36 +306,81 @@ class FamilyStatisticsSerializer(serializers.Serializer):
     total_children = serializers.IntegerField()
     total_dependents = serializers.IntegerField()
 
-
 class CreateFamilySerializer(serializers.ModelSerializer):
-    """Serializer for creating a new family with initial members"""
-    
-    primary_contact_id = serializers.UUIDField(required=False, allow_null=True)
-    initial_members = AddMemberToFamilySerializer(many=True, required=False)
+    """Serializer for creating families with initial members"""
+    initial_members = serializers.ListField(
+        child=serializers.DictField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
 
     class Meta:
         model = Family
-        fields = ['family_name', 'address', 'notes', 'primary_contact_id', 'initial_members']
+        fields = ['id', 'family_name', 'address', 'notes', 'primary_contact_id', 'initial_members']
+        read_only_fields = ['id']
+
+    def validate_initial_members(self, value):
+        """Validate initial members data"""
+        if not value:
+            return []
+        
+        for member_data in value:
+            if 'member_id' not in member_data:
+                raise serializers.ValidationError("Each member must have a member_id")
+            if 'relationship_type' not in member_data:
+                raise serializers.ValidationError("Each member must have a relationship_type")
+            
+            # Validate relationship type
+            valid_types = ['head', 'spouse', 'child', 'dependent', 'other']
+            if member_data['relationship_type'] not in valid_types:
+                raise serializers.ValidationError(
+                    f"Invalid relationship_type: {member_data['relationship_type']}"
+                )
+        
+        return value
 
     def create(self, validated_data):
         """Create family with initial members"""
-        initial_members = validated_data.pop('initial_members', [])
+        from members.models import Member
         
-        with transaction.atomic():
-            family = Family.objects.create(**validated_data)
+        initial_members = validated_data.pop('initial_members', [])
+        primary_contact_id = validated_data.pop('primary_contact_id', None)
+        
+        # Create the family
+        family = Family.objects.create(**validated_data)
+        
+        # Add initial members
+        for member_data in initial_members:
+            member_id = member_data['member_id']
+            relationship_type = member_data['relationship_type']
+            notes = member_data.get('notes', '')
             
-            # Add initial members
-            for member_data in initial_members:
-                from members.models import Member
-                member = Member.objects.get(id=member_data['member_id'])
+            try:
+                member = Member.objects.get(id=member_id)
                 
+                # Create the relationship (this will update member.family_id via save())
                 FamilyRelationship.objects.create(
                     family=family,
                     member=member,
-                    relationship_type=member_data['relationship_type'],
-                    notes=member_data.get('notes', '')
+                    relationship_type=relationship_type,
+                    notes=notes
                 )
-            
-            # Refresh to get all related data
-            family.refresh_from_db()
-            return family
+                
+            except Member.DoesNotExist:
+                # Log but continue with other members
+                logger.warning(f"Member {member_id} not found, skipping")
+                continue
+        
+        # Set primary contact if provided
+        if primary_contact_id:
+            try:
+                primary_contact = Member.objects.get(id=primary_contact_id)
+                # Verify they're in the family
+                if FamilyRelationship.objects.filter(family=family, member=primary_contact).exists():
+                    family.primary_contact = primary_contact
+                    family.save(update_fields=['primary_contact'])
+            except Member.DoesNotExist:
+                logger.warning(f"Primary contact {primary_contact_id} not found")
+        
+        return family

@@ -1,10 +1,14 @@
 # backend/churchconnect/families/models.py
-
+import logging
+import datetime
+import re
+import json
 import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+logger = logging.getLogger(__name__)
 
 class Family(models.Model):
     # Core fields as per documentation
@@ -147,10 +151,11 @@ class FamilyRelationship(models.Model):
         related_name='family_relationships',
         help_text="The family this relationship belongs to"
     )
-    member = models.OneToOneField(
+    # CHANGE THIS: OneToOneField → ForeignKey
+    member = models.ForeignKey(
         'members.Member',  # Use string reference to avoid circular import
         on_delete=models.CASCADE, 
-        related_name='family_relationship',
+        related_name='family_relationships',  # Changed from 'family_relationship'
         help_text="The member in this relationship"
     )
     relationship_type = models.CharField(
@@ -167,7 +172,7 @@ class FamilyRelationship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['family', 'member']
+        unique_together = ['family', 'member']  # This ensures a member can't be in the same family twice
         verbose_name = "Family Relationship"
         verbose_name_plural = "Family Relationships"
         ordering = ['relationship_type', 'created_at']
@@ -194,14 +199,14 @@ class FamilyRelationship(models.Model):
             if existing_head.exists():
                 errors['relationship_type'] = "A family can only have one head of household"
 
-        # Ensure member isn't already in another family
-        if self.member_id:
-            existing_relationship = FamilyRelationship.objects.filter(
-                member=self.member
-            ).exclude(id=self.id)
-            
-            if existing_relationship.exists():
-                errors['member'] = "Member is already assigned to another family"
+        # REMOVE THIS VALIDATION - members can now be in multiple families
+        # if self.member_id:
+        #     existing_relationship = FamilyRelationship.objects.filter(
+        #         member=self.member
+        #     ).exclude(id=self.id)
+        #     
+        #     if existing_relationship.exists():
+        #         errors['member'] = "Member is already assigned to another family"
 
         # Business rule: Only one spouse per family
         if self.relationship_type == 'spouse':
@@ -217,24 +222,38 @@ class FamilyRelationship(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        """Override save to ensure validation and update member family_id"""
-        self.full_clean()
+        """Override save to update member's family_id"""
+        is_new = self._state.adding
+        
+        # Save the relationship first
         super().save(*args, **kwargs)
         
-        # Update member's family_id
+        # Update member's family_id using QuerySet.update() to bypass validation
         if self.member:
-            self.member.family_id = self.family.id
-            self.member.save(update_fields=['family_id'])
+            from members.models import Member
+            Member.objects.filter(pk=self.member.pk).update(family_id=self.family.id)
+            
+            # Refresh the member instance to reflect the change
+            self.member.refresh_from_db()
+            
+            if is_new:
+                logger.info(
+                    f"Member {self.member.get_full_name()} ({self.member.id}) "
+                    f"added to family '{self.family.family_name}' as {self.get_relationship_type_display()}"
+                )
 
     def delete(self, *args, **kwargs):
-        """Override delete to update member's family_id"""
-        member = self.member
-        super().delete(*args, **kwargs)
+        """Override delete to clear member's family_id"""
+        if self.member:
+            from members.models import Member
+            # Use QuerySet.update() to bypass validation
+            Member.objects.filter(pk=self.member.pk).update(family_id=None)
+            logger.info(
+                f"Member {self.member.get_full_name()} ({self.member.id}) "
+                f"removed from family '{self.family.family_name}'"
+            )
         
-        # Clear member's family_id
-        if member:
-            member.family_id = None
-            member.save(update_fields=['family_id'])
+        super().delete(*args, **kwargs)
 
     def is_adult(self):
         """Check if this relationship represents an adult member"""
