@@ -128,24 +128,25 @@ class BulkImportProcessor:
         """Prepare member data from CSV row"""
         data = {}
         
-        # Required fields
-        required_fields = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender']
+        # **UPDATED**: Phone is now required
+        required_fields = ['first_name', 'last_name', 'email', 'phone']
         for field in required_fields:
             if field not in row or pd.isna(row[field]):
                 raise ValueError(f"Missing required field: {field}")
             data[field] = str(row[field]).strip()
         
-        # Optional fields
+        # **UPDATED**: Phone moved to required, alternate_phone remains optional
         optional_fields = [
-            'preferred_name', 'alternate_phone', 'address', 'preferred_contact_method',
-            'preferred_language', 'accessibility_needs', 'emergency_contact_name',
-            'emergency_contact_phone', 'notes', 'internal_notes'
+            'date_of_birth', 'gender', 'preferred_name', 'alternate_phone', 
+            'address', 'preferred_contact_method', 'preferred_language', 
+            'accessibility_needs', 'emergency_contact_name', 'emergency_contact_phone', 
+            'notes', 'internal_notes'
         ]
         
         for field in optional_fields:
             if field in row and not pd.isna(row[field]):
                 data[field] = str(row[field]).strip()
-        
+            
         # Boolean fields
         boolean_fields = {
             'communication_opt_in': True,
@@ -161,23 +162,23 @@ class BulkImportProcessor:
             else:
                 data[field] = default_value
         
-        # Format date of birth
-        data['date_of_birth'] = self._parse_date(data['date_of_birth'])
+        # **FIXED**: Only parse date if it exists
+        if 'date_of_birth' in data and data['date_of_birth']:
+            data['date_of_birth'] = self._parse_date(data['date_of_birth'])
         
-        # Format phone numbers
+        # **FIXED**: Format phone numbers (phone is now required, so always format)
         data['phone'] = self._format_phone_number(data['phone'])
-        if 'alternate_phone' in data:
+        if 'alternate_phone' in data and data['alternate_phone']:
             data['alternate_phone'] = self._format_phone_number(data['alternate_phone'])
         
         # Add metadata
         data['registration_source'] = 'bulk_import'
-        data['registered_by'] = self.uploaded_by
         data['import_batch_id'] = self.batch_id
         data['import_row_number'] = row_number
         data['privacy_policy_agreed_date'] = timezone.now()
         
         return data
-    
+        
     def _parse_date(self, date_str: str) -> date:
         """Parse date from various formats"""
         date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%m-%d-%Y', '%d-%m-%Y']

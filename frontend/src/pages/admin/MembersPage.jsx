@@ -142,16 +142,28 @@ const BulkImportModal = ({ isOpen, onClose, onImportComplete }) => {
   const fileInputRef = React.useRef(null);
 
   const downloadTemplate = () => {
-    const headers = 'First Name,Last Name,Email,Phone,Date of Birth,Gender,Address';
-    const sample = 'John,Doe,john@example.com,555-0123,1990-01-15,Male,123 Main St';
-    const csv = headers + '\n' + sample;
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'member_import_template.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+      const requiredColumns = ['first_name', 'last_name', 'email', 'phone'];
+      const optionalColumns = [
+          'date_of_birth', 'gender', 'address', 'preferred_contact_method',
+          'preferred_language', 'profession', 'emergency_contact_name', 
+          'emergency_contact_phone', 'notes', 'family_name'
+      ];
+      
+      const headers = [...requiredColumns, ...optionalColumns].join(',');
+      const sampleRow = [
+          'John', 'Doe', 'john@example.com', '+233241234567',
+          '1990-01-15', 'male', '123 Main St, Accra', 'email',
+          'English', '', 'Jane Doe', '+233241234568', '', ''
+      ].join(',');
+      
+      const csv = headers + '\n' + sampleRow;
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'member_import_template.csv';
+      a.click();
+      URL.revokeObjectURL(url);
   };
 
   const handleImport = async () => {

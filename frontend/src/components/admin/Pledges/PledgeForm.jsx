@@ -64,11 +64,17 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         throw new Error('Please select a member');
       }
 
+      // FIXED: Match backend serializer exactly
       const submissionData = {
-        ...formData,
+        member: formData.member_id,  // ForeignKey field expects UUID
         amount: parseFloat(formData.amount),
-        end_date: formData.frequency === 'one-time' ? null : formData.end_date,
-        calculated_total: totalCalculated
+        frequency: formData.frequency,
+        start_date: formData.start_date,
+        end_date: formData.frequency === 'one-time' ? null : (formData.end_date || null),
+        status: formData.status || 'active',
+        notes: formData.notes || ''
+        // Don't send total_pledged - backend calculates it
+        // Don't send calculated_total - not in serializer
       };
 
       console.log('PledgeForm: Submitting data:', submissionData);

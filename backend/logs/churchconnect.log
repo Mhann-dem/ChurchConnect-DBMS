@@ -36080,3 +36080,1602 @@ INFO 2025-10-02 19:35:52,302 basehttp "GET /api/v1/events/events/?ordering=-crea
 INFO 2025-10-02 19:37:30,004 basehttp "OPTIONS /api/v1/events/events/ HTTP/1.1" 200 0
 WARNING 2025-10-02 19:37:30,110 log Bad Request: /api/v1/events/events/
 WARNING 2025-10-02 19:37:30,110 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 428
+INFO 2025-10-03 05:35:13,755 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 05:35:49,100 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:35:50,057 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:31,346 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-10-01&end_date=2025-10-31&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:31,537 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-10-01&end_date=2025-10-31&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:39,378 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-11-01&end_date=2025-11-30&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:40,663 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-10-01&end_date=2025-10-31&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:41,098 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-09-01&end_date=2025-09-30&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:41,328 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-08-01&end_date=2025-08-31&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:41,548 basehttp "GET /api/v1/events/events/?is_public=true&status=published&start_date=2025-07-01&end_date=2025-07-31&ordering=start_datetime HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:44,827 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:36:44,929 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:00,763 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:00,866 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:08,413 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 05:37:08,444 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 05:37:08,595 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 05:37:08,612 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 05:37:16,333 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:18,480 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:19,866 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-03 05:37:19,874 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-03 05:37:20,130 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,156 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,173 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,179 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,187 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,195 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,200 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,205 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,218 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,224 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,231 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,238 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,245 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,251 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,258 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,268 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,278 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,284 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,293 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,301 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,307 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,313 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,318 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,324 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,330 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,337 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:20,715 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:20,800 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:20,815 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 05:37:20,821 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:20,979 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 05:37:20,998 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 05:37:21,003 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 05:37:21,087 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:21,103 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 05:37:21,215 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 05:37:21,252 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 05:37:21,300 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 05:37:21,330 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 05:37:21,334 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 05:37:21,418 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 05:37:21,444 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 05:37:21,455 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 05:37:21,485 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 05:37:21,668 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:21,759 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 05:37:21,870 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:21,932 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:37:21,954 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 05:37:22,000 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 05:37:22,021 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:22,042 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 05:37:22,131 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 05:37:22,239 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 05:37:22,264 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 05:37:22,363 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:22,493 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 05:37:22,550 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:22,576 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 05:37:22,658 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 05:37:22,660 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 05:37:22,668 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 05:37:22,664 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 05:37:22,763 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:22,786 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 05:37:23,048 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 05:37:23,087 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 05:37:23,178 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 05:37:23,205 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:37:23,214 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 05:37:23,216 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:23,217 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:23,461 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 05:37:23,491 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 05:37:23,562 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 05:37:23,626 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 05:37:23,633 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 05:37:23,648 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:23,651 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 05:37:23,663 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 05:37:23,692 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 05:37:23,751 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 05:37:23,796 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 05:37:23,802 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 05:37:24,001 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 05:37:24,121 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 05:37:24,147 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 05:37:24,173 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:24,193 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 05:37:24,272 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:37:24,406 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:24,578 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:37:24,676 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 05:37:24,680 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 05:37:24,785 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:37:29,810 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:29,810 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 05:37:29,928 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 05:37:29,929 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 05:37:29,952 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-03 05:37:29,986 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-03 05:37:29,988 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-03 05:38:09,751 basehttp "OPTIONS /api/v1/members/bulk_import/ HTTP/1.1" 200 0
+INFO 2025-10-03 05:38:14,816 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 05:38:44,589 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 05:39:35,220 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:39:35,265 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:39:35,364 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:39:35,458 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 05:39:35,505 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 05:39:35,705 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:09:03,381 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 06:09:09,064 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 06:10:13,595 basehttp "OPTIONS /api/v1/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-10-03 06:10:15,004 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:10:15,006 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:15,008 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:15,098 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:15,099 views SECURITY EVENT: LOGOUT_SUCCESS - User logged out successfully
+INFO 2025-10-03 06:10:15,102 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:10:15,130 basehttp "POST /api/v1/auth/logout/ HTTP/1.1" 200 84
+INFO 2025-10-03 06:10:15,145 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:10:15,162 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 06:10:15,193 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 06:10:15,205 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:10:15,314 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:10:15,324 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:10:15,552 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:10:15,554 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:10:15,564 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:10:15,633 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:10:15,640 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:10:15,646 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:15,648 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:15,648 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:10:15,654 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 06:10:15,657 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:10:15,917 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:10:15,937 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:15,938 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:10:15,992 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:16,019 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:16,038 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:10:16,076 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 06:10:16,103 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:10:16,112 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 06:10:16,130 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:10:16,276 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:10:16,398 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:10:16,402 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:16,418 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:16,420 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:10:16,449 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:10:16,456 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:10:16,475 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:10:16,480 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:10:16,492 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 06:10:16,535 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:10:16,548 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:10:16,774 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:10:16,819 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:16,826 basehttp - Broken pipe from ('127.0.0.1', 52480)
+INFO 2025-10-03 06:10:16,841 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 06:10:16,856 basehttp - Broken pipe from ('127.0.0.1', 50982)
+INFO 2025-10-03 06:10:16,872 basehttp - Broken pipe from ('127.0.0.1', 65171)
+INFO 2025-10-03 06:10:16,915 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:10:16,920 basehttp - Broken pipe from ('127.0.0.1', 51316)
+INFO 2025-10-03 06:10:16,927 basehttp - Broken pipe from ('127.0.0.1', 54248)
+INFO 2025-10-03 06:10:16,970 basehttp - Broken pipe from ('127.0.0.1', 55187)
+INFO 2025-10-03 06:10:17,747 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 06:10:17,809 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 06:10:17,948 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 06:10:17,972 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 06:10:36,043 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:36,083 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-03 06:10:36,091 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-03 06:10:37,060 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:10:37,393 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:37,650 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:37,661 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:10:37,696 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:37,728 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:37,858 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 06:10:37,956 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 06:10:37,996 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:10:38,001 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:10:38,111 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:10:38,236 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:10:38,304 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 06:10:38,316 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:10:38,466 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:10:38,579 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:10:38,678 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:10:38,906 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:10:39,074 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:39,235 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:10:39,421 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:10:39,474 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:10:39,556 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:10:39,573 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:39,708 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:39,726 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:10:39,789 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:40,056 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:10:40,077 views [MemberViewSet] Statistics SUCCESS - Total: 10, Active: 10, Recent: 10
+INFO 2025-10-03 06:10:40,100 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:10:40,118 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:10:40,234 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 573
+INFO 2025-10-03 06:10:40,368 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:10:40,467 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1648
+INFO 2025-10-03 06:10:40,898 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:10:40,912 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:10:40,936 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:40,989 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:10:40,995 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:10:41,040 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:10:41,112 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:10:41,196 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:41,405 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:41,460 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:41,542 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:10:41,548 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:10:41,840 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:41,845 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:42,158 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:10:42,195 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:10:42,199 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:10:45,360 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:10:53,613 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:53,615 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:10:53,625 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:10:53,626 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:10:53,655 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-03 06:10:53,673 views [MemberViewSet] Counts - Total DB: 10 (active: 10), Filtered: 10 (active: 10)
+INFO 2025-10-03 06:10:53,730 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-03 06:10:53,736 views [MemberViewSet] Returned 10 members on page 1 of 1
+INFO 2025-10-03 06:10:53,746 basehttp - Broken pipe from ('127.0.0.1', 51517)
+INFO 2025-10-03 06:10:53,746 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 3442
+INFO 2025-10-03 06:11:17,455 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 06:13:05,912 serializers Admin creating member: john.doe@test.com
+INFO 2025-10-03 06:13:05,949 serializers Admin creating member: jane.smith@test.com
+INFO 2025-10-03 06:13:05,971 serializers Admin creating member: bob.j@test.com
+INFO 2025-10-03 06:13:05,988 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 114
+INFO 2025-10-03 06:13:07,071 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:13:07,071 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:13:07,088 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:13:07,118 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:13:07,120 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 06:20:53,943 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 06:20:57,142 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 06:22:06,231 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-10-03 06:22:06,957 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-03 06:22:07,285 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:22:07,287 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:22:07,367 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:22:07,456 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:22:07,459 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:22:07,495 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:22:07,509 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:22:07,511 basehttp - Broken pipe from ('127.0.0.1', 49332)
+INFO 2025-10-03 06:22:07,565 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:22:07,569 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 06:22:35,606 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 06:23:40,823 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 06:23:45,107 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 06:24:18,945 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 06:24:58,953 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 06:28:51,113 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 06:29:08,074 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 06:31:54,326 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 06:33:34,332 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 06:35:03,920 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 06:35:07,611 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 06:36:00,572 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+WARNING 2025-10-03 06:36:13,047 log Unauthorized: /api/v1/members/
+WARNING 2025-10-03 06:36:13,048 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 401 5320
+WARNING 2025-10-03 06:36:13,516 log Not Found: /favicon.ico
+WARNING 2025-10-03 06:36:13,520 basehttp "GET /favicon.ico HTTP/1.1" 404 3527
+WARNING 2025-10-03 06:36:16,762 log Unauthorized: /api/v1/members/
+WARNING 2025-10-03 06:36:16,764 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 401 5320
+INFO 2025-10-03 06:37:23,374 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 06:38:01,449 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 06:39:56,908 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 06:40:05,603 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:05,604 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:40:05,628 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:40:05,676 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:40:05,682 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 06:40:08,206 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:08,470 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:40:08,515 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:08,566 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:40:08,587 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:08,604 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:40:08,631 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:40:08,649 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:08,689 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:40:08,756 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:40:08,766 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:40:08,808 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:40:08,853 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:40:08,864 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:40:08,870 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:40:08,910 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:40:09,110 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:40:09,111 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:40:09,112 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:40:09,126 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:40:09,165 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:40:09,259 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:40:09,290 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:09,380 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:40:09,399 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:40:09,409 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:40:09,437 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:40:09,446 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:09,485 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:40:09,486 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:40:09,492 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:40:09,535 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:09,549 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:40:09,605 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:40:09,622 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:40:09,700 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:40:09,723 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:40:09,804 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:40:09,814 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:40:09,836 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:40:09,885 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:10,188 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:40:10,232 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:40:10,235 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:40:10,315 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:40:10,328 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:10,342 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:40:10,386 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:10,502 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:40:10,546 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:40:10,580 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:40:10,595 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:40:10,595 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:40:10,605 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:40:10,609 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:40:10,619 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:40:10,620 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:40:10,635 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:40:10,665 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:10,786 views [GroupViewSet] Statistics returned successfully: 4 total groups, 4 active
+INFO 2025-10-03 06:40:10,803 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 488
+INFO 2025-10-03 06:40:10,866 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:10,918 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:40:10,919 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:40:10,970 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:10,971 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:40:11,169 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:40:11,172 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:40:11,323 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:40:15,704 basehttp "OPTIONS /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 0
+INFO 2025-10-03 06:40:15,964 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 436
+INFO 2025-10-03 06:40:22,424 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 0
+INFO 2025-10-03 06:40:22,428 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 0
+INFO 2025-10-03 06:40:22,541 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:22,542 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:40:22,542 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:40:22,543 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 06:40:22,561 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:40:22,562 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:40:22,590 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:40:22,593 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:40:22,597 basehttp - Broken pipe from ('127.0.0.1', 63109)
+INFO 2025-10-03 06:40:22,604 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 4342
+INFO 2025-10-03 06:41:39,341 basehttp "OPTIONS /api/v1/families/ HTTP/1.1" 200 0
+WARNING 2025-10-03 06:41:39,457 log Bad Request: /api/v1/families/
+WARNING 2025-10-03 06:41:39,458 basehttp "POST /api/v1/families/ HTTP/1.1" 400 150
+WARNING 2025-10-03 06:41:41,469 log Bad Request: /api/v1/families/
+WARNING 2025-10-03 06:41:41,470 basehttp "POST /api/v1/families/ HTTP/1.1" 400 150
+INFO 2025-10-03 06:42:14,559 autoreload Watching for file changes with StatReloader
+WARNING 2025-10-03 06:42:31,926 log Bad Request: /api/v1/families/
+WARNING 2025-10-03 06:42:31,926 basehttp "POST /api/v1/families/ HTTP/1.1" 400 87
+INFO 2025-10-03 06:42:42,817 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 436
+INFO 2025-10-03 06:42:51,854 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:42:51,932 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:42:52,119 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:42:52,304 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:42:52,362 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:42:52,542 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:42:59,565 basehttp "OPTIONS /api/v1/pledges/stats/ HTTP/1.1" 200 0
+INFO 2025-10-03 06:42:59,565 basehttp "OPTIONS /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 06:42:59,703 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:42:59,733 basehttp "GET /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 06:42:59,955 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:42:59,967 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 2041
+INFO 2025-10-03 06:43:01,115 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 06:43:01,118 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 06:43:01,254 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:43:01,256 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:43:01,266 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:43:01,307 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:43:01,319 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 06:45:05,007 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:45:05,103 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:45:05,253 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:45:05,372 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:45:05,422 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:45:05,628 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:45:10,002 basehttp "OPTIONS /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-03 06:45:10,008 basehttp "OPTIONS /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-03 06:45:10,301 basehttp "GET /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-03 06:45:10,571 basehttp "GET /api/v1/groups/?status=active&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 1724
+INFO 2025-10-03 06:45:13,664 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:45:13,666 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:45:13,708 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:45:13,708 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:45:13,711 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:45:13,765 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:45:13,775 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:45:13,782 basehttp - Broken pipe from ('127.0.0.1', 65236)
+INFO 2025-10-03 06:45:13,815 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:45:13,815 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 06:45:50,281 basehttp "OPTIONS /api/v1/groups/ HTTP/1.1" 200 0
+INFO 2025-10-03 06:45:50,521 signals New group created: Saddick
+INFO 2025-10-03 06:45:50,547 basehttp "POST /api/v1/groups/ HTTP/1.1" 201 548
+INFO 2025-10-03 06:46:02,095 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:02,145 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:46:02,404 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:46:02,467 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:46:02,476 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:02,483 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:02,492 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:46:02,539 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:46:02,556 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:46:02,578 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:46:02,593 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:46:02,673 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 06:46:02,673 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:46:02,707 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:02,713 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 06:46:02,739 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:46:02,910 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:46:03,010 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:46:03,015 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:46:03,049 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:46:03,083 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:46:03,127 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:46:03,182 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:03,295 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:46:03,359 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:46:03,435 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:46:03,460 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:46:03,462 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:46:03,470 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:03,506 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:46:03,516 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:46:03,584 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:46:03,591 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:03,606 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:46:03,659 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 06:46:03,692 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:46:03,694 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:46:03,723 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 06:46:03,795 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:46:03,948 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:04,063 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:46:04,155 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:46:04,162 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:46:04,311 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:46:04,330 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:04,358 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:46:04,358 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:46:04,434 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:46:04,500 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:46:04,528 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:46:04,614 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:04,688 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:46:04,717 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:46:04,737 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:46:04,802 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:46:04,822 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:46:04,842 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:04,842 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:46:04,856 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:46:04,977 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 06:46:04,979 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:46:04,993 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 06:46:05,088 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:46:05,132 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:05,133 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:46:05,133 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:46:05,431 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:46:05,439 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:46:05,444 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:46:10,250 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 06:46:10,250 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 06:46:10,461 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 06:46:10,684 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 06:49:15,029 basehttp "OPTIONS /api/v1/events/events/ HTTP/1.1" 200 0
+WARNING 2025-10-03 06:49:15,210 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-03 06:49:15,210 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 428
+INFO 2025-10-03 06:57:46,723 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:46,727 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:57:46,727 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:46,858 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:57:46,891 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 06:57:46,934 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:57:46,961 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:46,967 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 06:57:46,978 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:47,012 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:57:47,320 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:57:47,406 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:57:47,421 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:57:47,433 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:57:47,482 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:57:47,518 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:57:47,519 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:57:47,637 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:57:47,695 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:57:47,778 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:57:47,778 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:57:47,925 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 06:57:47,943 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:47,972 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:57:47,988 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 06:57:48,004 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 06:57:48,030 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 06:57:48,042 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 06:57:48,155 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:48,235 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:57:48,236 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:57:48,259 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:48,281 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:57:48,326 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:48,438 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:57:48,506 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:57:48,859 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:57:48,926 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:57:48,956 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:57:48,958 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:57:48,965 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:57:49,007 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:57:49,161 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:49,206 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:57:49,289 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:57:49,426 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 06:57:49,898 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 06:57:49,991 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 06:57:50,090 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 06:57:50,120 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 435
+INFO 2025-10-03 06:57:50,130 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:50,200 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 06:57:50,227 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:57:50,298 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 06:57:50,536 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:50,630 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 06:57:50,738 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 06:57:50,766 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 06:57:50,773 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 06:57:50,806 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 06:57:50,823 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 06:57:51,009 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 06:57:54,425 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 436
+INFO 2025-10-03 06:57:57,133 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:57,134 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:57:57,138 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:57,138 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 06:57:57,154 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:57,154 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 06:57:57,154 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:57:57,154 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 06:57:57,176 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:57:57,178 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 06:57:57,192 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:57:57,255 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 06:57:57,287 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:57:57,287 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:57:57,302 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:57:57,302 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 06:57:57,317 basehttp - Broken pipe from ('127.0.0.1', 51572)
+INFO 2025-10-03 06:57:57,332 basehttp - Broken pipe from ('127.0.0.1', 63239)
+INFO 2025-10-03 06:57:57,332 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 4342
+INFO 2025-10-03 06:57:57,332 basehttp - Broken pipe from ('127.0.0.1', 52092)
+ERROR 2025-10-03 06:58:56,446 log Internal Server Error: /api/v1/families/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 24, in perform_create
+    serializer.save()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\serializers.py", line 332, in create
+    FamilyRelationship.objects.create(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 227, in save
+    self.member.save(update_fields=['family_id'])
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py", line 279, in save
+    self.full_clean()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1679, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'preferred_language': ["Value 'English' is not a valid choice."]}
+ERROR 2025-10-03 06:58:56,467 basehttp "POST /api/v1/families/ HTTP/1.1" 500 27823
+ERROR 2025-10-03 06:59:10,737 log Internal Server Error: /api/v1/families/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 24, in perform_create
+    serializer.save()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\serializers.py", line 332, in create
+    FamilyRelationship.objects.create(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 227, in save
+    self.member.save(update_fields=['family_id'])
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py", line 279, in save
+    self.full_clean()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1679, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'preferred_language': ["Value 'English' is not a valid choice."]}
+ERROR 2025-10-03 06:59:10,740 basehttp "POST /api/v1/families/ HTTP/1.1" 500 27823
+INFO 2025-10-03 07:04:07,740 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py changed, reloading.
+INFO 2025-10-03 07:04:11,047 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:04:23,588 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py changed, reloading.
+INFO 2025-10-03 07:04:25,693 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:04:36,815 basehttp "POST /api/v1/families/ HTTP/1.1" 201 111
+INFO 2025-10-03 07:04:36,907 basehttp "OPTIONS /api/v1/families/undefined/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:04:36,907 basehttp "OPTIONS /api/v1/families/undefined/ HTTP/1.1" 200 0
+WARNING 2025-10-03 07:04:37,065 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:04:37,067 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+WARNING 2025-10-03 07:04:37,192 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:04:37,194 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+INFO 2025-10-03 07:04:48,373 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 604
+INFO 2025-10-03 07:05:11,707 basehttp "OPTIONS /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:05:11,710 basehttp "OPTIONS /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/ HTTP/1.1" 200 0
+ERROR 2025-10-03 07:05:12,006 log Internal Server Error: /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:05:12,026 basehttp "GET /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/ HTTP/1.1" 500 28366
+ERROR 2025-10-03 07:05:12,186 log Internal Server Error: /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:05:12,189 basehttp "GET /api/v1/families/d883d346-3ce7-44d0-b1f2-caf480b1c9e6/ HTTP/1.1" 500 28366
+INFO 2025-10-03 07:05:20,270 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 604
+INFO 2025-10-03 07:05:21,620 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 07:05:21,748 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 07:05:23,425 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:05:23,427 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:05:23,498 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 07:05:23,531 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:05:23,533 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:05:23,584 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 07:05:23,602 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 07:05:23,603 basehttp - Broken pipe from ('127.0.0.1', 49653)
+INFO 2025-10-03 07:05:23,678 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 07:05:23,689 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-03 07:05:23,692 basehttp "OPTIONS /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 0
+INFO 2025-10-03 07:05:23,693 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 07:05:23,951 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 2097
+INFO 2025-10-03 07:05:24,165 basehttp "GET /api/v1/groups/?status=all&category=all&hasLeader=all&memberCount=all&isPublic=all&page=1&page_size=20 HTTP/1.1" 200 2097
+INFO 2025-10-03 07:05:27,969 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:05:27,969 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:05:27,985 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 07:05:28,011 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 07:05:28,011 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 07:05:46,830 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 07:06:13,792 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:07:11,881 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py changed, reloading.
+INFO 2025-10-03 07:07:14,055 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:07:24,913 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py changed, reloading.
+INFO 2025-10-03 07:07:27,034 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:07:32,434 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\models.py changed, reloading.
+INFO 2025-10-03 07:07:34,479 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:11:12,659 basehttp "OPTIONS /api/v1/members/c6d608dc-5b1b-4ef7-8683-547911fdb454/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:11:12,669 basehttp "OPTIONS /api/v1/members/c6d608dc-5b1b-4ef7-8683-547911fdb454/ HTTP/1.1" 200 0
+WARNING 2025-10-03 07:11:13,515 log Unauthorized: /api/v1/members/c6d608dc-5b1b-4ef7-8683-547911fdb454/
+WARNING 2025-10-03 07:11:13,518 basehttp "GET /api/v1/members/c6d608dc-5b1b-4ef7-8683-547911fdb454/ HTTP/1.1" 401 172
+WARNING 2025-10-03 07:11:16,906 log Unauthorized: /api/v1/members/
+WARNING 2025-10-03 07:11:16,908 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 401 172
+INFO 2025-10-03 07:11:46,518 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:11:48,255 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:11:48,259 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:11:48,263 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:11:48,268 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-10-03 07:11:49,181 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-03 07:11:49,181 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-03 07:11:49,197 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-03 07:11:49,199 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-03 07:11:49,206 log Unauthorized: /api/v1/core/health/
+INFO 2025-10-03 07:11:49,209 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+WARNING 2025-10-03 07:11:49,211 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-03 07:11:49,225 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-03 07:11:49,227 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-10-03 07:11:49,589 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-03 07:11:49,603 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-03 07:11:49,606 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+WARNING 2025-10-03 07:11:49,625 log Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-10-03 07:11:49,629 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-10-03 07:11:49,775 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 07:11:49,802 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 07:11:49,952 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 07:11:49,970 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 07:11:50,138 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 07:11:50,156 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 07:11:56,677 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-03 07:11:56,693 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-03 07:12:10,654 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-03 07:12:10,681 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-03 07:12:10,688 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-03 07:12:12,563 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:12,647 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:12:12,647 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:12:12,665 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 07:12:12,698 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 07:12:12,781 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 07:12:12,812 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 07:12:12,812 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:12,815 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 07:12:12,827 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 07:12:12,939 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 07:12:12,998 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 07:12:13,012 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 07:12:13,030 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 07:12:13,103 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 07:12:13,139 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 07:12:13,144 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 07:12:13,261 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:12:13,296 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 07:12:13,367 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 603
+INFO 2025-10-03 07:12:13,438 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 07:12:13,498 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 376
+INFO 2025-10-03 07:12:13,507 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 07:12:13,722 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:13,733 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:12:13,751 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 07:12:13,782 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:13,863 views [MemberViewSet] Statistics SUCCESS - Total: 13, Active: 13, Recent: 13
+INFO 2025-10-03 07:12:13,873 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 07:12:13,919 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 584
+INFO 2025-10-03 07:12:13,953 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 07:12:14,456 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 07:12:14,477 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 07:12:14,526 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 07:12:14,588 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 07:12:14,642 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1593
+INFO 2025-10-03 07:12:14,642 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 07:12:14,719 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 07:12:14,940 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 603
+INFO 2025-10-03 07:12:15,026 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 07:12:15,113 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:12:15,285 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:12:15,396 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:15,656 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 07:12:15,660 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 07:12:15,830 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:12:17,106 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:18:23,258 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:18:23,258 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:18:23,287 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 07:18:23,319 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 07:18:23,319 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 07:18:41,267 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:19:05,446 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:19:05,446 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:19:05,448 views [MemberViewSet] Counts - Total DB: 13 (active: 13), Filtered: 13 (active: 13)
+INFO 2025-10-03 07:19:05,485 views [MemberViewSet] Returned 13 members on page 1 of 1
+INFO 2025-10-03 07:19:05,486 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4342
+INFO 2025-10-03 07:20:30,158 basehttp "OPTIONS /api/v1/members/register/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:20:30,158 views [Public Registration] Request from IP: 127.0.0.1
+INFO 2025-10-03 07:20:30,158 views [Registration] Phone cleaned: 0246315596 -> 0246315596
+INFO 2025-10-03 07:20:30,279 serializers Member validation passed: fftarbosom@gmail.com
+INFO 2025-10-03 07:20:30,279 serializers Creating member: fftarbosom@gmail.com
+INFO 2025-10-03 07:20:30,279 views [Public Registration] SUCCESS: fftarbosom@gmail.com (ID: 51be779f-a0b3-4530-b218-f149fb5ff213)
+INFO 2025-10-03 07:20:30,279 basehttp "POST /api/v1/members/register/ HTTP/1.1" 201 164
+INFO 2025-10-03 07:20:33,368 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-03 07:20:33,558 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:20:33,559 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:20:33,573 views [MemberViewSet] Counts - Total DB: 14 (active: 14), Filtered: 14 (active: 14)
+INFO 2025-10-03 07:20:33,600 views [MemberViewSet] Returned 14 members on page 1 of 1
+INFO 2025-10-03 07:20:33,603 basehttp - Broken pipe from ('127.0.0.1', 51054)
+INFO 2025-10-03 07:20:33,847 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:20:33,848 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:20:33,862 views [MemberViewSet] Counts - Total DB: 14 (active: 14), Filtered: 14 (active: 14)
+INFO 2025-10-03 07:20:33,884 views [MemberViewSet] Returned 14 members on page 1 of 1
+INFO 2025-10-03 07:20:33,885 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4655
+INFO 2025-10-03 07:20:54,309 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 07:21:09,235 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 07:21:11,542 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:22:17,939 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 07:23:51,994 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:23:51,994 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:23:52,011 views [MemberViewSet] Counts - Total DB: 14 (active: 14), Filtered: 14 (active: 14)
+INFO 2025-10-03 07:23:52,050 views [MemberViewSet] Returned 14 members on page 1 of 1
+INFO 2025-10-03 07:23:52,050 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 4655
+INFO 2025-10-03 07:23:59,156 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 117
+INFO 2025-10-03 07:25:24,271 serializers Admin creating member: john.doe@email.com
+INFO 2025-10-03 07:25:24,285 serializers Admin creating member: sarah.wilson@email.com
+INFO 2025-10-03 07:25:24,312 serializers Admin creating member: michael.chen@email.com
+INFO 2025-10-03 07:25:24,323 serializers Admin creating member: emily.rodriguez@email.com
+INFO 2025-10-03 07:25:24,352 serializers Admin creating member: david.thompson@email.com
+INFO 2025-10-03 07:25:24,370 serializers Admin creating member: jennifer.kim@email.com
+INFO 2025-10-03 07:25:24,389 serializers Admin creating member: robert.garcia@email.com
+INFO 2025-10-03 07:25:24,407 serializers Admin creating member: amanda.patel@email.com
+INFO 2025-10-03 07:25:24,423 serializers Admin creating member: james.zhang@email.com
+INFO 2025-10-03 07:25:24,442 serializers Admin creating member: jessica.martinez@email.com
+INFO 2025-10-03 07:25:24,456 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 07:25:25,617 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:25:25,619 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:25:25,653 views [MemberViewSet] Counts - Total DB: 24 (active: 24), Filtered: 24 (active: 24)
+INFO 2025-10-03 07:25:25,705 views [MemberViewSet] Returned 24 members on page 1 of 1
+INFO 2025-10-03 07:25:25,711 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 7825
+INFO 2025-10-03 07:25:58,874 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:26:28,877 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 07:32:00,410 serializers Admin creating member: chris.lee@email.com
+INFO 2025-10-03 07:32:00,432 serializers Admin creating member: olivia.brown@email.com
+INFO 2025-10-03 07:32:00,456 serializers Admin creating member: daniel.wright@email.com
+INFO 2025-10-03 07:32:00,476 serializers Admin creating member: sophia.davis@email.com
+INFO 2025-10-03 07:32:00,498 serializers Admin creating member: matthew.evans@email.com
+INFO 2025-10-03 07:32:00,521 serializers Admin creating member: isabella.clark@email.com
+INFO 2025-10-03 07:32:00,544 serializers Admin creating member: andrew.harris@email.com
+INFO 2025-10-03 07:32:00,569 serializers Admin creating member: mia.allen@email.com
+INFO 2025-10-03 07:32:00,579 serializers Admin creating member: kevin.scott@email.com
+INFO 2025-10-03 07:32:00,616 serializers Admin creating member: grace.young@email.com
+INFO 2025-10-03 07:32:00,632 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 07:32:01,762 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:32:01,763 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:32:01,793 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:32:01,852 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:32:01,852 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 8272
+INFO 2025-10-03 07:32:21,796 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 07:32:37,225 basehttp "OPTIONS /api/v1/members/?page=1&page_size=50&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:32:37,348 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:32:37,349 views [MemberViewSet] Query params: {'page': '1', 'page_size': '50', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:32:37,373 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:32:37,413 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:32:37,417 basehttp "GET /api/v1/members/?page=1&page_size=50&ordering=-registration_date HTTP/1.1" 200 8272
+INFO 2025-10-03 07:32:44,045 basehttp "OPTIONS /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:32:44,148 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:32:44,148 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:32:44,177 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:32:44,215 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:32:44,215 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8272
+INFO 2025-10-03 07:32:47,272 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:32:47,272 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:32:47,272 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:32:47,321 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:32:47,325 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8272
+INFO 2025-10-03 07:33:56,231 basehttp "OPTIONS /api/v1/members/?page=2&page_size=10&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:33:56,332 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:33:56,332 views [MemberViewSet] Query params: {'page': '2', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:33:56,349 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:33:56,368 views [MemberViewSet] Returned 9 members on page 2 of 2
+INFO 2025-10-03 07:33:56,368 basehttp "GET /api/v1/members/?page=2&page_size=10&ordering=-registration_date HTTP/1.1" 200 3197
+INFO 2025-10-03 07:34:02,906 basehttp "OPTIONS /api/v1/members/?page=3&page_size=10&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:34:02,994 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:34:02,994 views [MemberViewSet] Query params: {'page': '3', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:34:03,010 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+ERROR 2025-10-03 07:34:03,010 views [MemberViewSet] List error: Invalid page.
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 71, in validate_number
+    raise EmptyPage(self.error_messages["no_results"])
+django.core.paginator.EmptyPage: That page contains no results
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py", line 193, in list
+    page = self.paginate_queryset(filtered_queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 216, in paginate_queryset
+    raise NotFound(msg)
+rest_framework.exceptions.NotFound: Invalid page.
+ERROR 2025-10-03 07:34:03,113 log Internal Server Error: /api/v1/members/
+ERROR 2025-10-03 07:34:03,114 basehttp "GET /api/v1/members/?page=3&page_size=10&ordering=-registration_date HTTP/1.1" 500 251
+INFO 2025-10-03 07:34:04,678 basehttp "OPTIONS /api/v1/members/?page=4&page_size=10&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:34:04,758 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:34:04,758 views [MemberViewSet] Query params: {'page': '4', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:34:04,774 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+ERROR 2025-10-03 07:34:04,774 views [MemberViewSet] List error: Invalid page.
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 71, in validate_number
+    raise EmptyPage(self.error_messages["no_results"])
+django.core.paginator.EmptyPage: That page contains no results
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py", line 193, in list
+    page = self.paginate_queryset(filtered_queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 216, in paginate_queryset
+    raise NotFound(msg)
+rest_framework.exceptions.NotFound: Invalid page.
+ERROR 2025-10-03 07:34:04,774 log Internal Server Error: /api/v1/members/
+ERROR 2025-10-03 07:34:04,774 basehttp "GET /api/v1/members/?page=4&page_size=10&ordering=-registration_date HTTP/1.1" 500 251
+INFO 2025-10-03 07:34:10,214 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:34:10,214 views [MemberViewSet] Query params: {'page': '3', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:34:10,219 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+ERROR 2025-10-03 07:34:10,219 views [MemberViewSet] List error: Invalid page.
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 211, in paginate_queryset
+    self.page = paginator.page(page_number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 89, in page
+    number = self.validate_number(number)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\paginator.py", line 71, in validate_number
+    raise EmptyPage(self.error_messages["no_results"])
+django.core.paginator.EmptyPage: That page contains no results
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py", line 193, in list
+    page = self.paginate_queryset(filtered_queryset)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\pagination.py", line 216, in paginate_queryset
+    raise NotFound(msg)
+rest_framework.exceptions.NotFound: Invalid page.
+ERROR 2025-10-03 07:34:10,219 log Internal Server Error: /api/v1/members/
+ERROR 2025-10-03 07:34:10,234 basehttp "GET /api/v1/members/?page=3&page_size=10&ordering=-registration_date HTTP/1.1" 500 251
+INFO 2025-10-03 07:34:10,778 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:34:10,779 views [MemberViewSet] Query params: {'page': '2', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:34:10,791 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:34:10,818 views [MemberViewSet] Returned 9 members on page 2 of 2
+INFO 2025-10-03 07:34:10,821 basehttp "GET /api/v1/members/?page=2&page_size=10&ordering=-registration_date HTTP/1.1" 200 3197
+INFO 2025-10-03 07:34:11,435 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:34:11,435 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:34:11,452 views [MemberViewSet] Counts - Total DB: 34 (active: 34), Filtered: 34 (active: 34)
+INFO 2025-10-03 07:34:11,476 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:34:11,476 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8272
+INFO 2025-10-03 07:34:26,257 serializers Admin creating member: lisa.m@test.com
+INFO 2025-10-03 07:34:26,275 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:34:53,287 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 07:34:55,949 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:35:25,380 serializers Admin creating member: lisa.m@test.com
+INFO 2025-10-03 07:35:25,407 serializers Admin creating member: brian.t@test.com
+INFO 2025-10-03 07:35:25,425 serializers Admin creating member: maria.g@test.com
+INFO 2025-10-03 07:35:25,440 serializers Admin creating member: alex.wong@test.com
+INFO 2025-10-03 07:35:25,457 serializers Admin creating member: sarah.c@test.com
+INFO 2025-10-03 07:35:25,459 serializers Admin creating member: kevin.b@test.com
+INFO 2025-10-03 07:35:25,476 serializers Admin creating member: david.lee@test.com
+INFO 2025-10-03 07:35:25,492 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 114
+INFO 2025-10-03 07:35:26,709 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:35:26,710 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:35:26,731 views [MemberViewSet] Counts - Total DB: 41 (active: 41), Filtered: 41 (active: 41)
+INFO 2025-10-03 07:35:26,763 views [MemberViewSet] Returned 25 members on page 1 of 2
+INFO 2025-10-03 07:35:26,763 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8238
+INFO 2025-10-03 07:37:08,277 serializers Admin creating member: william.j@test.com
+INFO 2025-10-03 07:37:08,294 serializers Admin creating member: emma.wilson@test.com
+INFO 2025-10-03 07:37:08,330 serializers Admin creating member: chris.davis@test.com
+INFO 2025-10-03 07:37:08,348 serializers Admin creating member: sophia.a@test.com
+INFO 2025-10-03 07:37:08,366 serializers Admin creating member: ben.m@test.com
+INFO 2025-10-03 07:37:08,379 serializers Admin creating member: ava.thompson@test.com
+INFO 2025-10-03 07:37:08,397 serializers Admin creating member: sam.robinson@test.com
+INFO 2025-10-03 07:37:08,423 serializers Admin creating member: charlotte.w@test.com
+INFO 2025-10-03 07:37:08,443 serializers Admin creating member: james.harris@test.com
+INFO 2025-10-03 07:37:08,463 serializers Admin creating member: mia.clark@test.com
+INFO 2025-10-03 07:37:08,476 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 116
+INFO 2025-10-03 07:37:09,635 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:37:09,636 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:37:09,656 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:37:09,679 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:37:09,679 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:39:09,701 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:39:09,708 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:39:09,735 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:39:09,801 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:39:09,807 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:39:15,272 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:39:15,272 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:39:15,299 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:39:15,341 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:39:15,343 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:39:22,683 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:39:22,683 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:39:22,700 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:39:22,728 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:39:22,730 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:47:31,675 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:47:31,677 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:47:31,703 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:47:31,750 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:47:31,753 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:47:37,540 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:47:37,554 views [MemberViewSet] Query params: {'page': '1', 'page_size': '10', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:47:37,556 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:47:37,605 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:47:37,610 basehttp "GET /api/v1/members/?page=1&page_size=10&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:49:56,636 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-03 07:50:00,417 autoreload Watching for file changes with StatReloader
+INFO 2025-10-03 07:52:15,829 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-03 07:52:16,008 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:52:16,010 basehttp "OPTIONS /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-03 07:52:16,223 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:52:16,224 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:52:16,256 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:52:16,257 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:52:16,272 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:52:16,280 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:52:16,328 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:52:16,338 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:52:16,341 basehttp - Broken pipe from ('127.0.0.1', 56504)
+INFO 2025-10-03 07:52:16,346 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date HTTP/1.1" 200 8220
+INFO 2025-10-03 07:52:29,368 basehttp "OPTIONS /api/v1/members/bulk_import/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:52:31,216 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:54:27,204 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:55:58,647 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-03 07:57:05,935 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 07:57:06,059 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 07:57:14,248 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 604
+INFO 2025-10-03 07:57:18,678 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:57:18,680 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 07:57:18,697 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:57:18,767 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:57:18,785 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 8243
+WARNING 2025-10-03 07:57:45,807 log Bad Request: /api/v1/families/
+WARNING 2025-10-03 07:57:45,809 basehttp "POST /api/v1/families/ HTTP/1.1" 400 48
+INFO 2025-10-03 07:58:00,794 basehttp "POST /api/v1/families/ HTTP/1.1" 201 111
+WARNING 2025-10-03 07:58:00,996 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:58:00,996 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+WARNING 2025-10-03 07:58:01,112 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:58:01,112 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+INFO 2025-10-03 07:58:05,633 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,637 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,651 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,656 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,664 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,665 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,670 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,675 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,677 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,677 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,677 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,677 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,689 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,694 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,696 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,696 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,696 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,696 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,708 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,712 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,712 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,712 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,712 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,712 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,724 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,727 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:58:05,908 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 244
+INFO 2025-10-03 07:58:05,999 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 07:58:06,041 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 07:58:06,098 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 07:58:06,104 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 07:58:06,121 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:06,181 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 07:58:06,182 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:06,186 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 07:58:06,231 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 07:58:06,238 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 07:58:06,250 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 07:58:06,274 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 07:58:06,287 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:58:06,304 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 07:58:06,320 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 07:58:06,360 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 07:58:06,514 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:58:06,538 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 771
+INFO 2025-10-03 07:58:06,583 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 07:58:06,585 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 07:58:06,594 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 07:58:06,678 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 07:58:06,707 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 244
+INFO 2025-10-03 07:58:06,740 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 07:58:06,741 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 07:58:06,790 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 07:58:06,805 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 07:58:06,838 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 07:58:06,848 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 07:58:06,857 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 07:58:06,873 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:58:06,901 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 07:58:06,930 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 07:58:06,936 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 07:58:06,965 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:07,025 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:58:07,028 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 07:58:07,049 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 07:58:07,562 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:07,589 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 07:58:07,590 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 07:58:07,610 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 771
+INFO 2025-10-03 07:58:07,716 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 07:58:07,718 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 244
+INFO 2025-10-03 07:58:07,724 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 07:58:07,757 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 07:58:07,802 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 07:58:07,884 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 07:58:07,892 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 07:58:07,926 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 07:58:07,963 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 07:58:07,996 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 07:58:08,012 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 07:58:08,012 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:58:08,038 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:08,043 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:58:08,051 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 07:58:08,075 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 07:58:08,119 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 07:58:08,129 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 07:58:08,193 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 07:58:08,214 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:58:08,227 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 771
+INFO 2025-10-03 07:58:08,227 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:08,263 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 244
+INFO 2025-10-03 07:58:08,493 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 07:58:08,493 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 07:58:08,563 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 244
+INFO 2025-10-03 07:58:12,306 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 772
+INFO 2025-10-03 07:58:18,197 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:18,198 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:58:18,206 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:18,208 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 07:58:18,215 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:18,218 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:58:18,220 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:58:18,220 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date'}
+INFO 2025-10-03 07:58:18,222 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 07:58:18,237 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:58:18,245 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:58:18,245 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:58:18,245 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:58:18,245 basehttp - Broken pipe from ('127.0.0.1', 58812)
+INFO 2025-10-03 07:58:18,288 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:58:18,291 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:58:18,297 basehttp - Broken pipe from ('127.0.0.1', 57473)
+INFO 2025-10-03 07:58:18,299 basehttp - Broken pipe from ('127.0.0.1', 59549)
+INFO 2025-10-03 07:58:18,304 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:58:18,307 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 8243
+INFO 2025-10-03 07:59:26,458 basehttp "POST /api/v1/families/ HTTP/1.1" 201 108
+WARNING 2025-10-03 07:59:26,640 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:59:26,643 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+WARNING 2025-10-03 07:59:26,753 log Not Found: /api/v1/families/undefined/
+WARNING 2025-10-03 07:59:26,755 basehttp "GET /api/v1/families/undefined/ HTTP/1.1" 404 23
+INFO 2025-10-03 07:59:33,713 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:59:33,764 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:59:33,948 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 07:59:33,958 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:59:34,073 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:59:34,189 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 07:59:37,225 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 937
+INFO 2025-10-03 07:59:44,007 basehttp "OPTIONS /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 200 0
+INFO 2025-10-03 07:59:44,007 basehttp "OPTIONS /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 200 0
+ERROR 2025-10-03 07:59:44,909 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:59:44,926 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 28366
+ERROR 2025-10-03 07:59:45,081 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:59:45,083 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 28366
+INFO 2025-10-03 07:59:49,175 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 937
+INFO 2025-10-03 07:59:52,709 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 07:59:52,710 views [MemberViewSet] Query params: {'page': '1', 'page_size': '25', 'ordering': '-registration_date', 'family_id__isnull': 'true'}
+INFO 2025-10-03 07:59:52,727 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 07:59:52,752 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 07:59:52,753 basehttp "GET /api/v1/members/?page=1&page_size=25&ordering=-registration_date&family_id__isnull=true HTTP/1.1" 200 8243
+ERROR 2025-10-03 07:59:52,779 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:59:52,786 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 28366
+ERROR 2025-10-03 07:59:52,914 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 127, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 112, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-03 07:59:52,919 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 28366
+WARNING 2025-10-03 07:59:55,443 log Bad Request: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+WARNING 2025-10-03 07:59:55,443 basehttp "PUT /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 400 95
+WARNING 2025-10-03 07:59:57,344 log Bad Request: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+WARNING 2025-10-03 07:59:57,344 basehttp "PUT /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 400 95
+WARNING 2025-10-03 07:59:59,030 log Bad Request: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+WARNING 2025-10-03 07:59:59,030 basehttp "PUT /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 400 95
+WARNING 2025-10-03 07:59:59,835 log Bad Request: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+WARNING 2025-10-03 07:59:59,837 basehttp "PUT /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 400 95
+INFO 2025-10-03 08:00:01,243 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 937
+INFO 2025-10-03 08:00:10,380 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:00:10,409 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:00:10,503 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:00:10,592 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:00:10,629 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:00:10,770 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:00:19,069 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:00:19,080 basehttp "GET /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 08:00:19,214 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 08:00:19,214 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 2041
+INFO 2025-10-03 08:00:21,946 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:00:21,946 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-03 08:00:21,962 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:00:21,962 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-03 08:00:21,962 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 08:00:21,995 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 08:00:22,015 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 08:00:22,015 basehttp - Broken pipe from ('127.0.0.1', 60800)
+INFO 2025-10-03 08:00:22,031 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 08:00:22,045 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8221
+INFO 2025-10-03 08:01:04,246 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+INFO 2025-10-03 08:01:04,246 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+INFO 2025-10-03 08:01:04,387 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-03 08:01:04,399 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:04,523 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:09,509 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:09,533 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 08:01:09,776 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:09,783 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 08:01:09,813 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:09,865 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 08:01:09,875 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 08:01:09,925 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 08:01:09,928 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 08:01:09,940 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 08:01:09,979 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 08:01:10,031 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 08:01:10,046 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 08:01:10,047 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:10,122 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 08:01:10,149 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 08:01:10,260 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:10,359 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 936
+INFO 2025-10-03 08:01:10,401 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:01:10,436 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 08:01:10,617 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 08:01:10,630 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 08:01:10,630 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:10,653 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 08:01:10,710 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:10,772 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 08:01:10,779 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 08:01:10,805 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 08:01:10,844 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 08:01:10,878 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 08:01:10,903 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 08:01:10,958 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 08:01:10,971 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 08:01:11,013 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 08:01:11,059 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 08:01:11,072 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 08:01:11,140 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:11,224 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:11,401 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:01:11,409 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 936
+INFO 2025-10-03 08:01:11,493 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:11,546 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 08:01:11,682 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-03 08:01:11,715 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-03 08:01:11,732 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:11,812 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-03 08:01:11,820 views [MemberViewSet] Statistics SUCCESS - Total: 51, Active: 51, Recent: 51
+INFO 2025-10-03 08:01:11,845 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:11,875 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-03 08:01:11,876 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1624
+INFO 2025-10-03 08:01:11,885 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-03 08:01:12,003 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-03 08:01:12,032 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-03 08:01:12,063 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 08:01:12,074 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-03 08:01:12,078 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 08:01:12,148 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-03 08:01:12,179 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:12,181 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-03 08:01:12,317 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:01:12,367 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:12,938 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 936
+INFO 2025-10-03 08:01:13,006 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-03 08:01:13,116 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:13,258 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:13,570 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:01:14,549 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:01:14,810 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 08:01:14,870 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-03 08:01:30,542 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:30,581 basehttp "GET /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-03 08:01:30,771 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-03 08:01:30,771 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 2041
+INFO 2025-10-03 08:01:33,052 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:33,054 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-03 08:01:33,082 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 08:01:33,089 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-03 08:01:33,092 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-03 08:01:33,124 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 08:01:33,124 views [MemberViewSet] Counts - Total DB: 51 (active: 51), Filtered: 51 (active: 51)
+INFO 2025-10-03 08:01:33,124 basehttp - Broken pipe from ('127.0.0.1', 59549)
+INFO 2025-10-03 08:01:33,175 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-03 08:01:33,175 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8221
+INFO 2025-10-03 08:02:25,513 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:02:25,567 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:02:25,681 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:02:25,782 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-03 08:02:25,850 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-03 08:02:25,996 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098

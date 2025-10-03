@@ -197,42 +197,13 @@ Church Administration Team`
         throw new Error(`Missing required fields: ${missingRequired.map(f => f.label).join(', ')}`);
       }
 
-      // Transform data according to field mapping
-      const transformedData = importData.map((row, index) => {
-        const transformed = {};
-        Object.keys(fieldMapping).forEach(csvField => {
-          const targetField = fieldMapping[csvField];
-          if (targetField && row[csvField]) {
-            // Convert field names to API format
-            const apiFieldName = convertToApiFieldName(targetField);
-            transformed[apiFieldName] = row[csvField];
-          }
-        });
-
-        transformed.importedAt = new Date().toISOString();
-        transformed.importSource = 'bulk_csv';
-        transformed.registrationContext = 'admin_import';
-        
-        return { ...transformed, _originalRowIndex: index };
-      });
-
-      // Basic validation - filter out invalid records
-      const validData = transformedData.filter(row => 
-        row.first_name && row.last_name && row.email
-      );
-
-      if (validData.length === 0) {
-        throw new Error('No valid records found in the import data');
-      }
-
-      console.log('[BulkActions] Transformed data for import:', validData.length, 'records');
-
-      // Call the import service
-      const result = await membersService.importMembers(validData, {
-        duplicateStrategy,
-        sendWelcomeEmails: importOptions.sendWelcomeEmails,
-        addTags: importOptions.addTags,
-        skipValidation: importOptions.skipValidation
+      // **CRITICAL FIX**: Send the actual FILE, not transformed data
+      console.log('[BulkActions] Sending original file:', importFile.name);
+      
+      // The backend will handle the transformation using utils.py
+      const result = await membersService.importMembers(importFile, {
+        skip_duplicates: duplicateStrategy === 'skip',
+        admin_override: importOptions.skipValidation
       });
 
       console.log('[BulkActions] Import result:', result);
@@ -243,20 +214,20 @@ Church Administration Team`
 
       setProcessingResult({
         type: 'success',
-        message: `Successfully imported ${result.data?.imported || validData.length} members. ${result.data?.skipped || 0} duplicates skipped.`
+        message: `Successfully imported ${result.data?.imported || 0} members. ${result.data?.failed || 0} failed, ${result.data?.total || 0} total.`
       });
 
       showToast(
-        `Import completed! ${result.data?.imported || validData.length} members imported.`,
+        `Import completed! ${result.data?.imported || 0} members imported.`,
         'success'
       );
 
-      // Notify parent component about successful import
+      // Notify parent component
       if (typeof onImportComplete === 'function') {
         onImportComplete(result.data);
       }
 
-      // Reset import state after a delay
+      // Reset after showing success
       setTimeout(() => {
         setShowImportDialog(false);
         resetImportState();

@@ -267,22 +267,20 @@ class Member(models.Model):
             raise ValidationError({
                 'emergency_contact_phone': 'Emergency contact phone is required when emergency contact name is provided.'
             })
-    
+
     def save(self, *args, **kwargs):
-        """Enhanced save method with validation"""
+        """Override save method with conditional validation"""
         
-        # Auto-set privacy policy date if agreeing for the first time
-        if self.privacy_policy_agreed and not self.privacy_policy_agreed_date:
-            self.privacy_policy_agreed_date = timezone.now()
+        # Skip full_clean if only updating specific fields
+        update_fields = kwargs.get('update_fields')
+        if update_fields and set(update_fields).issubset({'family_id', 'updated_at'}):
+            # Skip validation for simple reference updates
+            super(Member, self).save(*args, **kwargs)
+            return
         
-        # Run full validation
+        # Normal validation for other saves
         self.full_clean()
-        
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        """String representation of the member"""
-        return self.get_display_name()
+        super(Member, self).save(*args, **kwargs)
     
     @property
     def full_name(self):

@@ -187,19 +187,9 @@ const FamilyForm = () => {
         navigate(`/admin/families/${id}`);
       } else {
         const newFamily = await createFamily(formData);
-        console.log('Created family response:', newFamily); // Debug log
-        
-        // Check if we got an ID back
-        if (newFamily && newFamily.id) {
-          navigate(`/admin/families/${newFamily.id}`);
-        } else {
-          // Fallback: go to families list if no ID
-          console.error('No ID in family response:', newFamily);
-          navigate('/admin/families');
-        }
+        navigate(`/admin/families/${newFamily.id}`);
       }
     } catch (error) {
-      console.error('Submit error:', error);
       if (error.response?.data) {
         setErrors(error.response.data);
       }
