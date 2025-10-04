@@ -11,7 +11,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
-from .validators import validate_phone_for_country
+from .validators import validate_and_format_phone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,79 @@ def process_registration_phone(data: dict, default_country: str = 'GH') -> dict:
     return data
 
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_import_template(request):
+    """Download CSV template with proper headers - UPDATED"""
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="member_import_template.csv"'
+        
+        writer = csv.writer(response)
+        
+        # UPDATED: Headers matching your CSV format
+        headers = [
+            'First Name',      # Required
+            'Last Name',       # Required
+            'Email',           # Required
+            'Phone',           # Optional - any format
+            'Date of Birth',   # Optional - YYYY-MM-DD
+            'Gender',          # Optional - male/female/other
+            'Address',         # Optional - NEW
+            'Emergency Contact Name',  # Optional - NEW
+            'Emergency Contact Phone'  # Optional - NEW
+        ]
+        
+        writer.writerow(headers)
+        
+        # Sample row 1
+        writer.writerow([
+            'John',
+            'Doe',
+            'john.doe@example.com',
+            '0241234567',
+            '1990-01-15',
+            'male',
+            '123 Main St, Accra, Ghana',
+            'Jane Doe',
+            '0242345678'
+        ])
+        
+        # Sample row 2 - minimal (only required fields)
+        writer.writerow([
+            'Jane',
+            'Smith',
+            'jane.smith@example.com',
+            '',  # No phone - OK
+            '',  # No DOB - OK
+            '',  # No gender - OK
+            '',  # No address - OK
+            '',  # No emergency contact - OK
+            ''
+        ])
+        
+        # Sample row 3 - international phone format
+        writer.writerow([
+            'Michael',
+            'Johnson',
+            'michael.j@example.com',
+            '+233501234567',  # International format
+            '1985-07-22',
+            'male',
+            'PO Box 123, Kumasi',
+            'Sarah Johnson',
+            '+233502345678'
+        ])
+        
+        logger.info(f"[Template] Downloaded by: {request.user.email}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"[Template] Download error: {str(e)}")
+        return Response({
+            'error': 'Failed to download template'
+        }, status=500)
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def public_member_registration(request):
@@ -69,7 +142,7 @@ def public_member_registration(request):
             emergency_phone = str(data['emergency_contact_phone']).strip()
             if emergency_phone:
                 try:
-                    is_valid, formatted, error = validate_phone_for_country(emergency_phone, 'GH')
+                    is_valid, formatted, error = validate_and_format_phone(emergency_phone, 'GH')
                     if is_valid:
                         data['emergency_contact_phone'] = formatted
                 except Exception as e:
@@ -126,7 +199,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         'gender': ['exact'],
         'is_active': ['exact'],
         'registration_date': ['gte', 'lte', 'exact'],
-        'family': ['exact'],
+        'family': ['exact', 'isnull'],  # ✅ ADDED 'isnull'
     }
     search_fields = [
         'first_name', 'last_name', 'preferred_name', 'email', 'phone', 'notes'
@@ -330,7 +403,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             # Process emergency contact phone if provided
             if 'emergency_contact_phone' in data and data['emergency_contact_phone']:
                 try:
-                    is_valid, formatted, error = validate_phone_for_country(
+                    is_valid, formatted, error = validate_and_format_phone(
                         data['emergency_contact_phone'], 'GH'
                     )
                     if is_valid:
@@ -1100,7 +1173,7 @@ def test_phone_processing(request):
         }, status=400)
     
     try:
-        is_valid, formatted, error_message = validate_phone_for_country(phone_input, country)
+        is_valid, formatted, error_message = validate_and_format_phone(phone_input, country)
         
         return Response({
             'original': phone_input,

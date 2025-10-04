@@ -1,8 +1,9 @@
-First Name,Last Name,Email,Phone,Date of Birth,Gender
-Lisa,Morris,lisa.m@test.com,0249987654,1992-03-10,female
-Brian,Taylor,brian.t@test.com,,1998-11-25,male
-Maria,Gonzalez,maria.g@test.com,0244456789,1989-07-14,
-Alex,Wong,alex.wong@test.com,0248877665,1995-09-03,male
-Sarah,Cooper,sarah.c@test.com,,1987-12-08,female
-Kevin,Brown,kevin.b@test.com,0243344556,1993-04-19,male
-David,Lee,david.lee@test.com,,1996-02-28,male
+first_name,last_name,email,phone,date_of_birth,gender,address,emergency_contact_name,emergency_contact_phone
+John,Doe,john.doe@test.com,0241234567,1990-01-15,male,123 Main St Accra,Jane Doe,0242345678
+Jane,Smith,jane.smith@test.com,,1992-03-20,female,,,
+Michael,Johnson,michael.j@test.com,+233501234567,1985-07-22,male,PO Box 123 Kumasi,Sarah Johnson,+233502345678
+Sarah,Williams,sarah.w@test.com,0243456789,,,456 Oak Ave Tema,,
+David,Brown,david.brown@test.com,+233241234567,1988-11-30,male,,,
+Grace,Adams,grace.adams@test.com,0244567890,1993-05-10,female,789 Circle St Takoradi,James Adams,0245678901
+Kwame,Mensah,kwame.mensah@test.com,+233551234567,1987-12-03,male,321 Hilltop Rd Koforidua,,+233552345678
+Ama,Opare,ama.opare@test.com,0245678901,1995-08-17,female,654 Valley View Cape Coast,Kofi Opare,0246789012

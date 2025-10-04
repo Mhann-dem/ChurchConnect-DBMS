@@ -1,4 +1,4 @@
-// frontend/src/hooks/useMembers.js - ENHANCED VERSION
+// frontend/src/hooks/useMembers.js - FIXED VERSION
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
@@ -7,11 +7,7 @@ export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
   
   // Extract options
-  const search = options.search || '';
-  const page = options.page || 1;
-  const limit = options.limit || 25;
   const autoFetch = options.autoFetch !== false;
-  const initialFilters = options.filters || {};
   
   // State
   const [members, setMembers] = useState([]);
@@ -26,16 +22,6 @@ export const useMembers = (options = {}) => {
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
 
-  // Debounce search
-  const debouncedSearch = useDebounce(search, 300);
-
-  // Extract filter values for dependencies
-  const filterStatus = initialFilters.status || 'all';
-  const filterGender = initialFilters.gender || '';
-  const filterAgeRange = initialFilters.ageRange || '';
-  const filterJoinedAfter = initialFilters.joinedAfter || '';
-  const filterJoinedBefore = initialFilters.joinedBefore || '';
-
   // Cleanup
   useEffect(() => {
     mountedRef.current = true;
@@ -47,7 +33,7 @@ export const useMembers = (options = {}) => {
     };
   }, []);
 
-  // FIXED: Main fetch function that accepts optional filter parameters
+  // FIXED: fetchMembers now properly accepts runtime filters
   const fetchMembers = useCallback(async (customFilters = {}) => {
     if (!isAuthenticated) {
       console.warn('[useMembers] Not authenticated');
@@ -68,20 +54,17 @@ export const useMembers = (options = {}) => {
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       
       const params = new URLSearchParams();
-      if (debouncedSearch) params.set('search', debouncedSearch);
-      params.set('page', page);
-      params.set('page_size', limit);
-      params.set('ordering', '-registration_date');
       
-      // Apply default filters
-      if (filterStatus && filterStatus !== 'all') {
-        params.set('is_active', filterStatus === 'active' ? 'true' : 'false');
-      }
-
-      // Apply custom filters passed as parameter
+      // Default pagination
+      params.set('page', customFilters.page || '1');
+      params.set('page_size', customFilters.page_size || '100');
+      params.set('ordering', customFilters.ordering || '-registration_date');
+      
+      // Apply ALL custom filters
       Object.entries(customFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.set(key, value);
+        if (value !== undefined && value !== null && value !== '' && 
+            !['page', 'page_size', 'ordering'].includes(key)) {
+          params.set(key, String(value));
         }
       });
 
@@ -104,7 +87,6 @@ export const useMembers = (options = {}) => {
 
       console.log('[useMembers] Data received:', {
         total: data.total_members || data.count,
-        active: data.active_count,
         results: data.results?.length
       });
 
@@ -117,7 +99,7 @@ export const useMembers = (options = {}) => {
         count: data.total_members || data.count || 0,
         next: data.next,
         previous: data.previous,
-        total_pages: Math.ceil((data.total_members || data.count || 0) / limit) || 1
+        total_pages: data.total_pages || Math.ceil((data.count || 0) / (customFilters.page_size || 100))
       });
 
     } catch (err) {
@@ -134,7 +116,7 @@ export const useMembers = (options = {}) => {
         setIsLoading(false);
       }
     }
-  }, [isAuthenticated, debouncedSearch, filterStatus, page, limit]);
+  }, [isAuthenticated]);
 
   // Auto-fetch effect
   useEffect(() => {
@@ -145,8 +127,8 @@ export const useMembers = (options = {}) => {
   }, [autoFetch, isAuthenticated, fetchMembers]);
 
   const totalPages = useMemo(() => 
-    Math.ceil(totalMembers / limit) || 1,
-    [totalMembers, limit]
+    Math.ceil(totalMembers / 100) || 1,
+    [totalMembers]
   );
 
   return {
@@ -157,10 +139,10 @@ export const useMembers = (options = {}) => {
     pagination,
     totalPages,
     isLoading,
-    loading: isLoading, // Alias for backwards compatibility
+    loading: isLoading,
     error,
-    fetchMembers,      // Now accepts optional filter parameters
-    refresh: fetchMembers, // Alias for convenience
+    fetchMembers,
+    refresh: fetchMembers,
     hasMembers: members.length > 0
   };
 };

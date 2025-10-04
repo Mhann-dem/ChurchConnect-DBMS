@@ -117,13 +117,14 @@ Church Administration Team`
     { key: 'firstName', label: 'First Name', required: true },
     { key: 'lastName', label: 'Last Name', required: true },
     { key: 'email', label: 'Email', required: true },
-    { key: 'phone', label: 'Phone', required: false },
+    { key: 'phone', label: 'Phone', required: false },  // OPTIONAL
     { key: 'dateOfBirth', label: 'Date of Birth', required: false },
     { key: 'gender', label: 'Gender', required: false },
-    { key: 'address', label: 'Address', required: false },
-    { key: 'preferredContactMethod', label: 'Contact Method', required: false },
-    { key: 'ministryInterests', label: 'Ministry Interests', required: false },
-    { key: 'pledgeAmount', label: 'Pledge Amount', required: false }
+    { key: 'address', label: 'Address', required: false },  // NEW
+    { key: 'emergencyContactName', label: 'Emergency Contact Name', required: false },  // NEW
+    { key: 'emergencyContactPhone', label: 'Emergency Contact Phone', required: false },  // NEW
+    { key: 'preferredName', label: 'Preferred Name', required: false },
+    { key: 'notes', label: 'Notes', required: false }
   ];
 
   // Clear selection when no members are selected
@@ -187,47 +188,58 @@ Church Administration Team`
     setIsProcessing(true);
     
     try {
-      // Validate required field mappings
+      // === VALIDATION ONLY - NO TRANSFORMATION ===
       const requiredFields = expectedFields.filter(f => f.required);
       const missingRequired = requiredFields.filter(field => 
         !Object.values(fieldMapping).includes(field.key)
       );
       
       if (missingRequired.length > 0) {
-        throw new Error(`Missing required fields: ${missingRequired.map(f => f.label).join(', ')}`);
+        throw new Error(
+          `Missing required field mappings: ${missingRequired.map(f => f.label).join(', ')}`
+        );
       }
 
-      // **CRITICAL FIX**: Send the actual FILE, not transformed data
-      console.log('[BulkActions] Sending original file:', importFile.name);
+      // Check if we have data
+      if (!importFile) {
+        throw new Error('No file selected');
+      }
+
+      console.log('[BulkActions] Sending original file to backend:', importFile.name);
+      console.log('[BulkActions] File size:', importFile.size, 'bytes');
       
-      // The backend will handle the transformation using utils.py
+      // === CRITICAL: Send the ORIGINAL file ===
+      // Backend will handle ALL parsing, mapping, and transformation
       const result = await membersService.importMembers(importFile, {
         skip_duplicates: duplicateStrategy === 'skip',
         admin_override: importOptions.skipValidation
       });
 
-      console.log('[BulkActions] Import result:', result);
+      console.log('[BulkActions] Backend response:', result);
 
       if (!result.success) {
         throw new Error(result.error || 'Import failed');
       }
 
+      // Show success
       setProcessingResult({
         type: 'success',
-        message: `Successfully imported ${result.data?.imported || 0} members. ${result.data?.failed || 0} failed, ${result.data?.total || 0} total.`
+        message: `Successfully imported ${result.data?.imported || 0} members! ` +
+                `${result.data?.failed > 0 ? `${result.data.failed} failed. ` : ''}` +
+                `${result.data?.skipped || 0} duplicates skipped.`
       });
 
       showToast(
-        `Import completed! ${result.data?.imported || 0} members imported.`,
+        `Import completed! ${result.data?.imported || 0} members added.`,
         'success'
       );
 
-      // Notify parent component
+      // Notify parent
       if (typeof onImportComplete === 'function') {
         onImportComplete(result.data);
       }
 
-      // Reset after showing success
+      // Close after showing success
       setTimeout(() => {
         setShowImportDialog(false);
         resetImportState();
@@ -235,8 +247,19 @@ Church Administration Team`
 
     } catch (error) {
       console.error('[BulkActions] Import error:', error);
-      setImportErrors([error.message || 'Import failed']);
-      showToast(error.message || 'Import failed', 'error');
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Import failed';
+      
+      setImportErrors([errorMessage]);
+      setProcessingResult({
+        type: 'error',
+        message: errorMessage
+      });
+      
+      showToast(errorMessage, 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -404,9 +427,43 @@ Church Administration Team`
   };
 
   const downloadTemplate = () => {
-    const headers = expectedFields.map(f => f.label).join(',');
-    const sampleRow = 'John,Doe,john@example.com,555-0123,1990-01-15,Male,123 Main St,email,Choir;Youth,50';
-    const template = headers + '\n' + sampleRow;
+    const headers = [
+      'First Name',
+      'Last Name',
+      'Email',
+      'Phone',
+      'Date of Birth',
+      'Gender',
+      'Address',
+      'Emergency Contact Name',
+      'Emergency Contact Phone'
+    ].join(',');
+    
+    const sampleRow1 = [
+      'John',
+      'Doe',
+      'john@example.com',
+      '0241234567',
+      '1990-01-15',
+      'male',
+      '123 Main St, Accra',
+      'Jane Doe',
+      '0242345678'
+    ].join(',');
+    
+    const sampleRow2 = [
+      'Jane',
+      'Smith',
+      'jane@example.com',
+      '',  // No phone - OK
+      '1992-03-20',
+      'female',
+      '',  // No address - OK
+      '',  // No emergency contact - OK
+      ''
+    ].join(',');
+    
+    const template = [headers, sampleRow1, sampleRow2].join('\n');
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

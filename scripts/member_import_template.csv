@@ -1,15 +1,9 @@
-First Name,Last Name,Email,Phone,Date of Birth,Gender
-Ryan,Carter,ryan.carter@test.com,0246543210,1993-03-15,male
-Lauren,Scott,lauren.scott@test.com,,1990-08-22,female
-Jason,Bennett,jason.b@test.com,0247654321,1988-12-10,
-Michelle,Reyes,michelle.reyes@test.com,0248765432,1995-07-04,female
-Kevin,Morris,kevin.m@test.com,,1991-11-28,male
-Eric,Parker,eric.parker@test.com,0240987654,1989-09-03,male
-Rachel,Edwards,rachel.e@test.com,0241098765,1996-05-19,
-Justin,Collins,justin.c@test.com,,1992-10-11,male
-Amanda,Foster,amanda.foster@test.com,0242109876,1997-01-25,female
-Brandon,Sanders,brandon.s@test.com,0243210987,1987-04-08,male
-Nicole,Patterson,nicole.p@test.com,,1993-06-30,female
-Steven,Hughes,steven.h@test.com,0244321098,1990-03-12,
-Rebecca,Butler,rebecca.butler@test.com,0245432109,1995-12-07,female
-Patrick,Russell,patrick.r@test.com,0246543219,1991-08-14,male
+first_name,last_name,email,phone,date_of_birth,gender,address,emergency_contact_name,emergency_contact_phone
+James,Wilson,james.wilson@test.com,0247654321,1991-04-12,male,15 Independence Ave Accra,Emily Wilson,0248765432
+Patricia,Owusu,patricia.owusu@test.com,+233541112233,1989-09-28,female,42 Ring Road Central Kumasi,,+233542223344
+Daniel,Akoto,daniel.akoto@test.com,0249876543,1994-11-05,male,Plot 27 Industrial Area Tema,Elizabeth Akoto,0248765123
+Linda,Quartey,linda.quartey@test.com,,1993-02-18,female,88 Beach Road Takoradi,,,
+Robert,Mensah,robert.mensah@test.com,+233271234567,1986-07-22,male,,Sarah Mensah,+233272345678
+Elizabeth,Darko,elizabeth.darko@test.com,0243344556,1990-12-15,female,23 University Legon Accra,Michael Darko,0244455667
+Thomas,Appiah,thomas.appiah@test.com,+233561234567,1988-03-30,male,56 Adabraka Sahara Accra,,+233562345678
+Susan,Boateng,susan.boateng@test.com,0245566778,1992-06-08,female,12 Spintex Road Accra,Richard Boateng,0246677889

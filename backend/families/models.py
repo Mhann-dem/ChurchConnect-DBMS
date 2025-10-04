@@ -238,7 +238,7 @@ class FamilyRelationship(models.Model):
             
             if is_new:
                 logger.info(
-                    f"Member {self.member.get_full_name()} ({self.member.id}) "
+                    f"Member {self.member.full_name} ({self.member.id}) "
                     f"added to family '{self.family.family_name}' as {self.get_relationship_type_display()}"
                 )
 
@@ -249,7 +249,7 @@ class FamilyRelationship(models.Model):
             # Use QuerySet.update() to bypass validation
             Member.objects.filter(pk=self.member.pk).update(family_id=None)
             logger.info(
-                f"Member {self.member.get_full_name()} ({self.member.id}) "
+                f"Member {self.member.full_name} ({self.member.id}) "
                 f"removed from family '{self.family.family_name}'"
             )
         

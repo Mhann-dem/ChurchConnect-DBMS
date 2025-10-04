@@ -1,5 +1,278 @@
 // frontend/src/utils/importUtils.js
 
+// frontend/src/utils/importUtils.js - SIMPLIFIED VERSION
+// Let the backend handle all transformations
+
+/**
+ * Parse CSV text into array of objects
+ * SIMPLIFIED: Just parse, don't transform
+ */
+export const parseCSV = (csvText) => {
+  if (!csvText || typeof csvText !== 'string') {
+    throw new Error('Invalid CSV data provided');
+  }
+
+  const lines = csvText.split('\n').filter(line => line.trim());
+  
+  if (lines.length < 2) {
+    throw new Error('CSV must have at least a header row and one data row');
+  }
+
+  // Parse headers
+  const headers = parseCSVLine(lines[0]);
+  
+  if (!headers || headers.length === 0) {
+    throw new Error('No headers found in CSV file');
+  }
+
+  // Parse data rows
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    
+    if (values.length === 0) continue;
+    
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+    
+    data.push(row);
+  }
+
+  console.log('[ImportUtils] Parsed CSV:', {
+    headers,
+    rowCount: data.length,
+    sampleRow: data[0]
+  });
+
+  return data;
+};
+
+/**
+ * Parse a single CSV line handling quoted fields
+ */
+const parseCSVLine = (line) => {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  let i = 0;
+
+  while (i < line.length) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 2;
+      } else {
+        inQuotes = !inQuotes;
+        i++;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+      i++;
+    } else {
+      current += char;
+      i++;
+    }
+  }
+  
+  result.push(current.trim());
+  
+  return result.map(field => {
+    if (field.startsWith('"') && field.endsWith('"')) {
+      return field.slice(1, -1);
+    }
+    return field;
+  });
+};
+
+/**
+ * Validate import data - BASIC validation only
+ * Backend will do the real validation
+ */
+export const validateImportData = (data, fieldMapping) => {
+  const errors = [];
+  
+  if (!Array.isArray(data) || data.length === 0) {
+    errors.push('No data to validate');
+    return errors;
+  }
+
+  // Check required field mappings only
+  const requiredFields = ['firstName', 'lastName', 'email'];
+  const mappedFields = Object.values(fieldMapping);
+  
+  requiredFields.forEach(field => {
+    if (!mappedFields.includes(field)) {
+      errors.push(`Missing required field: ${field}`);
+    }
+  });
+
+  // Basic email format check
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'email');
+  
+  if (emailField) {
+    let invalidEmails = 0;
+    data.forEach((row, index) => {
+      const email = row[emailField]?.trim();
+      if (email && !emailRegex.test(email)) {
+        invalidEmails++;
+        if (invalidEmails <= 3) {
+          errors.push(`Row ${index + 2}: Invalid email format: ${email}`);
+        }
+      }
+    });
+    if (invalidEmails > 3) {
+      errors.push(`...and ${invalidEmails - 3} more invalid emails`);
+    }
+  }
+
+  return errors;
+};
+
+/**
+ * Auto-detect field mappings - UPDATED for your column names
+ */
+export const autoDetectFieldMapping = (headers, expectedFields) => {
+  const mapping = {};
+  
+  // Your expected field definitions
+  const fieldVariations = {
+    'firstName': ['first name', 'firstname', 'first_name', 'first', 'given name'],
+    'lastName': ['last name', 'lastname', 'last_name', 'last', 'surname'],
+    'email': ['email', 'email address', 'e-mail', 'mail'],
+    'phone': ['phone', 'phone number', 'mobile', 'cell', 'telephone'],
+    'dateOfBirth': ['date of birth', 'dob', 'birth date', 'birthdate', 'birthday'],
+    'gender': ['gender', 'sex'],
+    'address': ['address', 'home address', 'location', 'street address'],
+    'emergencyContactName': ['emergency contact name', 'emergency contact', 'emergency name'],
+    'emergencyContactPhone': ['emergency contact phone', 'emergency phone', 'emergency number'],
+    'preferredName': ['preferred name', 'nickname', 'goes by'],
+    'alternatePhone': ['alternate phone', 'alt phone', 'secondary phone', 'other phone'],
+    'notes': ['notes', 'comments', 'remarks']
+  };
+  
+  headers.forEach(header => {
+    const normalized = header.toLowerCase().trim();
+    
+    // Try to match against field variations
+    for (const [fieldKey, variations] of Object.entries(fieldVariations)) {
+      if (variations.some(v => normalized === v || normalized.replace(/[^a-z]/g, '') === v.replace(/[^a-z]/g, ''))) {
+        mapping[header] = fieldKey;
+        break;
+      }
+    }
+  });
+  
+  console.log('[ImportUtils] Auto-detected mapping:', mapping);
+  return mapping;
+};
+
+/**
+ * Validate CSV file
+ */
+export const validateCSVFile = (file) => {
+  if (!file) {
+    return { success: false, error: 'No file provided' };
+  }
+  
+  if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
+    return { success: false, error: 'File must be in CSV format' };
+  }
+  
+  if (file.size === 0) {
+    return { success: false, error: 'File is empty' };
+  }
+  
+  if (file.size > 10 * 1024 * 1024) {
+    return { success: false, error: 'File size must be less than 10MB' };
+  }
+  
+  return { success: true };
+};
+
+/**
+ * Generate import preview
+ */
+export const generateImportPreview = (data, fieldMapping, previewRows = 5) => {
+  const preview = data.slice(0, previewRows);
+  
+  return preview.map((row, index) => {
+    const previewRow = { _index: index };
+    
+    Object.keys(fieldMapping).forEach(csvField => {
+      const targetField = fieldMapping[csvField];
+      if (targetField) {
+        previewRow[targetField] = row[csvField] || '';
+      }
+    });
+    
+    return previewRow;
+  });
+};
+
+/**
+ * Export members to CSV
+ */
+export const exportMembersToCSV = (members, fields = null) => {
+  if (!members || members.length === 0) {
+    return '';
+  }
+
+  const defaultFields = [
+    { key: 'first_name', label: 'First Name' },
+    { key: 'last_name', label: 'Last Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'date_of_birth', label: 'Date of Birth' },
+    { key: 'gender', label: 'Gender' },
+    { key: 'address', label: 'Address' },
+    { key: 'emergency_contact_name', label: 'Emergency Contact Name' },
+    { key: 'emergency_contact_phone', label: 'Emergency Contact Phone' }
+  ];
+
+  const exportFields = fields || defaultFields;
+  const headers = exportFields.map(field => field.label);
+  
+  const csvRows = [
+    headers.join(','),
+    ...members.map(member => 
+      exportFields.map(field => {
+        const value = member[field.key] || '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      }).join(',')
+    )
+  ];
+
+  return csvRows.join('\n');
+};
+
+/**
+ * Download CSV file
+ */
+export const downloadCSV = (csvContent, filename = 'export.csv') => {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
 
 /**
  * Clean and format phone number
@@ -52,252 +325,6 @@ const parsePledgeAmount = (amountString) => {
   return isNaN(amount) ? null : amount;
 };
 
-/**
- * Export members data to CSV
- * @param {Array} members - Array of member objects to export
- * @param {Array} fields - Fields to include in export
- * @returns {string} - CSV string
- */
-export const exportMembersToCSV = (members, fields = null) => {
-  if (!members || members.length === 0) {
-    return '';
-  }
-
-  // Default fields to export
-  const defaultFields = [
-    { key: 'firstName', label: 'First Name' },
-    { key: 'lastName', label: 'Last Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'dateOfBirth', label: 'Date of Birth' },
-    { key: 'gender', label: 'Gender' },
-    { key: 'address', label: 'Address' },
-    { key: 'preferredContactMethod', label: 'Contact Method' },
-    { key: 'registrationDate', label: 'Registration Date' },
-    { key: 'isActive', label: 'Active Status' }
-  ];
-
-  const exportFields = fields || defaultFields;
-  const headers = exportFields.map(field => field.label);
-  
-  const csvRows = [
-    headers.join(','),
-    ...members.map(member => 
-      exportFields.map(field => {
-        const value = member[field.key] || '';
-        // Escape commas and quotes
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      }).join(',')
-    )
-  ];
-
-  return csvRows.join('\n');
-};
-
-/**
- * Download CSV file
- * @param {string} csvContent - CSV content to download
- * @param {string} filename - Filename for download
- */
-export const downloadCSV = (csvContent, filename = 'export.csv') => {
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-};
-
-// utils/importUtils.js - CSV parsing and import validation utilities
-
-/**
- * Parse CSV text into array of objects
- * @param {string} csvText - Raw CSV text
- * @returns {Array<Object>} Array of objects with headers as keys
- */
-export const parseCSV = (csvText) => {
-  if (!csvText || typeof csvText !== 'string') {
-    throw new Error('Invalid CSV data provided');
-  }
-
-  const lines = csvText.split('\n').filter(line => line.trim());
-  
-  if (lines.length < 2) {
-    throw new Error('CSV must have at least a header row and one data row');
-  }
-
-  // Parse headers
-  const headers = parseCSVLine(lines[0]);
-  
-  if (!headers || headers.length === 0) {
-    throw new Error('No headers found in CSV file');
-  }
-
-  // Parse data rows
-  const data = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
-    
-    if (values.length === 0) continue; // Skip empty rows
-    
-    const row = {};
-    headers.forEach((header, index) => {
-      row[header] = values[index] || '';
-    });
-    
-    data.push(row);
-  }
-
-  console.log('[ImportUtils] Parsed CSV:', {
-    headers,
-    rowCount: data.length,
-    sampleRow: data[0]
-  });
-
-  return data;
-};
-
-/**
- * Parse a single CSV line handling quoted fields and commas
- * @param {string} line - Single CSV line
- * @returns {Array<string>} Array of field values
- */
-const parseCSVLine = (line) => {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  let i = 0;
-
-  while (i < line.length) {
-    const char = line[i];
-    
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        // Escaped quote
-        current += '"';
-        i += 2;
-      } else {
-        // Toggle quote state
-        inQuotes = !inQuotes;
-        i++;
-      }
-    } else if (char === ',' && !inQuotes) {
-      // Field separator
-      result.push(current.trim());
-      current = '';
-      i++;
-    } else {
-      current += char;
-      i++;
-    }
-  }
-  
-  // Add the last field
-  result.push(current.trim());
-  
-  return result.map(field => {
-    // Remove surrounding quotes if present
-    if (field.startsWith('"') && field.endsWith('"')) {
-      return field.slice(1, -1);
-    }
-    return field;
-  });
-};
-
-/**
- * Validate import data against field mapping
- * @param {Array<Object>} data - Parsed CSV data
- * @param {Object} fieldMapping - Mapping of CSV headers to expected fields
- * @returns {Array<string>} Array of validation error messages
- */
-export const validateImportData = (data, fieldMapping) => {
-  const errors = [];
-  
-  if (!Array.isArray(data) || data.length === 0) {
-    errors.push('No data to validate');
-    return errors;
-  }
-
-  // Check required field mappings
-  const requiredFields = ['firstName', 'lastName', 'email'];
-  const mappedFields = Object.values(fieldMapping);
-  
-  requiredFields.forEach(field => {
-    if (!mappedFields.includes(field)) {
-      errors.push(`Missing required field mapping: ${field}`);
-    }
-  });
-
-  // Validate data quality
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{9,}$/;
-  
-  data.forEach((row, index) => {
-    const rowNumber = index + 2; // +2 because index is 0-based and we skip header
-    
-    // Find the actual CSV field names for our required fields
-    const firstNameField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'firstName');
-    const lastNameField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'lastName');
-    const emailField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'email');
-    const phoneField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'phone');
-    const dobField = Object.keys(fieldMapping).find(key => fieldMapping[key] === 'dateOfBirth');
-    
-    // Validate required fields
-    if (firstNameField && !row[firstNameField]?.trim()) {
-      errors.push(`Row ${rowNumber}: First name is required`);
-    }
-    
-    if (lastNameField && !row[lastNameField]?.trim()) {
-      errors.push(`Row ${rowNumber}: Last name is required`);
-    }
-    
-    if (emailField) {
-      const email = row[emailField]?.trim();
-      if (!email) {
-        errors.push(`Row ${rowNumber}: Email is required`);
-      } else if (!emailRegex.test(email)) {
-        errors.push(`Row ${rowNumber}: Invalid email format`);
-      }
-    }
-    
-    // Validate optional fields
-    if (phoneField && row[phoneField]) {
-      const phone = row[phoneField]?.trim();
-      if (phone && !phoneRegex.test(phone)) {
-        errors.push(`Row ${rowNumber}: Invalid phone number format`);
-      }
-    }
-    
-    if (dobField && row[dobField]) {
-      const dob = row[dobField]?.trim();
-      if (dob && !isValidDate(dob)) {
-        errors.push(`Row ${rowNumber}: Invalid date of birth format (use YYYY-MM-DD)`);
-      }
-    }
-  });
-
-  // Check for duplicate emails
-  if (emailField) {
-    const emails = data.map(row => row[emailField]?.trim().toLowerCase()).filter(Boolean);
-    const duplicateEmails = emails.filter((email, index) => emails.indexOf(email) !== index);
-    
-    if (duplicateEmails.length > 0) {
-      errors.push(`Duplicate emails found in import data: ${[...new Set(duplicateEmails)].join(', ')}`);
-    }
-  }
-
-  return errors;
-};
 
 /**
  * Validate date string format
@@ -434,77 +461,6 @@ export const generateCSVTemplate = (fields) => {
 };
 
 /**
- * Validate CSV file before parsing
- * @param {File} file - File object to validate
- * @returns {Object} Validation result with success flag and error message
- */
-export const validateCSVFile = (file) => {
-  if (!file) {
-    return { success: false, error: 'No file provided' };
-  }
-  
-  if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
-    return { success: false, error: 'File must be in CSV format' };
-  }
-  
-  if (file.size === 0) {
-    return { success: false, error: 'File is empty' };
-  }
-  
-  if (file.size > 10 * 1024 * 1024) { // 10MB limit
-    return { success: false, error: 'File size must be less than 10MB' };
-  }
-  
-  return { success: true };
-};
-
-/**
- * Auto-detect field mappings based on CSV headers
- * @param {Array<string>} headers - CSV headers
- * @param {Array<Object>} expectedFields - Expected field definitions
- * @returns {Object} Auto-detected field mappings
- */
-export const autoDetectFieldMapping = (headers, expectedFields) => {
-  const mapping = {};
-  
-  headers.forEach(header => {
-    const normalized = header.toLowerCase().replace(/[^a-z]/g, '');
-    
-    // Try exact matches first
-    const exactMatch = expectedFields.find(field => 
-      field.label.toLowerCase().replace(/[^a-z]/g, '') === normalized
-    );
-    
-    if (exactMatch) {
-      mapping[header] = exactMatch.key;
-      return;
-    }
-    
-    // Try partial matches
-    const partialMatch = expectedFields.find(field => {
-      const fieldNormalized = field.label.toLowerCase().replace(/[^a-z]/g, '');
-      return fieldNormalized.includes(normalized) || normalized.includes(fieldNormalized);
-    });
-    
-    if (partialMatch) {
-      mapping[header] = partialMatch.key;
-      return;
-    }
-    
-    // Try key matches
-    const keyMatch = expectedFields.find(field => 
-      field.key.toLowerCase() === normalized
-    );
-    
-    if (keyMatch) {
-      mapping[header] = keyMatch.key;
-    }
-  });
-  
-  return mapping;
-};
-
-/**
  * Format import statistics for display
  * @param {Object} stats - Import statistics from API
  * @returns {Object} Formatted statistics
@@ -519,30 +475,6 @@ export const formatImportStats = (stats) => {
     duplicates: stats.duplicates || 0,
     errors: stats.errors || []
   };
-};
-
-/**
- * Generate import preview data
- * @param {Array<Object>} data - Raw import data
- * @param {Object} fieldMapping - Field mappings
- * @param {number} previewRows - Number of rows to preview (default: 5)
- * @returns {Array<Object>} Preview data
- */
-export const generateImportPreview = (data, fieldMapping, previewRows = 5) => {
-  const preview = data.slice(0, previewRows);
-  
-  return preview.map((row, index) => {
-    const previewRow = { _index: index };
-    
-    Object.keys(fieldMapping).forEach(csvField => {
-      const targetField = fieldMapping[csvField];
-      if (targetField) {
-        previewRow[targetField] = row[csvField] || '';
-      }
-    });
-    
-    return previewRow;
-  });
 };
 
 /**

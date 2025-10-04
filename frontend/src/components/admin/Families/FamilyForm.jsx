@@ -54,12 +54,16 @@ const FamilyForm = () => {
   ];
 
   useEffect(() => {
-    if (isEditing && id) {
-      fetchFamily(id);
-      setCurrentStep(4);
-    }
-    fetchMembers({ family_id__isnull: true });
-  }, [isEditing, id, fetchFamily, fetchMembers]);
+      if (isEditing && id) {
+        fetchFamily(id);
+        setCurrentStep(4);
+      }
+      // Fetch ALL active members since they can be in multiple families
+      fetchMembers({ 
+        is_active: 'true',
+        page_size: 200 
+      });
+    }, [isEditing, id, fetchFamily, fetchMembers]);
 
   useEffect(() => {
     if (family && isEditing) {
@@ -75,13 +79,14 @@ const FamilyForm = () => {
   }, [family, isEditing]);
 
   useEffect(() => {
-    if (allMembers) {
-      const available = allMembers.filter(member => 
-        !member.family_id && !familyMembers.some(fm => fm.member?.id === member.id)
-      );
-      setAvailableMembers(available);
-    }
-  }, [allMembers, familyMembers]);
+      if (allMembers) {
+        // Filter out members already in THIS family only
+        const available = allMembers.filter(member => 
+          !familyMembers.some(fm => fm.member?.id === member.id)
+        );
+        setAvailableMembers(available);
+      }
+    }, [allMembers, familyMembers]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
