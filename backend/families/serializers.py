@@ -159,7 +159,7 @@ class FamilySerializer(serializers.ModelSerializer):
         if head:
             return {
                 'id': head.id,
-                'name': head.full_name,  # ✅ FIXED - removed ()
+                'name': head.full_name,  # REMOVE the ()
                 'email': head.email,
                 'phone': head.phone
             }
@@ -171,7 +171,7 @@ class FamilySerializer(serializers.ModelSerializer):
         if spouse:
             return {
                 'id': spouse.id,
-                'name': spouse.full_name,  # ✅ FIXED - removed ()
+                'name': spouse.full_name,  # REMOVE the ()
                 'email': spouse.email,
                 'phone': spouse.phone
             }

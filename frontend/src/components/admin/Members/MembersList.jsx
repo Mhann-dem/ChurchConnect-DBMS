@@ -164,26 +164,34 @@ const MembersList = () => {
 
   // Use the REAL useMembers hook
   const {
-    members,
-    isLoading: membersLoading,
-    error,
-    totalPages,
-    totalMembers,
-    createMember,
-    updateMember,
-    deleteMember,
-    bulkUpdateMembers,
-    bulkDeleteMembers,
-    refresh,
-    clearError
-  } = useMembers({
-    page: currentPage,
-    search: searchQuery,
-    filters,
-    autoFetch: true, // Enable auto-fetch
-    enableCache: true,
-    enableRealTime: false // Disable real-time for debugging
-  });
+      members,
+      isLoading: membersLoading,
+      error,
+      pagination,
+      totalMembers,
+      activeMembers,
+      inactiveMembers,
+      fetchMembers,
+      refresh
+    } = useMembers({
+      autoFetch: true
+    });
+
+    // Calculate totalPages from pagination
+    const totalPages = pagination?.total_pages || 1;
+
+    // Fetch with filters whenever they change
+    useEffect(() => {
+      if (currentPage || searchQuery || filters) {
+        fetchMembers({
+          page: currentPage,
+          page_size: 25,
+          search: searchQuery,
+          is_active: filters.status === 'active' ? 'true' : filters.status === 'inactive' ? 'false' : undefined,
+          gender: filters.gender || undefined
+        });
+      }
+    }, [currentPage, searchQuery, filters, fetchMembers]);
 
   // Debug logging
   useEffect(() => {

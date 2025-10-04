@@ -149,10 +149,13 @@ class Event(models.Model):
     )
     image_url = models.URLField(
         blank=True, 
+        null=True,  # ADD THIS
         help_text="URL to event poster or promotional image"
     )
+
     external_registration_url = models.URLField(
         blank=True, 
+        null=True,  # ADD THIS
         help_text="External registration link (if using third-party system)"
     )
     

@@ -122,9 +122,10 @@ class BulkImportProcessor:
             successful_count = 0
             skipped_count = 0
             
-            for index, row in df.iterrows():
+            for idx, (index, row) in enumerate(df.iterrows()):
                 try:
-                    row_number = index + 2  # Excel row number
+                    # Force integer conversion - handle string indices
+                    row_number = int(idx) + 2  # Excel row number (skip header)
                     member_data = self._prepare_member_data(row, row_number)
                     
                     # Check duplicates
@@ -344,21 +345,36 @@ class BulkImportProcessor:
             raise ValidationError('; '.join(error_messages))
     
     def _log_error(self, row_number: int, error_message: str, row_data: Dict[str, Any], error_type: str = 'validation'):
-        """Log error"""
+        """Log error with proper serialization"""
+        # Clean row_data for JSON serialization
+        clean_row_data = {}
+        for key, value in row_data.items():
+            if pd.isna(value):
+                clean_row_data[key] = None
+            elif isinstance(value, (uuid.UUID, datetime, date)):
+                clean_row_data[key] = str(value)
+            elif isinstance(value, (int, float, bool, str)):
+                clean_row_data[key] = value
+            else:
+                clean_row_data[key] = str(value)
+        
         error_entry = {
             'row_number': row_number,
             'error_message': error_message,
             'error_type': error_type,
-            'row_data': {k: str(v) for k, v in row_data.items()}
+            'row_data': clean_row_data
         }
         self.errors.append(error_entry)
         
-        BulkImportError.objects.create(
-            import_log=self.import_log,
-            row_number=row_number,
-            error_message=error_message,
-            row_data=row_data
-        )
+        try:
+            BulkImportError.objects.create(
+                import_log=self.import_log,
+                row_number=row_number,
+                error_message=error_message[:500],  # Truncate long messages
+                row_data=clean_row_data
+            )
+        except Exception as e:
+            logger.error(f"Failed to log import error: {e}")
     
     def _generate_error_summary(self) -> List[Dict[str, Any]]:
         """Generate error summary"""

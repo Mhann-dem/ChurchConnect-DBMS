@@ -51,6 +51,62 @@ def process_registration_phone(data: dict, default_country: str = 'GH') -> dict:
     return data
 
 
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def bulk_import_members(request):
+    """Bulk import with detailed error reporting"""
+    try:
+        from .utils import BulkImportProcessor
+        
+        if 'file' not in request.FILES:
+            return Response({
+                'success': False,
+                'error': 'No file uploaded'
+            }, status=400)
+        
+        processor = BulkImportProcessor(request.user)
+        import_log = processor.process_file(
+            request.FILES['file'],
+            skip_duplicates=request.data.get('skip_duplicates', True)
+        )
+        
+        # Get detailed errors
+        errors = []
+        if import_log.failed_rows > 0:
+            import_errors = BulkImportError.objects.filter(
+                import_log=import_log
+            ).order_by('row_number')[:20]  # Limit to 20 for performance
+            
+            errors = [
+                {
+                    'row_number': err.row_number,
+                    'error_message': err.error_message,
+                    'row_data': err.row_data
+                }
+                for err in import_errors
+            ]
+        
+        return Response({
+            'success': import_log.status in ['completed', 'completed_with_errors'],
+            'data': {
+                'imported': import_log.successful_rows,
+                'failed': import_log.failed_rows,
+                'skipped': import_log.skipped_rows,
+                'total': import_log.total_rows,
+                'errors': errors
+            },
+            'import_log_id': str(import_log.id),
+            'message': f'Processed {import_log.total_rows} rows: {import_log.successful_rows} imported, {import_log.failed_rows} failed, {import_log.skipped_rows} skipped'
+        })
+        
+    except Exception as e:
+        logger.error(f"[BulkImport] Critical error: {str(e)}", exc_info=True)
+        return Response({
+            'success': False,
+            'error': f'Import failed: {str(e)}'
+        }, status=500)
+
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_import_template(request):

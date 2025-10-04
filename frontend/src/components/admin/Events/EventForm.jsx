@@ -1,16 +1,17 @@
-// frontend/src/components/admin/Events/EventForm.jsx - FIXED: Input focus & scrolling issues
+// frontend/src/components/admin/Events/EventForm.jsx - COMPLETE with error handling
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  X, Calendar, MapPin, Users, DollarSign, Tag, Clock, 
-  Save, AlertCircle 
+  X, Calendar, MapPin, Users, Tag, 
+  Save, AlertCircle, CheckCircle, XCircle
 } from 'lucide-react';
 
 const EventForm = ({ event, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submissionError, setSubmissionError] = useState(null);
   const modalRef = useRef(null);
   
-  // FIXED: Single state object - prevents re-render issues
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,7 +38,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     external_registration_url: ''
   });
 
-  // Format date for datetime-local input
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     try {
@@ -53,7 +53,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   };
 
-  // Initialize form data when event prop changes
   useEffect(() => {
     if (event) {
       console.log('[EventForm] Initializing with event:', event);
@@ -83,7 +82,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
         external_registration_url: event.external_registration_url || ''
       });
     } else {
-      // Set default values for new events
       const now = new Date();
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
       
@@ -96,7 +94,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   }, [event]);
 
-  // FIXED: Stable change handler - doesn't recreate on every render
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
@@ -106,7 +103,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
       [name]: newValue
     }));
     
-    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -116,7 +112,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   };
 
-  // Validation
   const validateForm = () => {
     const newErrors = {};
 
@@ -161,24 +156,43 @@ const EventForm = ({ event, onSave, onCancel }) => {
       }
     }
 
+    if (formData.image_url && formData.image_url.trim()) {
+      try {
+        new URL(formData.image_url);
+      } catch {
+        newErrors.image_url = 'Please enter a valid URL';
+      }
+    }
+
+    if (formData.external_registration_url && formData.external_registration_url.trim()) {
+      try {
+        new URL(formData.external_registration_url);
+      } catch {
+        newErrors.external_registration_url = 'Please enter a valid URL';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('[EventForm] Form submission started');
+    setErrors({});
+    setSubmissionError(null);
     
     if (!validateForm()) {
-      console.log('[EventForm] Validation failed:', errors);
-      // Scroll to first error
+      setSubmissionError('Please fix the validation errors highlighted below before submitting.');
+      
       if (modalRef.current) {
         const firstErrorField = Object.keys(errors)[0];
         const errorElement = modalRef.current.querySelector(`[name="${firstErrorField}"]`);
         if (errorElement) {
-          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            errorElement.focus();
+          }, 100);
         }
       }
       return;
@@ -188,36 +202,89 @@ const EventForm = ({ event, onSave, onCancel }) => {
 
     try {
       const submitData = {
-        title: formData.title?.trim(),
-        description: formData.description?.trim() || null,
-        event_type: formData.event_type,
-        location: formData.location?.trim() || null,
-        location_details: formData.location_details?.trim() || null,
+        title: formData.title?.trim() || '',
+        description: formData.description?.trim() || '',
+        event_type: formData.event_type || 'other',
+        location: formData.location?.trim() || '',
+        location_details: formData.location_details?.trim() || '',
         start_datetime: formData.start_datetime,
         end_datetime: formData.end_datetime,
         registration_deadline: formData.registration_deadline || null,
         max_capacity: formData.max_capacity ? parseInt(formData.max_capacity) : null,
         requires_registration: formData.requires_registration,
         registration_fee: parseFloat(formData.registration_fee) || 0,
-        organizer: formData.organizer?.trim() || null,
-        contact_email: formData.contact_email?.trim() || null,
-        contact_phone: formData.contact_phone?.trim() || null,
+        organizer: formData.organizer?.trim() || '',
+        contact_email: formData.contact_email?.trim() || '',
+        contact_phone: formData.contact_phone?.trim() || '',
         age_min: formData.age_min ? parseInt(formData.age_min) : null,
         age_max: formData.age_max ? parseInt(formData.age_max) : null,
-        status: formData.status,
+        status: formData.status || 'draft',
         is_public: formData.is_public,
         is_featured: formData.is_featured,
-        prerequisites: formData.prerequisites?.trim() || null,
-        tags: formData.tags?.trim() || null,
+        prerequisites: formData.prerequisites?.trim() || '',
+        tags: formData.tags?.trim() || '',
         image_url: formData.image_url?.trim() || null,
         external_registration_url: formData.external_registration_url?.trim() || null
       };
 
-      console.log('[EventForm] Submitting data:', submitData);
+      console.log('[EventForm] Submitting event:', submitData);
+      
       await onSave(submitData);
+      
+      setShowSuccess(true);
+      
+      setTimeout(() => {
+        onCancel();
+      }, 2000);
       
     } catch (error) {
       console.error('[EventForm] Submission error:', error);
+      
+      if (error.response?.data) {
+        const backendErrors = {};
+        let errorMessages = [];
+        
+        Object.entries(error.response.data).forEach(([field, messages]) => {
+          const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+          backendErrors[field] = errorMessage;
+          
+          const fieldLabel = field
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+          
+          errorMessages.push(`${fieldLabel}: ${errorMessage}`);
+        });
+        
+        setErrors(backendErrors);
+        
+        const errorSummary = errorMessages.length > 3
+          ? `${errorMessages.slice(0, 3).join('\n')}\n... and ${errorMessages.length - 3} more error(s)`
+          : errorMessages.join('\n');
+        
+        setSubmissionError(
+          `Unable to save event. Please fix the following:\n\n${errorSummary}`
+        );
+        
+        if (modalRef.current) {
+          const firstErrorField = Object.keys(backendErrors)[0];
+          const errorElement = modalRef.current.querySelector(`[name="${firstErrorField}"]`);
+          if (errorElement) {
+            setTimeout(() => {
+              errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              errorElement.focus();
+            }, 100);
+          }
+        }
+        
+      } else if (error.message) {
+        setSubmissionError(
+          `Failed to ${event ? 'update' : 'create'} event: ${error.message}. Please check your internet connection and try again.`
+        );
+      } else {
+        setSubmissionError(
+          `An unexpected error occurred while ${event ? 'updating' : 'creating'} the event. Please try again.`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -243,7 +310,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     { value: 'other', label: 'Other' }
   ];
 
-  // FIXED: Proper scrollable modal styles
   const styles = {
     overlay: {
       position: 'fixed',
@@ -257,18 +323,18 @@ const EventForm = ({ event, onSave, onCancel }) => {
       justifyContent: 'center',
       zIndex: 1000,
       padding: '20px',
-      overflowY: 'auto' // FIXED: Allow overlay to scroll
+      overflowY: 'auto'
     },
     modal: {
       backgroundColor: 'white',
       borderRadius: '12px',
       maxWidth: '900px',
       width: '100%',
-      maxHeight: '90vh', // FIXED: Limit height
+      maxHeight: '90vh',
       display: 'flex',
       flexDirection: 'column',
       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-      margin: 'auto' // FIXED: Center in overlay
+      margin: 'auto'
     },
     header: {
       display: 'flex',
@@ -280,7 +346,7 @@ const EventForm = ({ event, onSave, onCancel }) => {
     },
     content: {
       flex: 1,
-      overflowY: 'auto', // FIXED: Scrollable content
+      overflowY: 'auto',
       padding: '24px'
     },
     footer: {
@@ -330,7 +396,6 @@ const EventForm = ({ event, onSave, onCancel }) => {
     }
   };
 
-  // FIXED: Close on overlay click, but not on modal click
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onCancel();
@@ -340,27 +405,74 @@ const EventForm = ({ event, onSave, onCancel }) => {
   return (
     <div style={styles.overlay} onClick={handleOverlayClick}>
       <div style={styles.modal} ref={modalRef}>
-        {/* Header */}
         <div style={styles.header}>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
             {event ? 'Edit Event' : 'Create New Event'}
           </h2>
           <button 
             onClick={onCancel}
+            disabled={loading}
             style={{
               background: 'none',
               border: 'none',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               padding: '8px',
               borderRadius: '8px',
-              color: '#6b7280'
+              color: '#6b7280',
+              opacity: loading ? 0.5 : 1
             }}
           >
             <X size={24} />
           </button>
         </div>
 
-        {/* Content - SCROLLABLE */}
+        {submissionError && (
+          <div style={{
+            margin: '16px 24px 0',
+            padding: '16px',
+            backgroundColor: '#fef2f2',
+            border: '2px solid #fecaca',
+            borderRadius: '8px',
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'flex-start'
+          }}>
+            <XCircle size={20} style={{ color: '#dc2626', flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ flex: 1 }}>
+              <h4 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#991b1b', 
+                fontSize: '14px', 
+                fontWeight: '600' 
+              }}>
+                Submission Failed
+              </h4>
+              <p style={{ 
+                margin: 0, 
+                color: '#dc2626', 
+                fontSize: '13px', 
+                lineHeight: '1.6',
+                whiteSpace: 'pre-line'
+              }}>
+                {submissionError}
+              </p>
+            </div>
+            <button
+              onClick={() => setSubmissionError(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#dc2626',
+                cursor: 'pointer',
+                padding: '4px',
+                flexShrink: 0
+              }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} style={styles.content}>
           {/* Basic Information */}
           <div style={styles.section}>
@@ -736,6 +848,12 @@ const EventForm = ({ event, onSave, onCancel }) => {
                 disabled={loading}
                 placeholder="youth, worship, community (comma-separated)"
               />
+              {errors.tags && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                  <AlertCircle size={12} />
+                  {errors.tags}
+                </div>
+              )}
             </div>
 
             <div style={styles.formGroup}>
@@ -745,10 +863,16 @@ const EventForm = ({ event, onSave, onCancel }) => {
                 name="image_url"
                 value={formData.image_url}
                 onChange={handleChange}
-                style={styles.input}
+                style={errors.image_url ? { ...styles.input, ...styles.inputError } : styles.input}
                 disabled={loading}
                 placeholder="https://example.com/image.jpg"
               />
+              {errors.image_url && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                  <AlertCircle size={12} />
+                  {errors.image_url}
+                </div>
+              )}
             </div>
 
             <div style={styles.formGroup}>
@@ -758,59 +882,74 @@ const EventForm = ({ event, onSave, onCancel }) => {
                 name="external_registration_url"
                 value={formData.external_registration_url}
                 onChange={handleChange}
-                style={styles.input}
+                style={errors.external_registration_url ? { ...styles.input, ...styles.inputError } : styles.input}
                 disabled={loading}
                 placeholder="https://example.com/register"
               />
+              {errors.external_registration_url && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#ef4444', fontSize: '12px' }}>
+                  <AlertCircle size={12} />
+                  {errors.external_registration_url}
+                </div>
+              )}
             </div>
           </div>
         </form>
 
-        {/* Footer - FIXED POSITION */}
         <div style={styles.footer}>
           <button
             type="button"
             onClick={onCancel}
+            disabled={loading}
             style={{
               padding: '12px 24px',
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               border: '2px solid #d1d5db',
               backgroundColor: 'white',
-              color: '#374151'
+              color: '#374151',
+              opacity: loading ? 0.5 : 1
             }}
-            disabled={loading}
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
+            disabled={loading}
             style={{
               padding: '12px 24px',
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               border: 'none',
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              opacity: loading ? 0.7 : 1
+              backgroundColor: loading ? '#93c5fd' : '#3b82f6',
+              color: 'white'
             }}
-            disabled={loading}
           >
             {loading ? (
-              <>Processing...</>
+              <>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid white',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 0.6s linear infinite'
+                }} />
+                {event ? 'Updating...' : 'Creating...'}
+              </>
             ) : (
               <>
                 <Save size={16} />
@@ -819,6 +958,66 @@ const EventForm = ({ event, onSave, onCancel }) => {
             )}
           </button>
         </div>
+
+        {showSuccess && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+            borderRadius: '12px',
+            zIndex: 10
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animation: 'scaleIn 0.3s ease-out'
+            }}>
+              <CheckCircle size={40} style={{ color: 'white' }} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                color: '#1f2937', 
+                margin: '0 0 8px 0' 
+              }}>
+                {event ? 'Event Updated!' : 'Event Created!'}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                "{formData.title}" has been {event ? 'updated' : 'created'} successfully.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          @keyframes scaleIn {
+            from {
+              transform: scale(0);
+              opacity: 0;
+            }
+            to {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+        `}</style>
       </div>
     </div>
   );

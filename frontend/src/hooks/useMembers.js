@@ -6,10 +6,8 @@ import { useDebounce } from './useDebounce';
 export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
   
-  // Extract options
   const autoFetch = options.autoFetch !== false;
   
-  // State
   const [members, setMembers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
   const [activeMembers, setActiveMembers] = useState(0);
@@ -18,11 +16,9 @@ export const useMembers = (options = {}) => {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
 
-  // Refs
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
 
-  // Cleanup
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -33,7 +29,6 @@ export const useMembers = (options = {}) => {
     };
   }, []);
 
-  // FIXED: fetchMembers now properly accepts runtime filters
   const fetchMembers = useCallback(async (customFilters = {}) => {
     if (!isAuthenticated) {
       console.warn('[useMembers] Not authenticated');
@@ -41,7 +36,6 @@ export const useMembers = (options = {}) => {
     }
 
     try {
-      // Cancel previous request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -54,13 +48,10 @@ export const useMembers = (options = {}) => {
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       
       const params = new URLSearchParams();
-      
-      // Default pagination
       params.set('page', customFilters.page || '1');
-      params.set('page_size', customFilters.page_size || '100');
+      params.set('page_size', customFilters.page_size || '200');
       params.set('ordering', customFilters.ordering || '-registration_date');
       
-      // Apply ALL custom filters
       Object.entries(customFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && 
             !['page', 'page_size', 'ordering'].includes(key)) {
@@ -85,12 +76,8 @@ export const useMembers = (options = {}) => {
       
       if (!mountedRef.current) return;
 
-      console.log('[useMembers] Data received:', {
-        total: data.total_members || data.count,
-        results: data.results?.length
-      });
+      console.log('[useMembers] Received:', data.results?.length, 'members');
 
-      // Update state
       setMembers(data.results || []);
       setTotalMembers(data.total_members || data.count || 0);
       setActiveMembers(data.active_members || data.active_count || 0);
@@ -99,14 +86,11 @@ export const useMembers = (options = {}) => {
         count: data.total_members || data.count || 0,
         next: data.next,
         previous: data.previous,
-        total_pages: data.total_pages || Math.ceil((data.count || 0) / (customFilters.page_size || 100))
+        total_pages: data.total_pages || Math.ceil((data.count || 0) / 200)
       });
 
     } catch (err) {
-      if (err.name === 'AbortError') {
-        console.log('[useMembers] Request cancelled');
-        return;
-      }
+      if (err.name === 'AbortError') return;
       console.error('[useMembers] Error:', err);
       if (mountedRef.current) {
         setError(err.message);
@@ -118,18 +102,11 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
-  // Auto-fetch effect
   useEffect(() => {
     if (autoFetch && isAuthenticated) {
-      console.log('[useMembers] Triggering auto-fetch');
       fetchMembers();
     }
   }, [autoFetch, isAuthenticated, fetchMembers]);
-
-  const totalPages = useMemo(() => 
-    Math.ceil(totalMembers / 100) || 1,
-    [totalMembers]
-  );
 
   return {
     members,
@@ -137,7 +114,6 @@ export const useMembers = (options = {}) => {
     activeMembers,
     inactiveMembers,
     pagination,
-    totalPages,
     isLoading,
     loading: isLoading,
     error,

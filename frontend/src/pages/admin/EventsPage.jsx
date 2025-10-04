@@ -1,13 +1,78 @@
-// frontend/src/pages/admin/EventsPage.jsx - UPDATED: Proper EventForm integration
+// frontend/src/pages/admin/EventsPage.jsx - COMPLETE with toast notifications
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Calendar, Plus, RefreshCw, TrendingUp, Users, Star,
-  Edit, Trash2, CheckCircle, XCircle, AlertCircle, MapPin, Clock
+  Edit, Trash2, CheckCircle, XCircle, AlertCircle, MapPin, Clock, X
 } from 'lucide-react';
 import { eventsService } from '../../services/events';
-import { useToast } from '../../hooks/useToast';
 import EventForm from '../../components/admin/Events/EventForm';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+
+// Toast Component
+const Toast = ({ type = 'success', message, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const styles = {
+    success: { backgroundColor: '#10b981', icon: CheckCircle },
+    error: { backgroundColor: '#ef4444', icon: XCircle },
+    warning: { backgroundColor: '#f59e0b', icon: AlertCircle },
+    info: { backgroundColor: '#3b82f6', icon: AlertCircle }
+  };
+
+  const { backgroundColor, icon: Icon } = styles[type] || styles.success;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      backgroundColor,
+      color: 'white',
+      padding: '16px 20px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      minWidth: '320px',
+      maxWidth: '500px',
+      zIndex: 9999,
+      animation: 'slideIn 0.3s ease-out'
+    }}>
+      <Icon size={20} />
+      <span style={{ flex: 1, fontSize: '14px', lineHeight: '1.4' }}>{message}</span>
+      <button
+        onClick={onClose}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'white',
+          cursor: 'pointer',
+          padding: '4px',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <X size={16} />
+      </button>
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const AdminEventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -17,8 +82,7 @@ const AdminEventsPage = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [deleteEvent, setDeleteEvent] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  
-  const { showToast } = useToast();
+  const [toast, setToast] = useState(null);
   
   const [eventStats, setEventStats] = useState({
     total: 0,
@@ -27,7 +91,10 @@ const AdminEventsPage = () => {
     featured: 0
   });
 
-  // Fetch events from Django backend
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type });
+  }, []);
+
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
@@ -44,7 +111,6 @@ const AdminEventsPage = () => {
       const eventsData = response.results || response.data || [];
       setEvents(eventsData);
       
-      // Calculate stats
       const now = new Date();
       const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -96,31 +162,32 @@ const AdminEventsPage = () => {
       console.log('[AdminEventsPage] Confirming delete for:', deleteEvent.id);
       await eventsService.deleteEvent(deleteEvent.id);
       setEvents(prev => prev.filter(e => e.id !== deleteEvent.id));
-      showToast('Event deleted successfully', 'success');
+      showToast(`"${deleteEvent.title}" has been deleted successfully`, 'success');
       setDeleteEvent(null);
       
-      // Update stats
       const updatedEvents = events.filter(e => e.id !== deleteEvent.id);
       const now = new Date();
-      setEventStats({
+      setEventStats(prev => ({
         total: updatedEvents.length,
         upcoming: updatedEvents.filter(e => new Date(e.start_datetime) > now).length,
-        thisMonth: eventStats.thisMonth - 1,
+        thisMonth: prev.thisMonth - 1,
         featured: updatedEvents.filter(e => e.is_featured).length
-      });
+      }));
     } catch (err) {
       console.error('Error deleting event:', err);
       showToast(err.message || 'Failed to delete event', 'error');
     }
-  }, [deleteEvent, showToast, events, eventStats.thisMonth]);
+  }, [deleteEvent, showToast, events]);
 
   const handleRefresh = useCallback(() => {
     console.log('[AdminEventsPage] Refresh clicked');
     setRefreshing(true);
-    fetchEvents().finally(() => setRefreshing(false));
-  }, [fetchEvents]);
+    fetchEvents().finally(() => {
+      setRefreshing(false);
+      showToast('Events refreshed', 'info');
+    });
+  }, [fetchEvents, showToast]);
 
-  // FIXED: Form submission handler
   const handleFormSubmit = useCallback(async (formData) => {
     try {
       console.log('[AdminEventsPage] Form submit:', formData);
@@ -129,23 +196,20 @@ const AdminEventsPage = () => {
       if (editingEvent) {
         savedEvent = await eventsService.updateEvent(editingEvent.id, formData);
         setEvents(prev => prev.map(e => e.id === editingEvent.id ? savedEvent : e));
-        showToast('Event updated successfully', 'success');
+        showToast(`"${savedEvent.title}" has been updated successfully!`, 'success');
       } else {
         savedEvent = await eventsService.createEvent(formData);
         setEvents(prev => [savedEvent, ...prev]);
-        showToast('Event created successfully', 'success');
+        showToast(`"${savedEvent.title}" has been created successfully!`, 'success');
       }
       
       setShowEventForm(false);
       setEditingEvent(null);
-      
-      // Refresh to get updated stats
       fetchEvents();
       
     } catch (error) {
       console.error('Form submit error:', error);
-      showToast(error.message || 'Failed to save event', 'error');
-      throw error; // Re-throw so form can handle it
+      throw error;
     }
   }, [editingEvent, showToast, fetchEvents]);
 
@@ -188,7 +252,6 @@ const AdminEventsPage = () => {
     return <AlertCircle size={16} style={{ color: '#f59e0b' }} />;
   };
 
-  // Loading state
   if (loading && events.length === 0) {
     return (
       <div style={{
@@ -205,7 +268,6 @@ const AdminEventsPage = () => {
     );
   }
 
-  // Error state
   if (error && events.length === 0) {
     return (
       <div style={{
@@ -283,6 +345,15 @@ const AdminEventsPage = () => {
       backgroundColor: '#f8fafc',
       minHeight: '100vh'
     }}>
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Header */}
       <div style={{
         background: 'white',
@@ -558,8 +629,7 @@ const AdminEventsPage = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(event)}
-                        style={{
-                          padding: '6px 12px',
+                        style={{padding: '6px 12px',
                           background: '#fef2f2',
                           border: 'none',
                           borderRadius: '6px',
@@ -628,7 +698,7 @@ const AdminEventsPage = () => {
         )}
       </div>
 
-      {/* Event Form Modal - FIXED INTEGRATION */}
+      {/* Event Form Modal */}
       {showEventForm && (
         <EventForm
           event={editingEvent}
@@ -660,29 +730,47 @@ const AdminEventsPage = () => {
             width: '100%',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
           }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px'
+            }}>
+              <AlertCircle size={24} style={{ color: '#ef4444' }} />
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px', textAlign: 'center' }}>
               Delete Event
             </h3>
-            <div style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
-              <p>Are you sure you want to delete "<strong>{deleteEvent.title}</strong>"?</p>
+            <div style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 12px 0' }}>
+                Are you sure you want to delete <strong style={{ color: '#1f2937' }}>"{deleteEvent.title}"</strong>?
+              </p>
               {(deleteEvent.registration_count || 0) > 0 && (
-                <p style={{ color: '#dc2626', marginTop: '8px' }}>
+                <p style={{ color: '#dc2626', margin: '12px 0', fontSize: '14px' }}>
                   This event has {deleteEvent.registration_count} registration(s). 
                   All registration data will be permanently deleted.
                 </p>
               )}
-              <p style={{ marginTop: '8px' }}>This action cannot be undone.</p>
+              <p style={{ margin: '12px 0 0 0', fontSize: '14px' }}>
+                This action cannot be undone.
+              </p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
               <button
                 style={{
-                  padding: '8px 16px',
+                  padding: '10px 20px',
                   backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
+                  border: '2px solid #d1d5db',
                   borderRadius: '6px',
                   color: '#374151',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s'
                 }}
                 onClick={() => setDeleteEvent(null)}
               >
@@ -690,16 +778,22 @@ const AdminEventsPage = () => {
               </button>
               <button
                 style={{
-                  padding: '8px 16px',
+                  padding: '10px 20px',
                   backgroundColor: '#ef4444',
                   border: 'none',
                   borderRadius: '6px',
                   color: 'white',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
                 }}
                 onClick={confirmDeleteEvent}
               >
+                <Trash2 size={16} />
                 Delete Event
               </button>
             </div>

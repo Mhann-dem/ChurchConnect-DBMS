@@ -40129,3 +40129,1603 @@ DETAIL:  Token "NaN" is invalid.
 CONTEXT:  JSON data, line 1: ...th", "email": "jane.smith@test.com", "phone": NaN...
 
 INFO 2025-10-04 05:25:26,089 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+ERROR 2025-10-04 05:26:30,206 utils [BulkImport] File processing error: Error tokenizing data. C error: Expected 9 fields in line 5, saw 10
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 105, in process_file
+    df = pd.read_csv(file, encoding='utf-8', na_values=['', 'NA', 'N/A', 'null', 'None'])
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 626, in _read
+    return parser.read(nrows)
+           ~~~~~~~~~~~^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        nrows
+        ^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\pandas\io\parsers\c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+  File "parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 9 fields in line 5, saw 10
+
+INFO 2025-10-04 05:26:30,267 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 05:29:40,460 basehttp "OPTIONS /api/v1/members/register/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:29:40,469 views [Public Registration] Request from IP: 127.0.0.1
+INFO 2025-10-04 05:29:40,472 views [Registration] Phone cleaned: 0246315599 -> 0246315599
+INFO 2025-10-04 05:29:40,734 validators [PhoneValidator] 0246315599 -> +233246315599
+INFO 2025-10-04 05:29:40,747 views [Public Registration] SUCCESS: robbddzaka1@gmail.com (ID: 2ef95bc5-b328-4916-9f4e-a8f2d9eb61ce)
+INFO 2025-10-04 05:29:40,748 basehttp "POST /api/v1/members/register/ HTTP/1.1" 201 170
+INFO 2025-10-04 05:29:43,319 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:29:43,422 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 05:29:43,630 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:29:43,630 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 05:29:43,634 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:29:43,635 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 05:29:43,658 views [MemberViewSet] Counts - Total DB: 62 (active: 62), Filtered: 62 (active: 62)
+INFO 2025-10-04 05:29:43,661 views [MemberViewSet] Counts - Total DB: 62 (active: 62), Filtered: 62 (active: 62)
+INFO 2025-10-04 05:29:43,690 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 05:29:43,694 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 05:29:43,696 basehttp - Broken pipe from ('127.0.0.1', 56084)
+INFO 2025-10-04 05:29:43,697 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8273
+INFO 2025-10-04 05:35:33,606 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:35:33,606 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 05:35:33,607 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:35:33,612 validators [PhoneValidator] 241112233.0 -> +2332411122330
+INFO 2025-10-04 05:35:33,612 validators [PhoneValidator] 242223344 -> +233242223344
+INFO 2025-10-04 05:35:33,635 validators [PhoneValidator] +2332411122330 -> +2332411122330
+INFO 2025-10-04 05:35:33,636 validators [PhoneValidator] +233242223344 -> +233242223344
+INFO 2025-10-04 05:35:33,637 serializers Admin creating member: samuel.asare@test.com
+INFO 2025-10-04 05:35:33,652 utils [BulkImport] Created member: samuel.asare@test.com
+INFO 2025-10-04 05:35:33,653 validators [PhoneValidator] 243334455.0 -> +2332433344550
+INFO 2025-10-04 05:35:33,654 validators [PhoneValidator] 244445566 -> +233244445566
+INFO 2025-10-04 05:35:33,659 validators [PhoneValidator] +2332433344550 -> +2332433344550
+INFO 2025-10-04 05:35:33,660 validators [PhoneValidator] +233244445566 -> +233244445566
+INFO 2025-10-04 05:35:33,660 serializers Admin creating member: grace.mensah@test.com
+INFO 2025-10-04 05:35:33,673 utils [BulkImport] Created member: grace.mensah@test.com
+INFO 2025-10-04 05:35:33,673 validators [PhoneValidator] 245556677.0 -> +2332455566770
+INFO 2025-10-04 05:35:33,674 validators [PhoneValidator] 246667788 -> +233246667788
+INFO 2025-10-04 05:35:33,678 validators [PhoneValidator] +2332455566770 -> +2332455566770
+INFO 2025-10-04 05:35:33,679 validators [PhoneValidator] +233246667788 -> +233246667788
+INFO 2025-10-04 05:35:33,680 serializers Admin creating member: daniel.owusu@test.com
+INFO 2025-10-04 05:35:33,693 utils [BulkImport] Created member: daniel.owusu@test.com
+INFO 2025-10-04 05:35:33,694 validators [PhoneValidator] 247778899 -> +233247778899
+INFO 2025-10-04 05:35:33,703 validators [PhoneValidator] +233247778899 -> +233247778899
+INFO 2025-10-04 05:35:33,704 serializers Admin creating member: esther.boateng@test.com
+INFO 2025-10-04 05:35:33,710 utils [BulkImport] Created member: esther.boateng@test.com
+INFO 2025-10-04 05:35:33,711 validators [PhoneValidator] 233541234567.0 -> +2332335412345670
+INFO 2025-10-04 05:35:33,711 validators [PhoneValidator] 233542345678 -> +233542345678
+WARNING 2025-10-04 05:35:33,722 serializers Phone validation failed: +2332335412345670 - Phone number too long (maximum 15 digits)
+INFO 2025-10-04 05:35:33,723 validators [PhoneValidator] +233542345678 -> +233542345678
+ERROR 2025-10-04 05:35:33,723 utils [BulkImport] Row 6 failed: ['phone: Phone number too long (maximum 15 digits)']
+INFO 2025-10-04 05:35:33,727 validators [PhoneValidator] 248889900.0 -> +2332488899000
+INFO 2025-10-04 05:35:33,727 validators [PhoneValidator] 249990011 -> +233249990011
+INFO 2025-10-04 05:35:33,736 validators [PhoneValidator] +2332488899000 -> +2332488899000
+INFO 2025-10-04 05:35:33,737 validators [PhoneValidator] +233249990011 -> +233249990011
+INFO 2025-10-04 05:35:33,738 serializers Admin creating member: comfort.ansah@test.com
+INFO 2025-10-04 05:35:33,746 utils [BulkImport] Created member: comfort.ansah@test.com
+INFO 2025-10-04 05:35:33,748 validators [PhoneValidator] 240001122.0 -> +2332400011220
+INFO 2025-10-04 05:35:33,748 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 05:35:33,757 validators [PhoneValidator] +2332400011220 -> +2332400011220
+INFO 2025-10-04 05:35:33,758 validators [PhoneValidator] +233241112233 -> +233241112233
+INFO 2025-10-04 05:35:33,759 serializers Admin creating member: benjamin.quartey@test.com
+INFO 2025-10-04 05:35:33,772 utils [BulkImport] Created member: benjamin.quartey@test.com
+INFO 2025-10-04 05:35:33,773 validators [PhoneValidator] 233271234567.0 -> +2332332712345670
+INFO 2025-10-04 05:35:33,773 validators [PhoneValidator] 233272345678 -> +233272345678
+WARNING 2025-10-04 05:35:33,779 serializers Phone validation failed: +2332332712345670 - Phone number too long (maximum 15 digits)
+INFO 2025-10-04 05:35:33,779 validators [PhoneValidator] +233272345678 -> +233272345678
+ERROR 2025-10-04 05:35:33,780 utils [BulkImport] Row 9 failed: ['phone: Phone number too long (maximum 15 digits)']
+INFO 2025-10-04 05:35:33,787 utils [BulkImport] Complete - Success: 6, Failed: 2, Skipped: 0
+INFO 2025-10-04 05:35:33,789 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 114
+INFO 2025-10-04 05:35:34,883 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:35:34,884 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 05:35:34,902 views [MemberViewSet] Counts - Total DB: 68 (active: 68), Filtered: 68 (active: 68)
+INFO 2025-10-04 05:35:34,935 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 05:35:34,937 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8352
+INFO 2025-10-04 05:37:26,912 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:37:26,913 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 05:37:26,914 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:37:26,918 validators [PhoneValidator] 241112233 -> +233241112233
+ERROR 2025-10-04 05:37:26,935 utils [BulkImport] Row 2 failed: Object of type UUID is not JSON serializable
+ERROR 2025-10-04 05:37:26,939 utils [BulkImport] File processing error: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 131, in process_file
+    if self._should_skip_duplicate(member_data, skip_duplicates):
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 318, in _should_skip_duplicate
+    self._log_error(
+    ~~~~~~~~~~~~~~~^
+        member_data.get('import_row_number', 0),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        error_type='duplicate_skipped'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        import_log=self.import_log,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        row_data=row_data
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\postgresql\psycopg_any.py", line 113, in getquoted
+    quoted = super().getquoted()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\psycopg2\_json.py", line 78, in getquoted
+    s = self.dumps(self.adapted)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\psycopg2\_json.py", line 72, in dumps
+    return self._dumps(obj)
+           ~~~~~~~~~~~^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type UUID is not JSON serializable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 142, in process_file
+    self._log_error(index + 2, str(e), row.to_dict())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        import_log=self.import_log,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        row_data=row_data
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.DataError: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+
+INFO 2025-10-04 05:37:26,956 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 05:37:40,785 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:37:40,786 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 05:37:40,787 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 05:37:40,791 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 05:37:40,791 validators [PhoneValidator] 242223344.0 -> +2332422233440
+ERROR 2025-10-04 05:37:40,807 utils [BulkImport] Row 2 failed: Object of type date is not JSON serializable
+ERROR 2025-10-04 05:37:40,810 utils [BulkImport] File processing error: invalid input syntax for type json
+LINE 1: ..., 'Object of type date is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...": "1985-03-15", "gender": "male", "address": NaN...
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 131, in process_file
+    if self._should_skip_duplicate(member_data, skip_duplicates):
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 318, in _should_skip_duplicate
+    self._log_error(
+    ~~~~~~~~~~~~~~~^
+        member_data.get('import_row_number', 0),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        error_type='duplicate_skipped'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        import_log=self.import_log,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        row_data=row_data
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\postgresql\psycopg_any.py", line 113, in getquoted
+    quoted = super().getquoted()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\psycopg2\_json.py", line 78, in getquoted
+    s = self.dumps(self.adapted)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\psycopg2\_json.py", line 72, in dumps
+    return self._dumps(obj)
+           ~~~~~~~~~~~^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2032.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type date is not JSON serializable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type json
+LINE 1: ..., 'Object of type date is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...": "1985-03-15", "gender": "male", "address": NaN...
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 142, in process_file
+    self._log_error(index + 2, str(e), row.to_dict())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        import_log=self.import_log,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        row_data=row_data
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.DataError: invalid input syntax for type json
+LINE 1: ..., 'Object of type date is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...": "1985-03-15", "gender": "male", "address": NaN...
+
+INFO 2025-10-04 05:37:40,824 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 05:42:35,872 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 05:44:01,364 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:01,367 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:01,772 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:01,903 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 05:44:01,908 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:06,164 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,165 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,180 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,180 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,189 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,191 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,204 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,206 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,218 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,220 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,223 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,234 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,238 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,242 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,248 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,254 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,257 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,263 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,268 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,272 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:06,374 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 05:44:06,398 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 05:44:06,435 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 05:44:06,481 views [MemberViewSet] Statistics SUCCESS - Total: 68, Active: 68, Recent: 68
+INFO 2025-10-04 05:44:06,488 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 05:44:06,550 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:06,729 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 05:44:06,730 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:06,732 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:06,756 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 05:44:06,814 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 05:44:06,830 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 05:44:06,836 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1640
+INFO 2025-10-04 05:44:06,875 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 05:44:06,888 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 05:44:06,929 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 05:44:06,973 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 05:44:06,973 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 05:44:06,978 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 05:44:06,988 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 05:44:07,055 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 05:44:07,126 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 05:44:07,212 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 05:44:07,243 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 05:44:07,269 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 05:44:07,279 views [MemberViewSet] Statistics SUCCESS - Total: 68, Active: 68, Recent: 68
+INFO 2025-10-04 05:44:07,321 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:07,335 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 05:44:07,365 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 05:44:07,402 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 05:44:07,411 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 05:44:07,432 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1640
+INFO 2025-10-04 05:44:07,546 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 05:44:07,547 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 05:44:07,590 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 05:44:07,598 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 05:44:07,601 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:07,700 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 05:44:07,703 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:07,713 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 05:44:07,714 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 05:44:07,789 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 05:44:07,941 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 05:44:07,993 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 05:44:08,125 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 05:44:08,142 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:08,223 views [MemberViewSet] Statistics SUCCESS - Total: 68, Active: 68, Recent: 68
+INFO 2025-10-04 05:44:08,239 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 05:44:08,268 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 05:44:08,300 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 05:44:08,305 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 05:44:08,321 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1640
+INFO 2025-10-04 05:44:08,352 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 05:44:08,362 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 05:44:08,423 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 05:44:08,428 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 05:44:08,435 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 05:44:08,439 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:08,449 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 05:44:08,512 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 05:44:08,519 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 05:44:08,568 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 05:44:08,568 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 05:44:08,603 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 05:44:08,619 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 05:44:08,620 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 05:44:08,787 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 05:44:08,806 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 05:44:08,809 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 05:44:12,478 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:12,478 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 05:44:12,585 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 05:44:12,680 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 05:45:40,238 basehttp "OPTIONS /api/v1/events/events/ HTTP/1.1" 200 0
+WARNING 2025-10-04 05:45:40,433 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 05:45:40,434 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 428
+WARNING 2025-10-04 05:46:04,668 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 05:46:04,669 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 428
+WARNING 2025-10-04 05:46:14,191 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 05:46:14,191 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 428
+INFO 2025-10-04 05:49:56,238 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 05:49:56,574 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 05:49:56,683 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+WARNING 2025-10-04 05:52:56,266 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 05:52:56,267 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 334
+WARNING 2025-10-04 05:55:44,869 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 05:55:44,870 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 134
+WARNING 2025-10-04 06:03:19,345 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 06:03:19,346 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 134
+INFO 2025-10-04 06:03:50,512 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 06:03:50,888 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 06:03:51,066 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 06:03:54,162 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 06:03:55,677 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 06:03:55,777 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+WARNING 2025-10-04 06:07:16,924 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 06:07:16,925 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 134
+INFO 2025-10-04 15:46:13,006 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 15:46:22,088 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 15:46:22,762 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 15:46:48,080 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:48,084 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+WARNING 2025-10-04 15:46:49,140 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-04 15:46:49,141 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-04 15:46:49,150 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-04 15:46:49,153 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-10-04 15:46:49,160 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:49,168 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:49,349 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-04 15:46:49,363 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-04 15:46:49,563 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 15:46:49,570 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:49,710 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 15:46:49,771 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 15:46:49,954 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 15:46:56,924 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:56,927 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:56,997 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:46:57,179 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 15:46:57,180 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 15:46:57,202 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 15:46:57,323 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 15:46:57,437 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 15:47:02,127 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 15:47:02,231 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,259 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,273 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,279 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,284 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,287 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,297 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,298 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,310 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,311 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,317 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,327 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,334 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,334 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,352 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,354 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,367 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,367 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,379 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,379 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,390 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,391 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,398 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,399 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,404 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,408 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:47:02,743 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 15:47:02,820 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 15:47:02,826 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 15:47:02,828 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 15:47:02,843 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 15:47:02,910 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 15:47:02,926 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 15:47:02,966 views [MemberViewSet] Statistics SUCCESS - Total: 68, Active: 68, Recent: 68
+INFO 2025-10-04 15:47:02,979 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1640
+INFO 2025-10-04 15:47:03,005 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 15:47:03,083 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 15:47:03,227 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 15:47:03,293 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 15:47:03,349 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 15:47:03,399 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 15:47:03,432 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 15:47:03,465 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 15:47:03,597 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 15:47:03,699 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 15:47:03,747 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 15:47:03,764 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 15:47:03,776 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 15:47:03,973 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 15:47:04,148 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 15:47:04,272 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 15:47:04,296 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 15:47:04,439 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 15:47:04,534 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1640
+INFO 2025-10-04 15:47:04,542 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 15:47:04,577 views [MemberViewSet] Statistics SUCCESS - Total: 68, Active: 68, Recent: 68
+INFO 2025-10-04 15:47:04,852 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 15:47:04,896 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 15:47:04,902 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 15:47:04,905 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 15:47:04,952 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 15:47:05,257 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 15:47:05,322 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 15:47:05,357 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 15:47:05,455 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 15:47:05,675 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 15:47:05,761 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 15:47:05,867 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 15:47:05,890 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 15:47:06,108 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 15:47:06,118 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 15:47:06,300 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 15:47:06,900 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 15:50:49,914 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 15:50:49,918 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 15:50:50,069 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 15:50:50,070 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 15:50:50,091 views [MemberViewSet] Counts - Total DB: 68 (active: 68), Filtered: 68 (active: 68)
+INFO 2025-10-04 15:50:50,126 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 15:50:50,128 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8352
+INFO 2025-10-04 15:51:16,982 basehttp "OPTIONS /api/v1/members/bulk_import/ HTTP/1.1" 200 0
+INFO 2025-10-04 15:51:22,180 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 15:51:22,180 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 15:51:22,188 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 15:51:22,202 validators [PhoneValidator] 241112233 -> +233241112233
+ERROR 2025-10-04 15:51:22,220 utils [BulkImport] Row 2 failed: Object of type UUID is not JSON serializable
+ERROR 2025-10-04 15:51:22,238 utils [BulkImport] File processing error: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 131, in process_file
+    if self._should_skip_duplicate(member_data, skip_duplicates):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 318, in _should_skip_duplicate
+    self._log_error(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\postgresql\psycopg_any.py", line 113, in getquoted
+    quoted = super().getquoted()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\psycopg2\_json.py", line 78, in getquoted
+    s = self.dumps(self.adapted)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\psycopg2\_json.py", line 72, in dumps
+    return self._dumps(obj)
+  File "C:\Users\robbd\.pyenv\pyenv-win\versions\3.10.10\lib\json\__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "C:\Users\robbd\.pyenv\pyenv-win\versions\3.10.10\lib\json\encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\robbd\.pyenv\pyenv-win\versions\3.10.10\lib\json\encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\robbd\.pyenv\pyenv-win\versions\3.10.10\lib\json\encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type UUID is not JSON serializable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 142, in process_file
+    self._log_error(index + 2, str(e), row.to_dict())
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 356, in _log_error
+    BulkImportError.objects.create(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.DataError: invalid input syntax for type json
+LINE 1: ..., 'Object of type UUID is not JSON serializable', '{"first_n...
+                                                             ^
+DETAIL:  Token "NaN" is invalid.
+CONTEXT:  JSON data, line 1: ...st.com", "phone": 241112233, "date_of_birth": NaN...
+
+INFO 2025-10-04 15:51:22,586 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 15:54:49,751 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 15:54:49,755 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 15:54:49,759 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+ERROR 2025-10-04 15:54:49,764 utils [BulkImport] File processing error: can only concatenate str (not "int") to str
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 127, in process_file
+    row_number = index + 2  # Excel row number
+TypeError: can only concatenate str (not "int") to str
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 141, in process_file
+    logger.error(f"[BulkImport] Row {index + 2} failed: {str(e)}")
+TypeError: can only concatenate str (not "int") to str
+INFO 2025-10-04 15:54:49,773 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 15:55:22,972 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 15:55:22,972 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 15:55:23,194 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 15:55:23,281 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 16:02:23,148 basehttp "OPTIONS /api/v1/events/events/ HTTP/1.1" 200 0
+WARNING 2025-10-04 16:02:23,579 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:02:23,582 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 232
+WARNING 2025-10-04 16:10:17,282 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:10:17,287 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 308
+WARNING 2025-10-04 16:10:33,095 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:10:33,097 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 232
+INFO 2025-10-04 16:13:01,358 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-04 16:13:13,482 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:13:46,788 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\views.py changed, reloading.
+INFO 2025-10-04 16:13:49,020 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:15:09,888 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\models.py changed, reloading.
+INFO 2025-10-04 16:15:12,068 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:15:41,878 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\models.py changed, reloading.
+INFO 2025-10-04 16:15:43,550 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:15:46,854 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\models.py changed, reloading.
+INFO 2025-10-04 16:15:49,058 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:17:09,901 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:19:43,082 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 16:19:43,503 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 16:19:43,772 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+WARNING 2025-10-04 16:23:47,801 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:23:47,802 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 40
+WARNING 2025-10-04 16:24:11,059 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:24:11,061 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 232
+WARNING 2025-10-04 16:26:33,571 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:26:33,572 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 232
+WARNING 2025-10-04 16:26:54,331 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:26:54,332 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 179
+WARNING 2025-10-04 16:27:02,359 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:27:02,360 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 179
+WARNING 2025-10-04 16:27:16,697 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:27:16,698 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 179
+WARNING 2025-10-04 16:28:00,360 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:28:00,362 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 128
+WARNING 2025-10-04 16:28:13,878 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:28:13,879 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 128
+WARNING 2025-10-04 16:28:38,667 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:28:38,669 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 75
+WARNING 2025-10-04 16:28:51,390 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:28:51,391 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 75
+WARNING 2025-10-04 16:28:59,046 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 16:28:59,047 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 40
+INFO 2025-10-04 16:29:39,804 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:29:39,816 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:29:39,871 views [MemberViewSet] Counts - Total DB: 68 (active: 68), Filtered: 68 (active: 68)
+INFO 2025-10-04 16:29:39,941 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:29:39,944 basehttp - Broken pipe from ('127.0.0.1', 65068)
+INFO 2025-10-04 16:29:40,110 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:29:40,110 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:29:40,136 views [MemberViewSet] Counts - Total DB: 68 (active: 68), Filtered: 68 (active: 68)
+INFO 2025-10-04 16:29:40,175 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:29:40,178 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8352
+INFO 2025-10-04 16:29:58,813 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:29:58,814 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:29:58,823 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+ERROR 2025-10-04 16:29:58,834 utils [BulkImport] File processing error: can only concatenate str (not "int") to str
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 127, in process_file
+    row_number = index + 2  # Excel row number
+TypeError: can only concatenate str (not "int") to str
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 141, in process_file
+    logger.error(f"[BulkImport] Row {index + 2} failed: {str(e)}")
+TypeError: can only concatenate str (not "int") to str
+INFO 2025-10-04 16:29:58,842 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 16:30:25,206 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:30:25,207 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:30:25,209 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:30:25,219 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:30:25,253 validators [PhoneValidator] 243334455 -> +233243334455
+INFO 2025-10-04 16:30:25,259 validators [PhoneValidator] 245556677 -> +233245556677
+INFO 2025-10-04 16:30:25,265 validators [PhoneValidator] 247778899 -> +233247778899
+INFO 2025-10-04 16:30:25,271 validators [PhoneValidator] 249990011 -> +233249990011
+INFO 2025-10-04 16:30:25,283 validators [PhoneValidator] +233249990011 -> +233249990011
+INFO 2025-10-04 16:30:25,284 serializers Admin creating member: michael.appiah@test.com
+INFO 2025-10-04 16:30:25,302 utils [BulkImport] Created member: michael.appiah@test.com
+INFO 2025-10-04 16:30:25,304 validators [PhoneValidator] 240001122 -> +233240001122
+INFO 2025-10-04 16:30:25,309 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:30:25,312 validators [PhoneValidator] 242223344 -> +233242223344
+INFO 2025-10-04 16:30:25,324 validators [PhoneValidator] +233242223344 -> +233242223344
+INFO 2025-10-04 16:30:25,325 serializers Admin creating member: patricia.darko@test.com
+INFO 2025-10-04 16:30:25,337 utils [BulkImport] Created member: patricia.darko@test.com
+INFO 2025-10-04 16:30:25,340 utils [BulkImport] Complete - Success: 2, Failed: 6, Skipped: 6
+INFO 2025-10-04 16:30:25,342 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 114
+INFO 2025-10-04 16:30:26,415 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:30:26,416 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:30:26,431 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:30:26,455 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:30:26,456 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 16:42:00,260 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py changed, reloading.
+INFO 2025-10-04 16:42:05,871 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 16:43:41,692 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:43:41,692 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:43:41,710 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:43:41,725 validators [PhoneValidator] 1985-03-15 -> +23319850315
+INFO 2025-10-04 16:43:41,742 validators [PhoneValidator] +23319850315 -> +23319850315
+ERROR 2025-10-04 16:43:41,750 utils [BulkImport] File processing error: can only concatenate str (not "int") to str
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 137, in process_file
+    member = self._create_member(member_data, admin_override)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 345, in _create_member
+    raise ValidationError('; '.join(error_messages))
+django.core.exceptions.ValidationError: ['email: Enter a valid email address.']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 142, in process_file
+    logger.error(f"[BulkImport] Row {index + 2} failed: {str(e)}")
+TypeError: can only concatenate str (not "int") to str
+INFO 2025-10-04 16:43:41,750 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 16:44:26,738 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:44:26,740 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:44:26,740 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:44:26,740 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:44:26,776 validators [PhoneValidator] 243334455 -> +233243334455
+INFO 2025-10-04 16:44:26,779 validators [PhoneValidator] 245556677 -> +233245556677
+INFO 2025-10-04 16:44:26,791 validators [PhoneValidator] 247778899 -> +233247778899
+INFO 2025-10-04 16:44:26,800 validators [PhoneValidator] 249990011 -> +233249990011
+INFO 2025-10-04 16:44:26,808 validators [PhoneValidator] 240001122 -> +233240001122
+INFO 2025-10-04 16:44:26,816 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:44:26,823 validators [PhoneValidator] 242223344 -> +233242223344
+INFO 2025-10-04 16:44:26,836 utils [BulkImport] Complete - Success: 0, Failed: 8, Skipped: 8
+INFO 2025-10-04 16:44:26,838 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 16:45:39,298 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:45:39,298 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:45:39,298 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:45:39,314 validators [PhoneValidator] 1985-03-15 -> +23319850315
+INFO 2025-10-04 16:45:39,331 validators [PhoneValidator] +23319850315 -> +23319850315
+ERROR 2025-10-04 16:45:39,331 utils [BulkImport] File processing error: can only concatenate str (not "int") to str
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 137, in process_file
+    member = self._create_member(member_data, admin_override)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 345, in _create_member
+    raise ValidationError('; '.join(error_messages))
+django.core.exceptions.ValidationError: ['email: Enter a valid email address.']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\members\utils.py", line 142, in process_file
+    logger.error(f"[BulkImport] Row {index + 2} failed: {str(e)}")
+TypeError: can only concatenate str (not "int") to str
+INFO 2025-10-04 16:45:39,337 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 16:46:00,630 utils [BulkImport] File loaded: 8 rows, columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:46:00,630 utils [BulkImport] Column mapping: {'first_name': 'first_name'}
+INFO 2025-10-04 16:46:00,630 utils [BulkImport] Normalized columns: ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'address', 'emergency_contact_name', 'emergency_contact_phone']
+INFO 2025-10-04 16:46:00,646 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:46:00,669 validators [PhoneValidator] 243334455 -> +233243334455
+INFO 2025-10-04 16:46:00,672 validators [PhoneValidator] 245556677 -> +233245556677
+INFO 2025-10-04 16:46:00,682 validators [PhoneValidator] 247778899 -> +233247778899
+INFO 2025-10-04 16:46:00,686 validators [PhoneValidator] 249990011 -> +233249990011
+INFO 2025-10-04 16:46:00,686 validators [PhoneValidator] 240001122 -> +233240001122
+INFO 2025-10-04 16:46:00,699 validators [PhoneValidator] 241112233 -> +233241112233
+INFO 2025-10-04 16:46:00,703 validators [PhoneValidator] 242223344 -> +233242223344
+INFO 2025-10-04 16:46:00,714 utils [BulkImport] Complete - Success: 0, Failed: 8, Skipped: 8
+INFO 2025-10-04 16:46:00,716 basehttp "POST /api/v1/members/bulk_import/ HTTP/1.1" 200 115
+INFO 2025-10-04 16:46:23,951 basehttp "OPTIONS /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 0
+INFO 2025-10-04 16:46:24,133 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 1789
+INFO 2025-10-04 16:46:40,992 basehttp "OPTIONS /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:46:40,996 basehttp "OPTIONS /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:46:41,141 basehttp "GET /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 1198
+INFO 2025-10-04 16:46:41,355 basehttp "GET /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 1198
+WARNING 2025-10-04 16:47:11,736 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-04 16:47:11,736 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+WARNING 2025-10-04 16:47:11,736 log Unauthorized: /api/v1/core/health/
+WARNING 2025-10-04 16:47:11,736 basehttp "GET /api/v1/core/health/ HTTP/1.1" 401 172
+INFO 2025-10-04 16:47:11,921 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+WARNING 2025-10-04 16:47:12,053 log Unauthorized: /api/v1/auth/token/refresh/
+WARNING 2025-10-04 16:47:12,064 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 401 58
+INFO 2025-10-04 16:47:12,135 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 16:47:12,151 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-04 16:47:14,193 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 16:47:14,200 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 674
+INFO 2025-10-04 16:47:19,138 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:47:20,179 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-04 16:47:20,196 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-04 16:47:20,196 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-04 16:47:23,590 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:47:23,596 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:47:23,600 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 16:47:23,883 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 16:47:23,889 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 16:47:23,893 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:23,948 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 16:47:24,206 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 16:47:24,327 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 16:47:24,366 views [MemberViewSet] Statistics SUCCESS - Total: 70, Active: 70, Recent: 70
+INFO 2025-10-04 16:47:24,387 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 16:47:24,396 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 16:47:24,580 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 16:47:24,809 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 16:47:24,849 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:24,894 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 16:47:24,926 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 16:47:25,009 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 16:47:25,026 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 16:47:25,072 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1656
+INFO 2025-10-04 16:47:25,074 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 16:47:25,415 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 16:47:25,552 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 16:47:25,729 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:47:25,859 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:47:25,962 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 16:47:25,988 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 16:47:26,020 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 16:47:26,052 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:26,070 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 16:47:26,137 views [MemberViewSet] Statistics SUCCESS - Total: 70, Active: 70, Recent: 70
+INFO 2025-10-04 16:47:26,155 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 16:47:26,166 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 16:47:26,170 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 16:47:26,196 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 16:47:26,503 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 16:47:26,547 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 16:47:26,556 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:26,567 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 16:47:26,571 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 16:47:26,614 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 16:47:26,653 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 16:47:26,677 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 16:47:26,681 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1656
+INFO 2025-10-04 16:47:26,814 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:27,165 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:27,502 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:39,661 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 1789
+INFO 2025-10-04 16:47:42,882 basehttp "OPTIONS /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:47:42,882 basehttp "OPTIONS /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 200 0
+ERROR 2025-10-04 16:47:43,460 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 131, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 116, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-04 16:47:43,480 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 29018
+ERROR 2025-10-04 16:47:43,610 log Internal Server Error: /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 131, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 116, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-04 16:47:43,610 basehttp "GET /api/v1/families/7f6dcbdc-8ab5-48bf-a399-80c38f3e5f08/ HTTP/1.1" 500 29018
+INFO 2025-10-04 16:47:48,308 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:48,358 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:48,459 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:48,559 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 16:47:48,603 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:48,731 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1098
+INFO 2025-10-04 16:47:55,169 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 1789
+INFO 2025-10-04 16:47:58,849 basehttp "GET /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 1198
+INFO 2025-10-04 16:47:59,005 basehttp "GET /api/v1/families/2397a667-9ce5-41c2-9544-f18eb8d5913d/ HTTP/1.1" 200 1198
+INFO 2025-10-04 16:48:13,787 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 16:48:14,677 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 1789
+INFO 2025-10-04 16:48:20,734 basehttp "OPTIONS /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:48:20,734 basehttp "OPTIONS /api/v1/members/?page=1&page_size=200&ordering=-registration_date&is_active=true HTTP/1.1" 200 0
+INFO 2025-10-04 16:48:20,734 basehttp "OPTIONS /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 200 0
+INFO 2025-10-04 16:48:20,734 basehttp "OPTIONS /api/v1/members/?page=1&page_size=200&ordering=-registration_date&is_active=true HTTP/1.1" 200 0
+INFO 2025-10-04 16:48:20,827 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:48:20,828 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:48:20,854 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:48:20,854 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:48:20,854 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date', 'is_active': 'true'}
+INFO 2025-10-04 16:48:20,884 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:48:20,898 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:48:20,905 basehttp - Broken pipe from ('127.0.0.1', 52846)
+INFO 2025-10-04 16:48:20,928 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:48:20,931 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date&is_active=true HTTP/1.1" 200 8366
+ERROR 2025-10-04 16:48:20,948 log Internal Server Error: /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 131, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 116, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-04 16:48:20,948 basehttp "GET /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 500 29018
+ERROR 2025-10-04 16:48:21,174 log Internal Server Error: /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 109, in get_attribute
+    instance = instance()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 131, in get_family_summary
+    'primary_contact': self.get_contact_info(),
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\families\models.py", line 116, in get_contact_info
+    'name': self.primary_contact.get_full_name(),
+AttributeError: 'Member' object has no attribute 'get_full_name'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\serializers.py", line 527, in to_representation
+    attribute = field.get_attribute(instance)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 437, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\venv\lib\site-packages\rest_framework\fields.py", line 114, in get_attribute
+    raise ValueError('Exception raised in callable attribute "{}"; original exception was: {}'.format(attr, exc))
+ValueError: Exception raised in callable attribute "get_family_summary"; original exception was: 'Member' object has no attribute 'get_full_name'
+ERROR 2025-10-04 16:48:21,174 basehttp "GET /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 500 29018
+WARNING 2025-10-04 16:48:27,649 log Bad Request: /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/
+WARNING 2025-10-04 16:48:27,650 basehttp "PUT /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 400 95
+WARNING 2025-10-04 16:48:33,384 log Bad Request: /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/
+WARNING 2025-10-04 16:48:33,384 basehttp "PUT /api/v1/families/b1f319d5-0b37-4396-a938-b583b2756cb7/ HTTP/1.1" 400 95
+INFO 2025-10-04 16:48:47,318 basehttp "GET /api/v1/families/?page=1&page_size=25&ordering=family_name HTTP/1.1" 200 1789
+INFO 2025-10-04 16:48:57,448 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:48:57,448 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:48:57,449 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:48:57,450 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:48:57,458 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:48:57,459 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date', 'is_active': 'true'}
+INFO 2025-10-04 16:48:57,492 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:48:57,492 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:48:57,492 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:48:57,553 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:48:57,555 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:48:57,558 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:48:57,561 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date&is_active=true HTTP/1.1" 200 8366
+INFO 2025-10-04 16:48:57,562 basehttp - Broken pipe from ('127.0.0.1', 49261)
+INFO 2025-10-04 16:48:57,564 basehttp - Broken pipe from ('127.0.0.1', 63930)
+INFO 2025-10-04 16:49:11,912 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:49:11,912 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date', 'is_active': 'true'}
+INFO 2025-10-04 16:49:11,928 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:49:11,973 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:49:11,977 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date&is_active=true HTTP/1.1" 200 8366
+INFO 2025-10-04 16:49:33,847 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:49:33,847 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 16:49:33,847 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:49:33,848 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 16:49:33,868 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:49:33,869 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 16:49:33,907 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:49:33,912 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 16:49:33,915 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 16:49:33,916 basehttp - Broken pipe from ('127.0.0.1', 58927)
+INFO 2025-10-04 22:35:25,199 autoreload Watching for file changes with StatReloader
+INFO 2025-10-04 22:36:29,357 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:29,359 basehttp "OPTIONS /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 0
+WARNING 2025-10-04 22:36:29,859 log Unauthorized: /api/v1/events/events/
+WARNING 2025-10-04 22:36:29,860 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 401 172
+WARNING 2025-10-04 22:36:29,865 log Unauthorized: /api/v1/events/events/
+WARNING 2025-10-04 22:36:29,866 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 401 172
+INFO 2025-10-04 22:36:31,267 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:31,269 basehttp "OPTIONS /api/v1/auth/token/refresh/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:32,705 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-04 22:36:32,716 basehttp "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 582
+INFO 2025-10-04 22:36:32,948 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 22:36:33,140 basehttp "GET /api/v1/events/events/?is_public=true&status=published&upcoming=true&ordering=start_datetime&limit=3 HTTP/1.1" 200 52
+INFO 2025-10-04 22:36:53,626 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:53,630 basehttp "OPTIONS /api/v1/core/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:53,857 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 22:36:53,875 basehttp "OPTIONS /api/v1/auth/test/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:36:53,982 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 22:36:53,994 basehttp "GET /api/v1/core/health/ HTTP/1.1" 200 274
+INFO 2025-10-04 22:36:54,111 basehttp "GET /api/v1/auth/test/ HTTP/1.1" 200 701
+INFO 2025-10-04 22:37:00,460 basehttp "OPTIONS /api/v1/auth/login/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:02,124 serializers Successful authentication for robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:02,161 views SECURITY EVENT: LOGIN_SUCCESS - Successful login from 127.0.0.1
+INFO 2025-10-04 22:37:02,169 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 200 1027
+INFO 2025-10-04 22:37:03,014 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,018 basehttp "OPTIONS /api/v1/core/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,023 basehttp "OPTIONS /api/v1/members/statistics/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,033 basehttp "OPTIONS /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,033 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,037 basehttp "OPTIONS /api/v1/families/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,039 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,052 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,056 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,058 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,084 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,091 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,103 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,267 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 22:37:03,349 basehttp "OPTIONS /api/v1/groups/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,356 basehttp "OPTIONS /api/v1/members/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,356 basehttp "OPTIONS /api/v1/events/events/statistics/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,374 basehttp "OPTIONS /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,384 basehttp "OPTIONS /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,387 basehttp "OPTIONS /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,419 basehttp "OPTIONS /api/v1/core/dashboard/health/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,423 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 22:37:03,454 basehttp "OPTIONS /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:03,479 views [MemberViewSet] Statistics SUCCESS - Total: 70, Active: 70, Recent: 70
+INFO 2025-10-04 22:37:03,485 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 22:37:03,523 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:03,524 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 22:37:03,613 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:03,658 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 22:37:03,689 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 22:37:03,694 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 22:37:03,707 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 22:37:03,713 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1656
+INFO 2025-10-04 22:37:03,724 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 22:37:03,730 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 22:37:03,749 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 22:37:03,749 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 22:37:03,755 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 22:37:03,856 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 22:37:03,865 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 22:37:03,944 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1100
+INFO 2025-10-04 22:37:03,996 views [MemberViewSet] Statistics request, range: 30d
+INFO 2025-10-04 22:37:04,040 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 22:37:04,062 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 22:37:04,066 views [MemberViewSet] Statistics SUCCESS - Total: 70, Active: 70, Recent: 70
+INFO 2025-10-04 22:37:04,087 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 22:37:04,088 basehttp "GET /api/v1/members/statistics/?range=30d HTTP/1.1" 200 588
+INFO 2025-10-04 22:37:04,114 views [MemberViewSet] Recent members request, limit: 5
+INFO 2025-10-04 22:37:04,151 views [MemberViewSet] Returning 5 recent members
+INFO 2025-10-04 22:37:04,155 basehttp "GET /api/v1/core/dashboard/stats/ HTTP/1.1" 200 377
+INFO 2025-10-04 22:37:04,156 basehttp "GET /api/v1/members/recent/?limit=5 HTTP/1.1" 200 1656
+INFO 2025-10-04 22:37:04,233 views [GroupViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:04,303 views [GroupViewSet] Statistics returned successfully: 5 total groups, 5 active
+INFO 2025-10-04 22:37:04,303 basehttp "GET /api/v1/events/events/?limit=5&ordering=-created_at&upcoming=false HTTP/1.1" 200 52
+INFO 2025-10-04 22:37:04,308 basehttp "GET /api/v1/groups/statistics/ HTTP/1.1" 200 567
+INFO 2025-10-04 22:37:04,366 views [PledgeViewSet] Recent pledges request from: robbddzaka1@gmail.com, limit: 5
+INFO 2025-10-04 22:37:04,404 views [PledgeViewSet] Statistics request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:04,418 basehttp "GET /api/v1/events/events/statistics/ HTTP/1.1" 200 243
+INFO 2025-10-04 22:37:04,418 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1100
+INFO 2025-10-04 22:37:04,428 views [PledgeViewSet] Returning 0 recent pledges
+INFO 2025-10-04 22:37:04,465 basehttp "GET /api/v1/pledges/recent/?limit=5 HTTP/1.1" 200 39
+INFO 2025-10-04 22:37:04,619 basehttp "GET /api/v1/core/dashboard/alerts/ HTTP/1.1" 200 136
+INFO 2025-10-04 22:37:04,660 basehttp "GET /api/v1/families/?page_size=5&ordering=-created_at HTTP/1.1" 200 1036
+INFO 2025-10-04 22:37:04,695 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 22:37:04,701 views [PledgeViewSet] Statistics returned successfully
+INFO 2025-10-04 22:37:04,703 basehttp "GET /api/v1/pledges/stats/?range=30d HTTP/1.1" 200 2041
+INFO 2025-10-04 22:37:04,922 basehttp "GET /api/v1/families/statistics/ HTTP/1.1" 200 246
+INFO 2025-10-04 22:37:05,679 basehttp "GET /api/v1/core/dashboard/health/ HTTP/1.1" 200 1100
+INFO 2025-10-04 22:37:40,988 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:40,989 basehttp "OPTIONS /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 22:37:41,113 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:41,114 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:37:41,125 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:37:41,126 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:37:41,134 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:37:41,147 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:37:41,171 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:37:41,175 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:37:41,177 basehttp - Broken pipe from ('127.0.0.1', 55090)
+INFO 2025-10-04 22:37:41,177 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:38:01,195 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:38:01,196 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:38:01,217 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:38:01,253 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:38:01,255 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:38:06,404 basehttp "OPTIONS /api/v1/auth/verify/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:38:06,521 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 22:38:06,716 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:38:06,717 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:38:06,717 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:38:06,717 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:38:06,740 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:38:06,740 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:38:06,786 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:38:06,794 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:38:06,804 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:38:06,809 basehttp - Broken pipe from ('127.0.0.1', 63213)
+INFO 2025-10-04 22:38:12,074 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 22:38:12,278 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:38:12,278 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:38:12,283 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:38:12,283 views [MemberViewSet] Query params: {'page': '1', 'page_size': '100', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:38:12,306 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:38:12,312 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:38:12,345 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:38:12,349 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:38:12,352 basehttp "GET /api/v1/members/?page=1&page_size=100&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:38:12,353 basehttp - Broken pipe from ('127.0.0.1', 65275)
+INFO 2025-10-04 22:39:33,732 basehttp "OPTIONS /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:33,734 basehttp "OPTIONS /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:33,825 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:39:33,825 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:39:33,841 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:39:33,867 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:39:33,869 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:39:41,756 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 22:39:43,341 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:39:43,341 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:39:43,364 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:39:43,401 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:39:43,403 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:39:43,506 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:39:43,506 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:39:43,521 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:39:43,552 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:39:43,554 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:39:52,073 basehttp "OPTIONS /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:52,074 basehttp "OPTIONS /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:52,218 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/ HTTP/1.1" 200 969
+INFO 2025-10-04 22:39:52,233 basehttp "OPTIONS /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:52,233 basehttp "OPTIONS /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:52,234 basehttp "OPTIONS /api/v1/pledges/?member=5fc50327-3b29-4381-9e62-f082cf676a7f HTTP/1.1" 200 0
+INFO 2025-10-04 22:39:52,356 basehttp "GET /api/v1/pledges/?member=5fc50327-3b29-4381-9e62-f082cf676a7f HTTP/1.1" 200 52
+WARNING 2025-10-04 22:39:52,604 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/
+WARNING 2025-10-04 22:39:52,610 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/
+WARNING 2025-10-04 22:39:52,611 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/ HTTP/1.1" 404 23179
+WARNING 2025-10-04 22:39:52,611 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/ HTTP/1.1" 404 23173
+INFO 2025-10-04 22:40:10,366 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/ HTTP/1.1" 200 969
+WARNING 2025-10-04 22:40:10,408 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/
+WARNING 2025-10-04 22:40:10,418 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/
+WARNING 2025-10-04 22:40:10,420 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/ HTTP/1.1" 404 23179
+WARNING 2025-10-04 22:40:10,420 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/ HTTP/1.1" 404 23173
+INFO 2025-10-04 22:40:10,493 basehttp "GET /api/v1/pledges/?member=5fc50327-3b29-4381-9e62-f082cf676a7f HTTP/1.1" 200 52
+INFO 2025-10-04 22:40:12,394 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:40:12,394 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:40:12,405 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:40:12,406 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:40:12,425 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:40:12,439 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:40:12,483 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:40:12,492 basehttp - Broken pipe from ('127.0.0.1', 49249)
+INFO 2025-10-04 22:40:12,496 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:40:12,498 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:40:28,564 basehttp "OPTIONS /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:28,567 basehttp "OPTIONS /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:28,719 basehttp "GET /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/ HTTP/1.1" 200 963
+INFO 2025-10-04 22:40:28,729 basehttp "OPTIONS /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/groups/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:28,729 basehttp "OPTIONS /api/v1/pledges/?member=a38f21c0-39ef-48b9-bd1d-59101bb445a7 HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:28,734 basehttp "OPTIONS /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/activity/ HTTP/1.1" 200 0
+WARNING 2025-10-04 22:40:28,783 log Not Found: /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/groups/
+WARNING 2025-10-04 22:40:28,810 basehttp "GET /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/groups/ HTTP/1.1" 404 23173
+WARNING 2025-10-04 22:40:28,904 log Not Found: /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/activity/
+WARNING 2025-10-04 22:40:28,910 basehttp "GET /api/v1/members/a38f21c0-39ef-48b9-bd1d-59101bb445a7/activity/ HTTP/1.1" 404 23179
+INFO 2025-10-04 22:40:28,986 basehttp "GET /api/v1/pledges/?member=a38f21c0-39ef-48b9-bd1d-59101bb445a7 HTTP/1.1" 200 52
+INFO 2025-10-04 22:40:43,021 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:40:43,021 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:40:43,040 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:40:43,069 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:40:43,070 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:40:47,976 basehttp "OPTIONS /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:47,976 basehttp "OPTIONS /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:48,155 basehttp "GET /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/ HTTP/1.1" 200 961
+INFO 2025-10-04 22:40:48,169 basehttp "OPTIONS /api/v1/pledges/?member=b2568640-97aa-4350-a8f4-76c83019224e HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:48,169 basehttp "OPTIONS /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/groups/ HTTP/1.1" 200 0
+INFO 2025-10-04 22:40:48,172 basehttp "OPTIONS /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/activity/ HTTP/1.1" 200 0
+WARNING 2025-10-04 22:40:48,216 log Not Found: /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/groups/
+WARNING 2025-10-04 22:40:48,217 basehttp "GET /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/groups/ HTTP/1.1" 404 23173
+WARNING 2025-10-04 22:40:48,238 log Not Found: /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/activity/
+WARNING 2025-10-04 22:40:48,239 basehttp "GET /api/v1/members/b2568640-97aa-4350-a8f4-76c83019224e/activity/ HTTP/1.1" 404 23179
+INFO 2025-10-04 22:40:48,300 basehttp "GET /api/v1/pledges/?member=b2568640-97aa-4350-a8f4-76c83019224e HTTP/1.1" 200 52
+INFO 2025-10-04 22:40:50,961 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:40:50,962 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:40:50,974 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:40:51,001 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:40:51,003 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:47:30,969 basehttp "GET /api/v1/auth/verify/ HTTP/1.1" 200 660
+INFO 2025-10-04 22:47:31,277 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:47:31,280 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:47:31,321 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:47:31,365 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:47:31,369 basehttp - Broken pipe from ('127.0.0.1', 57506)
+INFO 2025-10-04 22:47:31,372 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:47:31,373 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:47:31,395 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:47:31,426 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:47:31,429 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:47:36,634 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/ HTTP/1.1" 200 969
+WARNING 2025-10-04 22:47:36,679 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/
+WARNING 2025-10-04 22:47:36,681 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/groups/ HTTP/1.1" 404 23173
+WARNING 2025-10-04 22:47:36,701 log Not Found: /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/
+WARNING 2025-10-04 22:47:36,702 basehttp "GET /api/v1/members/5fc50327-3b29-4381-9e62-f082cf676a7f/activity/ HTTP/1.1" 404 23179
+INFO 2025-10-04 22:47:36,763 basehttp "GET /api/v1/pledges/?member=5fc50327-3b29-4381-9e62-f082cf676a7f HTTP/1.1" 200 52
+INFO 2025-10-04 22:47:56,442 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:47:56,443 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:47:56,449 views [MemberViewSet] List request from: robbddzaka1@gmail.com
+INFO 2025-10-04 22:47:56,449 views [MemberViewSet] Query params: {'page': '1', 'page_size': '200', 'ordering': '-registration_date'}
+INFO 2025-10-04 22:47:56,487 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:47:56,492 views [MemberViewSet] Counts - Total DB: 70 (active: 70), Filtered: 70 (active: 70)
+INFO 2025-10-04 22:47:56,556 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:47:56,560 basehttp - Broken pipe from ('127.0.0.1', 50101)
+INFO 2025-10-04 22:47:56,599 views [MemberViewSet] Returned 25 members on page 1 of 3
+INFO 2025-10-04 22:47:56,601 basehttp "GET /api/v1/members/?page=1&page_size=200&ordering=-registration_date HTTP/1.1" 200 8351
+INFO 2025-10-04 22:48:00,140 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 22:48:00,140 basehttp "OPTIONS /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-10-04 22:48:00,297 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 22:48:00,422 basehttp "GET /api/v1/events/events/?ordering=-created_at HTTP/1.1" 200 52
+INFO 2025-10-04 22:52:13,433 basehttp "OPTIONS /api/v1/events/events/ HTTP/1.1" 200 0
+WARNING 2025-10-04 22:52:13,741 log Bad Request: /api/v1/events/events/
+WARNING 2025-10-04 22:52:13,742 basehttp "POST /api/v1/events/events/ HTTP/1.1" 400 40

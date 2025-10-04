@@ -1,9 +1,9 @@
 first_name,last_name,email,phone,date_of_birth,gender,address,emergency_contact_name,emergency_contact_phone
-James,Wilson,james.wilson@test.com,0247654321,1991-04-12,male,15 Independence Ave Accra,Emily Wilson,0248765432
-Patricia,Owusu,patricia.owusu@test.com,+233541112233,1989-09-28,female,42 Ring Road Central Kumasi,,+233542223344
-Daniel,Akoto,daniel.akoto@test.com,0249876543,1994-11-05,male,Plot 27 Industrial Area Tema,Elizabeth Akoto,0248765123
-Linda,Quartey,linda.quartey@test.com,,1993-02-18,female,88 Beach Road Takoradi,,,
-Robert,Mensah,robert.mensah@test.com,+233271234567,1986-07-22,male,,Sarah Mensah,+233272345678
-Elizabeth,Darko,elizabeth.darko@test.com,0243344556,1990-12-15,female,23 University Legon Accra,Michael Darko,0244455667
-Thomas,Appiah,thomas.appiah@test.com,+233561234567,1988-03-30,male,56 Adabraka Sahara Accra,,+233562345678
-Susan,Boateng,susan.boateng@test.com,0245566778,1992-06-08,female,12 Spintex Road Accra,Richard Boateng,0246677889
+Samuel,Asare,samuel.asare@test.com,0241112233,1985-03-15,male,123 Independence Ave Accra,Comfort Asare,0242223344
+Grace,Mensah,grace.mensah@test.com,0243334455,1990-07-22,female,45 Ring Road Central Kumasi,Kwame Mensah,0244445566
+Daniel,Owusu,daniel.owusu@test.com,0245556677,1992-11-30,male,78 Adabraka Sahara Accra,,0246667788
+Esther,Boateng,esther.boateng@test.com,,1988-05-14,female,32 Spintex Road Tema,David Boateng,0247778899
+Michael,Appiah,michael.appiah@test.com,+233541234567,1995-09-08,male,PO Box 123 Takoradi,Sarah Appiah,+233542345678
+Comfort,Ansah,comfort.ansah@test.com,0248889900,1993-12-25,female,56 Beach Road Cape Coast,,0249990011
+Benjamin,Quartey,benjamin.quartey@test.com,0240001122,1987-02-18,male,89 University Legon Accra,Rachel Quartey,0241112233
+Patricia,Darko,patricia.darko@test.com,+233271234567,1991-06-11,female,12 Industrial Area Kumasi,Mark Darko,+233272345678
