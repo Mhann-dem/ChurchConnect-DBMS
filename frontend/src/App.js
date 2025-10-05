@@ -51,10 +51,6 @@ const FamiliesPage = lazy(() => import('./pages/admin/FamiliesPage'));
 // FIXED: Admin events page
 const AdminEventsPage = lazy(() => import('./pages/admin/EventsPage'));
 
-// Debug tool
-const MembersDebugTool = lazy(() => import('./components/debug/MembersDebugTool'));
-import MembersPageTest from './pages/admin/MembersPageTest';
-
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : children;
@@ -90,8 +86,6 @@ function App() {
       <div className="app">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            {/* Debug Route */}
-            <Route path="/debug/members" element={<MembersDebugTool />} />
             
             {/* ============================================ */}
             {/* PUBLIC ROUTES - NO AUTHENTICATION REQUIRED */}
@@ -170,7 +164,6 @@ function App() {
               {/* Member Management */}
               <Route path="members" element={<MembersPage />} />
               <Route path="members/:id" element={<MemberDetailPage />} />
-              <Route path="members-test" element={<MembersPageTest />} />
               
               {/* Group Management */}
               <Route path="groups" element={<GroupsPage />} />

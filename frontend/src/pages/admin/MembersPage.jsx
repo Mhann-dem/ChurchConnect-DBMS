@@ -473,17 +473,7 @@ const MembersPage = () => {
 
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  const hookOptions = useMemo(() => ({
-    search: debouncedSearchQuery,
-    filters: {
-      status: filters.status,
-      gender: filters.gender
-    },
-    page: currentPage,
-    limit: membersPerPage,
-    autoFetch: true
-  }), [debouncedSearchQuery, filters.status, filters.gender, currentPage, membersPerPage]);
-
+  // DON'T use useMemo for options - it prevents re-renders
   const {
     members = [],
     totalMembers = 0,
@@ -491,23 +481,51 @@ const MembersPage = () => {
     inactiveMembers = 0,
     isLoading = false,
     error = null,
+    fetchMembers,
     refresh,
     totalPages = 1
-  } = useMembers(hookOptions) || {};
+  } = useMembers({
+    autoFetch: false // ❌ Turn OFF auto-fetch to manually control it
+  }) || {};
 
   const safeMembers = Array.isArray(members) ? members : [];
 
+  // ✅ Fetch members whenever dependencies change
+  useEffect(() => {
+    console.log('[MembersPage] Fetching with:', {
+      page: currentPage,
+      page_size: membersPerPage,
+      search: debouncedSearchQuery,
+      status: filters.status,
+      gender: filters.gender
+    });
+
+    fetchMembers({
+      page: currentPage,
+      page_size: membersPerPage,
+      search: debouncedSearchQuery,
+      is_active: filters.status === 'active' ? 'true' : filters.status === 'inactive' ? 'false' : undefined,
+      gender: filters.gender || undefined
+    });
+  }, [currentPage, membersPerPage, debouncedSearchQuery, filters.status, filters.gender, fetchMembers]);
+
   const handleSearch = useCallback((query) => {
+    console.log('[MembersPage] Search:', query);
     setCurrentSearchQuery(query || '');
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to page 1 on new search
   }, []);
 
   const handleRefresh = useCallback(async () => {
-    if (refresh) {
-      await refresh();
-      showToast('Members list refreshed', 'success');
-    }
-  }, [refresh, showToast]);
+    await fetchMembers({
+      page: currentPage,
+      page_size: membersPerPage,
+      search: debouncedSearchQuery,
+      is_active: filters.status === 'active' ? 'true' : filters.status === 'inactive' ? 'false' : undefined,
+      gender: filters.gender || undefined
+    });
+    showToast('Members list refreshed', 'success');
+  }, [currentPage, membersPerPage, debouncedSearchQuery, filters, fetchMembers, showToast]);
+
 
   const handleSelectAll = useCallback((selectAll) => {
     if (selectAll) {
@@ -876,9 +894,36 @@ const MembersPage = () => {
                 >
                   Previous
                 </button>
+                
                 <span style={{ padding: '8px 16px', color: '#6b7280', fontSize: '14px' }}>
                   Page {currentPage} of {totalPages}
                 </span>
+                
+                {/* ✅ Add page number buttons */}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        disabled={isLoading}
+                        style={{
+                          padding: '8px 12px',
+                          background: currentPage === pageNum ? '#3b82f6' : 'white',
+                          color: currentPage === pageNum ? 'white' : '#374151',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          fontWeight: currentPage === pageNum ? '600' : '500'
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage >= totalPages || isLoading}

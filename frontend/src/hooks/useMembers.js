@@ -1,12 +1,9 @@
-// frontend/src/hooks/useMembers.js - FIXED VERSION
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+// useMembers.js - COMPLETE FIXED VERSION
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useAuth from './useAuth';
-import { useDebounce } from './useDebounce';
 
 export const useMembers = (options = {}) => {
   const { isAuthenticated } = useAuth();
-  
-  const autoFetch = options.autoFetch !== false;
   
   const [members, setMembers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -14,7 +11,12 @@ export const useMembers = (options = {}) => {
   const [inactiveMembers, setInactiveMembers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState(null);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+    total_pages: 1
+  });
 
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
@@ -48,19 +50,28 @@ export const useMembers = (options = {}) => {
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       
       const params = new URLSearchParams();
-      params.set('page', customFilters.page || '1');
-      params.set('page_size', customFilters.page_size || '200');
+      
+      // Set pagination parameters
+      params.set('page', String(customFilters.page || 1));
+      params.set('page_size', String(customFilters.page_size || customFilters.limit || 25));
       params.set('ordering', customFilters.ordering || '-registration_date');
       
+      // Add search if provided
+      if (customFilters.search && customFilters.search.trim()) {
+        params.set('search', customFilters.search.trim());
+      }
+      
+      // Add other filters
       Object.entries(customFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && 
-            !['page', 'page_size', 'ordering'].includes(key)) {
+            !['page', 'page_size', 'limit', 'ordering', 'search'].includes(key)) {
           params.set(key, String(value));
         }
       });
 
       const url = `${baseURL}/api/v1/members/?${params}`;
       console.log('[useMembers] Fetching:', url);
+      console.log('[useMembers] Filters:', customFilters);
 
       const response = await fetch(url, {
         headers: {
@@ -76,17 +87,22 @@ export const useMembers = (options = {}) => {
       
       if (!mountedRef.current) return;
 
-      console.log('[useMembers] Received:', data.results?.length, 'members');
+      console.log('[useMembers] Received:', {
+        results: data.results?.length,
+        total: data.count,
+        page: customFilters.page,
+        total_pages: data.total_pages
+      });
 
       setMembers(data.results || []);
       setTotalMembers(data.total_members || data.count || 0);
       setActiveMembers(data.active_members || data.active_count || 0);
       setInactiveMembers(data.inactive_members || data.inactive_count || 0);
       setPagination({
-        count: data.total_members || data.count || 0,
+        count: data.count || 0,
         next: data.next,
         previous: data.previous,
-        total_pages: data.total_pages || Math.ceil((data.count || 0) / 200)
+        total_pages: data.total_pages || Math.ceil((data.count || 0) / (customFilters.page_size || customFilters.limit || 25))
       });
 
     } catch (err) {
@@ -102,11 +118,12 @@ export const useMembers = (options = {}) => {
     }
   }, [isAuthenticated]);
 
+  // Auto-fetch on mount if enabled
   useEffect(() => {
-    if (autoFetch && isAuthenticated) {
-      fetchMembers();
+    if (options.autoFetch && isAuthenticated) {
+      fetchMembers(options);
     }
-  }, [autoFetch, isAuthenticated, fetchMembers]);
+  }, [isAuthenticated]); // Only run on mount
 
   return {
     members,
@@ -119,7 +136,8 @@ export const useMembers = (options = {}) => {
     error,
     fetchMembers,
     refresh: fetchMembers,
-    hasMembers: members.length > 0
+    hasMembers: members.length > 0,
+    totalPages: pagination.total_pages
   };
 };
 
