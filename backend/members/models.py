@@ -287,6 +287,11 @@ class Member(models.Model):
         """Get the full name of the member"""
         return f"{self.first_name} {self.last_name}".strip()
     
+    # ADD THIS METHOD:
+    def get_full_name(self):
+        """Return the member's full name (method version for compatibility)"""
+        return f"{self.first_name} {self.last_name}".strip()
+        
     @property
     def display_name(self):
         """Get the preferred display name"""

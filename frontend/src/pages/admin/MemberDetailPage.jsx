@@ -198,7 +198,8 @@ const MemberDetailPage = () => {
   const [member, setMember] = useState(null);
   const [memberGroups, setMemberGroups] = useState([]);
   const [memberPledges, setMemberPledges] = useState([]);
-  const [memberActivity, setMemberActivity] = useState([]);
+  const [memberFamily, setMemberFamily] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -346,10 +347,20 @@ const MemberDetailPage = () => {
     const [notes, setNotes] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const hasFetchedRef = useRef(false);
 
     useEffect(() => {
-      if (isOpen) {
+      if (isOpen && !hasFetchedRef.current) {
         fetchAvailableGroups();
+        hasFetchedRef.current = true;
+      }
+      
+      // Reset when modal closes
+      if (!isOpen) {
+        hasFetchedRef.current = false;
+        setSelectedGroup('');
+        setRole('member');
+        setNotes('');
       }
     }, [isOpen]);
 
@@ -538,6 +549,250 @@ const MemberDetailPage = () => {
     );
   };
 
+  // Create Pledge Modal Component
+  const CreatePledgeModal = ({ isOpen, onClose, member, onSuccess }) => {
+    const [formData, setFormData] = useState({
+      amount: '',
+      frequency: 'monthly',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      notes: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleChange = (field, value) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      setError(null);
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      
+      // Validation
+      if (!formData.amount || parseFloat(formData.amount) <= 0) {
+        setError('Please enter a valid amount');
+        return;
+      }
+
+      setIsSubmitting(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+        const pledgeData = {
+          member: member.id,
+          amount: parseFloat(formData.amount),
+          frequency: formData.frequency,
+          start_date: formData.start_date,
+          end_date: formData.end_date || null,
+          notes: formData.notes,
+          status: 'active'
+        };
+
+        const response = await fetch(`${baseURL}/api/v1/pledges/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(pledgeData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          onSuccess && onSuccess();
+          onClose();
+          // Reset form
+          setFormData({
+            amount: '',
+            frequency: 'monthly',
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: '',
+            notes: ''
+          });
+        } else {
+          setError(data.error || data.message || 'Failed to create pledge');
+        }
+      } catch (error) {
+        console.error('Error creating pledge:', error);
+        setError('Failed to create pledge. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <Card style={{ maxWidth: '500px', width: '100%', margin: '24px' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Create Pledge for {member?.first_name} {member?.last_name}
+              </h2>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                Set up a financial pledge commitment
+              </p>
+            </div>
+
+            {error && (
+              <div style={{
+                padding: '12px',
+                background: '#fee2e2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                color: '#991b1b',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                Amount ($) *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.amount}
+                onChange={(e) => handleChange('amount', e.target.value)}
+                required
+                placeholder="100.00"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                Frequency *
+              </label>
+              <select
+                value={formData.frequency}
+                onChange={(e) => handleChange('frequency', e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="one-time">One Time</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annually">Annually</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                  Start Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => handleChange('start_date', e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                  End Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(e) => handleChange('end_date', e.target.value)}
+                  min={formData.start_date}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                Notes (Optional)
+              </label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => handleChange('notes', e.target.value)}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  resize: 'vertical'
+                }}
+                placeholder="Any additional notes about this pledge..."
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formData.amount}
+              >
+                {isSubmitting ? 'Creating...' : 'Create Pledge'}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  };
+
   // Add to Family Modal Component
   const AddToFamilyModal = ({ isOpen, onClose, member, onSuccess }) => {
     const [availableFamilies, setAvailableFamilies] = useState([]);
@@ -546,10 +801,20 @@ const MemberDetailPage = () => {
     const [notes, setNotes] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const hasFetchedRef = useRef(false);
 
     useEffect(() => {
-      if (isOpen) {
+      if (isOpen && !hasFetchedRef.current) {
         fetchAvailableFamilies();
+        hasFetchedRef.current = true;
+      }
+      
+      // Reset when modal closes
+      if (!isOpen) {
+        hasFetchedRef.current = false;
+        setSelectedFamily('');
+        setRelationshipType('other');
+        setNotes('');
       }
     }, [isOpen]);
 
@@ -840,6 +1105,119 @@ const MemberDetailPage = () => {
           </div>
         </Card>
       </div>
+
+      {/* Quick Summary Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        {/* Groups Summary */}
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <UserPlus size={18} /> Groups
+          </h3>
+          {memberGroups.length === 0 ? (
+            <p style={{ color: '#6b7280', fontSize: '14px' }}>Not a member of any groups</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {memberGroups.slice(0, 3).map(group => (
+                <div key={group.id} style={{ padding: '8px', background: '#f9fafb', borderRadius: '6px' }}>
+                  <div style={{ fontWeight: '500', fontSize: '14px' }}>{group.name}</div>
+                  {group.role && (
+                    <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>{group.role}</div>
+                  )}
+                </div>
+              ))}
+              {memberGroups.length > 3 && (
+                <button
+                  onClick={() => setActiveTab('groups')}
+                  style={{
+                    padding: '6px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#3b82f6',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  View all {memberGroups.length} groups →
+                </button>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* Family Summary */}
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Users size={18} /> Family
+          </h3>
+          {!memberFamily ? (
+            <p style={{ color: '#6b7280', fontSize: '14px' }}>Not part of any family</p>
+          ) : (
+            <div>
+              <div style={{ padding: '8px', background: '#f9fafb', borderRadius: '6px', marginBottom: '8px' }}>
+                <div style={{ fontWeight: '500', fontSize: '14px' }}>{memberFamily.family_name}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                  {familyMembers.length} {familyMembers.length === 1 ? 'member' : 'members'}
+                </div>
+              </div>
+              {familyMembers.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('family')}
+                  style={{
+                    padding: '6px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#3b82f6',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View family members →
+                </button>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* Pledges Summary */}
+        <Card>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <DollarSign size={18} /> Pledges
+          </h3>
+          {memberPledges.length === 0 ? (
+            <p style={{ color: '#6b7280', fontSize: '14px' }}>No active pledges</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {memberPledges.slice(0, 2).map(pledge => (
+                <div key={pledge.id} style={{ padding: '8px', background: '#f9fafb', borderRadius: '6px' }}>
+                  <div style={{ fontWeight: '600', fontSize: '16px', color: '#3b82f6' }}>
+                    {formatCurrency(pledge.amount)}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    {pledge.frequency} • {pledge.status}
+                  </div>
+                </div>
+              ))}
+              {memberPledges.length > 2 && (
+                <button
+                  onClick={() => setActiveTab('pledges')}
+                  style={{
+                    padding: '6px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#3b82f6',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  View all {memberPledges.length} pledges →
+                </button>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 
@@ -896,6 +1274,83 @@ const MemberDetailPage = () => {
     </div>
   );
 
+  // Family Tab
+  const FamilyTab = () => (
+    <div>
+      {!memberFamily ? (
+        <div style={{ textAlign: 'center', padding: '48px' }}>
+          <Users size={48} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
+          <p style={{ color: '#6b7280', marginBottom: '16px' }}>Not part of any family yet</p>
+          <Button
+            variant="primary"
+            onClick={() => setShowAddToFamilyModal(true)}
+            icon={<Plus size={16} />}
+          >
+            Add to Family
+          </Button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Family Info Card */}
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
+                  {memberFamily.family_name}
+                </h3>
+                {memberFamily.primary_contact && (
+                  <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                    Primary Contact: {memberFamily.primary_contact.first_name} {memberFamily.primary_contact.last_name}
+                  </div>
+                )}
+              </div>
+              <Badge variant="info">
+                {familyMembers.length} {familyMembers.length === 1 ? 'Member' : 'Members'}
+              </Badge>
+            </div>
+            {memberFamily.address && (
+              <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                <MapPin size={14} style={{ display: 'inline', marginRight: '4px' }} />
+                {memberFamily.address}
+              </div>
+            )}
+          </Card>
+
+          {/* Family Members */}
+          <div>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Family Members</h4>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {familyMembers.map(relationship => (
+                <Card key={relationship.id}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: '500', fontSize: '16px' }}>
+                        {relationship.member.first_name} {relationship.member.last_name}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                        {relationship.member.email}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <Badge variant="secondary" style={{ textTransform: 'capitalize' }}>
+                        {relationship.relationship_type.replace('_', ' ')}
+                      </Badge>
+                      {relationship.member.id === member.id && (
+                        <div style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>
+                          (You)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   // Activity Tab
   const ActivityTab = () => (
     <div>
@@ -927,8 +1382,8 @@ const MemberDetailPage = () => {
   const tabs = [
     { key: 'overview', label: 'Overview', content: <OverviewTab /> },
     { key: 'groups', label: `Groups (${memberGroups.length})`, content: <GroupsTab /> },
-    { key: 'pledges', label: `Pledges (${memberPledges.length})`, content: <PledgesTab /> },
-    { key: 'activity', label: 'Activity', content: <ActivityTab /> }
+    { key: 'family', label: memberFamily ? `Family (${familyMembers.length})` : 'Family', content: <FamilyTab /> },
+    { key: 'pledges', label: `Pledges (${memberPledges.length})`, content: <PledgesTab /> }
   ];
 
   const activeTabContent = tabs.find(t => t.key === activeTab)?.content;
@@ -1018,6 +1473,13 @@ const MemberDetailPage = () => {
         <AddToFamilyModal
           isOpen={showAddToFamilyModal}
           onClose={() => setShowAddToFamilyModal(false)}
+          member={member}
+          onSuccess={fetchMemberData}
+        />
+
+        <CreatePledgeModal
+          isOpen={showCreatePledgeModal}
+          onClose={() => setShowCreatePledgeModal(false)}
           member={member}
           onSuccess={fetchMemberData}
         />

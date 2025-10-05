@@ -126,95 +126,99 @@ class FamilyViewSet(viewsets.ModelViewSet):
             return AddMemberToFamilySerializer
         return FamilySerializer
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='add-member')
     def add_member(self, request, pk=None):
         """Add member to family with enhanced error handling"""
-        try:
-            family = self.get_object()
-            serializer = AddMemberToFamilySerializer(
-                data=request.data,
-                context={'family_id': family.id, 'request': request}
-            )
-            
-            if serializer.is_valid():
-                try:
-                    with transaction.atomic():
-                        member = Member.objects.select_for_update().get(
-                            id=serializer.validated_data['member_id']
+        family = self.get_object()
+        
+        logger.info(f"[add_member] Request from {request.user}, data: {request.data}")
+        
+        serializer = AddMemberToFamilySerializer(
+            data=request.data,
+            context={'family_id': family.id, 'request': request}
+        )
+        
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    member_id = serializer.validated_data['member_id']
+                    
+                    try:
+                        member = Member.objects.select_for_update().get(id=member_id)
+                    except Member.DoesNotExist:
+                        logger.error(f"[add_member] Member {member_id} not found")
+                        return Response(
+                            {'error': 'Member not found'},
+                            status=status.HTTP_404_NOT_FOUND
                         )
-                        
-                        # Validate member isn't already in another family
-                        if hasattr(member, 'family_relationship') and member.family_relationship:
+                    
+                    # Check if member is already in a family
+                    if member.family_id:
+                        existing_family = Family.objects.get(id=member.family_id)
+                        logger.warning(
+                            f"[add_member] Member already in family: {existing_family.family_name}"
+                        )
+                        return Response(
+                            {'error': f'Member is already in family: {existing_family.family_name}'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    relationship_type = serializer.validated_data['relationship_type']
+                    
+                    # Validate relationship constraints
+                    if relationship_type == 'head':
+                        if family.family_relationships.filter(relationship_type='head').exists():
                             return Response(
-                                {'error': 'Member is already assigned to another family'},
+                                {'error': 'Family already has a head of household'},
                                 status=status.HTTP_400_BAD_REQUEST
                             )
-                        
-                        # Validate relationship constraints
-                        relationship_type = serializer.validated_data['relationship_type']
-                        
-                        if relationship_type == 'head':
-                            if family.family_relationships.filter(relationship_type='head').exists():
-                                return Response(
-                                    {'error': 'Family already has a head of household'},
-                                    status=status.HTTP_400_BAD_REQUEST
-                                )
-                        
-                        elif relationship_type == 'spouse':
-                            if family.family_relationships.filter(relationship_type='spouse').exists():
-                                return Response(
-                                    {'error': 'Family already has a spouse'},
-                                    status=status.HTTP_400_BAD_REQUEST
-                                )
-                        
-                        # Create family relationship
-                        relationship = FamilyRelationship.objects.create(
-                            family=family,
-                            member=member,
-                            relationship_type=relationship_type,
-                            notes=serializer.validated_data.get('notes', '')
-                        )
-                        
-                        # Update member's family_id
-                        member.family_id = family.id
-                        member.save(update_fields=['family_id'])
-                        
-                        logger.info(
-                            f"Member {member.get_full_name()} added to family '{family.family_name}' "
-                            f"as {relationship_type}"
-                        )
-                        
-                        return Response(
-                            FamilyRelationshipSerializer(relationship).data,
-                            status=status.HTTP_201_CREATED
-                        )
-                        
-                except Member.DoesNotExist:
-                    return Response(
-                        {'error': 'Member not found'},
-                        status=status.HTTP_404_NOT_FOUND
+                    elif relationship_type == 'spouse':
+                        if family.family_relationships.filter(relationship_type='spouse').exists():
+                            return Response(
+                                {'error': 'Family already has a spouse'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                    
+                    # Create family relationship
+                    relationship = FamilyRelationship.objects.create(
+                        family=family,
+                        member=member,
+                        relationship_type=relationship_type,
+                        notes=serializer.validated_data.get('notes', '')
                     )
-                except IntegrityError as e:
-                    logger.error(f"Integrity error adding member to family: {str(e)}")
-                    return Response(
-                        {'error': 'Database constraint violation. Member may already be assigned.'},
-                        status=status.HTTP_400_BAD_REQUEST
+                    
+                    # Update member's family_id
+                    member.family_id = family.id
+                    member.save(update_fields=['family_id'])
+                    
+                    logger.info(
+                        f"[add_member] SUCCESS: {member.get_full_name()} added to "
+                        f"'{family.family_name}' as {relationship_type}"
                     )
-                except Exception as e:
-                    logger.error(f"Unexpected error adding member to family: {str(e)}")
+                    
                     return Response(
-                        {'error': 'Failed to add member to family'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        FamilyRelationshipSerializer(relationship).data,
+                        status=status.HTTP_201_CREATED
                     )
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        except Exception as e:
-            logger.error(f"Error in add_member action: {str(e)}")
-            return Response(
-                {'error': 'Internal server error'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                    
+            except IntegrityError as e:
+                logger.error(f"[add_member] Integrity error: {str(e)}")
+                return Response(
+                    {'error': 'Database error. Member may already be assigned.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Exception as e:
+                logger.error(f"[add_member] Exception: {str(e)}", exc_info=True)
+                return Response(
+                    {'error': f'Failed to add member to family: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        
+        logger.error(f"[add_member] Validation failed: {serializer.errors}")
+        return Response(
+            {'error': 'Validation failed', 'details': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=True, methods=['delete'], url_path='remove-member/(?P<member_id>[^/.]+)')
     def remove_member(self, request, pk=None, member_id=None):

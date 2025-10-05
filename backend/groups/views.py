@@ -81,6 +81,9 @@ class GroupViewSet(viewsets.ModelViewSet):
     def join(self, request, pk=None):
         """Add a member to a group"""
         group = self.get_object()
+        
+        logger.info(f"[join] Request from {request.user}, data: {request.data}")
+        
         serializer = JoinGroupSerializer(
             data=request.data,
             context={'group_id': group.id}
@@ -89,14 +92,43 @@ class GroupViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             try:
                 with transaction.atomic():
-                    member = Member.objects.get(
-                        id=serializer.validated_data['member_id'],
-                        is_active=True
-                    )
+                    member_id = serializer.validated_data['member_id']
+                    
+                    # Get member with lock
+                    try:
+                        member = Member.objects.select_for_update().get(
+                            id=member_id,
+                            is_active=True
+                        )
+                    except Member.DoesNotExist:
+                        logger.error(f"[join] Member {member_id} not found")
+                        return Response(
+                            {'error': 'Member not found or inactive'},
+                            status=status.HTTP_404_NOT_FOUND
+                        )
+                    
+                    # Check for existing membership
+                    existing = MemberGroupRelationship.objects.filter(
+                        group=group,
+                        member=member
+                    ).exclude(status='declined').first()
+                    
+                    if existing:
+                        if existing.is_active:
+                            return Response(
+                                {'error': 'Member is already in this group'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        elif existing.status == 'pending':
+                            return Response(
+                                {'error': 'Member already has a pending request for this group'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
                     
                     # Check if group can accept new members
                     can_join, message = group.can_join(member)
                     if not can_join:
+                        logger.warning(f"[join] Cannot join: {message}")
                         return Response(
                             {'error': message},
                             status=status.HTTP_400_BAD_REQUEST
@@ -111,29 +143,34 @@ class GroupViewSet(viewsets.ModelViewSet):
                         member=member,
                         role=serializer.validated_data.get('role', 'member'),
                         status=initial_status,
-                        notes=serializer.validated_data.get('notes', '')
+                        is_active=(initial_status == 'active'),
+                        notes=serializer.validated_data.get('notes', ''),
+                        join_date=timezone.now().date(),
+                        start_date=timezone.now().date() if initial_status == 'active' else None
                     )
                     
-                    logger.info(f"Member {member.get_full_name()} joined group {group.name}")
+                    logger.info(
+                        f"[join] SUCCESS: {member.get_full_name()} joined "
+                        f"{group.name} as {membership.role} (status: {initial_status})"
+                    )
                     
                     return Response(
                         MemberGroupRelationshipSerializer(membership).data,
                         status=status.HTTP_201_CREATED
                     )
                     
-            except Member.DoesNotExist:
-                return Response(
-                    {'error': 'Member not found or inactive'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
             except Exception as e:
-                logger.error(f"Error joining group: {str(e)}")
+                logger.error(f"[join] Exception: {str(e)}", exc_info=True)
                 return Response(
-                    {'error': 'An error occurred while joining the group'},
+                    {'error': f'Failed to join group: {str(e)}'},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f"[join] Validation failed: {serializer.errors}")
+        return Response(
+            {'error': 'Validation failed', 'details': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=True, methods=['post'], url_path='remove-member/(?P<member_id>[^/.]+)')
     def remove_member(self, request, pk=None, member_id=None):
