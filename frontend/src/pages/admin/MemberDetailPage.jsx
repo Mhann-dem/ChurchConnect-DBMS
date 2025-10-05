@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit, Trash2, UserPlus, Calendar, Phone, Mail, 
-  MapPin, User, RefreshCw, Download, Plus, X, AlertCircle
+  MapPin, User, RefreshCw, Download, Plus, X, AlertCircle,
+  Users, DollarSign
 } from 'lucide-react';
 
 // Utility functions
@@ -48,7 +49,7 @@ const Card = ({ children, className = '', style = {} }) => (
   </div>
 );
 
-const Button = ({ children, variant = 'default', size = 'md', onClick, disabled = false, icon, ...props }) => {
+const Button = ({ children, variant = 'default', size = 'md', onClick, disabled = false, icon, type = 'button', ...props }) => {
   const variants = {
     default: { background: '#3b82f6', color: 'white' },
     outline: { background: 'white', color: '#374151', border: '1px solid #d1d5db' },
@@ -65,6 +66,7 @@ const Button = ({ children, variant = 'default', size = 'md', onClick, disabled 
 
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -154,6 +156,38 @@ const Tabs = ({ tabs, activeTab, onTabChange }) => (
   </div>
 );
 
+// Action Buttons Component
+const ActionButton = ({ icon: Icon, label, onClick, variant = 'primary' }) => {
+  const variants = {
+    primary: { background: '#3b82f6', color: 'white' },
+    success: { background: '#10b981', color: 'white' },
+    warning: { background: '#f59e0b', color: 'white' },
+    outline: { background: 'white', color: '#374151', border: '1px solid #d1d5db' }
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '10px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        cursor: 'pointer',
+        fontWeight: '500',
+        fontSize: '14px',
+        transition: 'all 0.2s',
+        ...variants[variant]
+      }}
+    >
+      {Icon && <Icon size={16} />}
+      {label}
+    </button>
+  );
+};
+
 const MemberDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -171,6 +205,9 @@ const MemberDetailPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showAddToFamilyModal, setShowAddToFamilyModal] = useState(false);
+  const [showCreatePledgeModal, setShowCreatePledgeModal] = useState(false);
 
   // Cleanup
   useEffect(() => {
@@ -223,7 +260,7 @@ const MemberDetailPage = () => {
 
       // Fetch additional data in parallel
       Promise.allSettled([
-        // Fetch groups (if endpoint exists)
+        // Fetch groups
         fetch(`${baseURL}/api/v1/members/${id}/groups/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(r => r.ok ? r.json() : []),
@@ -233,7 +270,7 @@ const MemberDetailPage = () => {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(r => r.ok ? r.json() : { results: [] }),
         
-        // Fetch activity (if endpoint exists)
+        // Fetch activity
         fetch(`${baseURL}/api/v1/members/${id}/activity/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(r => r.ok ? r.json() : [])
@@ -299,6 +336,407 @@ const MemberDetailPage = () => {
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
+  };
+
+  // Add to Group Modal Component
+  const AddToGroupModal = ({ isOpen, onClose, member, onSuccess }) => {
+    const [availableGroups, setAvailableGroups] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState('');
+    const [role, setRole] = useState('member');
+    const [notes, setNotes] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+      if (isOpen) {
+        fetchAvailableGroups();
+      }
+    }, [isOpen]);
+
+    const fetchAvailableGroups = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+        const response = await fetch(`${baseURL}/api/v1/groups/?is_active=true`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableGroups(data.results || []);
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!selectedGroup) return;
+
+      setIsSubmitting(true);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+        const response = await fetch(`${baseURL}/api/v1/groups/${selectedGroup}/join/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            member_id: member.id,
+            role,
+            notes
+          })
+        });
+
+        if (response.ok) {
+          onSuccess && onSuccess();
+          onClose();
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to add member to group');
+        }
+      } catch (error) {
+        console.error('Error adding to group:', error);
+        alert('Failed to add member to group');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <Card style={{ maxWidth: '500px', width: '100%', margin: '24px' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Add {member?.first_name} to Group
+              </h2>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                Select a group and role for this member
+              </p>
+            </div>
+
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '24px' }}>
+                <LoadingSpinner size="sm" />
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Group *
+                  </label>
+                  <select
+                    value={selectedGroup}
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="">Select a group...</option>
+                    {availableGroups.map(group => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Role *
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="member">Member</option>
+                    <option value="leader">Leader</option>
+                    <option value="co_leader">Co-Leader</option>
+                    <option value="assistant">Assistant</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      resize: 'vertical'
+                    }}
+                    placeholder="Any additional notes..."
+                  />
+                </div>
+              </>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!selectedGroup || isSubmitting || isLoading}
+              >
+                {isSubmitting ? 'Adding...' : 'Add to Group'}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  };
+
+  // Add to Family Modal Component
+  const AddToFamilyModal = ({ isOpen, onClose, member, onSuccess }) => {
+    const [availableFamilies, setAvailableFamilies] = useState([]);
+    const [selectedFamily, setSelectedFamily] = useState('');
+    const [relationshipType, setRelationshipType] = useState('other');
+    const [notes, setNotes] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+      if (isOpen) {
+        fetchAvailableFamilies();
+      }
+    }, [isOpen]);
+
+    const fetchAvailableFamilies = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+        const response = await fetch(`${baseURL}/api/v1/families/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableFamilies(data.results || []);
+        }
+      } catch (error) {
+        console.error('Error fetching families:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!selectedFamily) return;
+
+      setIsSubmitting(true);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+        const response = await fetch(`${baseURL}/api/v1/families/${selectedFamily}/add-member/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            member_id: member.id,
+            relationship_type: relationshipType,
+            notes
+          })
+        });
+
+        if (response.ok) {
+          onSuccess && onSuccess();
+          onClose();
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to add member to family');
+        }
+      } catch (error) {
+        console.error('Error adding to family:', error);
+        alert('Failed to add member to family');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <Card style={{ maxWidth: '500px', width: '100%', margin: '24px' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Add {member?.first_name} to Family
+              </h2>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                Select a family and relationship type
+              </p>
+            </div>
+
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '24px' }}>
+                <LoadingSpinner size="sm" />
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Family *
+                  </label>
+                  <select
+                    value={selectedFamily}
+                    onChange={(e) => setSelectedFamily(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="">Select a family...</option>
+                    {availableFamilies.map(family => (
+                      <option key={family.id} value={family.id}>
+                        {family.family_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Relationship *
+                  </label>
+                  <select
+                    value={relationshipType}
+                    onChange={(e) => setRelationshipType(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="head">Head of Household</option>
+                    <option value="spouse">Spouse</option>
+                    <option value="child">Child</option>
+                    <option value="dependent">Dependent</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      resize: 'vertical'
+                    }}
+                    placeholder="Any additional notes..."
+                  />
+                </div>
+              </>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!selectedFamily || isSubmitting || isLoading}
+              >
+                {isSubmitting ? 'Adding...' : 'Add to Family'}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
   };
 
   // Loading state
@@ -526,7 +964,25 @@ const MemberDetailPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <ActionButton
+                  icon={UserPlus}
+                  label="Add to Group"
+                  onClick={() => setShowAddToGroupModal(true)}
+                  variant="primary"
+                />
+                <ActionButton
+                  icon={Users}
+                  label="Add to Family"
+                  onClick={() => setShowAddToFamilyModal(true)}
+                  variant="success"
+                />
+                <ActionButton
+                  icon={DollarSign}
+                  label="Create Pledge"
+                  onClick={() => setShowCreatePledgeModal(true)}
+                  variant="warning"
+                />
                 <Button variant="ghost" onClick={fetchMemberData} icon={<RefreshCw size={16} />}>
                   Refresh
                 </Button>
@@ -550,6 +1006,21 @@ const MemberDetailPage = () => {
             {activeTabContent}
           </div>
         </Card>
+
+        {/* Modals */}
+        <AddToGroupModal
+          isOpen={showAddToGroupModal}
+          onClose={() => setShowAddToGroupModal(false)}
+          member={member}
+          onSuccess={fetchMemberData}
+        />
+
+        <AddToFamilyModal
+          isOpen={showAddToFamilyModal}
+          onClose={() => setShowAddToFamilyModal(false)}
+          member={member}
+          onSuccess={fetchMemberData}
+        />
 
         {/* Delete Confirmation Dialog */}
         {showDeleteDialog && (

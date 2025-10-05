@@ -796,6 +796,224 @@ class MemberViewSet(viewsets.ModelViewSet):
             }
             
             return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=True, methods=['get'], url_path='activity')
+    def activity(self, request, pk=None):
+        """Get member activity history"""
+        try:
+            member = self.get_object()
+            logger.info(f"[MemberViewSet] Activity request for member: {member.email}")
+            
+            activities = []
+            
+            # 1. Registration activity
+            activities.append({
+                'type': 'registration',
+                'description': f"Registered via {member.registration_source or 'admin portal'}",
+                'timestamp': member.registration_date.isoformat() if member.registration_date else timezone.now().isoformat(),
+                'author': 'System'
+            })
+            
+            # 2. Notes as activities
+            notes = member.member_notes.select_related('created_by').order_by('-created_at')[:20]
+            for note in notes:
+                activities.append({
+                    'type': 'note',
+                    'description': f"Note added: {note.content[:100]}{'...' if len(note.content) > 100 else ''}",
+                    'timestamp': note.created_at.isoformat(),
+                    'author': note.created_by.get_full_name() if note.created_by else 'Unknown'
+                })
+            
+            # 3. Family changes
+            if member.family:
+                try:
+                    family_rel = member.family_relationships.first()
+                    if family_rel:
+                        activities.append({
+                            'type': 'family',
+                            'description': f"Added to family '{member.family.family_name}' as {family_rel.get_relationship_type_display()}",
+                            'timestamp': family_rel.created_at.isoformat(),
+                            'author': 'System'
+                        })
+                except Exception as e:
+                    logger.warning(f"Error getting family activity: {e}")
+            
+            # 4. Group memberships
+            try:
+                from groups.models import MemberGroupRelationship
+                group_memberships = MemberGroupRelationship.objects.filter(
+                    member=member
+                ).select_related('group').order_by('-join_date')[:10]
+                
+                for membership in group_memberships:
+                    activities.append({
+                        'type': 'group',
+                        'description': f"Joined group '{membership.group.name}' as {membership.get_role_display()}",
+                        'timestamp': membership.join_date.isoformat(),
+                        'author': 'System'
+                    })
+            except ImportError:
+                pass
+            except Exception as e:
+                logger.warning(f"Error getting group activity: {e}")
+            
+            # 5. Pledge activity
+            try:
+                from pledges.models import Pledge
+                pledges = Pledge.objects.filter(member=member).order_by('-created_at')[:10]
+                
+                for pledge in pledges:
+                    activities.append({
+                        'type': 'pledge',
+                        'description': f"Created pledge: ${pledge.amount} {pledge.get_frequency_display()}",
+                        'timestamp': pledge.created_at.isoformat(),
+                        'author': 'System'
+                    })
+            except ImportError:
+                pass
+            except Exception as e:
+                logger.warning(f"Error getting pledge activity: {e}")
+            
+            # Sort by timestamp (newest first)
+            activities.sort(key=lambda x: x['timestamp'], reverse=True)
+            
+            # Limit to 50 most recent
+            activities = activities[:50]
+            
+            logger.info(f"[MemberViewSet] Returning {len(activities)} activity items")
+            
+            return Response({
+                'success': True,
+                'results': activities,
+                'count': len(activities)
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Activity error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': 'Failed to get activity',
+                'results': []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    @action(detail=True, methods=['get'], url_path='groups')
+    def groups(self, request, pk=None):
+        """Get groups/ministries the member belongs to"""
+        try:
+            member = self.get_object()
+            logger.info(f"[MemberViewSet] Groups request for member: {member.email}")
+            
+            try:
+                from groups.models import MemberGroupRelationship
+                from groups.serializers import GroupSummarySerializer
+                
+                # Get active memberships
+                memberships = MemberGroupRelationship.objects.filter(
+                    member=member,
+                    is_active=True,
+                    status='active'
+                ).select_related('group').order_by('-join_date')
+                
+                groups_data = []
+                for membership in memberships:
+                    groups_data.append({
+                        'id': str(membership.group.id),
+                        'name': membership.group.name,
+                        'description': membership.group.description or '',
+                        'role': membership.get_role_display(),
+                        'join_date': membership.join_date.isoformat() if membership.join_date else None,
+                        'status': membership.status,
+                        'group_leader': membership.group.get_leader_name() if hasattr(membership.group, 'get_leader_name') else None
+                    })
+                
+                logger.info(f"[MemberViewSet] Returning {len(groups_data)} groups")
+                
+                return Response({
+                    'success': True,
+                    'results': groups_data,
+                    'count': len(groups_data)
+                })
+                
+            except ImportError:
+                logger.warning("[MemberViewSet] Groups module not available")
+                return Response({
+                    'success': True,
+                    'results': [],
+                    'count': 0,
+                    'message': 'Groups functionality not available'
+                })
+                
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Groups error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': 'Failed to get groups',
+                'results': []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    @action(detail=True, methods=['get'], url_path='family')
+    def family_members(self, request, pk=None):
+        """Get family members"""
+        try:
+            member = self.get_object()
+            logger.info(f"[MemberViewSet] Family request for member: {member.email}")
+            
+            if not member.family:
+                return Response({
+                    'success': True,
+                    'results': [],
+                    'count': 0,
+                    'family_name': None,
+                    'message': 'Member not assigned to a family'
+                })
+            
+            # Get other family members (exclude current member)
+            family_members = Member.objects.filter(
+                family=member.family
+            ).exclude(
+                id=member.id
+            ).select_related('family')
+            
+            members_data = []
+            for fam_member in family_members:
+                # Get relationship type
+                relationship_type = 'other'
+                try:
+                    rel = fam_member.family_relationships.filter(family=member.family).first()
+                    if rel:
+                        relationship_type = rel.get_relationship_type_display()
+                except:
+                    pass
+                
+                members_data.append({
+                    'id': str(fam_member.id),
+                    'first_name': fam_member.first_name,
+                    'last_name': fam_member.last_name,
+                    'email': fam_member.email,
+                    'phone': str(fam_member.phone) if fam_member.phone else '',
+                    'relationship': relationship_type,
+                    'date_of_birth': fam_member.date_of_birth.isoformat() if fam_member.date_of_birth else None,
+                    'photo_url': fam_member.photo_url if hasattr(fam_member, 'photo_url') else None
+                })
+            
+            logger.info(f"[MemberViewSet] Returning {len(members_data)} family members")
+            
+            return Response({
+                'success': True,
+                'results': members_data,
+                'count': len(members_data),
+                'family_name': member.family.family_name
+            })
+            
+        except Exception as e:
+            logger.error(f"[MemberViewSet] Family error: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': 'Failed to get family members',
+                'results': []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='birthdays')
     def birthdays(self, request):
@@ -1145,103 +1363,4 @@ def test_database_connection(request):
             'success': False,
             'error': str(e),
             'database': 'disconnected'
-        }, status=500)
-    
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def bulk_import_members(request):
-    """Bulk import members from CSV/Excel"""
-    try:
-        from .utils import BulkImportProcessor
-        
-        if 'file' not in request.FILES:
-            return Response({
-                'success': False,
-                'error': 'No file uploaded'
-            }, status=400)
-        
-        processor = BulkImportProcessor(request.user)
-        import_log = processor.process_file(
-            request.FILES['file'],
-            skip_duplicates=request.data.get('skip_duplicates', True)
-        )
-        
-        return Response({
-            'success': import_log.status in ['completed', 'completed_with_errors'],
-            'data': {
-                'imported': import_log.successful_rows,
-                'failed': import_log.failed_rows,
-                'total': import_log.total_rows
-            },
-            'import_log_id': str(import_log.id)
-        })
-        
-    except Exception as e:
-        return Response({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def get_import_template(request):
-    """Download CSV template for member import"""
-    template_info = {
-        'required_columns': [
-            'first_name', 'last_name', 'email', 'phone'
-        ],
-        'optional_columns': [
-            'date_of_birth', 'gender', 'address', 'preferred_contact_method',
-            'preferred_language', 'profession', 'emergency_contact_name', 
-            'emergency_contact_phone', 'notes', 'family_name'
-        ]
-    }
-    
-    # Create CSV template
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="member_import_template.csv"'
-    
-    writer = csv.writer(response)
-    writer.writerow(template_info['required_columns'] + template_info['optional_columns'])
-    
-    # Add sample row
-    sample_row = [
-        'John', 'Doe', 'john@example.com', '+233241234567',
-        '1990-01-15', 'male', '123 Main St, Accra', 'email',
-        'English', '', 'Jane Doe', '+233241234568', '', ''
-    ]
-    writer.writerow(sample_row)
-    
-    return response
-
-# Add test endpoint for phone processing
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-def test_phone_processing(request):
-    """Test endpoint for phone number processing"""
-    phone_input = request.data.get('phone', '')
-    country = request.data.get('country', 'GH')
-    
-    if not phone_input:
-        return Response({
-            'error': 'Phone number is required'
-        }, status=400)
-    
-    try:
-        is_valid, formatted, error_message = validate_and_format_phone(phone_input, country)
-        
-        return Response({
-            'original': phone_input,
-            'country': country,
-            'is_valid': is_valid,
-            'formatted': formatted,
-            'error': error_message if not is_valid else None,
-            'storage_format': format_phone_for_storage(phone_input) if is_valid else phone_input
-        })
-        
-    except Exception as e:
-        return Response({
-            'error': f'Processing failed: {str(e)}',
-            'original': phone_input
         }, status=500)
