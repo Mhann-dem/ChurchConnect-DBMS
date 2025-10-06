@@ -5,6 +5,7 @@ import {
   MapPin, User, RefreshCw, Download, Plus, X, AlertCircle,
   Users, DollarSign
 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 // Utility functions
 const formatPhoneNumber = (phone) => {
@@ -191,6 +192,7 @@ const ActionButton = ({ icon: Icon, label, onClick, variant = 'primary' }) => {
 const MemberDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
 
@@ -1467,21 +1469,30 @@ const MemberDetailPage = () => {
           isOpen={showAddToGroupModal}
           onClose={() => setShowAddToGroupModal(false)}
           member={member}
-          onSuccess={fetchMemberData}
+          onSuccess={() => {
+            fetchMemberData();
+            showToast('Member added to group successfully!', 'success');
+          }}
         />
 
         <AddToFamilyModal
           isOpen={showAddToFamilyModal}
           onClose={() => setShowAddToFamilyModal(false)}
           member={member}
-          onSuccess={fetchMemberData}
+          onSuccess={() => {
+            fetchMemberData();
+            showToast('Member added to family successfully!', 'success');
+          }}
         />
 
         <CreatePledgeModal
           isOpen={showCreatePledgeModal}
           onClose={() => setShowCreatePledgeModal(false)}
           member={member}
-          onSuccess={fetchMemberData}
+          onSuccess={() => {
+            fetchMemberData();
+            showToast('Pledge created successfully!', 'success');
+          }}
         />
 
         {/* Delete Confirmation Dialog */}

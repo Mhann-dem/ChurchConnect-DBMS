@@ -43563,3 +43563,544 @@ INFO 2025-10-05 21:16:10,432 views [PledgeViewSet] Statistics request from: robb
 INFO 2025-10-05 21:16:10,513 basehttp "GET /api/v1/pledges/?page=1&page_size=25&ordering=-created_at HTTP/1.1" 200 2070
 INFO 2025-10-05 21:16:10,683 views [PledgeViewSet] Statistics returned successfully
 INFO 2025-10-05 21:16:10,688 basehttp "GET /api/v1/pledges/stats/ HTTP/1.1" 200 2662
+INFO 2025-10-06 02:41:03,772 autoreload Watching for file changes with StatReloader
+ERROR 2025-10-06 03:04:29,217 exception Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\http\request.py", line 186, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+WARNING 2025-10-06 03:04:29,765 log Bad Request: /api/v1/pledges/
+ERROR 2025-10-06 03:04:29,781 exception Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\http\request.py", line 186, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+WARNING 2025-10-06 03:04:29,809 log Bad Request: /api/v1/pledges/stats/
+INFO 2025-10-06 03:06:05,260 basehttp "GET / HTTP/1.1" 302 0
+INFO 2025-10-06 03:06:05,836 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+ERROR 2025-10-06 03:06:07,977 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+                       ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+                 ^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+                      ~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1085, in get_fields
+    extra_kwargs = self.get_extra_kwargs()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1408, in get_extra_kwargs
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: The `read_only_fields` option must be a list or tuple. Got str.
+ERROR 2025-10-06 03:06:08,002 basehttp "GET /api/schema/ HTTP/1.1" 500 189916
+ERROR 2025-10-06 03:06:08,934 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+                       ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+                 ^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+                      ~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1085, in get_fields
+    extra_kwargs = self.get_extra_kwargs()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1408, in get_extra_kwargs
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: The `read_only_fields` option must be a list or tuple. Got str.
+ERROR 2025-10-06 03:06:08,941 basehttp "GET /api/schema/ HTTP/1.1" 500 189916
+WARNING 2025-10-06 03:06:23,143 log Not Found: /api
+WARNING 2025-10-06 03:06:23,144 basehttp "GET /api HTTP/1.1" 404 3503
+WARNING 2025-10-06 03:06:23,417 log Not Found: /favicon.ico
+WARNING 2025-10-06 03:06:23,419 basehttp "GET /favicon.ico HTTP/1.1" 404 3527
+INFO 2025-10-06 03:06:38,178 basehttp "GET / HTTP/1.1" 302 0
+INFO 2025-10-06 03:06:38,197 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+ERROR 2025-10-06 03:06:38,594 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+                       ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+                 ^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+                      ~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1085, in get_fields
+    extra_kwargs = self.get_extra_kwargs()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1408, in get_extra_kwargs
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: The `read_only_fields` option must be a list or tuple. Got str.
+ERROR 2025-10-06 03:06:38,603 basehttp "GET /api/schema/ HTTP/1.1" 500 189916
+ERROR 2025-10-06 03:06:38,816 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 112, in get_operation
+    operation['responses'] = self._get_response_bodies()
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1397, in _get_response_bodies
+    return {'200': self._get_response_for_code(response_serializers, '200', direction=direction)}
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1453, in _get_response_for_code
+    component = self.resolve_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1648, in resolve_serializer
+    component.schema = self._map_serializer(serializer, direction, bypass_extensions)
+                       ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 949, in _map_serializer
+    schema = self._map_basic_serializer(serializer, direction)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 1042, in _map_basic_serializer
+    for field in serializer.fields.values():
+                 ^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+                      ~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1085, in get_fields
+    extra_kwargs = self.get_extra_kwargs()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\serializers.py", line 1408, in get_extra_kwargs
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: The `read_only_fields` option must be a list or tuple. Got str.
+ERROR 2025-10-06 03:06:38,822 basehttp "GET /api/schema/ HTTP/1.1" 500 189916
+INFO 2025-10-06 03:12:41,419 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\serializers.py changed, reloading.
+INFO 2025-10-06 03:12:44,924 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:12:55,978 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\authentication\serializers.py changed, reloading.
+INFO 2025-10-06 03:12:57,936 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:13:10,325 basehttp "GET / HTTP/1.1" 302 0
+INFO 2025-10-06 03:13:10,673 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+ERROR 2025-10-06 03:13:12,062 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 92, in get_operation
+    parameters = self._get_parameters()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 264, in _get_parameters
+    **dict_helper(self._get_filter_parameters()),
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 555, in _get_filter_parameters
+    parameters += filter_extension.get_schema_operation_parameters(self)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\contrib\django_filters.py", line 58, in get_schema_operation_parameters
+    filterset_class = self.target.get_filterset_class(auto_schema.view, get_manager(model).none())
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\rest_framework\backends.py", line 49, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+    ...<2 lines>...
+            fields = filterset_fields
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 82, in __new__
+    new_class.base_filters = new_class.get_filters()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 371, in get_filters
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: 'Meta.fields' must not contain non-model field names: pledges__member, pledges__status
+ERROR 2025-10-06 03:13:12,078 basehttp "GET /api/schema/ HTTP/1.1" 500 172173
+ERROR 2025-10-06 03:13:13,596 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 92, in get_operation
+    parameters = self._get_parameters()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 264, in _get_parameters
+    **dict_helper(self._get_filter_parameters()),
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 555, in _get_filter_parameters
+    parameters += filter_extension.get_schema_operation_parameters(self)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\contrib\django_filters.py", line 58, in get_schema_operation_parameters
+    filterset_class = self.target.get_filterset_class(auto_schema.view, get_manager(model).none())
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\rest_framework\backends.py", line 49, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+    ...<2 lines>...
+            fields = filterset_fields
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 82, in __new__
+    new_class.base_filters = new_class.get_filters()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 371, in get_filters
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: 'Meta.fields' must not contain non-model field names: pledges__member, pledges__status
+ERROR 2025-10-06 03:13:13,603 basehttp "GET /api/schema/ HTTP/1.1" 500 172173
+INFO 2025-10-06 03:13:50,145 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:13:59,198 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+ERROR 2025-10-06 03:14:00,145 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 92, in get_operation
+    parameters = self._get_parameters()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 264, in _get_parameters
+    **dict_helper(self._get_filter_parameters()),
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 555, in _get_filter_parameters
+    parameters += filter_extension.get_schema_operation_parameters(self)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\contrib\django_filters.py", line 58, in get_schema_operation_parameters
+    filterset_class = self.target.get_filterset_class(auto_schema.view, get_manager(model).none())
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\rest_framework\backends.py", line 49, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+    ...<2 lines>...
+            fields = filterset_fields
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 82, in __new__
+    new_class.base_filters = new_class.get_filters()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 371, in get_filters
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: 'Meta.fields' must not contain non-model field names: pledges__member, pledges__status
+ERROR 2025-10-06 03:14:00,154 basehttp "GET /api/schema/ HTTP/1.1" 500 172173
+ERROR 2025-10-06 03:14:00,843 log Internal Server Error: /api/schema/
+Traceback (most recent call last):
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 84, in get
+    return self._get_schema_response(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\views.py", line 92, in _get_schema_response
+    data=generator.get_schema(request=request, public=self.serve_public),
+         ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 285, in get_schema
+    paths=self.parse(request, public),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\generators.py", line 256, in parse
+    operation = view.schema.get_operation(
+        path, path_regex, path_prefix, method, self.registry
+    )
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 92, in get_operation
+    parameters = self._get_parameters()
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 264, in _get_parameters
+    **dict_helper(self._get_filter_parameters()),
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\openapi.py", line 555, in _get_filter_parameters
+    parameters += filter_extension.get_schema_operation_parameters(self)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\drf_spectacular\contrib\django_filters.py", line 58, in get_schema_operation_parameters
+    filterset_class = self.target.get_filterset_class(auto_schema.view, get_manager(model).none())
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\rest_framework\backends.py", line 49, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+    ...<2 lines>...
+            fields = filterset_fields
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 82, in __new__
+    new_class.base_filters = new_class.get_filters()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\.venv\Lib\site-packages\django_filters\filterset.py", line 371, in get_filters
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: 'Meta.fields' must not contain non-model field names: pledges__member, pledges__status
+ERROR 2025-10-06 03:14:00,849 basehttp "GET /api/schema/ HTTP/1.1" 500 172173
+INFO 2025-10-06 03:46:22,649 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\views.py changed, reloading.
+INFO 2025-10-06 03:46:26,217 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:47:19,672 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\views.py changed, reloading.
+INFO 2025-10-06 03:47:21,474 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:47:59,225 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\views.py changed, reloading.
+INFO 2025-10-06 03:48:01,043 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:50:27,688 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\views.py changed, reloading.
+INFO 2025-10-06 03:50:29,544 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:50:34,006 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\events\views.py changed, reloading.
+INFO 2025-10-06 03:50:35,726 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:53:10,115 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\views.py changed, reloading.
+INFO 2025-10-06 03:53:12,150 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:54:29,139 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\views.py changed, reloading.
+INFO 2025-10-06 03:54:31,088 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:54:33,903 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\views.py changed, reloading.
+INFO 2025-10-06 03:54:35,756 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:55:04,907 autoreload C:\Users\robbd\Documents\Git\ChurchConnect-DBMS\backend\pledges\views.py changed, reloading.
+INFO 2025-10-06 03:55:06,777 autoreload Watching for file changes with StatReloader
+INFO 2025-10-06 03:55:20,596 basehttp "GET / HTTP/1.1" 302 0
+INFO 2025-10-06 03:55:20,955 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+INFO 2025-10-06 03:55:22,306 basehttp "GET /api/schema/ HTTP/1.1" 200 625576
+INFO 2025-10-06 03:59:19,498 basehttp "GET /api/docs/ HTTP/1.1" 200 4640
+INFO 2025-10-06 03:59:20,249 basehttp "GET /api/schema/ HTTP/1.1" 200 625576
+INFO 2025-10-06 03:59:38,431 basehttp "GET /api/schema/ HTTP/1.1" 200 308600

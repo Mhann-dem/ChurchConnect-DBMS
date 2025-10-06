@@ -409,7 +409,7 @@ class DashboardService {
     );
   }
 
-  // FIXED: Get event statistics
+  // FIXED: Get event statistics with proper error handling and fallback
   async getEventStats() {
     const cacheKey = this.getCacheKey('event_stats');
     return await this.makeRequest(
@@ -417,20 +417,108 @@ class DashboardService {
         console.log('[DashboardService] Fetching event stats...');
         
         try {
-          // FIXED: Based on your events URLs pattern
+          // Try the statistics endpoint first (from your Django views.py)
           const response = await apiMethods.get('events/events/statistics/');
-          return response.data || {
-            total_events: 0, 
-            upcoming_events: 0, 
-            this_month_events: 0
+          console.log('[DashboardService] Event stats raw response:', response.data);
+          
+          // Handle the response structure from your Django EventViewSet.statistics action
+          let processedStats = {
+            total_events: 0,
+            published_events: 0,
+            upcoming_events: 0,
+            past_events: 0,
+            this_month_events: 0,
+            total_registrations: 0,
+            confirmed_registrations: 0
           };
+
+          if (response.data) {
+            // Priority 1: Root level fields (new format)
+            if (response.data.total_events !== undefined) {
+              processedStats = {
+                total_events: response.data.total_events || 0,
+                published_events: response.data.published_events || 0,
+                upcoming_events: response.data.upcoming_events || 0,
+                past_events: response.data.past_events || 0,
+                this_month_events: response.data.this_month_events || response.data.recent_events || 0,
+                total_registrations: response.data.total_registrations || 0,
+                confirmed_registrations: response.data.confirmed_registrations || 0
+              };
+            }
+            // Priority 2: Check if data is in summary object
+            else if (response.data.summary) {
+              processedStats = {
+                total_events: response.data.summary.total_events || 0,
+                published_events: response.data.summary.published_events || 0,
+                upcoming_events: response.data.summary.upcoming_events || 0,
+                past_events: response.data.summary.past_events || 0,
+                this_month_events: response.data.summary.recent_events || 0,
+                total_registrations: response.data.summary.total_registrations || 0,
+                confirmed_registrations: response.data.summary.confirmed_registrations || 0
+              };
+            }
+          }
+
+          console.log('[DashboardService] Processed event stats:', processedStats);
+          return processedStats;
+          
         } catch (error) {
-          console.warn('[DashboardService] Event stats not available:', error.message);
-          return {
-            total_events: 0, 
-            upcoming_events: 0, 
-            this_month_events: 0
-          };
+          console.warn('[DashboardService] Statistics endpoint failed, trying fallback:', error.message);
+          
+          // Fallback: Count events directly from list endpoint
+          try {
+            const now = new Date();
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            
+            // Fetch all events
+            const allEventsResponse = await apiMethods.get('events/events/', {
+              params: { page_size: 1000 } // Get a large page to count
+            });
+            
+            const events = allEventsResponse.data.results || allEventsResponse.data || [];
+            
+            console.log(`[DashboardService] Fallback: Found ${events.length} events from list endpoint`);
+            
+            // Calculate stats from events array
+            const fallbackStats = {
+              total_events: events.length,
+              published_events: events.filter(e => e.status === 'published').length,
+              upcoming_events: events.filter(e => {
+                try {
+                  return e.status === 'published' && new Date(e.start_datetime) > now;
+                } catch { return false; }
+              }).length,
+              past_events: events.filter(e => {
+                try {
+                  return new Date(e.end_datetime) < now;
+                } catch { return false; }
+              }).length,
+              this_month_events: events.filter(e => {
+                try {
+                  return new Date(e.created_at) >= thirtyDaysAgo;
+                } catch { return false; }
+              }).length,
+              total_registrations: events.reduce((sum, e) => 
+                sum + (e.registration_count || 0), 0
+              ),
+              confirmed_registrations: 0 // Can't easily calculate from list
+            };
+            
+            console.log('[DashboardService] Fallback event stats calculated:', fallbackStats);
+            return fallbackStats;
+            
+          } catch (fallbackError) {
+            console.error('[DashboardService] All event stats methods failed:', fallbackError);
+            return {
+              total_events: 0,
+              published_events: 0,
+              upcoming_events: 0,
+              past_events: 0,
+              this_month_events: 0,
+              total_registrations: 0,
+              confirmed_registrations: 0
+            };
+          }
         }
       },
       cacheKey,
@@ -438,7 +526,11 @@ class DashboardService {
       { 
         total_events: 0, 
         upcoming_events: 0, 
-        this_month_events: 0
+        this_month_events: 0,
+        published_events: 0,
+        past_events: 0,
+        total_registrations: 0,
+        confirmed_registrations: 0
       }
     );
   }

@@ -419,7 +419,8 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def statistics(self, request):
         """
-        FIXED: Public statistics endpoint - returns limited info for unauthenticated users
+        FIXED: Get event statistics with proper response structure
+        Public endpoint - no authentication required
         """
         try:
             user_info = request.user.email if request.user.is_authenticated else "Anonymous"
@@ -427,76 +428,111 @@ class EventViewSet(viewsets.ModelViewSet):
             
             now = timezone.now()
             
+            # Base queryset - only public events for unauthenticated users
             if request.user.is_authenticated:
-                # Full statistics for authenticated users
-                total_events = Event.objects.count()
-                published_events = Event.objects.filter(status='published').count()
-                upcoming_events = Event.objects.filter(
-                    start_datetime__gte=now,
-                    status='published'
-                ).count()
-                past_events = Event.objects.filter(end_datetime__lt=now).count()
-                
-                status_counts = Event.objects.values('status').annotate(count=Count('id'))
-                status_breakdown = {item['status']: item['count'] for item in status_counts}
-                
-                type_counts = Event.objects.values('event_type').annotate(count=Count('id'))
-                type_breakdown = {item['event_type']: item['count'] for item in type_counts}
-                
+                base_queryset = Event.objects.all()
+            else:
+                base_queryset = Event.objects.filter(is_public=True, status='published')
+            
+            # Calculate statistics
+            total_events = base_queryset.count()
+            published_events = base_queryset.filter(status='published').count()
+            
+            upcoming_events = base_queryset.filter(
+                start_datetime__gte=now,
+                status='published'
+            ).count()
+            
+            past_events = base_queryset.filter(end_datetime__lt=now).count()
+            
+            # Events in the last 30 days
+            thirty_days_ago = now - timedelta(days=30)
+            recent_events = base_queryset.filter(
+                created_at__gte=thirty_days_ago
+            ).count()
+            
+            # Registration statistics (only for authenticated users)
+            if request.user.is_authenticated:
                 total_registrations = EventRegistration.objects.count()
                 confirmed_registrations = EventRegistration.objects.filter(
                     status='confirmed'
                 ).count()
+                
+                # Status breakdown
+                status_counts = base_queryset.values('status').annotate(count=Count('id'))
+                status_breakdown = {item['status']: item['count'] for item in status_counts}
+                
+                # Type breakdown
+                type_counts = base_queryset.values('event_type').annotate(count=Count('id'))
+                type_breakdown = {item['event_type']: item['count'] for item in type_counts}
             else:
-                # Limited statistics for public
-                total_events = Event.objects.filter(is_public=True, status='published').count()
-                published_events = total_events
-                upcoming_events = Event.objects.filter(
-                    start_datetime__gte=now,
-                    status='published',
-                    is_public=True
-                ).count()
-                past_events = 0
-                status_breakdown = {}
-                type_breakdown = {}
                 total_registrations = 0
                 confirmed_registrations = 0
+                status_breakdown = {}
+                type_breakdown = {}
             
-            thirty_days_ago = now - timedelta(days=30)
-            recent_events = Event.objects.filter(
-                created_at__gte=thirty_days_ago,
-                is_public=True if not request.user.is_authenticated else True
-            ).count()
-            recent_registrations = EventRegistration.objects.filter(
-                registration_date__gte=thirty_days_ago
-            ).count() if request.user.is_authenticated else 0
-            
+            # Construct the response with BOTH formats for compatibility
             stats_data = {
+                # Root level (new format)
+                'total_events': total_events,
+                'published_events': published_events,
+                'upcoming_events': upcoming_events,
+                'past_events': past_events,
+                'this_month_events': recent_events,
+                'recent_events': recent_events,  # Alias
+                'total_registrations': total_registrations,
+                'confirmed_registrations': confirmed_registrations,
+                
+                # Summary object (old format - for backwards compatibility)
                 'summary': {
                     'total_events': total_events,
                     'published_events': published_events,
                     'upcoming_events': upcoming_events,
                     'past_events': past_events,
+                    'recent_events': recent_events,
                     'total_registrations': total_registrations,
                     'confirmed_registrations': confirmed_registrations,
-                    'recent_events': recent_events,
-                    'recent_registrations': recent_registrations
                 },
+                
+                # Breakdown data
                 'breakdown': {
                     'by_status': status_breakdown,
                     'by_type': type_breakdown
                 },
-                'monthly_stats': []
+                
+                # Additional metadata
+                'monthly_stats': [],
+                'timestamp': now.isoformat()
             }
             
-            logger.info(f"[EventViewSet] Statistics calculated successfully")
+            logger.info(f"[EventViewSet] Statistics calculated successfully:")
+            logger.info(f"  - Total Events: {total_events}")
+            logger.info(f"  - Published: {published_events}")
+            logger.info(f"  - Upcoming: {upcoming_events}")
+            logger.info(f"  - Recent (30d): {recent_events}")
             
             return Response(stats_data)
             
         except Exception as e:
             logger.error(f"[EventViewSet] Statistics error: {str(e)}", exc_info=True)
             return Response(
-                {'error': 'Failed to get statistics'}, 
+                {
+                    'error': 'Failed to get statistics',
+                    'detail': str(e),
+                    # Return zeros as fallback
+                    'total_events': 0,
+                    'published_events': 0,
+                    'upcoming_events': 0,
+                    'past_events': 0,
+                    'this_month_events': 0,
+                    'summary': {
+                        'total_events': 0,
+                        'published_events': 0,
+                        'upcoming_events': 0,
+                        'past_events': 0,
+                        'recent_events': 0,
+                    }
+                }, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

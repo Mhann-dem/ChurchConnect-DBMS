@@ -911,7 +911,9 @@ class LoginAttemptSerializer(serializers.ModelSerializer):
             'id', 'email', 'ip_address', 'success', 'attempted_at',
             'user_agent', 'user_agent_preview', 'time_ago'
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+        'id', 'email', 'ip_address', 'success', 'attempted_at',
+        'user_agent']
 
     def get_user_agent_preview(self, obj):
         """Get truncated user agent for display"""

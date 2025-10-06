@@ -865,14 +865,14 @@ class PledgePaymentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing pledge payments
     """
-    queryset = PledgePayment.objects.select_related('pledges__member')
+    queryset = PledgePayment.objects.select_related('pledge__member')
     serializer_class = PledgePaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['payment_method', 'pledge', 'pledges__member', 'pledges__status']
+    filterset_fields = ['payment_method', 'pledge', 'pledge__member', 'pledge__status']
     search_fields = [
         'reference_number', 'notes', 'recorded_by',
-        'pledges__member__first_name', 'pledges__member__last_name'
+        'pledge__member__first_name', 'pledge__member__last_name'
     ]
     ordering_fields = ['payment_date', 'amount', 'created_at']
     ordering = ['-payment_date']
