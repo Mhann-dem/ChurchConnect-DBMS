@@ -1,4 +1,14 @@
 # core/views.py - PRODUCTION READY with proper error handling and fixed imports
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from .serializers import (
+    HealthCheckSerializer,
+    SystemStatusSerializer,
+    ApiVersionSerializer,
+    DashboardOverviewSerializer,
+    DashboardHealthSerializer,
+    DashboardAlertsSerializer,
+    DashboardStatsSerializer
+)
 from django.http import JsonResponse
 from django.conf import settings
 from django.db import connection, transaction
@@ -9,6 +19,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from datetime import datetime, timedelta
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema, OpenApiTypes, extend_schema_field
 import sys
 import django
 import logging
@@ -16,6 +28,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 # core/views.py - FIXED health check view
+@extend_schema(
+    summary="Health Check",
+    description="Check the health status of the API and database connection",
+    responses={200: HealthCheckSerializer},
+    tags=["Core"]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def health_check(request):
@@ -87,6 +105,12 @@ def health_check(request):
             'service': 'ChurchConnect API'
         }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+@extend_schema(
+    summary="System Status",
+    description="Get detailed system status including database, apps, and configuration",
+    responses={200: SystemStatusSerializer},
+    tags=["Core"]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def system_status(request):
@@ -188,6 +212,12 @@ def system_status(request):
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@extend_schema(
+    summary="API Version",
+    description="Get API version information and available endpoints",
+    responses={200: ApiVersionSerializer},
+    tags=["Core"]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def api_version(request):
@@ -223,6 +253,12 @@ def api_version(request):
         }
     })
 
+@extend_schema(
+    summary="Dashboard Overview",
+    description="Get dashboard overview with statistics for members, pledges, groups, and events",
+    responses={200: DashboardOverviewSerializer},
+    tags=["Dashboard"]
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_overview(request):
@@ -359,6 +395,12 @@ def dashboard_overview(request):
             'timestamp': timezone.now().isoformat()
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@extend_schema(
+    summary="Dashboard Health",
+    description="Get comprehensive dashboard health status",
+    responses={200: DashboardHealthSerializer},
+    tags=["Dashboard"]
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_health(request):
@@ -507,6 +549,12 @@ def dashboard_health(request):
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@extend_schema(
+    summary="Dashboard Alerts",
+    description="Get dashboard alerts and notifications",
+    responses={200: DashboardAlertsSerializer},
+    tags=["Dashboard"]
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_alerts(request):
@@ -646,6 +694,36 @@ def dashboard_alerts(request):
             'timestamp': timezone.now().isoformat()
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@extend_schema(
+    summary="Dashboard Configuration",
+    description="Get or update user-specific dashboard configuration",
+    parameters=[
+        OpenApiParameter(
+            name='user_id',
+            type=str,
+            location=OpenApiParameter.PATH,
+            description='User ID'
+        )
+    ],
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'layout': {'type': 'string', 'enum': ['grid', 'list', 'custom']},
+                'theme': {'type': 'string', 'enum': ['light', 'dark']},
+                'widgets': {'type': 'array'},
+                'refresh_interval': {'type': 'integer', 'minimum': 60},
+            },
+            'required': ['layout', 'widgets']
+        }
+    },
+    responses={
+        200: OpenApiResponse(description="Configuration retrieved/saved successfully"),
+        403: OpenApiResponse(description="Permission denied"),
+        400: OpenApiResponse(description="Validation error")
+    },
+    tags=["Dashboard"]
+)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def dashboard_config(request, user_id):
@@ -803,6 +881,12 @@ def dashboard_config(request, user_id):
             'detail': str(e) if settings.DEBUG else 'Internal server error'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@extend_schema(
+    summary="Dashboard Statistics",
+    description="Get lightweight dashboard statistics for real-time widgets",
+    responses={200: DashboardStatsSerializer},
+    tags=["Dashboard"]
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):

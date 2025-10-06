@@ -1288,6 +1288,7 @@ class MemberNoteViewSet(viewsets.ModelViewSet):
 class MemberStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for member statistics - Authenticated users only"""
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MemberStatsSerializer 
     
     def get_queryset(self):
         return Member.objects.none()

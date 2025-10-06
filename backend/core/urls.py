@@ -1,4 +1,4 @@
-# File: backend/churchconnect/core/urls.py
+# File: backend/core/urls.py
 from django.urls import path
 from . import views
 
@@ -9,12 +9,8 @@ urlpatterns = [
     path('health/', views.health_check, name='health-check'),
     path('status/', views.system_status, name='system-status'),
     path('version/', views.api_version, name='api-version'),
-
-    # # Add these new dashboard endpoints
-    # path('dashboard/health/', views.dashboard_health, name='dashboard_health'),
-    # path('dashboard/alerts/', views.dashboard_alerts, name='dashboard_alerts'),
     
-    # Dashboard endpoints (FIXED)
+    # Dashboard endpoints
     path('dashboard/overview/', views.dashboard_overview, name='dashboard-overview'),
     path('dashboard/health/', views.dashboard_health, name='dashboard-health'),
     path('dashboard/alerts/', views.dashboard_alerts, name='dashboard-alerts'),

@@ -6,6 +6,10 @@ from .models import Member, MemberNote, MemberTag, MemberTagAssignment, BulkImpo
 from datetime import date
 from .validators import validate_and_format_phone
 import logging
+from rest_framework import serializers
+from typing import Optional, Dict, Any, List
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 logger = logging.getLogger(__name__)
 
@@ -213,6 +217,7 @@ class MemberSummarySerializer(serializers.ModelSerializer):
             'email', 'phone', 'age', 'age_group', 'gender', 'is_active',
             'registration_date',
         ]
+    
     
     def get_age(self, obj):
         return obj.age

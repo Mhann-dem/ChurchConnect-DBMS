@@ -962,7 +962,7 @@ class SystemStatsView(APIView):
     System statistics and health metrics
     """
     permission_classes = [IsSuperAdmin]
-    serializer_class = None  # No serializer needed for this view
+    serializer_class = SystemStatsSerializer  # No serializer needed for this view
 
     @method_decorator(cache_page(60 * 10))  # Cache for 10 minutes
     def get(self, request):
@@ -1148,7 +1148,7 @@ class AuditLogView(ListAPIView):
     """
     permission_classes = [IsSuperAdmin]
     pagination_class = StandardResultsSetPagination
-    serializer_class = None  # No serializer needed for this view
+    serializer_class = LoginAttemptSerializer # Placeholder, would need a proper AuditLogSerializer
 
     def get(self, request):
         """Get audit log entries with filtering"""

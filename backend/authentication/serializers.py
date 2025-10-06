@@ -3,7 +3,8 @@
 Enhanced serializers for ChurchConnect authentication system
 Production-ready with comprehensive validation, security, and audit features
 """
-
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -19,6 +20,7 @@ import hashlib
 
 from .models import AdminUser, PasswordResetToken, LoginAttempt
 from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 logger = logging.getLogger('authentication')
 
@@ -266,7 +268,23 @@ class AdminUserSerializer(serializers.ModelSerializer):
     """
     Enhanced admin user serializer with comprehensive validation and security
     """
+    full_name = serializers.ReadOnlyField(help_text="User's full name") 
+    last_login_display = serializers.SerializerMethodField()
+    account_age = serializers.SerializerMethodField()
+    is_locked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AdminUser
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'role', 'active', 'last_login', 'last_login_display',
+            'created_at', 'updated_at', 'full_name', 'password', 
+            'confirm_password', 'account_age', 'is_locked'
+        ]
+        read_only_fields = ['id', 'last_login', 'created_at', 'updated_at', 'is_locked']
+
     @extend_schema_field(serializers.CharField())
+    @extend_schema_field(OpenApiTypes.STR)
     def get_last_login_display(self, obj):
         """Human-readable last login time"""
         if obj.last_login:
@@ -279,6 +297,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
         if obj.created_at:
             return (timezone.now() - obj.created_at).days
         return 0
+    
+    @extend_schema_field(serializers.CharField())
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
     @extend_schema_field(serializers.BooleanField())
     def get_is_locked(self, obj):
@@ -297,37 +319,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'},
         help_text="Confirm password"
     )
-    full_name = serializers.ReadOnlyField()
-    last_login_display = serializers.SerializerMethodField()
-    account_age = serializers.SerializerMethodField()
-    is_locked = serializers.SerializerMethodField()
-
-    class Meta:
-        model = AdminUser
-        fields = [
-            'id', 'username', 'email', 'first_name', 'last_name',
-            'role', 'active', 'last_login', 'last_login_display',
-            'created_at', 'updated_at', 'full_name', 'password', 
-            'confirm_password', 'account_age', 'is_locked'
-        ]
-        read_only_fields = ['id', 'last_login', 'created_at', 'updated_at', 'is_locked']
-
-    def get_last_login_display(self, obj):
-        """Human-readable last login time"""
-        if obj.last_login:
-            return obj.last_login.strftime("%Y-%m-%d %H:%M:%S UTC")
-        return "Never"
-
-    def get_account_age(self, obj):
-        """Calculate account age in days"""
-        if obj.created_at:
-            return (timezone.now() - obj.created_at).days
-        return 0
-
-    def get_is_locked(self, obj):
-        """Check if account appears to be locked"""
-        # Simple check - could be enhanced based on business rules
-        return not obj.active
 
     def validate_email(self, value):
         """Enhanced email validation with security checks"""
@@ -559,7 +550,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for listing admin users with essential info only
     """
-    full_name = serializers.ReadOnlyField()
+    full_name = serializers.ReadOnlyField(help_text="User's full name") 
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     last_login_display = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
@@ -571,12 +562,18 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             'active', 'last_login', 'last_login_display', 'created_at', 'status_display'
         ]
 
+    @extend_schema_field(OpenApiTypes.STR)  # <-- ADD THIS
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+
+    @extend_schema_field(OpenApiTypes.STR)
     def get_last_login_display(self, obj):
         """Human-readable last login"""
         if obj.last_login:
             return obj.last_login.strftime("%Y-%m-%d %H:%M")
         return "Never"
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_status_display(self, obj):
         """Status indicator"""
         if not obj.active:
@@ -842,7 +839,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     Enhanced user profile serializer for self-service profile updates
     """
-    full_name = serializers.ReadOnlyField()
+    full_name = serializers.ReadOnlyField(help_text="User's full name") 
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     account_stats = serializers.SerializerMethodField()
     permissions_summary = serializers.SerializerMethodField()
@@ -858,6 +855,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id', 'username', 'role', 'last_login', 'created_at', 'updated_at'
         ]
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_account_stats(self, obj):
         """Get account statistics"""
         return {
@@ -868,6 +866,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             ).count() if hasattr(obj, 'email') else 0
         }
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_permissions_summary(self, obj):
         """Get user permissions summary"""
         return {
@@ -935,12 +934,14 @@ class LoginAttemptSerializer(serializers.ModelSerializer):
         'id', 'email', 'ip_address', 'success', 'attempted_at',
         'user_agent']
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_user_agent_preview(self, obj):
         """Get truncated user agent for display"""
         if obj.user_agent:
             return obj.user_agent[:50] + "..." if len(obj.user_agent) > 50 else obj.user_agent
         return "Unknown"
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_time_ago(self, obj):
         """Get human-readable time difference"""
         if obj.attempted_at:

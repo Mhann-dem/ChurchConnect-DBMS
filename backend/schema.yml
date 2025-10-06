@@ -751,8 +751,33 @@ paths:
           description: No response body
   /api/v1/auth/security/audit-log/:
     get:
-      operationId: auth_security_audit_log_retrieve
+      operationId: auth_security_audit_log_list
       description: Get audit log entries with filtering
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
       - auth
       security:
@@ -760,7 +785,11 @@ paths:
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLoginAttemptList'
+          description: ''
   /api/v1/auth/security/compliance-report/:
     get:
       operationId: auth_security_compliance_report_retrieve
@@ -848,7 +877,11 @@ paths:
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStats'
+          description: ''
   /api/v1/auth/system/test/:
     get:
       operationId: auth_system_test_retrieve
@@ -1137,128 +1170,198 @@ paths:
   /api/v1/core/dashboard/alerts/:
     get:
       operationId: core_dashboard_alerts_retrieve
-      description: Dashboard alerts endpoint with safe model access.
+      description: Get dashboard alerts and notifications
+      summary: Dashboard Alerts
       tags:
-      - core
+      - Dashboard
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardAlerts'
+          description: ''
   /api/v1/core/dashboard/config/{user_id}/:
     get:
       operationId: core_dashboard_config_retrieve
-      description: Dashboard configuration endpoint with validation and security.
+      description: Get or update user-specific dashboard configuration
+      summary: Dashboard Configuration
       parameters:
       - in: path
         name: user_id
         schema:
           type: string
+        description: User ID
         required: true
       tags:
-      - core
+      - Dashboard
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          description: Configuration retrieved/saved successfully
+        '403':
+          description: Permission denied
+        '400':
+          description: Validation error
     post:
       operationId: core_dashboard_config_create
-      description: Dashboard configuration endpoint with validation and security.
+      description: Get or update user-specific dashboard configuration
+      summary: Dashboard Configuration
       parameters:
       - in: path
         name: user_id
         schema:
           type: string
+        description: User ID
         required: true
       tags:
-      - core
+      - Dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                layout:
+                  type: string
+                  enum:
+                  - grid
+                  - list
+                  - custom
+                theme:
+                  type: string
+                  enum:
+                  - light
+                  - dark
+                widgets:
+                  type: array
+                refresh_interval:
+                  type: integer
+                  minimum: 60
+              required:
+              - layout
+              - widgets
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          description: Configuration retrieved/saved successfully
+        '403':
+          description: Permission denied
+        '400':
+          description: Validation error
   /api/v1/core/dashboard/health/:
     get:
       operationId: core_dashboard_health_retrieve
-      description: Dashboard health endpoint with comprehensive system status.
+      description: Get comprehensive dashboard health status
+      summary: Dashboard Health
       tags:
-      - core
+      - Dashboard
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardHealth'
+          description: ''
   /api/v1/core/dashboard/overview/:
     get:
       operationId: core_dashboard_overview_retrieve
-      description: Dashboard overview endpoint with safe model access and comprehensive
-        error handling.
+      description: Get dashboard overview with statistics for members, pledges, groups,
+        and events
+      summary: Dashboard Overview
       tags:
-      - core
+      - Dashboard
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardOverview'
+          description: ''
   /api/v1/core/dashboard/stats/:
     get:
       operationId: core_dashboard_stats_retrieve
-      description: Lightweight dashboard statistics endpoint for real-time widgets.
+      description: Get lightweight dashboard statistics for real-time widgets
+      summary: Dashboard Statistics
       tags:
-      - core
+      - Dashboard
       security:
       - jwtAuth: []
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+          description: ''
   /api/v1/core/health/:
     get:
       operationId: core_health_retrieve
-      description: |-
-        Health check endpoint for monitoring systems.
-        Returns basic system health information without model dependencies.
+      description: Check the health status of the API and database connection
+      summary: Health Check
       tags:
-      - core
+      - Core
       security:
       - jwtAuth: []
       - BearerAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+          description: ''
   /api/v1/core/status/:
     get:
       operationId: core_status_retrieve
-      description: Detailed system status information with safe model access.
+      description: Get detailed system status including database, apps, and configuration
+      summary: System Status
       tags:
-      - core
+      - Core
       security:
       - jwtAuth: []
       - BearerAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatus'
+          description: ''
   /api/v1/core/version/:
     get:
       operationId: core_version_retrieve
-      description: API version information.
+      description: Get API version information and available endpoints
+      summary: API Version
       tags:
-      - core
+      - Core
       security:
       - jwtAuth: []
       - BearerAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiVersion'
+          description: ''
   /api/v1/events/categories/:
     get:
       operationId: events_categories_list
@@ -4929,7 +5032,11 @@ paths:
       - BearerAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberStats'
+          description: ''
   /api/v1/members/tags/:
     get:
       operationId: members_tags_list
@@ -6894,11 +7001,12 @@ components:
         full_name:
           type: string
           readOnly: true
+          description: User's full name
         account_age:
-          type: string
+          type: integer
           readOnly: true
         is_locked:
-          type: string
+          type: boolean
           readOnly: true
       required:
       - email
@@ -6927,6 +7035,7 @@ components:
         full_name:
           type: string
           readOnly: true
+          description: User's full name
         role:
           allOf:
           - $ref: '#/components/schemas/Role85eEnum'
@@ -6948,6 +7057,7 @@ components:
           nullable: true
         last_login_display:
           type: string
+          description: Human-readable last login
           readOnly: true
         created_at:
           type: string
@@ -6956,6 +7066,7 @@ components:
           description: When the user account was created
         status_display:
           type: string
+          description: Status indicator
           readOnly: true
       required:
       - email
@@ -7013,6 +7124,30 @@ components:
       required:
       - email
       - username
+    ApiVersion:
+      type: object
+      description: Serializer for API version response.
+      properties:
+        api_version:
+          type: string
+        api_name:
+          type: string
+        documentation_url:
+          type: string
+        health_check_url:
+          type: string
+        system_status_url:
+          type: string
+        endpoints:
+          type: object
+          additionalProperties: {}
+      required:
+      - api_name
+      - api_version
+      - documentation_url
+      - endpoints
+      - health_check_url
+      - system_status_url
     BlankEnum:
       enum:
       - ''
@@ -7160,6 +7295,104 @@ components:
           writeOnly: true
       required:
       - family_name
+    DashboardAlerts:
+      type: object
+      description: Serializer for dashboard alerts response.
+      properties:
+        results:
+          type: array
+          items: {}
+        count:
+          type: integer
+        unread_count:
+          type: integer
+        last_updated:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          additionalProperties: {}
+      required:
+      - count
+      - last_updated
+      - results
+      - summary
+      - unread_count
+    DashboardHealth:
+      type: object
+      description: Serializer for dashboard health response.
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        checks:
+          type: object
+          additionalProperties: {}
+        summary:
+          type: object
+          additionalProperties: {}
+        version:
+          type: string
+        environment:
+          type: string
+      required:
+      - checks
+      - environment
+      - status
+      - summary
+      - timestamp
+      - version
+    DashboardOverview:
+      type: object
+      description: Serializer for dashboard overview response.
+      properties:
+        summary:
+          type: object
+          additionalProperties: {}
+        completion_rate:
+          type: number
+          format: double
+        last_updated:
+          type: string
+          format: date-time
+        status:
+          type: string
+      required:
+      - completion_rate
+      - last_updated
+      - status
+      - summary
+    DashboardStats:
+      type: object
+      description: Serializer for dashboard stats response.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        members:
+          type: object
+          additionalProperties: {}
+        pledges:
+          type: object
+          additionalProperties: {}
+        groups:
+          type: object
+          additionalProperties: {}
+        events:
+          type: object
+          additionalProperties: {}
+        system:
+          type: object
+          additionalProperties: {}
+      required:
+      - events
+      - groups
+      - members
+      - pledges
+      - system
+      - timestamp
     DefaultFormatEnum:
       enum:
       - csv
@@ -9107,6 +9340,31 @@ components:
           readOnly: true
       required:
       - name
+    HealthCheck:
+      type: object
+      description: Serializer for health check response.
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        database:
+          type: object
+          additionalProperties: {}
+        version:
+          type: string
+        environment:
+          type: string
+        service:
+          type: string
+      required:
+      - database
+      - environment
+      - service
+      - status
+      - timestamp
+      - version
     Login:
       type: object
       description: Enhanced login serializer with security features and audit logging
@@ -9149,9 +9407,11 @@ components:
           readOnly: true
         user_agent_preview:
           type: string
+          description: Get truncated user agent for display
           readOnly: true
         time_ago:
           type: string
+          description: Get human-readable time difference
           readOnly: true
     LoginRequest:
       type: object
@@ -9797,6 +10057,27 @@ components:
           description: Private notes are only visible to senior staff
       required:
       - note
+    MemberStats:
+      type: object
+      description: Serializer for member statistics
+      properties:
+        summary:
+          type: object
+          additionalProperties: {}
+        demographics:
+          type: object
+          additionalProperties: {}
+        preferences:
+          type: object
+          additionalProperties: {}
+        growth:
+          type: object
+          additionalProperties: {}
+      required:
+      - demographics
+      - growth
+      - preferences
+      - summary
     MemberSummary:
       type: object
       description: Lightweight serializer for member lists
@@ -12474,6 +12755,66 @@ components:
         * `cancelled` - Cancelled
         * `completed` - Completed
         * `postponed` - Postponed
+    SystemStats:
+      type: object
+      description: Serializer for system statistics (read-only)
+      properties:
+        total_users:
+          type: integer
+          readOnly: true
+        active_users:
+          type: integer
+          readOnly: true
+        inactive_users:
+          type: integer
+          readOnly: true
+        super_admins:
+          type: integer
+          readOnly: true
+        admins:
+          type: integer
+          readOnly: true
+        readonly_users:
+          type: integer
+          readOnly: true
+        recent_logins_24h:
+          type: integer
+          readOnly: true
+        failed_login_attempts_24h:
+          type: integer
+          readOnly: true
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+    SystemStatus:
+      type: object
+      description: Serializer for system status response.
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        system:
+          type: object
+          additionalProperties: {}
+        database:
+          type: object
+          additionalProperties: {}
+        statistics:
+          type: object
+          additionalProperties: {}
+        church_info:
+          type: object
+          additionalProperties: {}
+      required:
+      - church_info
+      - database
+      - statistics
+      - status
+      - system
+      - timestamp
     TokenRefresh:
       type: object
       properties:
@@ -12524,6 +12865,7 @@ components:
         full_name:
           type: string
           readOnly: true
+          description: User's full name
         role:
           allOf:
           - $ref: '#/components/schemas/Role85eEnum'
@@ -12553,10 +12895,14 @@ components:
           readOnly: true
           description: When the user account was last updated
         account_stats:
-          type: string
+          type: object
+          additionalProperties: {}
+          description: Get account statistics
           readOnly: true
         permissions_summary:
-          type: string
+          type: object
+          additionalProperties: {}
+          description: Get user permissions summary
           readOnly: true
       required:
       - email
