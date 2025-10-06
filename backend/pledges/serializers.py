@@ -1,14 +1,19 @@
 # ==============================================================================
-# pledges/serializers.py
+# pledges/serializers.py - FIXED VERSION
 # ==============================================================================
 from rest_framework import serializers
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone
+from datetime import date, timedelta
 from decimal import Decimal
+from typing import Optional
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
+
 from .models import Pledge, PledgePayment, PledgeReminder
 
 
-class MemberSummarySerializer(serializers.Serializer):
+class PledgeMemberSummarySerializer(serializers.Serializer):
     """Simple member summary for pledge serializers"""
     id = serializers.UUIDField(read_only=True)
     first_name = serializers.CharField(read_only=True)
@@ -62,13 +67,13 @@ class PledgePaymentSerializer(serializers.ModelSerializer):
 
 class PledgeListSerializer(serializers.ModelSerializer):
     """Simplified serializer for pledge list views"""
-    member_details = MemberSummarySerializer(source='member', read_only=True)
+    member_details = PledgeMemberSummarySerializer(source='member', read_only=True)
     frequency_display = serializers.CharField(source='get_frequency_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     completion_percentage = serializers.ReadOnlyField()
     annual_amount = serializers.SerializerMethodField()
     is_overdue = serializers.ReadOnlyField()
-    remaining_amount = serializers.ReadOnlyField()
+    remaining_amount = serializers.SerializerMethodField()  # Changed from ReadOnlyField
     payment_count = serializers.SerializerMethodField()
     last_payment_date = serializers.SerializerMethodField()
 
@@ -82,23 +87,32 @@ class PledgeListSerializer(serializers.ModelSerializer):
             'payment_count', 'last_payment_date'
         ]
 
-    def get_annual_amount(self, obj):
+    def get_annual_amount(self, obj) -> float:
         """Get annual pledge amount"""
         return float(obj.calculate_annual_amount())
 
-    def get_payment_count(self, obj):
+    def get_payment_count(self, obj) -> int:
         """Get number of payments made"""
         return obj.payments.count()
 
-    def get_last_payment_date(self, obj):
+    @extend_schema_field(OpenApiTypes.DATE)
+    def get_last_payment_date(self, obj) -> Optional[date]:
         """Get date of last payment"""
         last_payment = obj.payments.first()
         return last_payment.payment_date if last_payment else None
 
+    @extend_schema_field(OpenApiTypes.FLOAT)
+    def get_remaining_amount(self, obj) -> float:
+        """Calculate remaining amount to be paid"""
+        if hasattr(obj, 'remaining_amount'):
+            return float(obj.remaining_amount)
+        remaining = obj.total_pledged - obj.total_received
+        return float(max(remaining, Decimal('0.00')))
+
 
 class PledgeDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for pledge detail views"""
-    member_details = MemberSummarySerializer(source='member', read_only=True)
+    member_details = PledgeMemberSummarySerializer(source='member', read_only=True)
     payments = PledgePaymentSerializer(many=True, read_only=True)
     reminders = PledgeReminderSerializer(many=True, read_only=True)
     frequency_display = serializers.CharField(source='get_frequency_display', read_only=True)
@@ -106,7 +120,7 @@ class PledgeDetailSerializer(serializers.ModelSerializer):
     completion_percentage = serializers.ReadOnlyField()
     annual_amount = serializers.SerializerMethodField()
     is_overdue = serializers.ReadOnlyField()
-    remaining_amount = serializers.ReadOnlyField()
+    remaining_amount = serializers.SerializerMethodField()  # Changed from ReadOnlyField
     payment_count = serializers.SerializerMethodField()
     last_payment_date = serializers.SerializerMethodField()
     next_expected_payment = serializers.SerializerMethodField()
@@ -123,28 +137,41 @@ class PledgeDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'total_received']
 
-    def get_annual_amount(self, obj):
+    def get_annual_amount(self, obj) -> float:
         """Get annual pledge amount"""
         return float(obj.calculate_annual_amount())
 
-    def get_payment_count(self, obj):
+    def get_payment_count(self, obj) -> int:
         """Get number of payments made"""
         return obj.payments.count()
 
-    def get_last_payment_date(self, obj):
+    @extend_schema_field(OpenApiTypes.DATE)
+    def get_last_payment_date(self, obj) -> Optional[date]:
         """Get date of last payment"""
         last_payment = obj.payments.first()
         return last_payment.payment_date if last_payment else None
 
-    def get_next_expected_payment(self, obj):
-        """Calculate next expected payment date based on frequency"""
+    @extend_schema_field(OpenApiTypes.FLOAT)
+    def get_remaining_amount(self, obj) -> float:
+        """Calculate remaining amount to be paid"""
+        if hasattr(obj, 'remaining_amount'):
+            return float(obj.remaining_amount)
+        remaining = obj.total_pledged - obj.total_received
+        return float(max(remaining, Decimal('0.00')))
+
+    @extend_schema_field(OpenApiTypes.DATE)
+    def get_next_expected_payment(self, obj) -> Optional[date]:
+        """
+        Calculate next expected payment date based on frequency
+        
+        Returns:
+            Optional[date]: The next expected payment date, or None if not applicable
+        """
         if obj.frequency == 'one-time' or obj.status != 'active':
             return None
         
         last_payment = obj.payments.first()
         base_date = last_payment.payment_date if last_payment else obj.start_date
-        
-        from datetime import timedelta
         
         if obj.frequency == 'weekly':
             next_date = base_date + timedelta(weeks=1)
@@ -158,7 +185,11 @@ class PledgeDetailSerializer(serializers.ModelSerializer):
         else:
             return None
         
-        return next_date if next_date <= (obj.end_date or timezone.now().date() + timedelta(days=365)) else None
+        # Check if next date is within pledge period
+        if obj.end_date and next_date > obj.end_date:
+            return None
+            
+        return next_date if next_date >= timezone.now().date() else None
 
 
 class PledgeCreateUpdateSerializer(serializers.ModelSerializer):

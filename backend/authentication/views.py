@@ -176,6 +176,7 @@ class LogoutView(APIView):
     Enhanced logout view with token blacklisting
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = None 
 
     def post(self, request):
         """Logout with token blacklisting and audit logging"""
@@ -226,6 +227,7 @@ class VerifyTokenView(APIView):
     Enhanced token verification with detailed user information
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = None
 
     def get(self, request):
         """Verify token and return comprehensive user data"""
@@ -263,6 +265,7 @@ class RefreshTokenView(BaseTokenRefreshView):
     """
     Enhanced token refresh with security monitoring
     """
+    serializer_class = None  # Use default serializer
     
     def post(self, request, *args, **kwargs):
         """Override to add security logging"""
@@ -330,6 +333,7 @@ class PasswordChangeView(APIView):
     Enhanced password change view with security validations
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
 
     def post(self, request):
         """Change password with enhanced security logging"""
@@ -369,6 +373,7 @@ class PasswordResetRequestView(APIView):
     Enhanced password reset request with comprehensive security
     """
     permission_classes = [permissions.AllowAny, PasswordResetPermission]
+    serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
         """Request password reset with enhanced security measures"""
@@ -481,6 +486,7 @@ class PasswordResetConfirmView(APIView):
     Enhanced password reset confirmation with security validations
     """
     permission_classes = [permissions.AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
 
     def post(self, request):
         """Confirm password reset with enhanced security"""
@@ -527,6 +533,8 @@ class AdminUserListCreateView(ListCreateAPIView):
     search_fields = ['first_name', 'last_name', 'email', 'username']
     ordering_fields = ['created_at', 'last_login', 'email', 'role']
     ordering = ['-created_at']
+    serializer_class = AdminUserListSerializer
+
     
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -618,6 +626,8 @@ class AdminUserBulkActionView(APIView):
     Bulk operations for admin users
     """
     permission_classes = [IsSuperAdmin]
+    pagination_class = StandardResultsSetPagination
+    serializer_class = None  # No serializer needed for bulk actions
 
     def post(self, request):
         """Perform bulk actions on admin users"""
@@ -703,6 +713,7 @@ class UserPermissionsView(APIView):
     Enhanced user permissions view with detailed capability information
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = None  # No serializer needed for this view
 
     def get(self, request):
         """Get comprehensive user permissions and capabilities"""
@@ -790,6 +801,7 @@ class ClearLoginAttemptsView(APIView):
     Enhanced login attempts cleanup
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     def post(self, request):
         """Clear old login attempts with configurable retention"""
@@ -830,6 +842,7 @@ class SecurityDashboardView(APIView):
     Comprehensive security dashboard with metrics and alerts
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
     def get(self, request):
@@ -949,6 +962,7 @@ class SystemStatsView(APIView):
     System statistics and health metrics
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     @method_decorator(cache_page(60 * 10))  # Cache for 10 minutes
     def get(self, request):
@@ -986,6 +1000,7 @@ class AccountLockView(APIView):
     Lock user account for security reasons
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     def post(self, request, pk):
         """Lock a user account"""
@@ -1024,6 +1039,7 @@ class AccountUnlockView(APIView):
     Unlock user account
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     def post(self, request, pk):
         """Unlock a user account"""
@@ -1056,6 +1072,7 @@ class ForcePasswordResetView(APIView):
     Force password reset for a user account
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     def post(self, request, user_id):
         """Force password reset for a user"""
@@ -1131,6 +1148,7 @@ class AuditLogView(ListAPIView):
     """
     permission_classes = [IsSuperAdmin]
     pagination_class = StandardResultsSetPagination
+    serializer_class = None  # No serializer needed for this view
 
     def get(self, request):
         """Get audit log entries with filtering"""
@@ -1177,6 +1195,7 @@ class ComplianceReportView(APIView):
     Generate compliance reports for auditing
     """
     permission_classes = [IsSuperAdmin]
+    serializer_class = None  # No serializer needed for this view
 
     def get(self, request):
         """Generate compliance report"""
@@ -1297,6 +1316,7 @@ class HealthCheckView(APIView):
     System health check endpoint
     """
     permission_classes = [permissions.AllowAny]
+    serializer_class = None  # No serializer needed for this view
 
     def get(self, request):
         """Basic health check"""
@@ -1357,6 +1377,7 @@ class TestEndpointView(APIView):
     Enhanced test endpoint for API connectivity and authentication testing
     """
     permission_classes = [permissions.AllowAny]
+    serializer_class = None  # No serializer needed for this view
 
     def get(self, request):
         """Comprehensive API test endpoint"""

@@ -18,6 +18,7 @@ import secrets
 import hashlib
 
 from .models import AdminUser, PasswordResetToken, LoginAttempt
+from drf_spectacular.utils import extend_schema_field
 
 logger = logging.getLogger('authentication')
 
@@ -265,6 +266,25 @@ class AdminUserSerializer(serializers.ModelSerializer):
     """
     Enhanced admin user serializer with comprehensive validation and security
     """
+    @extend_schema_field(serializers.CharField())
+    def get_last_login_display(self, obj):
+        """Human-readable last login time"""
+        if obj.last_login:
+            return obj.last_login.strftime("%Y-%m-%d %H:%M:%S UTC")
+        return "Never"
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_account_age(self, obj):
+        """Calculate account age in days"""
+        if obj.created_at:
+            return (timezone.now() - obj.created_at).days
+        return 0
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_is_locked(self, obj):
+        """Check if account appears to be locked"""
+        return not obj.active
+
     password = serializers.CharField(
         write_only=True, 
         required=False,

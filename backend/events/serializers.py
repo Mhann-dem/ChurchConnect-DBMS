@@ -7,7 +7,7 @@ from members.models import Member
 from groups.models import Group
 
 
-class MemberSummarySerializer(serializers.ModelSerializer):
+class EventMemberSummarySerializer(serializers.ModelSerializer):
     """Simple member serializer for event contexts"""
     full_name = serializers.CharField(source='get_full_name', read_only=True)
     
@@ -16,7 +16,7 @@ class MemberSummarySerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'phone']
 
 
-class GroupSummarySerializer(serializers.ModelSerializer):
+class EventGroupSummarySerializer(serializers.ModelSerializer):
     """Simple group serializer for event contexts"""
     
     class Meta:
@@ -38,7 +38,7 @@ class EventCategorySerializer(serializers.ModelSerializer):
 
 class EventVolunteerSerializer(serializers.ModelSerializer):
     """Serializer for event volunteers"""
-    member = MemberSummarySerializer(read_only=True)
+    member = EventMemberSummarySerializer(read_only=True)
     member_id = serializers.UUIDField(write_only=True, source='member.id')
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -106,7 +106,7 @@ class EventVolunteerSerializer(serializers.ModelSerializer):
 
 class EventRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for event registrations"""
-    member = MemberSummarySerializer(read_only=True)
+    member = EventMemberSummarySerializer(read_only=True)
     member_id = serializers.UUIDField(write_only=True)
     event_title = serializers.CharField(source='event.title', read_only=True)
     member_name = serializers.CharField(source='member.get_full_name', read_only=True)
@@ -178,7 +178,7 @@ class EventSerializer(serializers.ModelSerializer):
     """Main event serializer with full details"""
     category = EventCategorySerializer(read_only=True)
     category_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    target_groups = GroupSummarySerializer(many=True, read_only=True)
+    target_groups = EventGroupSummarySerializer(many=True, read_only=True)
     target_group_ids = serializers.PrimaryKeyRelatedField(
         many=True, 
         write_only=True, 
