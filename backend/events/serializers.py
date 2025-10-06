@@ -5,7 +5,8 @@ from django.db import transaction
 from .models import Event, EventRegistration, EventReminder, EventCategory, EventVolunteer
 from members.models import Member
 from groups.models import Group
-
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 class EventMemberSummarySerializer(serializers.ModelSerializer):
     """Simple member serializer for event contexts"""
@@ -102,6 +103,10 @@ class EventVolunteerSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"member_id": "Member not found."})
         
         return super().update(instance, validated_data)
+    
+    @extend_schema_field(OpenApiTypes.FLOAT)
+    def get_hours_volunteered(self, obj):
+        return obj.hours_volunteered
 
 
 class EventRegistrationSerializer(serializers.ModelSerializer):
@@ -221,14 +226,17 @@ class EventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'last_modified_by']
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_registration_count(self, obj):
         """Get count of confirmed registrations"""
         return obj.registrations.filter(status__in=['confirmed', 'attended']).count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_waitlist_count(self, obj):
         """Get count of waitlisted registrations"""
         return obj.registrations.filter(status='waitlist').count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_volunteer_count(self, obj):
         """Get count of confirmed volunteers"""
         return obj.volunteers.filter(status='confirmed').count()
@@ -312,9 +320,11 @@ class EventListSerializer(serializers.ModelSerializer):
             'is_upcoming', 'is_past', 'organizer', 'registration_fee', 'image_url'
         ]
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_registration_count(self, obj):
         return obj.registrations.filter(status__in=['confirmed', 'attended']).count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_volunteer_count(self, obj):
         return obj.volunteers.filter(status='confirmed').count()
 
@@ -332,6 +342,7 @@ class EventCalendarSerializer(serializers.ModelSerializer):
             'is_public', 'status', 'is_featured', 'color'
         ]
     
+    @extend_schema_field(OpenApiTypes.STR)
     def get_color(self, obj):
         """Add color based on event type"""
         color_map = {
@@ -475,9 +486,11 @@ class EventExportSerializer(serializers.ModelSerializer):
             'volunteer_count', 'registration_fee', 'created_at'
         ]
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_registration_count(self, obj):
         return obj.registrations.filter(status__in=['confirmed', 'attended']).count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_volunteer_count(self, obj):
         return obj.volunteers.filter(status='confirmed').count()
 

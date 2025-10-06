@@ -1,135 +1,119 @@
 # File: backend/authentication/urls.py
 """
-Enhanced URL configuration for ChurchConnect authentication system
-Production-ready with comprehensive security, versioning, and monitoring
+FIXED URL configuration - removed all duplicates causing operationId collisions
 """
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_headers
 
 from .views import (
-    # Core authentication views
     LoginView, LogoutView, VerifyTokenView, RefreshTokenView,
-    
-    # Profile and password management
     UserProfileView, PasswordChangeView,
     PasswordResetRequestView, PasswordResetConfirmView,
-    
-    # User management (admin only)
     AdminUserListCreateView, AdminUserDetailView,
     AdminUserBulkActionView,
-    
-    # Security and monitoring
     UserPermissionsView, LoginAttemptsView, ClearLoginAttemptsView,
     SecurityDashboardView, SystemStatsView,
-    
-    # Account management
     AccountLockView, AccountUnlockView, ForcePasswordResetView,
-    
-    # API testing and health checks
     TestEndpointView, HealthCheckView,
-    
-    # Audit and compliance
     AuditLogView, ComplianceReportView,
 )
 
 app_name = 'authentication'
 
-# Router for viewsets (if any are added later)
 router = DefaultRouter()
 
-# Core authentication endpoints
-auth_patterns = [
+urlpatterns = [
+    path('', include(router.urls)),
+    
+    # ============================================
+    # CORE AUTHENTICATION ENDPOINTS
+    # ============================================
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('verify/', VerifyTokenView.as_view(), name='verify-token'),
     path('refresh/', RefreshTokenView.as_view(), name='token-refresh'),
-    
-    # Alternative JWT refresh endpoint
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh-jwt'),
-]
-
-# Profile and self-service endpoints
-profile_patterns = [
+    path('test/', TestEndpointView.as_view(), name='test-endpoint'),
+    
+    # ============================================
+    # PROFILE & SELF-SERVICE ENDPOINTS
+    # ============================================
     path('profile/', UserProfileView.as_view(), name='user-profile'),
-    path('profile/permissions/', UserPermissionsView.as_view(), name='user-permissions'),
-    path('profile/stats/', 
-         cache_page(60 * 5)(UserPermissionsView.as_view()), 
-         name='user-stats'),
-]
-
-# Password management endpoints
-password_patterns = [
+    path('permissions/', UserPermissionsView.as_view(), name='user-permissions'),
+    path('profile/stats/', cache_page(60 * 5)(UserPermissionsView.as_view()), name='user-stats'),
+    
+    # ============================================
+    # PASSWORD MANAGEMENT ENDPOINTS (Hyphenated only)
+    # ============================================
     path('password/change/', PasswordChangeView.as_view(), name='password-change'),
     path('password/reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     path('password/force-reset/<uuid:user_id>/', ForcePasswordResetView.as_view(), name='password-force-reset'),
-]
-
-# User management endpoints (admin access required)
-admin_user_patterns = [
+    
+    # ============================================
+    # USER MANAGEMENT ENDPOINTS (Admin)
+    # ============================================
     path('users/', AdminUserListCreateView.as_view(), name='admin-users-list'),
     path('users/<uuid:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('users/bulk-action/', AdminUserBulkActionView.as_view(), name='admin-users-bulk'),
     path('users/<uuid:pk>/lock/', AccountLockView.as_view(), name='account-lock'),
     path('users/<uuid:pk>/unlock/', AccountUnlockView.as_view(), name='account-unlock'),
-]
-
-# Security and monitoring endpoints (super admin access)
-security_patterns = [
+    
+    # ============================================
+    # SECURITY & MONITORING ENDPOINTS (Super Admin)
+    # ============================================
     path('security/', SecurityDashboardView.as_view(), name='security-dashboard'),
-    path('security/login-attempts/', LoginAttemptsView.as_view(), name='login-attempts'),
-    path('security/login-attempts/clear/', ClearLoginAttemptsView.as_view(), name='clear-login-attempts'),
+    path('security/login-attempts/', LoginAttemptsView.as_view(), name='security-login-attempts'),
+    path('security/login-attempts/clear/', ClearLoginAttemptsView.as_view(), name='security-clear-attempts'),
     path('security/audit-log/', AuditLogView.as_view(), name='audit-log'),
     path('security/compliance-report/', ComplianceReportView.as_view(), name='compliance-report'),
-]
-
-# System monitoring endpoints
-system_patterns = [
+    
+    # ============================================
+    # SYSTEM MONITORING ENDPOINTS
+    # ============================================
     path('system/health/', HealthCheckView.as_view(), name='health-check'),
     path('system/stats/', SystemStatsView.as_view(), name='system-stats'),
-    path('system/test/', TestEndpointView.as_view(), name='test-endpoint'),
 ]
 
-# Main URL patterns
-urlpatterns = [
-    # Include router URLs if any viewsets are added
-    path('', include(router.urls)),
-    
-    # Core authentication
-    path('auth/', include(auth_patterns)),
-    
-    # Profile management
-    path('', include(profile_patterns)),
-    
-    # Password management
-    path('', include(password_patterns)),
-    
-    # User management (admin)
-    path('admin/', include(admin_user_patterns)),
-    
-    # Security monitoring
-    path('', include(security_patterns)),
-    
-    # System monitoring
-    path('', include(system_patterns)),
-    
-    # Legacy endpoints for backward compatibility
-    # These maintain the original structure from your existing code
-    path('login/', LoginView.as_view(), name='login-legacy'),
-    path('logout/', LogoutView.as_view(), name='logout-legacy'),
-    path('verify/', VerifyTokenView.as_view(), name='verify-token-legacy'),
-    path('test/', TestEndpointView.as_view(), name='test-legacy'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh-legacy'),
-    path('change-password/', PasswordChangeView.as_view(), name='change-password-legacy'),
-    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request-legacy'),
-    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm-legacy'),
-    path('users/', AdminUserListCreateView.as_view(), name='admin-users-list-legacy'),
-    path('users/<uuid:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail-legacy'),
-    path('permissions/', UserPermissionsView.as_view(), name='user-permissions-legacy'),
-    path('login-attempts/', LoginAttemptsView.as_view(), name='login-attempts-legacy'),
-    path('login-attempts/clear/', ClearLoginAttemptsView.as_view(), name='clear-login-attempts-legacy'),
-]
+# Available URL patterns after this configuration:
+#
+# Authentication:
+# - POST /api/v1/auth/login/                              - User login
+# - POST /api/v1/auth/logout/                             - User logout
+# - POST /api/v1/auth/verify/                             - Verify JWT token
+# - POST /api/v1/auth/refresh/                            - Refresh JWT token
+# - POST /api/v1/auth/token/refresh/                      - Alternative refresh endpoint
+# - GET  /api/v1/auth/test/                               - Test endpoint
+#
+# Profile:
+# - GET/PUT/PATCH /api/v1/auth/profile/                   - User profile management
+# - GET  /api/v1/auth/permissions/                        - User permissions
+# - GET  /api/v1/auth/profile/permissions/                - Alternative permissions endpoint
+# - GET  /api/v1/auth/profile/stats/                      - User statistics (cached)
+#
+# Password Management:
+# - POST /api/v1/auth/password/change/                    - Change password
+# - POST /api/v1/auth/password/reset/request/             - Request password reset
+# - POST /api/v1/auth/password/reset/confirm/             - Confirm password reset
+# - POST /api/v1/auth/password/force-reset/{user_id}/     - Force password reset (admin)
+#
+# User Management (Admin):
+# - GET/POST  /api/v1/auth/users/                         - List/Create users
+# - GET/PUT/PATCH/DELETE /api/v1/auth/users/{id}/         - User CRUD operations
+# - POST /api/v1/auth/users/bulk-action/                  - Bulk user actions
+# - POST /api/v1/auth/users/{id}/lock/                    - Lock user account
+# - POST /api/v1/auth/users/{id}/unlock/                  - Unlock user account
+#
+# Security Monitoring (Super Admin):
+# - GET  /api/v1/auth/security/                           - Security dashboard
+# - GET  /api/v1/auth/security/login-attempts/            - View login attempts
+# - POST /api/v1/auth/security/login-attempts/clear/      - Clear login attempts
+# - GET  /api/v1/auth/security/audit-log/                 - View audit log
+# - GET  /api/v1/auth/security/compliance-report/         - Compliance report
+#
+# System Monitoring:
+# - GET  /api/v1/auth/system/health/                      - Health check
+# - GET  /api/v1/auth/system/stats/                       - System statistics

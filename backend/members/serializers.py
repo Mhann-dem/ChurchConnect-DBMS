@@ -218,9 +218,21 @@ class MemberSummarySerializer(serializers.ModelSerializer):
             'registration_date',
         ]
     
-    
+    @extend_schema_field(OpenApiTypes.INT)
     def get_age(self, obj):
         return obj.age
+    
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_full_name(self, obj):
+        return obj.full_name
+    
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_display_name(self, obj):
+        return obj.display_name
+    
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_age_group(self, obj):
+        return obj.age_group
 
 
 class MemberTagSerializer(serializers.ModelSerializer):
@@ -256,7 +268,7 @@ class MemberNoteSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at', 'created_by']
 
 
-class FamilySummarySerializer(serializers.Serializer):
+class MemberFamilySummarySerializer(serializers.Serializer):
     """Placeholder for family summary"""
     id = serializers.UUIDField()
     family_name = serializers.CharField()
@@ -272,7 +284,7 @@ class FamilySummarySerializer(serializers.Serializer):
 
 class MemberDetailSerializer(serializers.ModelSerializer):
     """Full serializer for member details"""
-    family = FamilySummarySerializer(read_only=True)
+    family = MemberFamilySummarySerializer(read_only=True)
     family_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
     age = serializers.ReadOnlyField()
     full_name = serializers.ReadOnlyField()
@@ -300,6 +312,7 @@ class MemberDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['registration_date', 'last_updated']
     
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_tags(self, obj):
         """Get simplified tag list"""
         return [
@@ -376,6 +389,7 @@ class MemberExportSerializer(serializers.ModelSerializer):
             'preferred_language', 'family_name', 'registration_date', 'is_active'
         ]
     
+    @extend_schema_field(OpenApiTypes.STR)
     def get_family_name(self, obj):
         return obj.family.family_name if obj.family else None
 
@@ -401,6 +415,7 @@ class BulkImportLogSerializer(serializers.ModelSerializer):
             'uploaded_by_name', 'import_errors', 'success_rate'
         ]
     
+    @extend_schema_field(OpenApiTypes.FLOAT)
     def get_success_rate(self, obj):
         if obj.total_rows == 0:
             return 0

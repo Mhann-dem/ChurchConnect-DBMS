@@ -1,4 +1,4 @@
-# File: backend/core/urls.py
+# File: backend/core/urls.py - CLEAN VERSION
 from django.urls import path
 from . import views
 
@@ -18,7 +18,7 @@ urlpatterns = [
     path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
 ]
 
-# URL Structure created:
+# URL Structure:
 # GET /api/v1/core/health/ - Basic health check (public)
 # GET /api/v1/core/status/ - Detailed system status (public)
 # GET /api/v1/core/version/ - API version info (public)
@@ -26,3 +26,4 @@ urlpatterns = [
 # GET /api/v1/core/dashboard/health/ - Dashboard health status (authenticated)
 # GET /api/v1/core/dashboard/alerts/ - Dashboard alerts/notifications (authenticated)
 # GET/POST /api/v1/core/dashboard/config/<user_id>/ - Dashboard configuration (authenticated)
+# GET /api/v1/core/dashboard/stats/ - Dashboard statistics (authenticated)

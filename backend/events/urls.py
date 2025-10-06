@@ -1,4 +1,4 @@
-# events/urls.py - COMPLETE Events URLs for ChurchConnect
+# events/urls.py - CLEAN Events URLs for ChurchConnect
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -22,7 +22,7 @@ urlpatterns = [
     path('', include(router.urls)),
 ]
 
-# URL Structure created by this configuration:
+# URL Structure:
 #
 # Events:
 # GET/POST     /api/v1/events/events/                     - List/Create events

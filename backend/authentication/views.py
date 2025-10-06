@@ -1150,6 +1150,47 @@ class AuditLogView(ListAPIView):
     pagination_class = StandardResultsSetPagination
     serializer_class = LoginAttemptSerializer # Placeholder, would need a proper AuditLogSerializer
 
+    # FIX: Add queryset to resolve schema generation warning
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            # Return empty queryset for schema generation
+            return LoginAttempt.objects.none()
+            
+        queryset = LoginAttempt.objects.all().order_by('-attempted_at')
+        
+        # Apply filters
+        days_back = self.request.query_params.get('days_back', 30)
+        try:
+            days_back = int(days_back)
+            since = timezone.now() - timedelta(days=days_back)
+            queryset = queryset.filter(attempted_at__gte=since)
+        except ValueError:
+            pass
+        
+        return queryset
+
+    def list(self, request):
+        """Get audit log entries with filtering"""
+        queryset = self.get_queryset()
+        
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        
+        # Convert to audit log format
+        audit_entries = []
+        for attempt in page:
+            audit_entries.append({
+                'id': attempt.id,
+                'timestamp': attempt.attempted_at,
+                'event_type': 'LOGIN_SUCCESS' if attempt.success else 'LOGIN_FAILED',
+                'user_email': attempt.email,
+                'ip_address': attempt.ip_address,
+                'details': f"Login {'successful' if attempt.success else 'failed'}",
+                'user_agent': attempt.user_agent[:100] if attempt.user_agent else '',
+            })
+        
+        return paginator.get_paginated_response(audit_entries)
+
     def get(self, request):
         """Get audit log entries with filtering"""
         # This would require implementing an audit log model

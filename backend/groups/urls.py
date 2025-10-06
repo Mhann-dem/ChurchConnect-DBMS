@@ -1,22 +1,22 @@
-# backend/churchconnect/groups/urls.py
-
+# backend/groups/urls.py - CLEAN VERSION
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import GroupViewSet, GroupCategoryViewSet, MemberGroupRelationshipViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
-router.register(r'', GroupViewSet, basename='group')  # Empty prefix for /api/v1/groups/
+router.register(r'', GroupViewSet, basename='group')
 router.register(r'categories', GroupCategoryViewSet, basename='group-category')
 router.register(r'memberships', MemberGroupRelationshipViewSet, basename='group-membership')
 
-# Custom URL patterns for specific endpoints
+app_name = 'groups'
+
 urlpatterns = [
     # Include router URLs
     path('', include(router.urls)),
 ]
 
-# URL patterns will be:
+# URL patterns:
 # Groups:
 # GET /api/v1/groups/ - List groups
 # POST /api/v1/groups/ - Create new group

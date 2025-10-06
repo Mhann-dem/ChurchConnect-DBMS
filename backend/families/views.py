@@ -22,6 +22,7 @@ from .serializers import (
 from members.models import Member
 from core.permissions import IsAdminUser
 from core.pagination import StandardResultsSetPagination
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,16 @@ class FamilyViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='member_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description='Member ID to remove from family'
+            )
+        ]
+    )
     @action(detail=True, methods=['delete'], url_path='remove-member/(?P<member_id>[^/.]+)')
     def remove_member(self, request, pk=None, member_id=None):
         """Remove member from family"""

@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from .models import Report, ReportRun, ReportTemplate
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 
 class ReportTemplateSerializer(serializers.ModelSerializer):
@@ -65,14 +67,17 @@ class ReportSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_by', 'created_at', 'updated_at', 'last_run']
     
+    @extend_schema_field(OpenApiTypes.INT)
     def get_total_runs(self, obj):
         """Get total number of report runs"""
         return obj.runs.count()
     
+    @extend_schema_field(OpenApiTypes.INT)
     def get_successful_runs(self, obj):
         """Get number of successful report runs"""
         return obj.runs.filter(status='completed').count()
     
+    @extend_schema_field(OpenApiTypes.DATETIME)
     def get_last_successful_run(self, obj):
         """Get last successful run date"""
         last_run = obj.runs.filter(status='completed').first()
@@ -155,12 +160,14 @@ class ReportRunSerializer(serializers.ModelSerializer):
             'file_size', 'record_count', 'error_message'
         ]
     
+    @extend_schema_field(OpenApiTypes.FLOAT)
     def get_file_size_mb(self, obj):
         """Convert file size to MB"""
         if obj.file_size:
             return round(obj.file_size / (1024 * 1024), 2)
         return None
     
+    @extend_schema_field(OpenApiTypes.STR)
     def get_download_url(self, obj):
         """Generate download URL for completed reports"""
         if obj.status == 'completed' and obj.file_path:
@@ -221,6 +228,7 @@ class ReportStatsSerializer(serializers.Serializer):
     total_file_size = serializers.IntegerField()  # in bytes
     total_file_size_mb = serializers.SerializerMethodField()
     
+    @extend_schema_field(OpenApiTypes.FLOAT)
     def get_total_file_size_mb(self, obj):
         """Convert total file size to MB"""
         total_size = obj.get('total_file_size', 0)

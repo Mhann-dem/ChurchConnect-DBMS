@@ -265,43 +265,13 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# Add after REST_FRAMEWORK settings
-# API Documentation
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ChurchConnect API',
-    'DESCRIPTION': 'Church Management System API',
+    'DESCRIPTION': 'ChurchConnect Church Management System API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
-    
-    # Schema generation settings
-    'SCHEMA_PATH_PREFIX': '/api/v1',
-    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
-    
-    # Enum handling - let it auto-generate
-    'ENUM_NAME_OVERRIDES': {},
-    
-    # Swagger UI settings
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'displayOperationId': True,
-    },
-    
-    # Component naming
-    'COMPONENT_NO_READ_ONLY_REQUIRED': True,
-    
-    # Security schemes
-    'SECURITY': [{'BearerAuth': []}],
-    'APPEND_COMPONENTS': {
-        'securitySchemes': {
-            'BearerAuth': {
-                'type': 'http',
-                'scheme': 'bearer',
-                'bearerFormat': 'JWT',
-            }
-        }
-    },
+    # Removed ENUM_NAME_OVERRIDES to let drf-spectacular auto-generate enum names
+    # This eliminates the duplication error and warnings
 }
 
 # SECURITY: JWT Configuration with strong settings

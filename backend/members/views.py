@@ -23,7 +23,7 @@ from .serializers import (
     MemberTagSerializer, MemberStatsSerializer,
     BulkImportLogSerializer, BulkImportRequestSerializer, BulkImportTemplateSerializer
 )
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes
 
 # In your views.py, replace the phone processing function:
 
@@ -51,10 +51,19 @@ def process_registration_phone(data: dict, default_country: str = 'GH') -> dict:
     return data
 
 
+@extend_schema(
+    request=BulkImportRequestSerializer,
+    responses={
+        200: OpenApiResponse(description='Import successful'),
+        400: OpenApiResponse(description='Invalid file or data'),
+    },
+    description='Bulk import members from CSV/Excel file'
+)
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def bulk_import_members(request):
     """Bulk import with detailed error reporting"""
+    from .serializers import BulkImportRequestSerializer
     try:
         from .utils import BulkImportProcessor
         
@@ -107,6 +116,12 @@ def bulk_import_members(request):
         }, status=500)
 
 
+@extend_schema(
+    responses={
+        200: OpenApiResponse(description='CSV template file'),
+    },
+    description='Download member import template'
+)
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_import_template(request):
@@ -180,6 +195,14 @@ def get_import_template(request):
             'error': 'Failed to download template'
         }, status=500)
 
+@extend_schema(
+    request=MemberCreateSerializer,
+    responses={
+        201: OpenApiResponse(description='Registration successful'),
+        400: OpenApiResponse(description='Validation errors'),
+    },
+    description='Public member registration endpoint'
+)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def public_member_registration(request):
@@ -1327,6 +1350,11 @@ class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
+        # FIX: Add proper queryset to resolve schema generation warning
+        if getattr(self, 'swagger_fake_view', False):
+            # Return empty queryset for schema generation
+            return BulkImportLog.objects.none()
+            
         user = self.request.user
         if (user.is_superuser or user.is_staff or 
             (hasattr(user, 'role') and user.role in ['admin', 'super_admin'])):
@@ -1337,6 +1365,12 @@ class BulkImportLogViewSet(viewsets.ReadOnlyModelViewSet):
             return BulkImportLog.objects.none()
         
 # Add to members/views.py
+@extend_schema(
+    responses={
+        200: OpenApiResponse(description='Database status'),
+    },
+    description='Test database connectivity'
+)
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def test_database_connection(request):

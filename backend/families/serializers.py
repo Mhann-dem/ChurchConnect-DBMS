@@ -3,7 +3,8 @@ import logging
 from rest_framework import serializers
 from django.db import transaction
 from .models import Family, FamilyRelationship
-
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 class FamilyRelationshipSerializer(serializers.ModelSerializer):
     """Serializer for family relationships with full member details"""
@@ -129,10 +130,10 @@ class FamilySerializer(serializers.ModelSerializer):
     family_relationships = FamilyRelationshipSummarySerializer(many=True, read_only=True)
     
     # Computed properties
-    member_count = serializers.ReadOnlyField()
-    children_count = serializers.ReadOnlyField()
-    adults_count = serializers.ReadOnlyField()
-    dependents_count = serializers.ReadOnlyField()
+    member_count = serializers.IntegerField(read_only=True)
+    children_count = serializers.IntegerField(read_only=True)
+    adults_count = serializers.IntegerField(read_only=True)
+    dependents_count = serializers.IntegerField(read_only=True)
     
     # Family summary information
     family_summary = serializers.ReadOnlyField(source='get_family_summary')
@@ -153,6 +154,7 @@ class FamilySerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_head_of_household(self, obj):
         """Get head of household information"""
         head = obj.get_head_of_household()
@@ -165,6 +167,7 @@ class FamilySerializer(serializers.ModelSerializer):
             }
         return None
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_spouse_info(self, obj):
         """Get spouse information"""
         spouse = obj.get_spouse()
@@ -176,6 +179,14 @@ class FamilySerializer(serializers.ModelSerializer):
                 'phone': spouse.phone
             }
         return None
+    
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_family_summary(self, obj):
+        return obj.get_family_summary()
+    
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_contact_info(self, obj):
+        return obj.get_contact_info()
 
     def validate_primary_contact_id(self, value):
         """Validate primary contact assignment"""

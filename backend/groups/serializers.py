@@ -4,6 +4,8 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Group, MemberGroupRelationship, GroupCategory, GroupCategoryRelationship
 from members.serializers import MemberSummarySerializer
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 
 class GroupCategorySerializer(serializers.ModelSerializer):
@@ -14,6 +16,7 @@ class GroupCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'color', 'is_active', 'created_at', 'group_count']
         read_only_fields = ['id', 'created_at']
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_group_count(self, obj):
         """Return the number of active groups in this category"""
         return obj.groups.filter(group__is_active=True).count()
@@ -96,10 +99,12 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_leader_name_display(self, obj):
         """Return the display name of the leader"""
         return obj.get_leader_name()
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_active_memberships(self, obj):
         """Return only active memberships"""
         active_memberships = obj.memberships.filter(is_active=True, status='active')
@@ -193,9 +198,11 @@ class GroupSummarySerializer(serializers.ModelSerializer):
             'is_full', 'can_join_status'
         ]
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_leader_name_display(self, obj):
         return obj.get_leader_name()
-
+    
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_can_join_status(self, obj):
         """Return whether the group can accept new members"""
         can_join, message = obj.can_join(None)  # General check without specific member

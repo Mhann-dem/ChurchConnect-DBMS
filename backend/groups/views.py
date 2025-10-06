@@ -20,6 +20,8 @@ from .serializers import (
 from members.models import Member
 from core.permissions import IsAdminUser
 from core.pagination import StandardResultsSetPagination
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +174,17 @@ class GroupViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='member_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description='UUID of the member to remove from the group'
+            )
+        ],
+        description='Remove a member from a group'
+    )
     @action(detail=True, methods=['post'], url_path='remove-member/(?P<member_id>[^/.]+)')
     def remove_member(self, request, pk=None, member_id=None):
         """Remove a member from a group"""
@@ -209,6 +222,17 @@ class GroupViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='member_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description='UUID of the member to approve'
+            )
+        ],
+        description='Approve a pending member request'
+    )
     @action(detail=True, methods=['post'], url_path='approve-member/(?P<member_id>[^/.]+)')
     def approve_member(self, request, pk=None, member_id=None):
         """Approve a pending member"""
@@ -253,6 +277,17 @@ class GroupViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='member_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description='UUID of the member to decline'
+            )
+        ],
+        description='Decline a pending member request'
+    )
     @action(detail=True, methods=['post'], url_path='decline-member/(?P<member_id>[^/.]+)')
     def decline_member(self, request, pk=None, member_id=None):
         """Decline a pending member"""
@@ -470,6 +505,17 @@ class GroupViewSet(viewsets.ModelViewSet):
         serializer = MemberGroupRelationshipSerializer(memberships, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='member_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description='UUID of the member whose membership to update'
+            )
+        ],
+        description='Update a member\'s role or status in a group'
+    )
     @action(detail=True, methods=['patch'], url_path='update-membership/(?P<member_id>[^/.]+)')
     def update_membership(self, request, pk=None, member_id=None):
         """Update a member's role or status in a group"""
