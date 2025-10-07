@@ -207,7 +207,6 @@ const MemberDetailPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showAddToFamilyModal, setShowAddToFamilyModal] = useState(false);
   const [showCreatePledgeModal, setShowCreatePledgeModal] = useState(false);
@@ -1353,34 +1352,6 @@ const MemberDetailPage = () => {
     </div>
   );
 
-  // Activity Tab
-  const ActivityTab = () => (
-    <div>
-      {memberActivity.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px' }}>
-          <Calendar size={48} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
-          <p style={{ color: '#6b7280' }}>No recent activity</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {memberActivity.map((activity, idx) => (
-            <Card key={idx}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', marginTop: '6px' }} />
-                <div style={{ flex: 1 }}>
-                  <div>{activity.description}</div>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                    {formatDate(activity.timestamp)}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
   const tabs = [
     { key: 'overview', label: 'Overview', content: <OverviewTab /> },
     { key: 'groups', label: `Groups (${memberGroups.length})`, content: <GroupsTab /> },
@@ -1442,9 +1413,6 @@ const MemberDetailPage = () => {
                 />
                 <Button variant="ghost" onClick={fetchMemberData} icon={<RefreshCw size={16} />}>
                   Refresh
-                </Button>
-                <Button variant="outline" onClick={() => setShowEditModal(true)} icon={<Edit size={16} />}>
-                  Edit
                 </Button>
                 <Button variant="danger" onClick={() => setShowDeleteDialog(true)} icon={<Trash2 size={16} />}>
                   Delete

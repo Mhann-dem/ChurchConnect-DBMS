@@ -369,13 +369,14 @@ class PledgeViewSet(viewsets.ModelViewSet):
             )
             
             # Top pledgers (members with highest total pledged)
+            # FIXED: Changed from 'pledge__in' to 'pledges__in' (plural)
             from members.models import Member
             top_pledgers_data = Member.objects.filter(
-                pledge__in=queryset
+                pledges__in=queryset
             ).annotate(
-                total_pledged=Sum('pledge__total_pledged'),
-                total_received=Sum('pledge__total_received'),
-                pledge_count=Count('pledge')
+                total_pledged=Sum('pledges__total_pledged'),
+                total_received=Sum('pledges__total_received'),
+                pledge_count=Count('pledges')
             ).order_by('-total_pledged')[:10]
             
             top_pledgers = []
