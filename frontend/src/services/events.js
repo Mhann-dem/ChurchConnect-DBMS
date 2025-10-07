@@ -91,6 +91,29 @@ class EventsService {
     }
   }
 
+  // In events.js, add this method if missing:
+  async getUpcomingEvents(params = {}) {
+    try {
+      const response = await apiMethods.get(`${this.baseEndpoint}/`, { 
+        params: {
+          ...params,
+          status: 'published',
+          is_public: true,
+          upcoming: 'true',
+          ordering: 'start_datetime'
+        }
+      });
+      
+      return {
+        results: response.data?.results || response.data || [],
+        count: response.data?.count || 0
+      };
+    } catch (error) {
+      console.error('[EventsService] Error getting upcoming events:', error);
+      return { results: [], count: 0 };
+    }
+  }
+
   // FIXED: Get single event from Django
   async getEvent(id) {
     try {

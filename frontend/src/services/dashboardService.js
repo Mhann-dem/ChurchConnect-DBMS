@@ -381,8 +381,8 @@ class DashboardService {
         console.log('[DashboardService] Fetching pledge stats...');
         
         try {
-          // FIXED: Use your working endpoint pattern
-          const response = await apiMethods.get('pledges/stats/', { 
+          // ✅ FIXED: Use correct endpoint
+          const response = await apiMethods.get('pledges/statistics/', { 
             params: { range: timeRange } 
           });
           
@@ -562,28 +562,50 @@ class DashboardService {
     );
   }
 
-  // FIXED: Get recent events
+  // FIXED: Get recent events - shows ALL recent events including featured/published
   async getRecentEvents(limit = 10) {
     const cacheKey = this.getCacheKey('recent_events', { limit });
     return await this.makeRequest(
       async () => {
-        console.log('[DashboardService] Fetching recent events...');
+        console.log('[DashboardService] Fetching recent events for dashboard...');
         
         try {
+          // FIXED: Fetch ALL recent events by creation date
+          // This shows recently added events regardless of their start date
           const response = await apiMethods.get('events/events/', { 
             params: { 
+              page_size: limit,
               limit: limit,
-              ordering: '-created_at',
-              upcoming: false
+              ordering: '-created_at',  // Most recently created first
+              // NO status filter - show all events in admin dashboard
+              // NO upcoming filter - show all events
             } 
           });
           
+          console.log('[DashboardService] Recent events response:', response.data);
+          
+          // Handle pagination response
+          const results = response.data?.results || response.data || [];
+          const count = response.data?.count || results.length;
+          
+          console.log('[DashboardService] Processed recent events:', {
+            count: count,
+            resultsLength: results.length,
+            eventsList: results.map(e => ({
+              id: e.id,
+              title: e.title,
+              status: e.status,
+              is_featured: e.is_featured,
+              created_at: e.created_at
+            }))
+          });
+          
           return {
-            results: response.data.results || [],
-            count: response.data.count || 0
+            results: results,
+            count: count
           };
         } catch (error) {
-          console.warn('[DashboardService] Recent events not available:', error.message);
+          console.error('[DashboardService] Recent events failed:', error.message);
           return { results: [], count: 0 };
         }
       },
@@ -592,7 +614,7 @@ class DashboardService {
       { results: [], count: 0 }
     );
   }
-
+  
   // FIXED: Get recent families
   async getRecentFamilies(limit = 10) {
     const cacheKey = this.getCacheKey('recent_families', { limit });

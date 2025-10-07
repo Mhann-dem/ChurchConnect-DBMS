@@ -1,4 +1,4 @@
-// frontend/src/pages/admin/EventsPage.jsx - COMPLETE with toast notifications
+// frontend/src/pages/admin/EventsPage.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Calendar, Plus, RefreshCw, TrendingUp, Users, Star,
@@ -111,16 +111,27 @@ const AdminEventsPage = () => {
       const eventsData = response.results || response.data || [];
       setEvents(eventsData);
       
+      // Calculate stats from the events data
       const now = new Date();
       const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
       
       setEventStats({
         total: eventsData.length,
-        upcoming: eventsData.filter(e => new Date(e.start_datetime) > now).length,
+        upcoming: eventsData.filter(e => {
+          try {
+            return new Date(e.start_datetime) > now;
+          } catch {
+            return false;
+          }
+        }).length,
         thisMonth: eventsData.filter(e => {
-          const eventDate = new Date(e.start_datetime);
-          return eventDate >= thisMonth && eventDate < nextMonth;
+          try {
+            const eventDate = new Date(e.start_datetime);
+            return eventDate >= thisMonth && eventDate < nextMonth;
+          } catch {
+            return false;
+          }
         }).length,
         featured: eventsData.filter(e => e.is_featured).length
       });
@@ -165,11 +176,18 @@ const AdminEventsPage = () => {
       showToast(`"${deleteEvent.title}" has been deleted successfully`, 'success');
       setDeleteEvent(null);
       
+      // Update stats
       const updatedEvents = events.filter(e => e.id !== deleteEvent.id);
       const now = new Date();
       setEventStats(prev => ({
         total: updatedEvents.length,
-        upcoming: updatedEvents.filter(e => new Date(e.start_datetime) > now).length,
+        upcoming: updatedEvents.filter(e => {
+          try {
+            return new Date(e.start_datetime) > now;
+          } catch {
+            return false;
+          }
+        }).length,
         thisMonth: prev.thisMonth - 1,
         featured: updatedEvents.filter(e => e.is_featured).length
       }));
@@ -629,7 +647,8 @@ const AdminEventsPage = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(event)}
-                        style={{padding: '6px 12px',
+                        style={{
+                          padding: '6px 12px',
                           background: '#fef2f2',
                           border: 'none',
                           borderRadius: '6px',

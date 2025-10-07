@@ -1092,8 +1092,8 @@ const DashboardPage = () => {
       ]
     },
     {
-      name: 'Monthly Pledges',
-      value: `${dashboardData?.pledgeStats?.monthly_total?.toLocaleString() || '0'}`,
+      name: 'Total Pledges',
+      value: formatCurrency(dashboardData?.pledgeStats?.total_pledged || 0),  // ✅ CORRECT FIELD
       icon: CurrencyDollarIcon,
       change: dashboardData?.pledgeStats?.growth_rate || 0,
       changeType: (dashboardData?.pledgeStats?.growth_rate || 0) >= 0 ? 'positive' : 'negative',

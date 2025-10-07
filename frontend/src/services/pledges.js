@@ -161,13 +161,8 @@ class PledgesService {
   // GET: Statistics with fallback
   async getStatistics(params = {}) {
     return this.handleApiCall(async () => {
-      // Try primary endpoint first, fallback to alternative
-      try {
-        return await apiMethods.get(ENDPOINTS.STATS, { params });
-      } catch (error) {
-        console.log('[PledgesService] Primary stats endpoint failed, trying alternative...');
-        return await apiMethods.get(ENDPOINTS.STATISTICS, { params });
-      }
+      // Use the CORRECT endpoint that matches Django
+      return await apiMethods.get(ENDPOINTS.STATISTICS, { params });
     }, 'fetch pledge statistics');
   }
 

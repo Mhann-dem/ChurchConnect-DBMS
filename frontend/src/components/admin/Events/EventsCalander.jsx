@@ -70,24 +70,75 @@ const EventCalendar = () => {
 
   // Fetch events for the current date range
   const fetchEvents = useCallback(async () => {
-    setLoading(true);
     try {
-      const { start, end } = getDateRange();
-      const params = {
-        start_date: format(start, 'yyyy-MM-dd'),
-        end_date: format(end, 'yyyy-MM-dd'),
-        ...filters
+      setLoading(true);
+      setError(null);
+      
+      console.log('[PublicEventsPage] Fetching public events from Django');
+      
+      // Calculate date range for the current month view
+      const startOfMonth = new Date(currentYear, currentMonth, 1);
+      const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+      
+      // Format dates as YYYY-MM-DD for Django
+      const formatYYYYMMDD = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       };
-
-      const response = await eventsService.getCalendarEvents(params);
-      setEvents(response.results || []);
+      
+      const params = {
+        is_public: 'true',           // MUST be string 'true', not boolean
+        status: 'published',         // Only published events
+        start_date: formatYYYYMMDD(startOfMonth),
+        end_date: formatYYYYMMDD(endOfMonth),
+        ordering: 'start_datetime'
+      };
+      
+      // Add category filter if selected
+      if (selectedCategory !== 'all') {
+        params.event_type = selectedCategory;
+      }
+      
+      // Add search term if provided
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      console.log('[PublicEventsPage] Request params:', params);
+      
+      const response = await eventsService.getEvents(params);
+      console.log('[PublicEventsPage] Django response:', response);
+      
+      const eventsList = response.results || response.data || [];
+      
+      // CRITICAL: Double-check filtering on client side
+      const publicEvents = eventsList.filter(event => {
+        const isPublic = event.is_public === true || event.is_public === 'true';
+        const isPublished = event.status === 'published';
+        
+        console.log('[PublicEventsPage] Event filter check:', {
+          id: event.id,
+          title: event.title,
+          is_public: event.is_public,
+          status: event.status,
+          passed: isPublic && isPublished
+        });
+        
+        return isPublic && isPublished;
+      });
+      
+      console.log('[PublicEventsPage] Filtered public events:', publicEvents.length);
+      setEvents(publicEvents);
+      
     } catch (err) {
-      console.error('Error fetching calendar events:', err);
-      showToast('Failed to load events', 'error');
+      console.error('[PublicEventsPage] Error:', err);
+      setError('Unable to load events. Please try again later.');
     } finally {
       setLoading(false);
     }
-  }, [getDateRange, filters, showToast]);
+  }, [selectedCategory, searchTerm, currentMonth, currentYear]);
 
   useEffect(() => {
     fetchEvents();

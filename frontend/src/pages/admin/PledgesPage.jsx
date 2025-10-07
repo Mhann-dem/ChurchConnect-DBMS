@@ -62,7 +62,7 @@ const PledgesPage = () => {
   // Initialize usePledges hook with proper options
   const pledgesHookOptions = useMemo(() => ({
     autoFetch: true,
-    enableCache: true,
+    enableCache: false,
     filters: {
       ...filters,
       search: debouncedSearchQuery

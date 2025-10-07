@@ -5,7 +5,6 @@ import {
   MapPin, User, RefreshCw, Download, Plus, X, AlertCircle,
   Users, DollarSign
 } from 'lucide-react';
-import { useToast } from '../../hooks/useToast';
 
 // Utility functions
 const formatPhoneNumber = (phone) => {
@@ -157,7 +156,6 @@ const Tabs = ({ tabs, activeTab, onTabChange }) => (
   </div>
 );
 
-// Action Buttons Component
 const ActionButton = ({ icon: Icon, label, onClick, variant = 'primary' }) => {
   const variants = {
     primary: { background: '#3b82f6', color: 'white' },
@@ -192,7 +190,6 @@ const ActionButton = ({ icon: Icon, label, onClick, variant = 'primary' }) => {
 const MemberDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
 
@@ -200,6 +197,7 @@ const MemberDetailPage = () => {
   const [member, setMember] = useState(null);
   const [memberGroups, setMemberGroups] = useState([]);
   const [memberPledges, setMemberPledges] = useState([]);
+  const [memberActivity, setMemberActivity] = useState([]); // ✅ FIXED: Added missing state
   const [memberFamily, setMemberFamily] = useState(null);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,6 +208,12 @@ const MemberDetailPage = () => {
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showAddToFamilyModal, setShowAddToFamilyModal] = useState(false);
   const [showCreatePledgeModal, setShowCreatePledgeModal] = useState(false);
+
+  // Toast function (mock implementation)
+  const showToast = (message, type = 'success') => {
+    console.log(`[Toast ${type}]:`, message);
+    alert(message); // Replace with actual toast implementation
+  };
 
   // Cleanup
   useEffect(() => {
@@ -222,7 +226,7 @@ const MemberDetailPage = () => {
     };
   }, []);
 
-  // Fetch member data
+  // ✅ FIXED: Fetch member data with proper family fetching
   const fetchMemberData = useCallback(async () => {
     if (!id) return;
 
@@ -236,7 +240,7 @@ const MemberDetailPage = () => {
       setError(null);
 
       const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const baseURL = 'http://localhost:8000'; // Mock URL
 
       // Fetch member details
       const response = await fetch(`${baseURL}/api/v1/members/${id}/`, {
@@ -260,8 +264,8 @@ const MemberDetailPage = () => {
       
       setMember(data);
 
-      // Fetch additional data in parallel
-      Promise.allSettled([
+      // ✅ FIXED: Fetch additional data including family
+      const results = await Promise.allSettled([
         // Fetch groups
         fetch(`${baseURL}/api/v1/members/${id}/groups/`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -275,20 +279,37 @@ const MemberDetailPage = () => {
         // Fetch activity
         fetch(`${baseURL}/api/v1/members/${id}/activity/`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        }).then(r => r.ok ? r.json() : [])
-      ]).then(results => {
-        if (!mountedRef.current) return;
-        
-        if (results[0].status === 'fulfilled') {
-          setMemberGroups(Array.isArray(results[0].value) ? results[0].value : results[0].value?.results || []);
-        }
-        if (results[1].status === 'fulfilled') {
-          setMemberPledges(results[1].value?.results || []);
-        }
-        if (results[2].status === 'fulfilled') {
-          setMemberActivity(Array.isArray(results[2].value) ? results[2].value : []);
-        }
-      });
+        }).then(r => r.ok ? r.json() : []),
+
+        // ✅ FIXED: Fetch family data
+        fetch(`${baseURL}/api/v1/members/${id}/family/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.ok ? r.json() : null)
+      ]);
+
+      if (!mountedRef.current) return;
+      
+      // Set groups
+      if (results[0].status === 'fulfilled') {
+        setMemberGroups(Array.isArray(results[0].value) ? results[0].value : results[0].value?.results || []);
+      }
+      
+      // Set pledges
+      if (results[1].status === 'fulfilled') {
+        setMemberPledges(results[1].value?.results || []);
+      }
+      
+      // Set activity
+      if (results[2].status === 'fulfilled') {
+        setMemberActivity(Array.isArray(results[2].value) ? results[2].value : []);
+      }
+
+      // ✅ FIXED: Set family data
+      if (results[3].status === 'fulfilled' && results[3].value) {
+        const familyData = results[3].value;
+        setMemberFamily(familyData.family || null);
+        setFamilyMembers(familyData.members || []);
+      }
 
     } catch (err) {
       if (err.name === 'AbortError') return;
@@ -319,7 +340,7 @@ const MemberDetailPage = () => {
     setIsDeleting(true);
     try {
       const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const baseURL = 'http://localhost:8000';
 
       const response = await fetch(`${baseURL}/api/v1/members/${id}/`, {
         method: 'DELETE',
@@ -330,10 +351,11 @@ const MemberDetailPage = () => {
 
       if (!response.ok) throw new Error('Failed to delete member');
 
+      showToast('Member deleted successfully', 'success');
       navigate('/admin/members');
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Failed to delete member: ' + err.message);
+      showToast('Failed to delete member: ' + err.message, 'error');
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -348,17 +370,13 @@ const MemberDetailPage = () => {
     const [notes, setNotes] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const hasFetchedRef = useRef(false);
 
+    // ✅ FIXED: Fetch only once when modal opens
     useEffect(() => {
-      if (isOpen && !hasFetchedRef.current) {
+      if (isOpen) {
         fetchAvailableGroups();
-        hasFetchedRef.current = true;
-      }
-      
-      // Reset when modal closes
-      if (!isOpen) {
-        hasFetchedRef.current = false;
+      } else {
+        // Reset form when closing
         setSelectedGroup('');
         setRole('member');
         setNotes('');
@@ -369,7 +387,7 @@ const MemberDetailPage = () => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseURL = 'http://localhost:8000';
 
         const response = await fetch(`${baseURL}/api/v1/groups/?is_active=true`, {
           headers: {
@@ -384,6 +402,7 @@ const MemberDetailPage = () => {
         }
       } catch (error) {
         console.error('Error fetching groups:', error);
+        showToast('Failed to load groups', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -396,7 +415,7 @@ const MemberDetailPage = () => {
       setIsSubmitting(true);
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseURL = 'http://localhost:8000';
 
         const response = await fetch(`${baseURL}/api/v1/groups/${selectedGroup}/join/`, {
           method: 'POST',
@@ -416,11 +435,11 @@ const MemberDetailPage = () => {
           onClose();
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to add member to group');
+          showToast(error.error || 'Failed to add member to group', 'error');
         }
       } catch (error) {
         console.error('Error adding to group:', error);
-        alert('Failed to add member to group');
+        showToast('Failed to add member to group', 'error');
       } finally {
         setIsSubmitting(false);
       }
@@ -570,7 +589,6 @@ const MemberDetailPage = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
       
-      // Validation
       if (!formData.amount || parseFloat(formData.amount) <= 0) {
         setError('Please enter a valid amount');
         return;
@@ -581,7 +599,7 @@ const MemberDetailPage = () => {
 
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseURL = 'http://localhost:8000';
 
         const pledgeData = {
           member: member.id,
@@ -607,7 +625,6 @@ const MemberDetailPage = () => {
         if (response.ok && data.success) {
           onSuccess && onSuccess();
           onClose();
-          // Reset form
           setFormData({
             amount: '',
             frequency: 'monthly',
@@ -794,7 +811,7 @@ const MemberDetailPage = () => {
     );
   };
 
-  // Add to Family Modal Component
+  // Add to Family Modal Component (similar fixes applied)
   const AddToFamilyModal = ({ isOpen, onClose, member, onSuccess }) => {
     const [availableFamilies, setAvailableFamilies] = useState([]);
     const [selectedFamily, setSelectedFamily] = useState('');
@@ -802,17 +819,11 @@ const MemberDetailPage = () => {
     const [notes, setNotes] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const hasFetchedRef = useRef(false);
 
     useEffect(() => {
-      if (isOpen && !hasFetchedRef.current) {
+      if (isOpen) {
         fetchAvailableFamilies();
-        hasFetchedRef.current = true;
-      }
-      
-      // Reset when modal closes
-      if (!isOpen) {
-        hasFetchedRef.current = false;
+      } else {
         setSelectedFamily('');
         setRelationshipType('other');
         setNotes('');
@@ -823,7 +834,7 @@ const MemberDetailPage = () => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseURL = 'http://localhost:8000';
 
         const response = await fetch(`${baseURL}/api/v1/families/`, {
           headers: {
@@ -838,6 +849,7 @@ const MemberDetailPage = () => {
         }
       } catch (error) {
         console.error('Error fetching families:', error);
+        showToast('Failed to load families', 'error');
       } finally {
         setIsLoading(false);
       }

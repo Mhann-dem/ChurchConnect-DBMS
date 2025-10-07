@@ -87,8 +87,8 @@ const ENDPOINTS = {
     detail: (id) => `pledges/${id}/`,
     update: (id) => `pledges/${id}/`,
     delete: (id) => `pledges/${id}/`,
-    statistics: 'pledges/stats/',  // Primary endpoint Django expects
-    stats: 'pledges/statistics/',  // Alternative endpoint
+    statistics: 'pledges/statistics/',  // ✅ FIXED - matches Django endpoint
+    stats: 'pledges/statistics/',       // ✅ Alias for compatibility
     export: 'pledges/export/',
     recent: 'pledges/recent/',
     trends: 'pledges/trends/',
