@@ -1,4 +1,4 @@
-// pages/admin/PledgesPage.jsx - FIXED VERSION with proper error handling and data flow
+// pages/admin/PledgesPage.jsx - COMPLETE FIXED VERSION
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -59,10 +59,11 @@ const PledgesPage = () => {
   // Debounced search query
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // Initialize usePledges hook with proper options
+  // ✅ FIXED: Enable autoFetch and disable cache for fresh data
   const pledgesHookOptions = useMemo(() => ({
-    autoFetch: true,
-    enableCache: false,
+    autoFetch: true,  // ✅ CRITICAL FIX: Was false, now true
+    enableCache: false,  // ✅ CRITICAL FIX: Disable cache for real-time updates
+    optimisticUpdates: true, // Enable optimistic UI updates
     filters: {
       ...filters,
       search: debouncedSearchQuery
@@ -87,6 +88,59 @@ const PledgesPage = () => {
     clearError,
     refresh
   } = usePledges(pledgesHookOptions) || {};
+
+  // ✅ FIXED: Force refresh when component mounts
+  useEffect(() => {
+    console.log('[PledgesPage] Component mounted, forcing initial data load...');
+    
+    const loadInitialData = async () => {
+      try {
+        if (refresh) {
+          await refresh();
+        } else if (fetchPledges && fetchStatistics) {
+          await Promise.all([
+            fetchPledges({ forceRefresh: true }),
+            fetchStatistics({ forceRefresh: true })
+          ]);
+        }
+        console.log('[PledgesPage] Initial data loaded successfully');
+      } catch (error) {
+        console.error('[PledgesPage] Error loading initial data:', error);
+      }
+    };
+
+    loadInitialData();
+  }, []); // Only run on mount
+
+  // ✅ FIXED: Add visibility change listener to refresh when returning to page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[PledgesPage] Page became visible, refreshing data...');
+        if (refresh) {
+          refresh();
+        } else if (fetchPledges) {
+          fetchPledges({ forceRefresh: true });
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refresh, fetchPledges]);
+
+  // ✅ FIXED: Add focus listener to refresh when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('[PledgesPage] Window focused, refreshing data...');
+      if (refresh) {
+        refresh();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [refresh]);
 
   // Update URL params when state changes
   useEffect(() => {
@@ -154,6 +208,19 @@ const PledgesPage = () => {
           'success'
         );
         
+        // ✅ CRITICAL FIX: Force immediate refresh after creation
+        console.log('[PledgesPage] Pledge created, forcing refresh...');
+        setTimeout(() => {
+          if (refresh) {
+            refresh();
+          } else if (fetchPledges && fetchStatistics) {
+            Promise.all([
+              fetchPledges({ forceRefresh: true }),
+              fetchStatistics({ forceRefresh: true })
+            ]);
+          }
+        }, 500); // Small delay to ensure backend has processed
+        
         // Optionally navigate to member's profile
         if (newPledge?.member_id && window.confirm(
           'Pledge created successfully! Would you like to view this member\'s profile?'
@@ -165,7 +232,7 @@ const PledgesPage = () => {
       console.error('Error creating pledge:', error);
       showToast(error.message || 'Failed to create pledge', 'error');
     }
-  }, [createPledge, showToast, navigate]);
+  }, [createPledge, showToast, navigate, refresh, fetchPledges, fetchStatistics]);
 
   const handleUpdatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!updatePledge || !pledgeId) {
@@ -180,11 +247,21 @@ const PledgesPage = () => {
       setSelectedPledge(null);
       setShowForm(false);
       showToast('Pledge updated successfully', 'success');
+      
+      // ✅ FIXED: Force refresh after update
+      console.log('[PledgesPage] Pledge updated, forcing refresh...');
+      setTimeout(() => {
+        if (refresh) {
+          refresh();
+        } else if (fetchPledges) {
+          fetchPledges({ forceRefresh: true });
+        }
+      }, 500);
     } catch (error) {
       console.error('Error updating pledge:', error);
       showToast(error.message || 'Failed to update pledge', 'error');
     }
-  }, [updatePledge, showToast]);
+  }, [updatePledge, showToast, refresh, fetchPledges]);
 
   const handleDeletePledge = useCallback(async (pledgeId) => {
     if (!deletePledge || !pledgeId) {
@@ -209,11 +286,21 @@ const PledgesPage = () => {
         newSet.delete(pledgeId);
         return newSet;
       });
+      
+      // ✅ FIXED: Force refresh after delete
+      console.log('[PledgesPage] Pledge deleted, forcing refresh...');
+      setTimeout(() => {
+        if (refresh) {
+          refresh();
+        } else if (fetchPledges) {
+          fetchPledges({ forceRefresh: true });
+        }
+      }, 500);
     } catch (error) {
       console.error('Error deleting pledge:', error);
       showToast(error.message || 'Failed to delete pledge', 'error');
     }
-  }, [deletePledge, pledges, showToast]);
+  }, [deletePledge, pledges, showToast, refresh, fetchPledges]);
 
   const handleEditPledge = useCallback((pledge) => {
     if (!pledge?.id) {
@@ -360,10 +447,15 @@ const PledgesPage = () => {
     try {
       if (clearError) clearError();
       
+      console.log('[PledgesPage] Manual refresh triggered by user');
+      
       if (refresh) {
         await refresh();
       } else if (fetchPledges && fetchStatistics) {
-        await Promise.all([fetchPledges(), fetchStatistics()]);
+        await Promise.all([
+          fetchPledges({ forceRefresh: true }), 
+          fetchStatistics({ forceRefresh: true })
+        ]);
       }
       
       showToast('Pledges data refreshed successfully', 'success');

@@ -32,7 +32,7 @@ const SitemapPage = lazy(() => import('./pages/public/SitemapPage'));
 const AccessibilityPage = lazy(() => import('./pages/public/AccessibilityPage'));
 
 // FIXED: Public events page
-const PublicEventsPage = lazy(() => import('./pages/public/EventsPage'));
+const PublicEventsPage = lazy(() => import('./pages/public/PublicEventsPage'));
 
 // Admin components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));

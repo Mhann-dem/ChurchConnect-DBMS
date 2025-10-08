@@ -562,7 +562,7 @@ class DashboardService {
     );
   }
 
-  // FIXED: Get recent events - shows ALL recent events including featured/published
+  // FIXED: Get recent events for dashboard
   async getRecentEvents(limit = 10) {
     const cacheKey = this.getCacheKey('recent_events', { limit });
     return await this.makeRequest(
@@ -570,42 +570,31 @@ class DashboardService {
         console.log('[DashboardService] Fetching recent events for dashboard...');
         
         try {
-          // FIXED: Fetch ALL recent events by creation date
-          // This shows recently added events regardless of their start date
+          // CRITICAL: Order by created_at to show newest additions first
           const response = await apiMethods.get('events/events/', { 
             params: { 
               page_size: limit,
               limit: limit,
-              ordering: '-created_at',  // Most recently created first
-              // NO status filter - show all events in admin dashboard
-              // NO upcoming filter - show all events
+              ordering: '-created_at',  // Most recently CREATED (not by start date)
+              // NO filters - show all event types for admin dashboard
             } 
           });
           
-          console.log('[DashboardService] Recent events response:', response.data);
+          console.log('[DashboardService] Recent events response:', {
+            count: response.data?.count,
+            resultsLength: response.data?.results?.length,
+            firstEvent: response.data?.results?.[0]
+          });
           
-          // Handle pagination response
           const results = response.data?.results || response.data || [];
           const count = response.data?.count || results.length;
-          
-          console.log('[DashboardService] Processed recent events:', {
-            count: count,
-            resultsLength: results.length,
-            eventsList: results.map(e => ({
-              id: e.id,
-              title: e.title,
-              status: e.status,
-              is_featured: e.is_featured,
-              created_at: e.created_at
-            }))
-          });
           
           return {
             results: results,
             count: count
           };
         } catch (error) {
-          console.error('[DashboardService] Recent events failed:', error.message);
+          console.error('[DashboardService] Recent events failed:', error);
           return { results: [], count: 0 };
         }
       },
