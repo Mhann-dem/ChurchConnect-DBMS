@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   UsersIcon, 
@@ -68,6 +68,7 @@ const DashboardPage = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRefresh, setLastRefresh] = useState(null);
   const [familyStats, setFamilyStats] = useState(null);
+  const dataLoadedRef = useRef(false); // ✅ ADD THIS LINE
 
   const isDark = settings?.theme === 'dark';
 
@@ -235,11 +236,12 @@ const DashboardPage = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [showToast, familyStats]);
+  }, [showToast]);
 
-  // Initial data fetch
+  // Initial data fetch - only once on mount
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !dataLoadedRef.current) {
+      dataLoadedRef.current = true; // ✅ Mark as loaded
       fetchDashboardData();
     }
   }, [isAuthenticated, fetchDashboardData]);
@@ -266,115 +268,145 @@ const DashboardPage = () => {
   };
 
   // Reusable components with inline styles
-  const Card = ({ children, className = '', hover = true, style = {}, ...props }) => (
-    <div 
-      style={{
-        background: 'white',
-        borderRadius: '12px',
-        border: '1px solid rgba(0, 0, 0, 0.05)',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        cursor: hover ? 'pointer' : 'default',
-        ...style,
-        ...(hover && {
-          ':hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-          }
-        })
-      }}
-      className={className}
-      onMouseEnter={hover ? (e) => {
-        e.target.style.transform = 'translateY(-2px)';
-        e.target.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-      } : undefined}
-      onMouseLeave={hover ? (e) => {
-        e.target.style.transform = 'translateY(0)';
-        e.target.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-      } : undefined}
-      {...props}
-    >
-      {children}
-    </div>
-  );
+  const Card = ({ children, className = '', hover = true, style = {}, ...props }) => {
+      const [isHovered, setIsHovered] = useState(false);
+      
+      return (
+        <div 
+          style={{
+            background: 'white',
+            borderRadius: '12px',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+            boxShadow: isHovered && hover
+              ? '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            transform: isHovered && hover ? 'translateY(-2px)' : 'translateY(0)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            cursor: hover ? 'pointer' : 'default',
+            ...style
+          }}
+          className={className}
+          onMouseEnter={() => hover && setIsHovered(true)}
+          onMouseLeave={() => hover && setIsHovered(false)}
+          {...props}
+        >
+          {children}
+        </div>
+      );
+  };
 
   const Button = ({ 
-    children, 
-    variant = 'primary', 
-    size = 'md', 
-    to, 
-    onClick, 
-    style = {}, 
-    icon: Icon,
-    iconPosition = 'left',
-    disabled = false,
-    ...props 
-  }) => {
-    const baseStyle = {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      borderRadius: '8px',
-      fontWeight: '600',
-      textDecoration: 'none',
-      transition: 'all 0.2s',
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      border: 'none',
-      ...style
-    };
+      children, 
+      variant = 'primary', 
+      size = 'md', 
+      to, 
+      onClick, 
+      style = {}, 
+      icon: Icon,
+      iconPosition = 'left',
+      disabled = false,
+      ...props 
+    }) => {
+      const baseStyle = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        borderRadius: '8px',
+        fontWeight: '600',
+        textDecoration: 'none',
+        transition: 'all 0.2s',
+        border: 'none',
+        userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent'
+      };
 
-    const variants = {
-      primary: {
-        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-        color: 'white',
-        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
-        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-      },
-      secondary: {
-        background: 'white',
-        color: '#374151',
-        border: '1px solid #d1d5db',
-        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
-        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-      },
-      ghost: {
-        background: 'transparent',
-        color: '#6b7280',
-        padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '12px 24px' : '8px 16px',
-        fontSize: size === 'sm' ? '12px' : size === 'lg' ? '16px' : '14px'
-      },
-      danger: {
-        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        color: 'white',
-        padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
-        fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
-      }
-    };
+      const variants = {
+        primary: {
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+          color: 'white',
+          padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+          fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+        },
+        secondary: {
+          background: 'white',
+          color: '#374151',
+          border: '1px solid #d1d5db',
+          padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+          fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+        },
+        ghost: {
+          background: 'transparent',
+          color: '#6b7280',
+          padding: size === 'sm' ? '6px 12px' : size === 'lg' ? '12px 24px' : '8px 16px',
+          fontSize: size === 'sm' ? '12px' : size === 'lg' ? '16px' : '14px'
+        },
+        danger: {
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          color: 'white',
+          padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 32px' : '12px 24px',
+          fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px'
+        }
+      };
 
-    const finalStyle = { ...baseStyle, ...variants[variant], opacity: disabled ? 0.5 : 1 };
+      // ✅ Apply styles in the correct order
+      const finalStyle = { 
+        ...baseStyle, 
+        ...variants[variant],
+        ...style,  // Custom styles from props
+        // ✅ These MUST be last to ensure they're never overridden
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        pointerEvents: disabled ? 'none' : 'auto'
+      };
 
-    const content = (
-      <>
-        {Icon && iconPosition === 'left' && <Icon style={{ width: '16px', height: '16px' }} />}
-        <span>{children}</span>
-        {Icon && iconPosition === 'right' && <Icon style={{ width: '16px', height: '16px' }} />}
-      </>
-    );
-
-    if (to && !disabled) {
-      return (
-        <Link to={to} style={finalStyle} {...props}>
-          {content}
-        </Link>
+      const content = (
+        <>
+          {Icon && iconPosition === 'left' && <Icon style={{ width: '16px', height: '16px' }} />}
+          <span>{children}</span>
+          {Icon && iconPosition === 'right' && <Icon style={{ width: '16px', height: '16px' }} />}
+        </>
       );
-    }
+      
+      const handleClick = (e) => {
+        if (disabled) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (onClick) {
+          onClick(e);
+        }
+      };
 
-    return (
-      <button style={finalStyle} onClick={onClick} disabled={disabled} {...props}>
-        {content}
-      </button>
-    );
+      if (to && !disabled && !onClick) {
+        return (
+          <Link 
+            to={to} 
+            style={finalStyle}
+            onClick={handleClick} 
+            {...props}
+          >
+            {content}
+          </Link>
+        );
+      }
+
+      return (
+        <button 
+          type="button"
+          style={finalStyle} 
+          onClick={handleClick} 
+          disabled={disabled}
+          {...props}
+        >
+          {content}
+        </button>
+      );
   };
 
   const Badge = ({ children, variant = 'default', style = {} }) => {
@@ -461,7 +493,11 @@ const DashboardPage = () => {
         }}
         onMouseEnter={() => setShowQuickActions(true)}
         onMouseLeave={() => setShowQuickActions(false)}
-        onClick={stat.onClick}
+        onClick={(e) => {  // ✅ FIX: Proper event handling
+          e.preventDefault();
+          e.stopPropagation();
+          stat.onClick();
+        }}
       >
         <div style={{ padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -480,6 +516,7 @@ const DashboardPage = () => {
               variant="ghost"
               size="sm"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 stat.onClick();
               }}
@@ -533,6 +570,7 @@ const DashboardPage = () => {
                 <button
                   key={actionIndex}
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     action.action();
                     setShowQuickActions(false);
@@ -550,10 +588,10 @@ const DashboardPage = () => {
                     transition: 'background-color 0.2s'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';  // ✅ CHANGED target to currentTarget
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backgroundColor = 'transparent';  // ✅ CHANGED target to currentTarget
                   }}
                 >
                   {action.label}
@@ -784,7 +822,11 @@ const DashboardPage = () => {
                 <Card 
                   key={action.name}
                   style={{ background: '#fafafa', border: '1px solid #f0f0f0', cursor: 'pointer' }}
-                  onClick={action.onClick}
+                  onClick={(e) => {  // ✅ FIX: Proper event handling
+                    e.preventDefault();
+                    e.stopPropagation();
+                    action.onClick();
+                  }}
                 >
                   <div style={{
                     display: 'flex',
@@ -1261,7 +1303,7 @@ const DashboardPage = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                 <Button 
                   variant="secondary"
-                  onClick={handleRefresh}
+                  onClick={handleRefresh}  // ✅ This one already works
                   disabled={refreshing}
                   icon={ArrowPathIcon}
                   style={{ opacity: refreshing ? 0.7 : 1 }}
@@ -1270,14 +1312,14 @@ const DashboardPage = () => {
                 </Button>
                 <Button 
                   variant="secondary"
-                  to="/admin/members?action=create"
+                  onClick={() => navigate('/admin/members?action=create')}  // ✅ CHANGE THIS
                   icon={PlusIcon}
                 >
                   Add Member
                 </Button>
                 <Button 
                   variant="primary"
-                  to="/admin/reports"
+                  onClick={() => navigate('/admin/reports')}  // ✅ CHANGE THIS
                   icon={DocumentChartBarIcon}
                 >
                   Reports

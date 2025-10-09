@@ -1,13 +1,10 @@
-// hooks/usePledges.js - FIXED VERSION with proper error handling and API integration
+// hooks/usePledges.js - FIXED VERSION with proper data extraction
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import pledgesService from '../services/pledges';
 import useAuth from './useAuth';
 import { useDebounce } from './useDebounce';
 import { useToast } from './useToast';
 
-/**
- * Enhanced pledges hook with proper API integration and error handling
- */
 const usePledges = (initialOptions = {}) => {
   const { isAuthenticated, hasPermission } = useAuth();
   const { showToast } = useToast();
@@ -15,9 +12,8 @@ const usePledges = (initialOptions = {}) => {
   // Configuration options
   const options = useMemo(() => ({
     enableCache: initialOptions.enableCache !== false,
-    enableRealTime: initialOptions.enableRealTime !== false,
-    cacheTime: initialOptions.cacheTime || 5 * 60 * 1000, // 5 minutes
-    staleTime: initialOptions.staleTime || 2 * 60 * 1000,  // 2 minutes
+    cacheTime: initialOptions.cacheTime || 5 * 60 * 1000,
+    staleTime: initialOptions.staleTime || 2 * 60 * 1000,
     debounceMs: initialOptions.debounceMs || 300,
     autoFetch: initialOptions.autoFetch !== false,
     optimisticUpdates: initialOptions.optimisticUpdates !== false,
@@ -54,7 +50,7 @@ const usePledges = (initialOptions = {}) => {
   // Debounced search
   const debouncedSearch = useDebounce(filters.search, options.debounceMs);
 
-  // Refs for managing state and cleanup
+  // Refs
   const mountedRef = useRef(true);
   const abortControllerRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -82,7 +78,6 @@ const usePledges = (initialOptions = {}) => {
       setError(errorMessage);
     }
     
-    // Show toast for user-facing errors (not auth errors)
     if (error?.response?.status !== 401 && showToast) {
       showToast(errorMessage, 'error');
     }
@@ -90,30 +85,7 @@ const usePledges = (initialOptions = {}) => {
     return errorMessage;
   }, [showToast]);
 
-  // Enhanced success handling
-  const handleSuccess = useCallback((message, data = null) => {
-    console.log(`[usePledges] Success: ${message}`);
-    if (mountedRef.current) {
-      setError(null);
-    }
-    
-    if (message && !message.includes('fetch') && showToast) {
-      showToast(message, 'success');
-    }
-    
-    return data;
-  }, [showToast]);
-
-  // Cancel ongoing requests
-  const cancelRequests = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-    return abortControllerRef.current.signal;
-  }, []);
-
-  // Enhanced fetch with proper response handling
+  // ✅ FIXED: Enhanced fetch with proper response handling
   const fetchPledges = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       const error = 'Insufficient permissions to view pledges';
@@ -156,42 +128,72 @@ const usePledges = (initialOptions = {}) => {
         return { success: false, error: 'Request superseded' };
       }
 
-      if (response.success && response.data) {
+      // ✅ CRITICAL FIX: Properly extract data from response
+      if (response.success) {
         let pledgesArray = [];
         let paginationData = { ...pagination };
 
-        // Handle paginated response
-        if (response.data.results) {
-          pledgesArray = Array.isArray(response.data.results) ? response.data.results : [];
+        // The response.data structure from your API
+        const responseData = response.data;
+
+        console.log('[usePledges] Response data structure:', {
+          hasData: !!responseData,
+          hasResults: !!responseData?.results,
+          isArray: Array.isArray(responseData?.results),
+          count: responseData?.count,
+          resultsLength: responseData?.results?.length
+        });
+
+        // Handle paginated response (most common case)
+        if (responseData && responseData.results) {
+          pledgesArray = Array.isArray(responseData.results) ? responseData.results : [];
           paginationData = {
-            count: response.data.count || 0,
-            next: response.data.next,
-            previous: response.data.previous,
-            totalPages: Math.ceil((response.data.count || 0) / (mergedParams.page_size || 25)),
+            count: responseData.count || 0,
+            next: responseData.next,
+            previous: responseData.previous,
+            totalPages: Math.ceil((responseData.count || 0) / (mergedParams.page_size || 25)),
             currentPage: mergedParams.page || 1,
             itemsPerPage: mergedParams.page_size || 25
           };
-        } else if (Array.isArray(response.data)) {
-          // Non-paginated response
-          pledgesArray = response.data;
+        } 
+        // Handle array response (non-paginated)
+        else if (Array.isArray(responseData)) {
+          pledgesArray = responseData;
           paginationData = {
-            ...pagination,
             count: pledgesArray.length,
+            next: null,
+            previous: null,
             totalPages: 1,
-            currentPage: 1
+            currentPage: 1,
+            itemsPerPage: pledgesArray.length
           };
-        } else {
-          // Single object response
-          pledgesArray = [response.data];
+        }
+        // Handle single object response
+        else if (responseData && typeof responseData === 'object') {
+          pledgesArray = [responseData];
+          paginationData = {
+            count: 1,
+            next: null,
+            previous: null,
+            totalPages: 1,
+            currentPage: 1,
+            itemsPerPage: 1
+          };
         }
 
         if (mountedRef.current) {
+          console.log('[usePledges] Setting pledges:', {
+            arrayLength: pledgesArray.length,
+            pagination: paginationData,
+            firstPledge: pledgesArray[0]
+          });
+
           setPledges(pledgesArray);
           setPagination(paginationData);
           setLastFetch(new Date());
         }
 
-        console.log(`[usePledges] Loaded ${pledgesArray.length} pledges`);
+        console.log(`[usePledges] ✅ Successfully loaded ${pledgesArray.length} pledges`);
         return { success: true, data: pledgesArray };
       } else {
         throw new Error(response.error || 'Failed to fetch pledges');
@@ -223,18 +225,29 @@ const usePledges = (initialOptions = {}) => {
     handleError
   ]);
 
-  // Fetch statistics
+  // ✅ FIXED: Fetch statistics with proper data extraction
   const fetchStatistics = useCallback(async (params = {}) => {
     if (!hasPermission('view_reports')) {
       return { success: false, error: 'Insufficient permissions to view statistics' };
     }
 
     try {
+      console.log('[usePledges] Fetching statistics...');
       const response = await pledgesService.getStatistics(params);
       
       if (response.success && mountedRef.current) {
-        setStatistics(response.data || {});
-        return { success: true, data: response.data };
+        // Extract statistics data properly
+        const statsData = response.data || {};
+        
+        console.log('[usePledges] Statistics received:', {
+          hasData: !!statsData,
+          keys: Object.keys(statsData),
+          totalPledged: statsData.total_pledged,
+          activePledges: statsData.active_pledges
+        });
+
+        setStatistics(statsData);
+        return { success: true, data: statsData };
       } else {
         throw new Error(response.error || 'Failed to fetch statistics');
       }
@@ -244,7 +257,7 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [hasPermission, handleError]);
 
-  // CRUD operations
+  // CRUD operations remain the same
   const createPledge = useCallback(async (pledgeData) => {
     if (!hasPermission('create')) {
       const error = 'Insufficient permissions to create pledges';
@@ -256,9 +269,13 @@ const usePledges = (initialOptions = {}) => {
       setLoading(true);
       setError(null);
 
+      console.log('[usePledges] Creating pledge:', pledgeData);
+
       const response = await pledgesService.createPledge(pledgeData);
       
       if (response.success) {
+        console.log('[usePledges] Pledge created successfully:', response.data);
+        
         // Optimistic update
         if (mountedRef.current && options.optimisticUpdates) {
           setPledges(prev => [response.data, ...prev]);
@@ -268,7 +285,10 @@ const usePledges = (initialOptions = {}) => {
         // Refresh statistics
         fetchStatistics();
         
-        handleSuccess('Pledge created successfully');
+        if (showToast) {
+          showToast('Pledge created successfully', 'success');
+        }
+        
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to create pledge');
@@ -281,7 +301,7 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, options.optimisticUpdates, fetchStatistics, handleError, handleSuccess]);
+  }, [hasPermission, options.optimisticUpdates, fetchStatistics, handleError, showToast]);
 
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!hasPermission('update')) {
@@ -297,7 +317,6 @@ const usePledges = (initialOptions = {}) => {
       const response = await pledgesService.updatePledge(pledgeId, pledgeData);
       
       if (response.success) {
-        // Update with actual response
         if (mountedRef.current) {
           setPledges(prev => prev.map(pledge => 
             pledge.id === pledgeId ? { ...pledge, ...response.data } : pledge
@@ -305,7 +324,11 @@ const usePledges = (initialOptions = {}) => {
         }
         
         fetchStatistics();
-        handleSuccess('Pledge updated successfully');
+        
+        if (showToast) {
+          showToast('Pledge updated successfully', 'success');
+        }
+        
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to update pledge');
@@ -318,7 +341,7 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchStatistics, handleError, handleSuccess]);
+  }, [hasPermission, fetchStatistics, handleError, showToast]);
 
   const deletePledge = useCallback(async (pledgeId) => {
     if (!hasPermission('delete')) {
@@ -340,7 +363,11 @@ const usePledges = (initialOptions = {}) => {
         }
         
         fetchStatistics();
-        handleSuccess('Pledge deleted successfully');
+        
+        if (showToast) {
+          showToast('Pledge deleted successfully', 'success');
+        }
+        
         return true;
       } else {
         throw new Error(response.error || 'Failed to delete pledge');
@@ -353,7 +380,7 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchStatistics, handleError, handleSuccess]);
+  }, [hasPermission, fetchStatistics, handleError, showToast]);
 
   // Bulk operations
   const bulkUpdatePledges = useCallback(async (pledgeIds, updates) => {
@@ -373,7 +400,10 @@ const usePledges = (initialOptions = {}) => {
         await fetchPledges({ forceRefresh: true });
         await fetchStatistics();
         
-        handleSuccess(`Successfully updated ${pledgeIds.length} pledges`);
+        if (showToast) {
+          showToast(`Successfully updated ${pledgeIds.length} pledges`, 'success');
+        }
+        
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to bulk update pledges');
@@ -386,9 +416,8 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchPledges, fetchStatistics, handleError, handleSuccess]);
+  }, [hasPermission, fetchPledges, fetchStatistics, handleError, showToast]);
 
-  // Export function
   const exportPledges = useCallback(async (exportParams = {}, format = 'csv') => {
     if (!hasPermission('export_data')) {
       const error = 'Insufficient permissions to export data';
@@ -404,7 +433,9 @@ const usePledges = (initialOptions = {}) => {
       }, format);
       
       if (response.success) {
-        handleSuccess('Export completed successfully');
+        if (showToast) {
+          showToast('Export completed successfully', 'success');
+        }
         return true;
       } else {
         throw new Error(response.error || 'Failed to export pledges');
@@ -413,7 +444,7 @@ const usePledges = (initialOptions = {}) => {
       handleError(error, 'export pledges');
       throw error;
     }
-  }, [hasPermission, debouncedSearch, filters, handleError, handleSuccess]);
+  }, [hasPermission, debouncedSearch, filters, handleError, showToast]);
 
   // Filter management
   const updateFilters = useCallback((newFilters) => {
@@ -428,22 +459,23 @@ const usePledges = (initialOptions = {}) => {
     setPagination(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Auto-fetch effect
+  // ✅ FIXED: Auto-fetch effect
   useEffect(() => {
     if (!options.autoFetch || !isAuthenticated) return;
 
     const fetchData = async () => {
       try {
+        console.log('[usePledges] Auto-fetch triggered');
         await Promise.all([
           fetchPledges(),
           fetchStatistics()
         ]);
       } catch (error) {
-        console.error('Auto-fetch failed:', error);
+        console.error('[usePledges] Auto-fetch failed:', error);
       }
     };
 
-    const timeoutId = setTimeout(fetchData, 100); // Small delay to ensure component is mounted
+    const timeoutId = setTimeout(fetchData, 100);
     return () => clearTimeout(timeoutId);
   }, [options.autoFetch, isAuthenticated, debouncedSearch, filters.status, filters.frequency, pagination.currentPage]);
 
@@ -462,7 +494,6 @@ const usePledges = (initialOptions = {}) => {
     return totalAmount > 0 ? ((receivedAmount / totalAmount) * 100).toFixed(2) : 0;
   }, [getTotalPledgeAmount, getTotalReceivedAmount]);
 
-  // Clear functions
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -485,16 +516,16 @@ const usePledges = (initialOptions = {}) => {
     }
   }, []);
 
-  // Refresh function
   const refresh = useCallback(async () => {
     try {
+      console.log('[usePledges] Manual refresh triggered');
       setError(null);
       await Promise.all([
         fetchPledges({ forceRefresh: true }),
         fetchStatistics({ forceRefresh: true })
       ]);
     } catch (error) {
-      console.error('Refresh failed:', error);
+      console.error('[usePledges] Refresh failed:', error);
     }
   }, [fetchPledges, fetchStatistics]);
 
