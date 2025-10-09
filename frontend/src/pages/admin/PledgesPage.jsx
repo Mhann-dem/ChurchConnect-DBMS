@@ -643,13 +643,20 @@ const PledgesPage = () => {
         </div>
 
         {/* Statistics Cards */}
-        {statistics && Object.keys(statistics).length > 0 && (
-          <PledgeStats 
-            stats={statistics} 
-            loading={loading}
-            selectedCount={selectedPledges.size}
-          />
-        )}
+      {statistics && Object.keys(statistics).length > 0 ? (
+        <PledgeStats 
+          stats={statistics} 
+          loading={loading}
+          selectedCount={selectedPledges.size}
+        />
+      ) : !loading && (
+        <Card className={styles.infoCard}>
+          <div className={styles.infoContent}>
+            <AlertCircle size={20} />
+            <p>Statistics unavailable. Pledge data is loading...</p>
+          </div>
+        </Card>
+      )}
 
         {/* Search and Filter Bar */}
         <div className={styles.actionBar}>
