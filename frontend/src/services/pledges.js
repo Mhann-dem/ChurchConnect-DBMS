@@ -1,4 +1,4 @@
-// services/pledges.js - FIXED VERSION
+// services/pledges.js - DIAGNOSTIC VERSION
 import apiMethods from './api';
 
 const ENDPOINTS = {
@@ -45,10 +45,9 @@ class PledgesService {
     }
   }
 
-  // ✅ FIXED: Return response.data directly without extra wrapping
   async getPledges(params = {}) {
     try {
-      console.log('[PledgesService] Fetching pledges with params:', params);
+      console.log('[PledgesService] 🔵 Fetching pledges with params:', params);
       
       // Clean params
       const cleanParams = {};
@@ -58,29 +57,61 @@ class PledgesService {
         }
       });
 
-      // Call API - returns axios response with response.data containing Django's response
+      console.log('[PledgesService] 🔵 Clean params:', cleanParams);
+
+      // Call API
       const response = await apiMethods.get(ENDPOINTS.LIST, { params: cleanParams });
       
-      console.log('[PledgesService] ✅ Django response received:', {
-        hasData: !!response.data,
-        hasResults: !!response.data?.results,
-        isArray: Array.isArray(response.data?.results),
-        resultsCount: response.data?.results?.length || 0,
-        totalCount: response.data?.count,
-        dataType: typeof response.data,
-        firstPledge: response.data?.results?.[0] ? 
-          `${response.data.results[0].member_details?.full_name || 'N/A'} - ${response.data.results[0].amount}` : 
-          'none'
+      // 🔍 DIAGNOSTIC LOGGING - Let's see EXACTLY what we're getting
+      console.log('[PledgesService] 🔍 RAW RESPONSE:', {
+        fullResponse: response,
+        responseType: typeof response,
+        hasData: !!response?.data,
+        dataType: typeof response?.data,
+        dataKeys: response?.data ? Object.keys(response.data) : [],
+        dataIsArray: Array.isArray(response?.data),
+        dataHasResults: !!response?.data?.results,
+        resultsIsArray: Array.isArray(response?.data?.results),
+        resultsLength: response?.data?.results?.length,
+        dataHasCount: !!response?.data?.count,
+        count: response?.data?.count,
+        firstItem: response?.data?.results?.[0]
       });
 
-      // ✅ CRITICAL FIX: Return response.data DIRECTLY (it's already the Django pagination object)
-      // Django returns: { count, next, previous, results: [...] }
-      // We return that directly so usePledges can extract response.data.results
+      // Log the actual structure
+      if (response?.data) {
+        console.log('[PledgesService] 🔍 Response.data structure:', JSON.stringify({
+          keys: Object.keys(response.data),
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+          resultsType: typeof response.data.results,
+          resultsIsArray: Array.isArray(response.data.results),
+          resultsLength: response.data.results?.length
+        }, null, 2));
+
+        if (response.data.results && response.data.results.length > 0) {
+          console.log('[PledgesService] 🔍 First pledge sample:', JSON.stringify({
+            id: response.data.results[0].id,
+            amount: response.data.results[0].amount,
+            member_details: response.data.results[0].member_details,
+            status: response.data.results[0].status,
+            frequency: response.data.results[0].frequency
+          }, null, 2));
+        }
+      }
+
+      // Return the data exactly as Django provides it
+      console.log('[PledgesService] ✅ Returning Django pagination object directly');
       return response.data;
       
     } catch (error) {
-      console.error('[PledgesService] ❌ Error fetching pledges:', error);
-      throw error; // Let usePledges handle the error
+      console.error('[PledgesService] ❌ Error fetching pledges:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      throw error;
     }
   }
 
@@ -106,9 +137,8 @@ class PledgesService {
     }
 
     return this.handleApiCall(async () => {
-      // ✅ CRITICAL FIX: Use 'member' not 'member_id' to match Django serializer
       const formattedData = {
-        member: pledgeData.member_id || pledgeData.member,  // Django expects 'member' UUID
+        member: pledgeData.member_id || pledgeData.member,
         amount: parseFloat(pledgeData.amount),
         frequency: pledgeData.frequency,
         start_date: pledgeData.start_date,
@@ -165,7 +195,6 @@ class PledgesService {
     }, `delete pledge ${id}`);
   }
 
-  // ✅ FIXED: Proper statistics handling
   async getStatistics(params = {}) {
     try {
       console.log('[PledgesService] Fetching statistics with params:', params);
@@ -184,61 +213,10 @@ class PledgesService {
     } catch (error) {
       console.error('[PledgesService] Statistics error:', error);
       return {
-        success: true,  // Return success with empty data to prevent blocking
+        success: true,
         data: {}
       };
     }
-  }
-
-  async bulkUpdatePledges(pledgeIds, updates) {
-    if (!Array.isArray(pledgeIds) || pledgeIds.length === 0) {
-      return { success: false, error: 'No pledges selected for bulk update' };
-    }
-
-    return this.handleApiCall(async () => {
-      return await apiMethods.post(ENDPOINTS.BULK_ACTION, {
-        action: 'bulk_update',
-        pledge_ids: pledgeIds,
-        updates: updates
-      });
-    }, `bulk update ${pledgeIds.length} pledges`);
-  }
-
-  async bulkDeletePledges(pledgeIds) {
-    if (!Array.isArray(pledgeIds) || pledgeIds.length === 0) {
-      return { success: false, error: 'No pledges selected for bulk delete' };
-    }
-
-    return this.handleApiCall(async () => {
-      return await apiMethods.post(ENDPOINTS.BULK_ACTION, {
-        action: 'delete',
-        pledge_ids: pledgeIds
-      });
-    }, `bulk delete ${pledgeIds.length} pledges`);
-  }
-
-  async exportPledges(params = {}, format = 'csv') {
-    return this.handleApiCall(async () => {
-      const exportParams = { ...params, format };
-      const response = await apiMethods.get(ENDPOINTS.EXPORT, { 
-        params: exportParams,
-        responseType: 'blob' 
-      });
-
-      const blob = new Blob([response.data], { 
-        type: format === 'csv' ? 'text/csv' : 'application/json' 
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pledges_export_${new Date().toISOString().split('T')[0]}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      return { message: 'Export completed successfully' };
-    }, 'export pledges');
   }
 
   validatePledgeData(pledgeData, requireAll = true) {
@@ -297,31 +275,28 @@ class PledgesService {
     };
   }
 
-  calculateTotalPledged(pledge) {
-    if (!pledge) return 0;
+  async exportPledges(params = {}, format = 'csv') {
+    return this.handleApiCall(async () => {
+      const exportParams = { ...params, format };
+      const response = await apiMethods.get(ENDPOINTS.EXPORT, { 
+        params: exportParams,
+        responseType: 'blob' 
+      });
 
-    if (pledge.frequency === 'one-time' || !pledge.start_date || !pledge.end_date) {
-      return parseFloat(pledge.amount || 0);
-    }
+      const blob = new Blob([response.data], { 
+        type: format === 'csv' ? 'text/csv' : 'application/json' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pledges_export_${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
 
-    const startDate = new Date(pledge.start_date);
-    const endDate = new Date(pledge.end_date);
-    const monthsDiff = ((endDate.getFullYear() - startDate.getFullYear()) * 12) + 
-                       (endDate.getMonth() - startDate.getMonth());
-    const amount = parseFloat(pledge.amount || 0);
-
-    switch (pledge.frequency?.toLowerCase()) {
-      case 'weekly':
-        return amount * Math.ceil(monthsDiff * 4.33);
-      case 'monthly':
-        return amount * Math.max(1, monthsDiff);
-      case 'quarterly':
-        return amount * Math.max(1, Math.ceil(monthsDiff / 3));
-      case 'annually':
-        return amount * Math.max(1, Math.ceil(monthsDiff / 12));
-      default:
-        return amount;
-    }
+      return { message: 'Export completed successfully' };
+    }, 'export pledges');
   }
 }
 

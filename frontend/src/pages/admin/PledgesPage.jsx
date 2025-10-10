@@ -1,4 +1,4 @@
-// pages/admin/PledgesPage.jsx - COMPLETE FIXED VERSION
+// pages/admin/PledgesPage.jsx - FIXED: Remove duplicate data loading
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -59,16 +59,12 @@ const PledgesPage = () => {
   // Debounced search query
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // ✅ FIXED: Enable autoFetch and disable cache for fresh data
+  // ✅ FIXED: Enable autoFetch, remove manual refresh to avoid race conditions
   const pledgesHookOptions = useMemo(() => ({
-    autoFetch: true,  // ✅ CRITICAL FIX: Was false, now true
-    enableCache: false,  // ✅ CRITICAL FIX: Disable cache for real-time updates
-    optimisticUpdates: true, // Enable optimistic UI updates
-    filters: {
-      ...filters,
-      search: debouncedSearchQuery
-    }
-  }), [filters, debouncedSearchQuery]);
+    autoFetch: true,  // Let the hook handle fetching automatically
+    enableCache: false,
+    optimisticUpdates: true
+  }), []);
 
   // Use pledges hook
   const {
@@ -89,58 +85,16 @@ const PledgesPage = () => {
     refresh
   } = usePledges(pledgesHookOptions) || {};
 
-  // ✅ FIXED: Force refresh when component mounts
-  useEffect(() => {
-    console.log('[PledgesPage] Component mounted, forcing initial data load...');
-    
-    const loadInitialData = async () => {
-      try {
-        if (refresh) {
-          await refresh();
-        } else if (fetchPledges && fetchStatistics) {
-          await Promise.all([
-            fetchPledges({ forceRefresh: true }),
-            fetchStatistics({ forceRefresh: true })
-          ]);
-        }
-        console.log('[PledgesPage] Initial data loaded successfully');
-      } catch (error) {
-        console.error('[PledgesPage] Error loading initial data:', error);
-      }
-    };
+  // Debug logging
+  console.log('[PledgesPage DEBUG] Pledges from hook:', {
+    pledgesLength: pledges?.length,
+    pledges: pledges,
+    loading,
+    error
+  });
 
-    loadInitialData();
-  }, []); // Only run on mount
-
-  // ✅ FIXED: Add visibility change listener to refresh when returning to page
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('[PledgesPage] Page became visible, refreshing data...');
-        if (refresh) {
-          refresh();
-        } else if (fetchPledges) {
-          fetchPledges({ forceRefresh: true });
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [refresh, fetchPledges]);
-
-  // ✅ FIXED: Add focus listener to refresh when window regains focus
-  useEffect(() => {
-    const handleFocus = () => {
-      console.log('[PledgesPage] Window focused, refreshing data...');
-      if (refresh) {
-        refresh();
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [refresh]);
+  // ✅ REMOVED: The manual refresh on mount that was causing race conditions
+  // The hook's autoFetch will handle initial loading automatically
 
   // Update URL params when state changes
   useEffect(() => {
@@ -208,19 +162,6 @@ const PledgesPage = () => {
           'success'
         );
         
-        // ✅ CRITICAL FIX: Force immediate refresh after creation
-        console.log('[PledgesPage] Pledge created, forcing refresh...');
-        setTimeout(() => {
-          if (refresh) {
-            refresh();
-          } else if (fetchPledges && fetchStatistics) {
-            Promise.all([
-              fetchPledges({ forceRefresh: true }),
-              fetchStatistics({ forceRefresh: true })
-            ]);
-          }
-        }, 500); // Small delay to ensure backend has processed
-        
         // Optionally navigate to member's profile
         if (newPledge?.member_id && window.confirm(
           'Pledge created successfully! Would you like to view this member\'s profile?'
@@ -232,7 +173,7 @@ const PledgesPage = () => {
       console.error('Error creating pledge:', error);
       showToast(error.message || 'Failed to create pledge', 'error');
     }
-  }, [createPledge, showToast, navigate, refresh, fetchPledges, fetchStatistics]);
+  }, [createPledge, showToast, navigate]);
 
   const handleUpdatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!updatePledge || !pledgeId) {
@@ -247,21 +188,11 @@ const PledgesPage = () => {
       setSelectedPledge(null);
       setShowForm(false);
       showToast('Pledge updated successfully', 'success');
-      
-      // ✅ FIXED: Force refresh after update
-      console.log('[PledgesPage] Pledge updated, forcing refresh...');
-      setTimeout(() => {
-        if (refresh) {
-          refresh();
-        } else if (fetchPledges) {
-          fetchPledges({ forceRefresh: true });
-        }
-      }, 500);
     } catch (error) {
       console.error('Error updating pledge:', error);
       showToast(error.message || 'Failed to update pledge', 'error');
     }
-  }, [updatePledge, showToast, refresh, fetchPledges]);
+  }, [updatePledge, showToast]);
 
   const handleDeletePledge = useCallback(async (pledgeId) => {
     if (!deletePledge || !pledgeId) {
@@ -286,21 +217,11 @@ const PledgesPage = () => {
         newSet.delete(pledgeId);
         return newSet;
       });
-      
-      // ✅ FIXED: Force refresh after delete
-      console.log('[PledgesPage] Pledge deleted, forcing refresh...');
-      setTimeout(() => {
-        if (refresh) {
-          refresh();
-        } else if (fetchPledges) {
-          fetchPledges({ forceRefresh: true });
-        }
-      }, 500);
     } catch (error) {
       console.error('Error deleting pledge:', error);
       showToast(error.message || 'Failed to delete pledge', 'error');
     }
-  }, [deletePledge, pledges, showToast, refresh, fetchPledges]);
+  }, [deletePledge, pledges, showToast]);
 
   const handleEditPledge = useCallback((pledge) => {
     if (!pledge?.id) {
@@ -353,7 +274,7 @@ const PledgesPage = () => {
     setSelectedPledges(new Set());
   }, []);
 
-  // Export handler
+  // Export handler  
   const handleExportPledges = useCallback(async () => {
     try {
       setIsExporting(true);
@@ -442,7 +363,7 @@ const PledgesPage = () => {
     }
   }, [exportPledges, pledges, selectedPledges, debouncedSearchQuery, filters, showToast]);
 
-  // Refresh handler
+  // Refresh handler - This is OK because it's user-triggered, not automatic
   const handleRefresh = useCallback(async () => {
     try {
       if (clearError) clearError();
@@ -550,7 +471,7 @@ const PledgesPage = () => {
             ) : (
               <Button 
                 onClick={() => setShowForm(true)}
-                size="lg"
+                size="large"
                 className={styles.primaryAction}
               >
                 <Plus size={20} />
@@ -586,8 +507,8 @@ const PledgesPage = () => {
     </div>
   ), [handleRefresh]);
 
-  // Loading state for initial load
-  if (loading && !pledges.length && !error) {
+  // ✅ FIXED: Better loading state logic - only show loading if we have no data yet
+  if (loading && pledges.length === 0 && !error) {
     return (
       <div className={styles.loadingContainer}>
         <LoadingSpinner size="large" />
@@ -643,20 +564,20 @@ const PledgesPage = () => {
         </div>
 
         {/* Statistics Cards */}
-      {statistics && Object.keys(statistics).length > 0 ? (
-        <PledgeStats 
-          stats={statistics} 
-          loading={loading}
-          selectedCount={selectedPledges.size}
-        />
-      ) : !loading && (
-        <Card className={styles.infoCard}>
-          <div className={styles.infoContent}>
-            <AlertCircle size={20} />
-            <p>Statistics unavailable. Pledge data is loading...</p>
-          </div>
-        </Card>
-      )}
+        {statistics && Object.keys(statistics).length > 0 ? (
+          <PledgeStats 
+            stats={statistics} 
+            loading={loading}
+            selectedCount={selectedPledges.size}
+          />
+        ) : !loading && (
+          <Card className={styles.infoCard}>
+            <div className={styles.infoContent}>
+              <AlertCircle size={20} />
+              <p>Statistics unavailable. Pledge data is loading...</p>
+            </div>
+          </Card>
+        )}
 
         {/* Search and Filter Bar */}
         <div className={styles.actionBar}>

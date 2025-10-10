@@ -1,4 +1,4 @@
-// hooks/usePledges.js - FINAL FIXED VERSION matching Django response
+// hooks/usePledges.js - FINAL FIX - Stable dependencies
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import pledgesService from '../services/pledges';
 import useAuth from './useAuth';
@@ -17,7 +17,7 @@ const usePledges = (initialOptions = {}) => {
     autoFetch: initialOptions.autoFetch !== false,
     optimisticUpdates: initialOptions.optimisticUpdates !== false,
     ...initialOptions
-  }), [initialOptions]);
+  }), []); // ✅ FIXED: Empty deps - options are stable
 
   const [pledges, setPledges] = useState([]);
   const [statistics, setStatistics] = useState({});
@@ -57,6 +57,16 @@ const usePledges = (initialOptions = {}) => {
     };
   }, []);
 
+  // ✅ DEBUG: Watch pledges state changes
+  useEffect(() => {
+    console.log('[usePledges] 📊 Pledges state changed:', {
+      length: pledges.length,
+      loading,
+      error,
+      firstPledge: pledges[0]?.member_details?.full_name || 'none'
+    });
+  }, [pledges, loading, error]);
+
   const handleError = useCallback((error, operation = 'operation') => {
     console.error(`[usePledges] ${operation} failed:`, error);
     
@@ -76,11 +86,21 @@ const usePledges = (initialOptions = {}) => {
     return errorMessage;
   }, [showToast]);
 
-  // ✅ FINAL FIX: Correctly handle Django DRF paginated response
+  // ✅ CRITICAL FIX: Use useRef for current filter values to avoid dependency issues
+  const currentFiltersRef = useRef(filters);
+  const currentPaginationRef = useRef(pagination);
+  
+  useEffect(() => {
+    currentFiltersRef.current = filters;
+    currentPaginationRef.current = pagination;
+  }, [filters, pagination]);
+
+  // ✅ FIXED: Stable fetchPledges with minimal dependencies
   const fetchPledges = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       const error = 'Insufficient permissions to view pledges';
       setError(error);
+      setLoading(false);
       return { success: false, error };
     }
 
@@ -92,13 +112,17 @@ const usePledges = (initialOptions = {}) => {
         setError(null);
       }
 
+      // ✅ Use refs for current values instead of closure variables
+      const currentFilters = currentFiltersRef.current;
+      const currentPagination = currentPaginationRef.current;
+
       const mergedParams = {
         search: debouncedSearch || '',
-        status: filters.status !== 'all' ? filters.status : undefined,
-        frequency: filters.frequency !== 'all' ? filters.frequency : undefined,
-        member_id: filters.member_id || undefined,
-        page: pagination.currentPage || 1,
-        page_size: pagination.itemsPerPage || 25,
+        status: currentFilters.status !== 'all' ? currentFilters.status : undefined,
+        frequency: currentFilters.frequency !== 'all' ? currentFilters.frequency : undefined,
+        member_id: currentFilters.member_id || undefined,
+        page: currentPagination.currentPage || 1,
+        page_size: currentPagination.itemsPerPage || 25,
         ordering: '-created_at',
         ...params
       };
@@ -112,8 +136,6 @@ const usePledges = (initialOptions = {}) => {
 
       console.log('[usePledges] 📡 Fetching pledges with params:', mergedParams);
 
-      // ✅ CRITICAL FIX: Service now returns Django response directly
-      // Django returns: { count, next, previous, results: [...] }
       const djangoResponse = await pledgesService.getPledges(mergedParams);
 
       // Check if request is still latest
@@ -129,12 +151,10 @@ const usePledges = (initialOptions = {}) => {
         resultsLength: djangoResponse?.results?.length
       });
 
-      // ✅ Extract pledges array directly from Django response
       let pledgesArray = [];
-      let paginationData = { ...pagination };
+      let paginationData = { ...currentPagination };
 
       if (djangoResponse && djangoResponse.results && Array.isArray(djangoResponse.results)) {
-        // Standard Django DRF paginated response
         pledgesArray = djangoResponse.results;
         paginationData = {
           count: djangoResponse.count || 0,
@@ -152,15 +172,25 @@ const usePledges = (initialOptions = {}) => {
           firstPledgeAmount: pledgesArray[0]?.amount || 0
         });
       } else {
-        console.error('[usePledges] ❌ Unexpected response structure:', djangoResponse);
+        console.warn('[usePledges] ⚠️ Unexpected response structure:', djangoResponse);
+        pledgesArray = [];
+        paginationData = {
+          count: 0,
+          next: null,
+          previous: null,
+          totalPages: 1,
+          currentPage: 1,
+          itemsPerPage: mergedParams.page_size || 25
+        };
       }
 
-      // Update state if still mounted
+      // ✅ CRITICAL: Always update state and clear loading
       if (mountedRef.current) {
         console.log(`[usePledges] 💾 Setting ${pledgesArray.length} pledges in state`);
         setPledges(pledgesArray);
         setPagination(paginationData);
         setLastFetch(new Date());
+        setError(null);
       }
 
       return { success: true, data: pledgesArray };
@@ -178,20 +208,12 @@ const usePledges = (initialOptions = {}) => {
       return { success: false, error: errorMessage };
     } finally {
       if (mountedRef.current) {
+        console.log('[usePledges] ✅ Clearing loading state');
         setLoading(false);
       }
     }
-  }, [
-    isAuthenticated, 
-    hasPermission, 
-    debouncedSearch, 
-    filters, 
-    pagination.currentPage,
-    pagination.itemsPerPage,
-    handleError
-  ]);
+  }, [isAuthenticated, hasPermission, debouncedSearch, handleError]); // ✅ Minimal, stable dependencies
 
-  // Statistics fetching
   const fetchStatistics = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       console.warn('[usePledges] Skipping statistics - not authenticated');
@@ -205,13 +227,6 @@ const usePledges = (initialOptions = {}) => {
       console.log('[usePledges] 📊 Fetching statistics...');
       const response = await pledgesService.getStatistics(params);
       
-      console.log('[usePledges] Statistics response structure:', {
-        hasData: !!response?.data,
-        dataType: typeof response?.data,
-        keys: response?.data ? Object.keys(response.data).slice(0, 10) : []
-      });
-      
-      // Handle both wrapped and unwrapped responses
       const statsData = response?.data || response || {};
       
       if (mountedRef.current) {
@@ -231,7 +246,6 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [isAuthenticated, hasPermission]);
 
-  // CRUD operations
   const createPledge = useCallback(async (pledgeData) => {
     if (!hasPermission('create')) {
       const error = 'Insufficient permissions to create pledges';
@@ -357,69 +371,6 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [hasPermission, fetchStatistics, handleError, showToast]);
 
-  const bulkUpdatePledges = useCallback(async (pledgeIds, updates) => {
-    if (!hasPermission('update')) {
-      const error = 'Insufficient permissions to bulk update pledges';
-      setError(error);
-      throw new Error(error);
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await pledgesService.bulkUpdatePledges(pledgeIds, updates);
-      
-      if (response.success !== false) {
-        await fetchPledges({ forceRefresh: true });
-        await fetchStatistics();
-        
-        if (showToast) {
-          showToast(`Successfully updated ${pledgeIds.length} pledges`, 'success');
-        }
-        
-        return response.data || response;
-      } else {
-        throw new Error(response.error || 'Failed to bulk update pledges');
-      }
-    } catch (error) {
-      handleError(error, 'bulk update pledges');
-      throw error;
-    } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [hasPermission, fetchPledges, fetchStatistics, handleError, showToast]);
-
-  const exportPledges = useCallback(async (exportParams = {}, format = 'csv') => {
-    if (!hasPermission('export_data')) {
-      const error = 'Insufficient permissions to export data';
-      setError(error);
-      throw new Error(error);
-    }
-
-    try {
-      const response = await pledgesService.exportPledges({
-        search: debouncedSearch,
-        ...filters,
-        ...exportParams
-      }, format);
-      
-      if (response.success !== false) {
-        if (showToast) {
-          showToast('Export completed successfully', 'success');
-        }
-        return true;
-      } else {
-        throw new Error(response.error || 'Failed to export pledges');
-      }
-    } catch (error) {
-      handleError(error, 'export pledges');
-      throw error;
-    }
-  }, [hasPermission, debouncedSearch, filters, handleError, showToast]);
-
   const updateFilters = useCallback((newFilters) => {
     setFilters(prev => ({
       ...prev,
@@ -432,7 +383,7 @@ const usePledges = (initialOptions = {}) => {
     setPagination(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Auto-fetch on mount and when dependencies change
+  // ✅ FIXED: Simplified auto-fetch with stable dependencies
   useEffect(() => {
     if (!options.autoFetch || !isAuthenticated) {
       console.log('[usePledges] Auto-fetch skipped:', { 
@@ -442,10 +393,21 @@ const usePledges = (initialOptions = {}) => {
       return;
     }
 
+    console.log('[usePledges] 🔄 Auto-fetch effect triggered');
+    
+    // ✅ Use a flag to prevent multiple simultaneous fetches
+    let isFetching = false;
+    
     const fetchData = async () => {
+      if (isFetching) {
+        console.log('[usePledges] ⚠️ Already fetching, skipping...');
+        return;
+      }
+      
+      isFetching = true;
+      
       try {
-        console.log('[usePledges] 🔄 Auto-fetch triggered');
-        
+        console.log('[usePledges] 📡 Starting auto-fetch...');
         await fetchPledges();
         
         try {
@@ -455,11 +417,16 @@ const usePledges = (initialOptions = {}) => {
         }
       } catch (error) {
         console.error('[usePledges] Auto-fetch failed:', error);
+      } finally {
+        isFetching = false;
       }
     };
 
     const timeoutId = setTimeout(fetchData, 100);
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      isFetching = false;
+    };
   }, [
     options.autoFetch, 
     isAuthenticated, 
@@ -467,24 +434,9 @@ const usePledges = (initialOptions = {}) => {
     filters.status, 
     filters.frequency, 
     pagination.currentPage,
-    fetchPledges,
+    fetchPledges, // ✅ Now stable because of minimal dependencies
     fetchStatistics
   ]);
-
-  // Utility functions
-  const getTotalPledgeAmount = useCallback(() => {
-    return pledges.reduce((total, pledge) => total + (parseFloat(pledge.amount) || 0), 0);
-  }, [pledges]);
-
-  const getTotalReceivedAmount = useCallback(() => {
-    return pledges.reduce((total, pledge) => total + (parseFloat(pledge.total_received) || 0), 0);
-  }, [pledges]);
-
-  const getPledgeCompletionRate = useCallback(() => {
-    const totalAmount = getTotalPledgeAmount();
-    const receivedAmount = getTotalReceivedAmount();
-    return totalAmount > 0 ? ((receivedAmount / totalAmount) * 100).toFixed(2) : 0;
-  }, [getTotalPledgeAmount, getTotalReceivedAmount]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -528,24 +480,11 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [fetchPledges, fetchStatistics]);
 
-  const computedValues = useMemo(() => ({
-    totalPledgeAmount: getTotalPledgeAmount(),
-    totalReceivedAmount: getTotalReceivedAmount(),
-    completionRate: getPledgeCompletionRate(),
-    activePledges: pledges.filter(p => p.status === 'active').length,
-    completedPledges: pledges.filter(p => p.status === 'completed').length,
-    hasPledges: pledges.length > 0,
-    hasNextPage: pagination.next !== null,
-    hasPrevPage: pagination.previous !== null,
-    isStale: lastFetch && (Date.now() - lastFetch.getTime()) > options.staleTime
-  }), [pledges, pagination, getTotalPledgeAmount, getTotalReceivedAmount, getPledgeCompletionRate, lastFetch, options.staleTime]);
-
   return {
     pledges,
     statistics,
     pagination,
     filters,
-    ...computedValues,
     loading,
     error,
     lastFetch,
@@ -554,13 +493,8 @@ const usePledges = (initialOptions = {}) => {
     createPledge,
     updatePledge,
     deletePledge,
-    bulkUpdatePledges,
-    exportPledges,
     updateFilters,
     updatePagination,
-    getTotalPledgeAmount,
-    getTotalReceivedAmount,
-    getPledgeCompletionRate,
     clearError,
     resetState,
     refresh
