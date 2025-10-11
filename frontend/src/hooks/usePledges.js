@@ -1,4 +1,4 @@
-// hooks/usePledges.js - FINAL FIX - Stable dependencies
+// hooks/usePledges.js - PRODUCTION-READY VERSION
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import pledgesService from '../services/pledges';
 import useAuth from './useAuth';
@@ -9,15 +9,37 @@ const usePledges = (initialOptions = {}) => {
   const { isAuthenticated, hasPermission } = useAuth();
   const { showToast } = useToast();
   
+  // ✅ PRODUCTION FIX: Memoize options to prevent recreation
   const options = useMemo(() => ({
     enableCache: initialOptions.enableCache !== false,
     cacheTime: initialOptions.cacheTime || 5 * 60 * 1000,
     staleTime: initialOptions.staleTime || 2 * 60 * 1000,
     debounceMs: initialOptions.debounceMs || 300,
     autoFetch: initialOptions.autoFetch !== false,
-    optimisticUpdates: initialOptions.optimisticUpdates !== false,
-    ...initialOptions
-  }), []); // ✅ FIXED: Empty deps - options are stable
+    optimisticUpdates: initialOptions.optimisticUpdates !== false
+  }), [
+    initialOptions.enableCache,
+    initialOptions.cacheTime,
+    initialOptions.staleTime,
+    initialOptions.debounceMs,
+    initialOptions.autoFetch,
+    initialOptions.optimisticUpdates
+  ]);
+
+  // ✅ PRODUCTION FIX: Separate initial filters to prevent recreation
+  const initialFilters = useMemo(() => ({
+    search: initialOptions.filters?.search || '',
+    status: initialOptions.filters?.status || 'all',
+    frequency: initialOptions.filters?.frequency || 'all',
+    member_id: initialOptions.filters?.member_id || null,
+    date_range: initialOptions.filters?.date_range || null
+  }), [
+    initialOptions.filters?.search,
+    initialOptions.filters?.status,
+    initialOptions.filters?.frequency,
+    initialOptions.filters?.member_id,
+    initialOptions.filters?.date_range
+  ]);
 
   const [pledges, setPledges] = useState([]);
   const [statistics, setStatistics] = useState({});
@@ -34,38 +56,25 @@ const usePledges = (initialOptions = {}) => {
     itemsPerPage: 25
   });
 
-  const [filters, setFilters] = useState({
-    search: '',
-    status: 'all',
-    frequency: 'all',
-    member_id: null,
-    date_range: null,
-    ...initialOptions.filters
-  });
+  const [filters, setFilters] = useState(initialFilters);
 
   const debouncedSearch = useDebounce(filters.search, options.debounceMs);
+  
+  // ✅ PRODUCTION FIX: Single mounted ref with proper cleanup
   const mountedRef = useRef(true);
-  const abortControllerRef = useRef(null);
-  const requestIdRef = useRef(0);
+  const isFetchingRef = useRef(false);
+  const fetchCountRef = useRef(0);
 
+  // ✅ PRODUCTION FIX: Cleanup only on unmount
   useEffect(() => {
+    mountedRef.current = true;
+    console.log('[usePledges] Component mounted');
+    
     return () => {
       mountedRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      console.log('[usePledges] Component unmounting - cleanup');
     };
   }, []);
-
-  // ✅ DEBUG: Watch pledges state changes
-  useEffect(() => {
-    console.log('[usePledges] 📊 Pledges state changed:', {
-      length: pledges.length,
-      loading,
-      error,
-      firstPledge: pledges[0]?.member_details?.full_name || 'none'
-    });
-  }, [pledges, loading, error]);
 
   const handleError = useCallback((error, operation = 'operation') => {
     console.error(`[usePledges] ${operation} failed:`, error);
@@ -86,16 +95,7 @@ const usePledges = (initialOptions = {}) => {
     return errorMessage;
   }, [showToast]);
 
-  // ✅ CRITICAL FIX: Use useRef for current filter values to avoid dependency issues
-  const currentFiltersRef = useRef(filters);
-  const currentPaginationRef = useRef(pagination);
-  
-  useEffect(() => {
-    currentFiltersRef.current = filters;
-    currentPaginationRef.current = pagination;
-  }, [filters, pagination]);
-
-  // ✅ FIXED: Stable fetchPledges with minimal dependencies
+  // ✅ PRODUCTION FIX: Stable fetchPledges with proper guards
   const fetchPledges = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       const error = 'Insufficient permissions to view pledges';
@@ -104,7 +104,14 @@ const usePledges = (initialOptions = {}) => {
       return { success: false, error };
     }
 
-    const requestId = ++requestIdRef.current;
+    // ✅ Prevent duplicate fetches
+    if (isFetchingRef.current && !params.forceRefresh) {
+      console.log('[usePledges] ⚠️ Already fetching, skipping duplicate request');
+      return { success: false, error: 'Already loading' };
+    }
+
+    isFetchingRef.current = true;
+    const fetchId = ++fetchCountRef.current;
     
     try {
       if (mountedRef.current) {
@@ -112,88 +119,75 @@ const usePledges = (initialOptions = {}) => {
         setError(null);
       }
 
-      // ✅ Use refs for current values instead of closure variables
-      const currentFilters = currentFiltersRef.current;
-      const currentPagination = currentPaginationRef.current;
-
       const mergedParams = {
         search: debouncedSearch || '',
-        status: currentFilters.status !== 'all' ? currentFilters.status : undefined,
-        frequency: currentFilters.frequency !== 'all' ? currentFilters.frequency : undefined,
-        member_id: currentFilters.member_id || undefined,
-        page: currentPagination.currentPage || 1,
-        page_size: currentPagination.itemsPerPage || 25,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        frequency: filters.frequency !== 'all' ? filters.frequency : undefined,
+        member_id: filters.member_id || undefined,
+        page: pagination.currentPage || 1,
+        page_size: pagination.itemsPerPage || 25,
         ordering: '-created_at',
         ...params
       };
 
-      // Clean undefined values
+      // Clean undefined params
       Object.keys(mergedParams).forEach(key => {
         if (mergedParams[key] === undefined || mergedParams[key] === '') {
           delete mergedParams[key];
         }
       });
 
-      console.log('[usePledges] 📡 Fetching pledges with params:', mergedParams);
+      console.log(`[usePledges] 📡 Fetch #${fetchId} with params:`, mergedParams);
 
       const djangoResponse = await pledgesService.getPledges(mergedParams);
 
-      // Check if request is still latest
-      if (requestId !== requestIdRef.current) {
-        console.warn('[usePledges] Request superseded');
-        return { success: false, error: 'Request superseded' };
+      // ✅ PRODUCTION FIX: Only update if this is the latest fetch and component is mounted
+      if (fetchId !== fetchCountRef.current) {
+        console.log(`[usePledges] ⚠️ Fetch #${fetchId} outdated, skipping (latest: ${fetchCountRef.current})`);
+        return { success: false, error: 'Outdated request' };
       }
 
-      console.log('[usePledges] ✅ Raw Django response:', {
-        hasResults: !!djangoResponse?.results,
-        isArray: Array.isArray(djangoResponse?.results),
-        count: djangoResponse?.count,
-        resultsLength: djangoResponse?.results?.length
-      });
+      if (!mountedRef.current) {
+        console.log(`[usePledges] ⚠️ Fetch #${fetchId} completed but component unmounted, skipping state update`);
+        return { success: false, error: 'Component unmounted' };
+      }
 
       let pledgesArray = [];
-      let paginationData = { ...currentPagination };
+      let paginationData = { ...pagination };
 
-      if (djangoResponse && djangoResponse.results && Array.isArray(djangoResponse.results)) {
-        pledgesArray = djangoResponse.results;
-        paginationData = {
-          count: djangoResponse.count || 0,
-          next: djangoResponse.next,
-          previous: djangoResponse.previous,
-          totalPages: Math.ceil((djangoResponse.count || 0) / (mergedParams.page_size || 25)),
-          currentPage: mergedParams.page || 1,
-          itemsPerPage: mergedParams.page_size || 25
-        };
-
-        console.log('[usePledges] ✅ Extracted pledges:', {
-          arrayLength: pledgesArray.length,
-          totalCount: paginationData.count,
-          firstPledgeMember: pledgesArray[0]?.member_details?.full_name || 'N/A',
-          firstPledgeAmount: pledgesArray[0]?.amount || 0
-        });
-      } else {
-        console.warn('[usePledges] ⚠️ Unexpected response structure:', djangoResponse);
-        pledgesArray = [];
-        paginationData = {
-          count: 0,
-          next: null,
-          previous: null,
-          totalPages: 1,
-          currentPage: 1,
-          itemsPerPage: mergedParams.page_size || 25
-        };
+      if (djangoResponse && typeof djangoResponse === 'object') {
+        if (Array.isArray(djangoResponse.results)) {
+          pledgesArray = djangoResponse.results;
+          paginationData = {
+            count: djangoResponse.count || 0,
+            next: djangoResponse.next,
+            previous: djangoResponse.previous,
+            totalPages: Math.ceil((djangoResponse.count || 0) / (mergedParams.page_size || 25)),
+            currentPage: mergedParams.page || 1,
+            itemsPerPage: mergedParams.page_size || 25
+          };
+        } else if (Array.isArray(djangoResponse)) {
+          pledgesArray = djangoResponse;
+          paginationData = {
+            count: djangoResponse.length,
+            next: null,
+            previous: null,
+            totalPages: 1,
+            currentPage: 1,
+            itemsPerPage: djangoResponse.length
+          };
+        }
       }
 
-      // ✅ CRITICAL: Always update state and clear loading
-      if (mountedRef.current) {
-        console.log(`[usePledges] 💾 Setting ${pledgesArray.length} pledges in state`);
-        setPledges(pledgesArray);
-        setPagination(paginationData);
-        setLastFetch(new Date());
-        setError(null);
-      }
+      console.log(`[usePledges] ✅ Fetch #${fetchId} successful: ${pledgesArray.length} pledges`);
 
-      return { success: true, data: pledgesArray };
+      // ✅ PRODUCTION FIX: Batch state updates
+      setPledges(pledgesArray);
+      setPagination(paginationData);
+      setLastFetch(new Date());
+      setError(null);
+
+      return { success: true, data: pledgesArray, pagination: paginationData };
     } catch (error) {
       if (error.name === 'AbortError') {
         return { success: false, error: 'Request cancelled' };
@@ -207,16 +201,15 @@ const usePledges = (initialOptions = {}) => {
 
       return { success: false, error: errorMessage };
     } finally {
+      isFetchingRef.current = false;
       if (mountedRef.current) {
-        console.log('[usePledges] ✅ Clearing loading state');
         setLoading(false);
       }
     }
-  }, [isAuthenticated, hasPermission, debouncedSearch, handleError]); // ✅ Minimal, stable dependencies
+  }, [isAuthenticated, hasPermission, debouncedSearch, filters.status, filters.frequency, filters.member_id, pagination.currentPage, pagination.itemsPerPage, handleError]);
 
   const fetchStatistics = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
-      console.warn('[usePledges] Skipping statistics - not authenticated');
       if (mountedRef.current) {
         setStatistics({});
       }
@@ -230,7 +223,6 @@ const usePledges = (initialOptions = {}) => {
       const statsData = response?.data || response || {};
       
       if (mountedRef.current) {
-        console.log('[usePledges] ✅ Setting statistics in state');
         setStatistics(statsData);
       }
       
@@ -265,12 +257,9 @@ const usePledges = (initialOptions = {}) => {
         const newPledge = response.data || response;
         console.log('[usePledges] Pledge created successfully:', newPledge);
         
-        if (mountedRef.current && options.optimisticUpdates) {
-          setPledges(prev => [newPledge, ...prev]);
-          setPagination(prev => ({ ...prev, count: prev.count + 1 }));
-        }
-        
-        fetchStatistics();
+        // Refresh pledges list after creation
+        await fetchPledges({ forceRefresh: true });
+        await fetchStatistics({ forceRefresh: true });
         
         if (showToast) {
           showToast('Pledge created successfully', 'success');
@@ -288,7 +277,7 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, options.optimisticUpdates, fetchStatistics, handleError, showToast]);
+  }, [hasPermission, fetchPledges, fetchStatistics, handleError, showToast]);
 
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!hasPermission('update')) {
@@ -383,58 +372,52 @@ const usePledges = (initialOptions = {}) => {
     setPagination(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // ✅ FIXED: Simplified auto-fetch with stable dependencies
+  // ✅ PRODUCTION FIX: Stable auto-fetch with proper dependency array
   useEffect(() => {
     if (!options.autoFetch || !isAuthenticated) {
-      console.log('[usePledges] Auto-fetch skipped:', { 
-        autoFetch: options.autoFetch, 
-        isAuthenticated 
-      });
       return;
     }
 
-    console.log('[usePledges] 🔄 Auto-fetch effect triggered');
+    console.log('[usePledges] 🔄 Auto-fetch triggered');
     
-    // ✅ Use a flag to prevent multiple simultaneous fetches
-    let isFetching = false;
+    let cancelled = false;
     
     const fetchData = async () => {
-      if (isFetching) {
-        console.log('[usePledges] ⚠️ Already fetching, skipping...');
-        return;
-      }
-      
-      isFetching = true;
+      if (cancelled) return;
       
       try {
-        console.log('[usePledges] 📡 Starting auto-fetch...');
         await fetchPledges();
         
-        try {
-          await fetchStatistics();
-        } catch (statsError) {
-          console.warn('[usePledges] Statistics fetch failed (non-critical):', statsError.message);
+        if (!cancelled) {
+          try {
+            await fetchStatistics();
+          } catch (statsError) {
+            console.warn('[usePledges] Statistics fetch failed (non-critical)');
+          }
         }
       } catch (error) {
-        console.error('[usePledges] Auto-fetch failed:', error);
-      } finally {
-        isFetching = false;
+        if (!cancelled) {
+          console.error('[usePledges] Auto-fetch failed:', error);
+        }
       }
     };
 
     const timeoutId = setTimeout(fetchData, 100);
+    
     return () => {
+      cancelled = true;
       clearTimeout(timeoutId);
-      isFetching = false;
     };
   }, [
-    options.autoFetch, 
-    isAuthenticated, 
-    debouncedSearch, 
-    filters.status, 
-    filters.frequency, 
+    options.autoFetch,
+    isAuthenticated,
+    debouncedSearch,
+    filters.status,
+    filters.frequency,
+    filters.member_id,
     pagination.currentPage,
-    fetchPledges, // ✅ Now stable because of minimal dependencies
+    pagination.itemsPerPage,
+    fetchPledges,
     fetchStatistics
   ]);
 
@@ -464,13 +447,14 @@ const usePledges = (initialOptions = {}) => {
     try {
       console.log('[usePledges] 🔄 Manual refresh triggered');
       setError(null);
+      isFetchingRef.current = false;
       
       await fetchPledges({ forceRefresh: true });
       
       try {
         await fetchStatistics({ forceRefresh: true });
       } catch (statsError) {
-        console.warn('[usePledges] Statistics refresh failed (non-critical):', statsError.message);
+        console.warn('[usePledges] Statistics refresh failed (non-critical)');
       }
       
       console.log('[usePledges] ✅ Refresh completed successfully');

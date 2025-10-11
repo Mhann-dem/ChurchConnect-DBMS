@@ -1,4 +1,4 @@
-// pages/admin/PledgesPage.jsx - FIXED: Remove duplicate data loading
+// pages/admin/PledgesPage.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -10,10 +10,7 @@ import {
   X, 
   DollarSign, 
   Calendar,
-  TrendingUp,
-  AlertCircle,
-  Users,
-  Clock
+  AlertCircle
 } from 'lucide-react';
 import { PledgesList, PledgeForm, PledgeStats } from '../../components/admin/Pledges';
 import { SearchBar, LoadingSpinner, ErrorBoundary } from '../../components/shared';
@@ -59,14 +56,26 @@ const PledgesPage = () => {
   // Debounced search query
   const debouncedSearchQuery = useDebounce(currentSearchQuery, 500);
 
-  // ✅ FIXED: Enable autoFetch, remove manual refresh to avoid race conditions
-  const pledgesHookOptions = useMemo(() => ({
-    autoFetch: true,  // Let the hook handle fetching automatically
-    enableCache: false,
-    optimisticUpdates: true
-  }), []);
+  // ✅ Enable autoFetch with proper options
+  // ✅ PRODUCTION FIX: Stable hook options with memoized filters
+    const pledgesHookOptions = useMemo(() => ({
+      autoFetch: true,
+      enableCache: false,
+      optimisticUpdates: true,
+      filters: {
+        search: debouncedSearchQuery,
+        status: filters.status,
+        frequency: filters.frequency,
+        member_id: filters.member_id
+      }
+    }), [
+      debouncedSearchQuery,
+      filters.status,
+      filters.frequency,
+      filters.member_id
+    ]);
 
-  // Use pledges hook
+  // Use pledges hook with dependency logging
   const {
     pledges = [],
     loading = false,
@@ -85,16 +94,17 @@ const PledgesPage = () => {
     refresh
   } = usePledges(pledgesHookOptions) || {};
 
-  // Debug logging
-  console.log('[PledgesPage DEBUG] Pledges from hook:', {
-    pledgesLength: pledges?.length,
-    pledges: pledges,
-    loading,
-    error
-  });
-
-  // ✅ REMOVED: The manual refresh on mount that was causing race conditions
-  // The hook's autoFetch will handle initial loading automatically
+  // ✅ Debug logging with dependency tracking
+  useEffect(() => {
+    console.log('[PledgesPage] State Update:', {
+      pledgesCount: pledges?.length,
+      loading,
+      error,
+      hasData: pledges?.length > 0,
+      firstPledge: pledges?.[0]?.member_details?.full_name,
+      timestamp: new Date().toISOString()
+    });
+  }, [pledges, loading, error]);
 
   // Update URL params when state changes
   useEffect(() => {
@@ -126,6 +136,10 @@ const PledgesPage = () => {
   // Update hook filters when local filters change
   useEffect(() => {
     if (updateFilters) {
+      console.log('[PledgesPage] Updating filters:', {
+        ...filters,
+        search: debouncedSearchQuery
+      });
       updateFilters({
         ...filters,
         search: debouncedSearchQuery
@@ -136,6 +150,10 @@ const PledgesPage = () => {
   // Update hook pagination when local pagination changes
   useEffect(() => {
     if (updatePagination) {
+      console.log('[PledgesPage] Updating pagination:', {
+        currentPage,
+        itemsPerPage
+      });
       updatePagination({
         currentPage,
         itemsPerPage
@@ -239,18 +257,21 @@ const PledgesPage = () => {
 
   // Search and filter handlers
   const handleSearch = useCallback((query) => {
+    console.log('[PledgesPage] Search query changed:', query);
     setCurrentSearchQuery(query || '');
     setCurrentPage(1);
     setSelectedPledges(new Set());
   }, []);
 
   const handleFilterChange = useCallback((newFilters) => {
+    console.log('[PledgesPage] Filters changed:', newFilters);
     setFilters(prev => ({ ...prev, ...newFilters }));
     setCurrentPage(1);
     setSelectedPledges(new Set());
   }, []);
 
   const handleClearFilters = useCallback(() => {
+    console.log('[PledgesPage] Clearing all filters');
     setFilters({
       status: 'all',
       frequency: 'all',
@@ -263,12 +284,14 @@ const PledgesPage = () => {
 
   // Pagination handlers
   const handlePageChange = useCallback((page) => {
+    console.log('[PledgesPage] Page changed to:', page);
     setCurrentPage(page);
     setSelectedPledges(new Set());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handlePerPageChange = useCallback((perPage) => {
+    console.log('[PledgesPage] Items per page changed to:', perPage);
     setItemsPerPage(Number(perPage));
     setCurrentPage(1);
     setSelectedPledges(new Set());
@@ -363,7 +386,7 @@ const PledgesPage = () => {
     }
   }, [exportPledges, pledges, selectedPledges, debouncedSearchQuery, filters, showToast]);
 
-  // Refresh handler - This is OK because it's user-triggered, not automatic
+  // Refresh handler
   const handleRefresh = useCallback(async () => {
     try {
       if (clearError) clearError();
@@ -507,7 +530,7 @@ const PledgesPage = () => {
     </div>
   ), [handleRefresh]);
 
-  // ✅ FIXED: Better loading state logic - only show loading if we have no data yet
+  // ✅ FIXED: Only show initial loading spinner
   if (loading && pledges.length === 0 && !error) {
     return (
       <div className={styles.loadingContainer}>

@@ -786,6 +786,20 @@ const MemberDetailPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
+    // Reset form when modal opens/closes
+    useEffect(() => {
+      if (!isOpen) {
+        setFormData({
+          amount: '',
+          frequency: 'monthly',
+          start_date: new Date().toISOString().split('T')[0],
+          end_date: '',
+          notes: ''
+        });
+        setError(null);
+      }
+    }, [isOpen]);
+
     const handleChange = (field, value) => {
       setFormData(prev => ({ ...prev, [field]: value }));
       setError(null);
@@ -794,9 +808,31 @@ const MemberDetailPage = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
       
+      // Validation
       if (!formData.amount || parseFloat(formData.amount) <= 0) {
         setError('Please enter a valid amount');
         return;
+      }
+
+      if (!formData.start_date) {
+        setError('Start date is required');
+        return;
+      }
+
+      // For recurring pledges, end date is required
+      if (formData.frequency !== 'one-time' && !formData.end_date) {
+        setError('End date is required for recurring pledges');
+        return;
+      }
+
+      // Validate end date is after start date
+      if (formData.end_date && formData.start_date) {
+        const start = new Date(formData.start_date);
+        const end = new Date(formData.end_date);
+        if (end <= start) {
+          setError('End date must be after start date');
+          return;
+        }
       }
 
       setIsSubmitting(true);
@@ -806,15 +842,18 @@ const MemberDetailPage = () => {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
         const baseURL = 'http://localhost:8000';
 
+        // ✅ CRITICAL FIX: Match Django serializer field name exactly
         const pledgeData = {
-          member: member.id,
+          member: member.id,  // ✅ Use 'member' not 'member_id'
           amount: parseFloat(formData.amount),
           frequency: formData.frequency,
           start_date: formData.start_date,
-          end_date: formData.end_date || null,
-          notes: formData.notes,
+          end_date: formData.frequency === 'one-time' ? null : (formData.end_date || null),
+          notes: formData.notes || '',
           status: 'active'
         };
+
+        console.log('[CreatePledgeModal] Submitting pledge:', pledgeData);
 
         const response = await fetch(`${baseURL}/api/v1/pledges/`, {
           method: 'POST',
@@ -827,22 +866,38 @@ const MemberDetailPage = () => {
 
         const data = await response.json();
 
-        if (response.ok && data.success) {
+        console.log('[CreatePledgeModal] Response:', { status: response.status, data });
+
+        if (response.ok) {
+          // Success - refresh member data and close modal
+          showToast('Pledge created successfully!', 'success');
           onSuccess && onSuccess();
           onClose();
-          setFormData({
-            amount: '',
-            frequency: 'monthly',
-            start_date: new Date().toISOString().split('T')[0],
-            end_date: '',
-            notes: ''
-          });
         } else {
-          setError(data.error || data.message || 'Failed to create pledge');
+          // Handle validation errors
+          let errorMessage = 'Failed to create pledge';
+          
+          if (data.error) {
+            errorMessage = data.error;
+          } else if (data.detail) {
+            errorMessage = data.detail;
+          } else if (typeof data === 'object') {
+            // Handle field-specific errors
+            const errors = Object.entries(data)
+              .map(([field, messages]) => {
+                const msgArray = Array.isArray(messages) ? messages : [messages];
+                return `${field}: ${msgArray.join(', ')}`;
+              })
+              .join('; ');
+            errorMessage = errors || errorMessage;
+          }
+          
+          setError(errorMessage);
+          console.error('[CreatePledgeModal] Error creating pledge:', errorMessage);
         }
       } catch (error) {
-        console.error('Error creating pledge:', error);
-        setError('Failed to create pledge. Please try again.');
+        console.error('[CreatePledgeModal] Network error:', error);
+        setError('Network error. Please check your connection and try again.');
       } finally {
         setIsSubmitting(false);
       }
@@ -882,20 +937,24 @@ const MemberDetailPage = () => {
                 borderRadius: '8px',
                 color: '#991b1b',
                 marginBottom: '16px',
-                fontSize: '14px'
+                fontSize: '14px',
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'flex-start'
               }}>
-                {error}
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>{error}</div>
               </div>
             )}
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
-                Amount ($) *
+                Amount ($) <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 type="number"
                 step="0.01"
-                min="0"
+                min="0.01"
                 value={formData.amount}
                 onChange={(e) => handleChange('amount', e.target.value)}
                 required
@@ -907,12 +966,13 @@ const MemberDetailPage = () => {
                   borderRadius: '8px',
                   fontSize: '14px'
                 }}
+                disabled={isSubmitting}
               />
             </div>
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
-                Frequency *
+                Frequency <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <select
                 value={formData.frequency}
@@ -925,6 +985,7 @@ const MemberDetailPage = () => {
                   borderRadius: '8px',
                   fontSize: '14px'
                 }}
+                disabled={isSubmitting}
               >
                 <option value="one-time">One Time</option>
                 <option value="weekly">Weekly</option>
@@ -937,7 +998,7 @@ const MemberDetailPage = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
-                  Start Date *
+                  Start Date <span style={{ color: '#dc2626' }}>*</span>
                 </label>
                 <input
                   type="date"
@@ -951,26 +1012,35 @@ const MemberDetailPage = () => {
                     borderRadius: '8px',
                     fontSize: '14px'
                   }}
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>
-                  End Date (Optional)
+                  End Date {formData.frequency !== 'one-time' && <span style={{ color: '#dc2626' }}>*</span>}
                 </label>
                 <input
                   type="date"
                   value={formData.end_date}
                   onChange={(e) => handleChange('end_date', e.target.value)}
                   min={formData.start_date}
+                  required={formData.frequency !== 'one-time'}
+                  disabled={formData.frequency === 'one-time' || isSubmitting}
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #d1d5db',
                     borderRadius: '8px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    opacity: formData.frequency === 'one-time' ? 0.5 : 1
                   }}
                 />
+                {formData.frequency === 'one-time' && (
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                    Not required for one-time pledges
+                  </p>
+                )}
               </div>
             </div>
 
@@ -991,8 +1061,47 @@ const MemberDetailPage = () => {
                   resize: 'vertical'
                 }}
                 placeholder="Any additional notes about this pledge..."
+                disabled={isSubmitting}
               />
             </div>
+
+            {/* Show calculated total for recurring pledges */}
+            {formData.frequency !== 'one-time' && formData.amount && formData.start_date && formData.end_date && (
+              <div style={{
+                padding: '12px',
+                background: '#f0f9ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '8px',
+                marginBottom: '16px'
+              }}>
+                <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>
+                  Total Pledge Amount (Estimated)
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#0c4a6e' }}>
+                  {(() => {
+                    const start = new Date(formData.start_date);
+                    const end = new Date(formData.end_date);
+                    const amount = parseFloat(formData.amount);
+                    const monthsDiff = ((end.getFullYear() - start.getFullYear()) * 12) + 
+                                      (end.getMonth() - start.getMonth());
+                    
+                    let multiplier = 1;
+                    switch (formData.frequency) {
+                      case 'weekly': multiplier = Math.ceil(monthsDiff * 4.33); break;
+                      case 'monthly': multiplier = Math.max(1, monthsDiff); break;
+                      case 'quarterly': multiplier = Math.max(1, Math.ceil(monthsDiff / 3)); break;
+                      case 'annually': multiplier = Math.max(1, Math.ceil(monthsDiff / 12)); break;
+                    }
+                    
+                    const total = amount * multiplier;
+                    return new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD'
+                    }).format(total);
+                  })()}
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <Button
@@ -1005,9 +1114,23 @@ const MemberDetailPage = () => {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !formData.amount}
+                disabled={isSubmitting || !formData.amount || !formData.start_date}
               >
-                {isSubmitting ? 'Creating...' : 'Create Pledge'}
+                {isSubmitting ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      width: '16px',
+                      height: '16px',
+                      border: '2px solid white',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    Creating...
+                  </div>
+                ) : (
+                  'Create Pledge'
+                )}
               </Button>
             </div>
           </form>
