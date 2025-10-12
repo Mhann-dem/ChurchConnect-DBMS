@@ -1,18 +1,26 @@
-// frontend/src/components/admin/Pledges/PledgeCard.jsx
+// frontend/src/components/admin/Pledges/PledgeCard.jsx - FIXED VERSION
 import React, { useState } from 'react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
 import styles from './Pledges.module.css';
 
-const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, showPaymentHistory }) => {
+const PledgeCard = ({ 
+  pledge, 
+  onEdit, 
+  onDelete, 
+  onUpdateStatus, 
+  onAddPayment, 
+  showPaymentHistory,
+  hideHeader = false  // ADD THIS PROP - defaults to false for backward compatibility
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Safely extract pledge data with fallbacks
   const {
     id,
     member,
+    member_details,
     member_name,
     member_id,
     amount = 0,
@@ -39,6 +47,27 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, sh
   const remainingAmount = totalPledgedAmount - totalReceivedAmount;
   const completionPercentage = totalPledgedAmount > 0 ? (totalReceivedAmount / totalPledgedAmount) * 100 : 0;
   
+  // Get member display name with multiple fallbacks
+  const getMemberDisplayName = () => {
+    if (member_details?.full_name) return member_details.full_name;
+    if (member_details?.name) return member_details.name;
+    if (member?.full_name) return member.full_name;
+    if (member?.name) return member.name;
+    
+    // Construct from first and last name
+    if (member?.first_name || member?.last_name) {
+      return `${member.first_name || ''} ${member.last_name || ''}`.trim();
+    }
+    if (member_details?.first_name || member_details?.last_name) {
+      return `${member_details.first_name || ''} ${member_details.last_name || ''}`.trim();
+    }
+    
+    // Fall back to member_name field
+    if (member_name) return member_name;
+    
+    return 'Unknown Member';
+  };
+
   // Status and frequency display functions
   const getStatusBadgeColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -130,7 +159,7 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, sh
       case 'weekly':
         return amount * Math.ceil(monthsDiff * 4.33);
       case 'monthly':
-        return amount * monthsDiff;
+        return amount * Math.max(1, monthsDiff);
       case 'quarterly':
         return amount * Math.ceil(monthsDiff / 3);
       case 'annually':
@@ -164,63 +193,67 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, sh
 
   const nextPayment = getNextPaymentInfo();
   const timeProgress = calculateProgress();
-  const memberDisplayName = member?.name || member_name || 'Unknown Member';
-  const memberEmail = member?.email || '';
-  const memberPhoto = member?.photo_url || '';
+  const memberDisplayName = getMemberDisplayName();
+  const memberEmail = member?.email || member_details?.email || '';
+  const memberPhoto = member?.photo_url || member_details?.photo_url || '';
 
   return (
     <Card className={`${styles.pledgeCard} ${status === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}>
-      {/* Header Section */}
-      <div className={styles.pledgeHeader}>
-        <div className={styles.memberInfo}>
-          <Avatar 
-            src={memberPhoto} 
-            name={memberDisplayName}
-            size="md"
-            className={styles.memberAvatar}
-          />
-          <div className={styles.memberDetails}>
-            <h3 className={styles.memberName}>
-              {memberDisplayName}
-            </h3>
-            {memberEmail && (
-              <p className={styles.memberEmail}>
-                {memberEmail}
-              </p>
-            )}
-            {payments_count > 0 && (
-              <p className={styles.paymentCount}>
-                {payments_count} payment{payments_count !== 1 ? 's' : ''} made
-              </p>
-            )}
-          </div>
-        </div>
-        
-        <div className={styles.statusSection}>
-          <div className={styles.badgeContainer}>
-            <Badge 
-              color={getStatusBadgeColor(status)}
-              className={styles.statusBadge}
-            >
-              {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
-            </Badge>
-            
-            {is_overdue && (
-              <Badge color="danger" className={styles.overdueBadge}>
-                Overdue
-              </Badge>
-            )}
+      {/* Header Section - CONDITIONALLY RENDER based on hideHeader prop */}
+      {!hideHeader && (
+        <div className={styles.pledgeHeader}>
+          <div className={styles.memberInfo}>
+            <Avatar 
+              src={memberPhoto} 
+              name={memberDisplayName}
+              size="md"
+              className={styles.memberAvatar}
+            />
+            <div className={styles.memberDetails}>
+              <h3 className={styles.memberName}>
+                {memberDisplayName}
+              </h3>
+              {memberEmail && (
+                <p className={styles.memberEmail}>
+                  {memberEmail}
+                </p>
+              )}
+              {payments_count > 0 && (
+                <p className={styles.paymentCount}>
+                  {payments_count} payment{payments_count !== 1 ? 's' : ''} made
+                </p>
+              )}
+            </div>
           </div>
           
-          <Dropdown
-            value={status}
-            onChange={(newStatus) => onUpdateStatus && onUpdateStatus(id, newStatus)}
-            options={statusOptions}
-            variant="minimal"
-            className={styles.statusDropdown}
-          />
+          <div className={styles.statusSection}>
+            <div className={styles.badgeContainer}>
+              <Badge 
+                color={getStatusBadgeColor(status)}
+                className={styles.statusBadge}
+              >
+                {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
+              </Badge>
+              
+              {is_overdue && (
+                <Badge color="danger" className={styles.overdueBadge}>
+                  Overdue
+                </Badge>
+              )}
+            </div>
+            
+            {onUpdateStatus && (
+              <Dropdown
+                value={status}
+                onChange={(newStatus) => onUpdateStatus(id, newStatus)}
+                options={statusOptions}
+                variant="minimal"
+                className={styles.statusDropdown}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Amount and Frequency Section */}
       <div className={styles.pledgeDetails}>
@@ -235,6 +268,15 @@ const PledgeCard = ({ pledge, onEdit, onDelete, onUpdateStatus, onAddPayment, sh
             >
               {getFrequencyDisplayText(frequency)}
             </Badge>
+            {/* Show status badge when header is hidden */}
+            {hideHeader && (
+              <Badge 
+                color={getStatusBadgeColor(status)}
+                className={styles.statusBadge}
+              >
+                {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
+              </Badge>
+            )}
           </div>
           
           {frequency !== 'one-time' && totalPledgedAmount !== amount && (

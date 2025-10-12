@@ -1,5 +1,622 @@
 /* frontend/src/components/admin/Pledges/Pledges.module.css */
 
+/* Additional CSS to add to Pledges.module.css for improved member grouping */
+
+/* ============================================
+   MEMBER GROUPING STYLES
+   ============================================ */
+
+/* Pledges List Container */
+.pledgesListContainer {
+  width: 100%;
+}
+
+/* View Mode Toggle */
+.viewModeToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.toggleButtons {
+  display: flex;
+  gap: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.toggleButton.active {
+  background: white;
+  color: #3b82f6;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.summaryInfo {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Select All Card */
+.selectAllCard {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 2px dashed #d1d5db;
+  background: #f9fafb;
+}
+
+.selectAllLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.selectAllCheckbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+}
+
+/* ============================================
+   MEMBER GROUP CARD
+   ============================================ */
+
+.memberGroupCard {
+  background: white;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.memberGroupCard:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Member Header */
+.memberHeader {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid #e0f2fe;
+}
+
+.memberHeader:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.memberHeaderContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+/* Member Info Section */
+.memberInfoSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.memberAvatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.memberDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.memberName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pledgeCountBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.overdueBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.memberContactItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.memberContactItem svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* Member Stats Section */
+.memberStatsSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.statColumn {
+  text-align: right;
+  min-width: 7rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.receivedValue {
+  color: #059669;
+}
+
+.goodRate {
+  color: #059669;
+}
+
+.mediumRate {
+  color: #f59e0b;
+}
+
+.lowRate {
+  color: #dc2626;
+}
+
+.expandButton {
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expandButton:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: #374151;
+}
+
+/* Collapsed Progress */
+.collapsedProgress {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0f2fe;
+}
+
+.collapsedProgress .progressBar {
+  width: 100%;
+  height: 0.625rem;
+  background: #e0f2fe;
+  border-radius: 0.3125rem;
+  overflow: hidden;
+}
+
+.collapsedProgress .progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  transition: width 0.3s ease;
+  border-radius: 0.3125rem;
+}
+
+/* Quick Actions */
+.quickActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0f2fe;
+}
+
+/* ============================================
+   PLEDGES LIST (within member group)
+   ============================================ */
+
+.pledgesList {
+  border-top: 2px solid #e5e7eb;
+}
+
+.pledgeItemWrapper {
+  position: relative;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s ease;
+}
+
+.pledgeItemWrapper:last-child {
+  border-bottom: none;
+}
+
+.pledgeItemWrapper:hover {
+  background: #f9fafb;
+}
+
+.pledgeCheckbox {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: white;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.pledgeCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Group Footer */
+.groupFooter {
+  padding: 1rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+}
+
+/* ============================================
+   GROUPED PLEDGES CONTAINER
+   ============================================ */
+
+.groupedPledgesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ============================================
+   LIST VIEW CONTAINER
+   ============================================ */
+
+.listPledgesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.25rem;
+}
+
+.pledgeCardWrapper {
+  position: relative;
+}
+
+.selectCheckbox {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: white;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.selectCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .memberStatsSection {
+    gap: 1rem;
+  }
+
+  .statColumn {
+    min-width: 5rem;
+  }
+
+  .statValue {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .memberHeaderContent {
+    flex-direction: column;
+  }
+
+  .memberStatsSection {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .statColumn {
+    min-width: auto;
+    flex: 1;
+    text-align: center;
+  }
+
+  .statLabel {
+    font-size: 0.625rem;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .viewModeToggle {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .toggleButtons {
+    width: 100%;
+  }
+
+  .toggleButton {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .listPledgesContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .memberAvatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .memberName {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .memberHeader {
+    padding: 1rem;
+  }
+
+  .memberInfoSection {
+    gap: 0.75rem;
+  }
+
+  .memberNameRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .memberContactItem {
+    font-size: 0.8125rem;
+  }
+
+  .expandButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+/* ============================================
+   LOADING AND EMPTY STATES
+   ============================================ */
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.loadingContainer p {
+  margin-top: 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memberGroupCard {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.memberGroupCard:nth-child(1) { animation-delay: 0ms; }
+.memberGroupCard:nth-child(2) { animation-delay: 50ms; }
+.memberGroupCard:nth-child(3) { animation-delay: 100ms; }
+.memberGroupCard:nth-child(4) { animation-delay: 150ms; }
+.memberGroupCard:nth-child(5) { animation-delay: 200ms; }
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .toggleButtons,
+  .quickActions,
+  .groupFooter,
+  .expandButton,
+  .selectCheckbox,
+  .pledgeCheckbox {
+    display: none !important;
+  }
+
+  .memberHeader {
+    background: white !important;
+    border-bottom: 2px solid #000;
+  }
+
+  .memberGroupCard {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .pledgesList {
+    display: block !important;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.toggleButton:focus-visible,
+.expandButton:focus-visible,
+.selectCheckbox:focus-visible,
+.pledgeCheckbox:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .memberGroupCard {
+    border-width: 2px;
+  }
+
+  .memberHeader {
+    border-bottom-width: 2px;
+  }
+
+  .pledgeItemWrapper {
+    border-bottom-width: 2px;
+  }
+}
+
+
 /* Enhanced CSS additions for better visual feedback */
 .successMessage {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
