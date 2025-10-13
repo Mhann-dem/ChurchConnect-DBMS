@@ -1,12 +1,12 @@
-// PledgeForm.jsx - FINAL OPTIMIZED VERSION compatible with your hooks
+// PledgeForm.jsx - FIXED VERSION with proper member search
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
 import FormContainer from '../../shared/FormContainer';
-import useMembers from '../../../hooks/useMembers';
 import { useToast } from '../../../hooks/useToast';
 import { Button } from '../../ui';
 import { formatCurrency } from '../../../utils/formatters';
 import { CheckCircle, AlertCircle, Loader, User, X, Search } from 'lucide-react';
+import apiMethods from '../../../services/api';
 import styles from './Pledges.module.css';
 
 const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) => {
@@ -15,25 +15,19 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [selectedMemberObj, setSelectedMemberObj] = useState(null);
   const [totalCalculated, setTotalCalculated] = useState(0);
+  
+  // ✅ FIX: Local state for members with search capability
+  const [members, setMembers] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersError, setMembersError] = useState(null);
 
   // Refs for managing dropdown interactions
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const isSelectingRef = useRef(false);
+  const searchTimeoutRef = useRef(null);
 
-  // Hooks
   const { showToast } = useToast();
-  
-  // FIXED: Use the members hook with autoFetch disabled initially
-  const { 
-    members = [], 
-    fetchMembers, 
-    loading: membersLoading,
-    error: membersError 
-  } = useMembers({ 
-    autoFetch: false, 
-    limit: 100 // Get more members for search
-  });
 
   // Form state
   const initialValues = {
@@ -51,6 +45,80 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
   const [errors, setErrors] = useState({});
   const [warnings, setWarnings] = useState([]);
 
+  // ✅ FIX: Fetch members with search functionality
+  const fetchMembers = useCallback(async (searchQuery = '') => {
+    try {
+      setMembersLoading(true);
+      setMembersError(null);
+      
+      console.log('[PledgeForm] Fetching members with search:', searchQuery);
+      
+      const params = {
+        page_size: 100,
+        ordering: '-created_at' // Show recent members first
+      };
+      
+      // Add search if provided
+      if (searchQuery && searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      
+      const response = await apiMethods.get('members/', { params });
+      
+      console.log('[PledgeForm] Members response:', {
+        count: response.data?.count,
+        resultsLength: response.data?.results?.length,
+        hasResults: !!response.data?.results
+      });
+      
+      // Handle paginated response
+      const membersList = response.data?.results || response.data || [];
+      
+      setMembers(membersList);
+      
+      if (membersList.length === 0 && searchQuery) {
+        console.warn('[PledgeForm] No members found for search:', searchQuery);
+      }
+      
+    } catch (error) {
+      console.error('[PledgeForm] Error fetching members:', error);
+      setMembersError('Failed to load members');
+      showToast?.('Failed to load members list', 'error');
+    } finally {
+      setMembersLoading(false);
+    }
+  }, [showToast]);
+
+  // ✅ FIX: Fetch all members on mount
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
+
+  // ✅ FIX: Debounced search - fetch members when search changes
+  useEffect(() => {
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Don't search if member already selected or search is too short
+    if (selectedMemberObj || !memberSearch || memberSearch.length < 2) {
+      return;
+    }
+    
+    // Debounce search
+    searchTimeoutRef.current = setTimeout(() => {
+      console.log('[PledgeForm] Searching members for:', memberSearch);
+      fetchMembers(memberSearch);
+    }, 300);
+    
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [memberSearch, selectedMemberObj, fetchMembers]);
+
   // Form submission handler
   const {
     isSubmitting: formSubmitting,
@@ -60,31 +128,24 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     clearError
   } = useFormSubmission({
     onSubmit: async (formData) => {
-      // DEBUG: Log form data before validation
-      console.log('[PledgeForm DEBUG] Raw form data:', formData);
-      console.log('[PledgeForm DEBUG] member_id:', formData.member_id);
-      console.log('[PledgeForm DEBUG] member_id type:', typeof formData.member_id);
+      console.log('[PledgeForm] Submitting pledge:', formData);
       
       if (!formData.member_id) {
-        console.error('[PledgeForm DEBUG] member_id is missing!');
         throw new Error('Please select a member');
       }
 
-      // FIXED: Match backend serializer exactly
+      // Format data for backend
       const submissionData = {
-        member: formData.member_id,  // ForeignKey field expects UUID
+        member: formData.member_id,
         amount: parseFloat(formData.amount),
         frequency: formData.frequency,
         start_date: formData.start_date,
         end_date: formData.frequency === 'one-time' ? null : (formData.end_date || null),
         status: formData.status || 'active',
         notes: formData.notes || ''
-        // Don't send total_pledged - backend calculates it
-        // Don't send calculated_total - not in serializer
       };
 
-      console.log('[PledgeForm DEBUG] Submission data:', JSON.stringify(submissionData, null, 2));
-      console.log('[PledgeForm DEBUG] Member UUID:', submissionData.member);
+      console.log('[PledgeForm] Formatted submission:', submissionData);
       
       return await onSubmit(submissionData);
     },
@@ -105,29 +166,11 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     }
   }, [pledge]);
 
-  // Fetch members on mount
-  useEffect(() => {
-    if (fetchMembers) {
-      console.log('[PledgeForm] Fetching members...');
-      fetchMembers().catch(err => {
-        console.error('[PledgeForm] Error fetching members:', err);
-        showToast?.('Failed to load members list', 'error');
-      });
-    }
-  }, [fetchMembers, showToast]);
-
-  // Handle members error
-  useEffect(() => {
-    if (membersError) {
-      console.error('[PledgeForm] Members error:', membersError);
-      showToast?.('Error loading members. Please refresh the page.', 'error');
-    }
-  }, [membersError, showToast]);
-
   // Filter members based on search - OPTIMIZED
   const filteredMembers = useMemo(() => {
     if (!memberSearch || !Array.isArray(members) || members.length === 0) {
-      return [];
+      // Show all members if no search
+      return members.slice(0, 20);
     }
 
     const searchLower = memberSearch.toLowerCase().trim();
@@ -148,7 +191,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                email.includes(searchLower) ||
                phone.includes(searchLower);
       })
-      .slice(0, 10); // Limit to 10 results
+      .slice(0, 20); // Limit to 20 results
   }, [memberSearch, members]);
 
   // Handle click outside to close dropdown
@@ -431,7 +474,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                     onChange={handleMemberSearchChange}
                     onFocus={handleMemberSearchFocus}
                     className={`${styles.input} ${styles.searchInput} ${errors.member_id ? styles.inputError : ''}`}
-                    disabled={isLoading || membersLoading}
+                    disabled={isLoading}
                     autoComplete="off"
                   />
                   {membersLoading && (
@@ -481,7 +524,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                     ) : (
                       <div className={styles.memberOptionEmpty}>
                         <Search size={16} />
-                        <span>Start typing to search...</span>
+                        <span>Start typing to search members...</span>
                       </div>
                     )}
                   </div>

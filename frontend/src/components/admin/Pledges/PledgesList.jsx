@@ -1,5 +1,5 @@
-// frontend/src/components/admin/Pledges/PledgesList.jsx - ENHANCED WITH REAL-TIME UPDATES
-import React, { useState, useMemo, useEffect } from 'react';
+// frontend/src/components/admin/Pledges/PledgesList.jsx - ENHANCED with real-time
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { LoadingSpinner, EmptyState, Pagination } from '../../shared';
 import { Button, Card } from '../../ui';
@@ -7,7 +7,6 @@ import PledgeCard from './PledgeCard';
 import { ChevronDown, ChevronUp, User, DollarSign, Mail, Phone, TrendingUp, CheckCircle } from 'lucide-react';
 import styles from './Pledges.module.css';
 
-// Helper function to format currency
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -15,7 +14,6 @@ const formatCurrency = (amount) => {
   }).format(amount || 0);
 };
 
-// Helper function to get member display name
 const getMemberDisplayName = (pledge) => {
   if (!pledge) return 'Unknown Member';
   
@@ -48,7 +46,7 @@ const getMemberPhone = (pledge) => {
   return pledge.member?.phone || pledge.member_details?.phone || '';
 };
 
-// Enhanced Member Pledges Group Component with better styling
+// ✅ ENHANCED: Member group with real-time stat updates
 const MemberPledgesGroup = ({ 
   memberName, 
   memberEmail, 
@@ -60,13 +58,13 @@ const MemberPledgesGroup = ({
   onUpdateStatus,
   onNavigateToMember,
   selectedPledges,
-  onPledgeSelection,
-  onStatsUpdate
+  onPledgeSelection
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [memberStats, setMemberStats] = useState({});
 
-  // Calculate member statistics with real-time updates
-  const memberStats = useMemo(() => {
+  // ✅ REAL-TIME: Recalculate stats whenever pledges change
+  useEffect(() => {
     const totalPledged = pledges.reduce((sum, p) => 
       sum + (parseFloat(p.total_pledged) || parseFloat(p.amount) || 0), 0
     );
@@ -79,7 +77,7 @@ const MemberPledgesGroup = ({
     const overduePledges = pledges.filter(p => p.is_overdue).length;
     const remainingAmount = totalPledged - totalReceived;
 
-    return { 
+    setMemberStats({ 
       totalPledged, 
       totalReceived, 
       activePledges, 
@@ -87,15 +85,34 @@ const MemberPledgesGroup = ({
       completionRate, 
       overduePledges,
       remainingAmount 
-    };
-  }, [pledges]);
+    });
+    
+    console.log('[MemberGroup] Stats updated for:', memberName, {
+      totalPledged,
+      totalReceived,
+      completionRate: Math.round(completionRate)
+    });
+  }, [pledges, memberName]);
 
-  // Notify parent when stats change (for real-time dashboard updates)
-  useEffect(() => {
-    if (onStatsUpdate) {
-      onStatsUpdate(memberStats);
+  // ✅ REAL-TIME: Handle delete with immediate UI update
+  const handleDelete = useCallback(async (pledgeId) => {
+    try {
+      await onDelete(pledgeId);
+      console.log('[MemberGroup] Pledge deleted, stats will auto-update');
+    } catch (error) {
+      console.error('[MemberGroup] Delete failed:', error);
     }
-  }, [memberStats, onStatsUpdate]);
+  }, [onDelete]);
+
+  // ✅ REAL-TIME: Handle status update with immediate UI update
+  const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
+    try {
+      await onUpdateStatus(pledgeId, newStatus);
+      console.log('[MemberGroup] Status updated, stats will auto-update');
+    } catch (error) {
+      console.error('[MemberGroup] Status update failed:', error);
+    }
+  }, [onUpdateStatus]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -117,33 +134,18 @@ const MemberPledgesGroup = ({
     return false;
   };
 
-  // Handle delete with stats refresh
-  const handleDelete = async (pledgeId) => {
-    await onDelete(pledgeId);
-    // Stats will auto-update via useMemo
-  };
-
-  // Handle update with stats refresh
-  const handleUpdateStatus = async (pledgeId, newStatus) => {
-    await onUpdateStatus(pledgeId, newStatus);
-    // Stats will auto-update via useMemo
-  };
-
   return (
     <div className={styles.memberGroupCard}>
-      {/* Enhanced Member Header */}
       <div 
         className={styles.memberHeader}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className={styles.memberHeaderContent}>
           <div className={styles.memberInfoSection}>
-            {/* Enhanced Avatar */}
             <div className={styles.memberAvatar}>
               {getInitials(memberName)}
             </div>
 
-            {/* Member Info */}
             <div className={styles.memberDetails}>
               <div className={styles.memberNameRow}>
                 <h3 className={styles.memberName}>
@@ -180,7 +182,7 @@ const MemberPledgesGroup = ({
             </div>
           </div>
 
-          {/* Enhanced Summary Stats with Icons */}
+          {/* ✅ ENHANCED: Real-time updating stats */}
           <div className={styles.memberStatsSection}>
             <div className={styles.statColumn}>
               <div className={styles.statLabel}>
@@ -223,14 +225,12 @@ const MemberPledgesGroup = ({
               <div className={styles.statSubtext}>completion</div>
             </div>
             
-            {/* Expand/Collapse Icon */}
             <button className={styles.expandButton} type="button">
               {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
           </div>
         </div>
 
-        {/* Enhanced Progress Bar (shown when collapsed) */}
         {!isExpanded && (
           <div className={styles.collapsedProgress}>
             <div className={styles.progressInfo}>
@@ -255,12 +255,10 @@ const MemberPledgesGroup = ({
         )}
       </div>
 
-      {/* Pledges List */}
       {isExpanded && (
         <div className={styles.pledgesList}>
           {pledges.map((pledge, index) => (
             <div key={pledge.id} className={styles.pledgeItemWrapper}>
-              {/* Selection Checkbox */}
               <label className={styles.pledgeCheckbox}>
                 <input
                   type="checkbox"
@@ -270,12 +268,10 @@ const MemberPledgesGroup = ({
                 />
               </label>
 
-              {/* Pledge Number Badge */}
               <div className={styles.pledgeNumber}>
                 <span>#{index + 1}</span>
               </div>
 
-              {/* Pledge Card */}
               <PledgeCard
                 pledge={pledge}
                 onEdit={onEdit}
@@ -286,7 +282,6 @@ const MemberPledgesGroup = ({
             </div>
           ))}
 
-          {/* Enhanced Group Footer */}
           <div className={styles.groupFooter}>
             <div className={styles.groupFooterStats}>
               <div className={styles.footerStat}>
@@ -323,7 +318,7 @@ const MemberPledgesGroup = ({
   );
 };
 
-// Main PledgesList Component
+// ✅ ENHANCED: Main component with real-time aggregate stats
 const PledgesList = ({ 
   pledges: externalPledges, 
   selectedPledges,
@@ -346,7 +341,7 @@ const PledgesList = ({
   const pledges = externalPledges || [];
   const loading = externalLoading || false;
 
-  // Group pledges by member
+  // ✅ REAL-TIME: Group pledges by member
   const groupedPledges = useMemo(() => {
     if (!Array.isArray(pledges) || pledges.length === 0) {
       return [];
@@ -377,7 +372,7 @@ const PledgesList = ({
     );
   }, [pledges]);
 
-  // Calculate aggregate statistics for all members
+  // ✅ REAL-TIME: Calculate aggregate statistics
   useEffect(() => {
     if (pledges.length > 0) {
       const stats = {
@@ -388,49 +383,63 @@ const PledgesList = ({
         activeMembers: groupedPledges.filter(g => g.pledges.some(p => p.status === 'active')).length,
       };
       stats.overallRate = stats.totalPledged > 0 ? (stats.totalReceived / stats.totalPledged) * 100 : 0;
+      
       setAggregateStats(stats);
+      
+      console.log('[PledgesList] ✅ Aggregate stats updated:', {
+        totalMembers: stats.totalMembers,
+        totalPledges: stats.totalPledges,
+        overallRate: Math.round(stats.overallRate)
+      });
+    } else {
+      setAggregateStats(null);
     }
   }, [pledges, groupedPledges]);
 
-  const handleEditPledge = (pledge) => {
+  const handleEditPledge = useCallback((pledge) => {
     if (externalOnEdit) {
       externalOnEdit(pledge);
     }
-  };
+  }, [externalOnEdit]);
 
-  const handleDeletePledge = async (pledgeId) => {
+  const handleDeletePledge = useCallback(async (pledgeId) => {
     if (externalOnDelete) {
-      await externalOnDelete(pledgeId);
-      // Trigger refresh to update statistics
-      if (onRefresh) {
-        setTimeout(() => onRefresh(), 500);
+      try {
+        await externalOnDelete(pledgeId);
+        console.log('[PledgesList] Pledge deleted, triggering refresh');
+        // ✅ Trigger refresh to update stats
+        if (onRefresh) {
+          setTimeout(() => onRefresh(), 500);
+        }
+      } catch (error) {
+        console.error('[PledgesList] Delete failed:', error);
       }
     }
-  };
+  }, [externalOnDelete, onRefresh]);
 
-  const handleUpdateStatus = async (pledgeId, newStatus) => {
+  const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
     if (externalOnUpdateStatus) {
-      await externalOnUpdateStatus(pledgeId, newStatus);
-      // Trigger refresh to update statistics
-      if (onRefresh) {
-        setTimeout(() => onRefresh(), 500);
-      }
-    } else {
       try {
-        showToast('Pledge status updated successfully', 'success');
+        await externalOnUpdateStatus(pledgeId, newStatus);
+        console.log('[PledgesList] Status updated, triggering refresh');
+        // ✅ Trigger refresh to update stats
+        if (onRefresh) {
+          setTimeout(() => onRefresh(), 500);
+        }
       } catch (error) {
+        console.error('[PledgesList] Status update failed:', error);
         showToast('Failed to update pledge status', 'error');
       }
     }
-  };
+  }, [externalOnUpdateStatus, onRefresh, showToast]);
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = useCallback((newPage) => {
     if (externalOnPageChange) {
       externalOnPageChange(newPage);
     }
-  };
+  }, [externalOnPageChange]);
 
-  const areAllPledgesSelected = () => {
+  const areAllPledgesSelected = useCallback(() => {
     if (!selectedPledges || pledges.length === 0) return false;
     
     if (selectedPledges instanceof Set) {
@@ -440,9 +449,9 @@ const PledgesList = ({
       return selectedPledges.length === pledges.length;
     }
     return false;
-  };
+  }, [selectedPledges, pledges.length]);
 
-  const isPledgeSelected = (pledgeId) => {
+  const isPledgeSelected = useCallback((pledgeId) => {
     if (!selectedPledges) return false;
     
     if (selectedPledges instanceof Set) {
@@ -452,7 +461,7 @@ const PledgesList = ({
       return selectedPledges.includes(pledgeId);
     }
     return false;
-  };
+  }, [selectedPledges]);
 
   if (loading && pledges.length === 0) {
     return (
@@ -465,7 +474,7 @@ const PledgesList = ({
 
   return (
     <div className={styles.pledgesListContainer}>
-      {/* Enhanced View Mode Toggle with Stats */}
+      {/* Enhanced View Mode Toggle with Real-time Stats */}
       <div className={styles.viewModeToggle}>
         <div className={styles.toggleButtons}>
           <button
@@ -486,7 +495,7 @@ const PledgesList = ({
           </button>
         </div>
 
-        {/* Enhanced Summary Info */}
+        {/* ✅ REAL-TIME: Summary Info */}
         <div className={styles.summaryInfo}>
           {viewMode === 'grouped' && aggregateStats ? (
             <div className={styles.aggregateStats}>
@@ -542,7 +551,7 @@ const PledgesList = ({
           icon={<DollarSign size={48} />}
         />
       ) : viewMode === 'grouped' ? (
-        /* Enhanced Grouped View */
+        /* Enhanced Grouped View with Real-time Updates */
         <div className={styles.groupedPledgesContainer}>
           {groupedPledges.map((group) => (
             <MemberPledgesGroup
@@ -582,9 +591,9 @@ const PledgesList = ({
             </div>
           ))}
         </div>
-      )
+      )}
 
-      /* Pagination */}
+      {/* Pagination */}
       {externalPagination && externalPagination.totalPages > 1 && (
         <div className={styles.paginationContainer}>
           <Pagination
