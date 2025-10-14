@@ -1,8 +1,9 @@
-// frontend/src/components/admin/Pledges/PledgeCard.jsx - FIXED VERSION
-import React, { useState } from 'react';
+// PledgeCard.jsx - FIXED: Real-time status updates with visual feedback
+import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
+import { Loader } from 'lucide-react';
 import styles from './Pledges.module.css';
 
 const PledgeCard = ({ 
@@ -12,9 +13,19 @@ const PledgeCard = ({
   onUpdateStatus, 
   onAddPayment, 
   showPaymentHistory,
-  hideHeader = false  // ADD THIS PROP - defaults to false for backward compatibility
+  hideHeader = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(pledge?.status || 'active');
+  
+  // ✅ FIX: Update local status when prop changes (real-time sync)
+  useEffect(() => {
+    if (pledge?.status && pledge.status !== currentStatus) {
+      console.log('[PledgeCard] 🔄 Status synced from props:', pledge.status);
+      setCurrentStatus(pledge.status);
+    }
+  }, [pledge?.status]);
 
   // Safely extract pledge data with fallbacks
   const {
@@ -27,7 +38,6 @@ const PledgeCard = ({
     frequency = 'monthly',
     start_date,
     end_date,
-    status = 'active',
     notes = '',
     created_at,
     updated_at,
@@ -40,6 +50,29 @@ const PledgeCard = ({
     days_until_next_payment = null,
     payment_history = []
   } = pledge || {};
+
+  // ✅ FIX: Handle status updates with loading state and optimistic UI
+  const handleStatusChange = async (newStatus) => {
+    if (newStatus === currentStatus || !onUpdateStatus) return;
+    
+    console.log('[PledgeCard] 🔵 Changing status:', currentStatus, '->', newStatus);
+    
+    // Optimistic update
+    const previousStatus = currentStatus;
+    setCurrentStatus(newStatus);
+    setIsUpdatingStatus(true);
+    
+    try {
+      await onUpdateStatus(id, newStatus);
+      console.log('[PledgeCard] ✅ Status updated successfully');
+    } catch (error) {
+      console.error('[PledgeCard] ❌ Status update failed:', error);
+      // Rollback on error
+      setCurrentStatus(previousStatus);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   // Calculate derived values
   const totalPledgedAmount = total_pledged || (frequency === 'one-time' ? amount : calculateTotalPledged());
@@ -54,7 +87,6 @@ const PledgeCard = ({
     if (member?.full_name) return member.full_name;
     if (member?.name) return member.name;
     
-    // Construct from first and last name
     if (member?.first_name || member?.last_name) {
       return `${member.first_name || ''} ${member.last_name || ''}`.trim();
     }
@@ -62,15 +94,14 @@ const PledgeCard = ({
       return `${member_details.first_name || ''} ${member_details.last_name || ''}`.trim();
     }
     
-    // Fall back to member_name field
     if (member_name) return member_name;
     
     return 'Unknown Member';
   };
 
   // Status and frequency display functions
-  const getStatusBadgeColor = (status) => {
-    switch (status?.toLowerCase()) {
+  const getStatusBadgeColor = (statusValue) => {
+    switch (statusValue?.toLowerCase()) {
       case 'active':
         return 'success';
       case 'completed':
@@ -101,8 +132,8 @@ const PledgeCard = ({
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
+  const getStatusIcon = (statusValue) => {
+    switch (statusValue?.toLowerCase()) {
       case 'active':
         return '✓';
       case 'completed':
@@ -171,7 +202,7 @@ const PledgeCard = ({
 
   // Payment status helpers
   const getNextPaymentInfo = () => {
-    if (frequency === 'one-time' || status !== 'active') return null;
+    if (frequency === 'one-time' || currentStatus !== 'active') return null;
     
     if (next_payment_date) {
       const daysUntil = differenceInDays(new Date(next_payment_date), new Date());
@@ -198,8 +229,8 @@ const PledgeCard = ({
   const memberPhoto = member?.photo_url || member_details?.photo_url || '';
 
   return (
-    <Card className={`${styles.pledgeCard} ${status === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}>
-      {/* Header Section - CONDITIONALLY RENDER based on hideHeader prop */}
+    <Card className={`${styles.pledgeCard} ${currentStatus === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}>
+      {/* Header Section */}
       {!hideHeader && (
         <div className={styles.pledgeHeader}>
           <div className={styles.memberInfo}>
@@ -228,27 +259,37 @@ const PledgeCard = ({
           
           <div className={styles.statusSection}>
             <div className={styles.badgeContainer}>
-              <Badge 
-                color={getStatusBadgeColor(status)}
-                className={styles.statusBadge}
-              >
-                {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
-              </Badge>
+              {/* ✅ FIX: Show loading indicator during status update */}
+              {isUpdatingStatus ? (
+                <div className={styles.statusUpdating}>
+                  <Loader size={14} className={styles.spinner} />
+                  <span>Updating...</span>
+                </div>
+              ) : (
+                <Badge 
+                  color={getStatusBadgeColor(currentStatus)}
+                  className={styles.statusBadge}
+                >
+                  {getStatusIcon(currentStatus)} {currentStatus?.charAt(0).toUpperCase() + currentStatus?.slice(1)}
+                </Badge>
+              )}
               
-              {is_overdue && (
+              {is_overdue && currentStatus === 'active' && (
                 <Badge color="danger" className={styles.overdueBadge}>
                   Overdue
                 </Badge>
               )}
             </div>
             
+            {/* ✅ FIX: Disable dropdown during update */}
             {onUpdateStatus && (
               <Dropdown
-                value={status}
-                onChange={(newStatus) => onUpdateStatus(id, newStatus)}
+                value={currentStatus}
+                onChange={handleStatusChange}
                 options={statusOptions}
                 variant="minimal"
                 className={styles.statusDropdown}
+                disabled={isUpdatingStatus}
               />
             )}
           </div>
@@ -268,13 +309,16 @@ const PledgeCard = ({
             >
               {getFrequencyDisplayText(frequency)}
             </Badge>
-            {/* Show status badge when header is hidden */}
             {hideHeader && (
               <Badge 
-                color={getStatusBadgeColor(status)}
+                color={getStatusBadgeColor(currentStatus)}
                 className={styles.statusBadge}
               >
-                {getStatusIcon(status)} {status?.charAt(0).toUpperCase() + status?.slice(1)}
+                {isUpdatingStatus ? (
+                  <Loader size={12} className={styles.spinner} />
+                ) : (
+                  <>{getStatusIcon(currentStatus)} {currentStatus?.charAt(0).toUpperCase() + currentStatus?.slice(1)}</>
+                )}
               </Badge>
             )}
           </div>
@@ -445,12 +489,13 @@ const PledgeCard = ({
         </div>
         
         <div className={styles.actions}>
-          {status === 'active' && onAddPayment && (
+          {currentStatus === 'active' && onAddPayment && (
             <Button
               variant="success"
               size="sm"
               onClick={() => onAddPayment(pledge)}
               className={styles.addPaymentButton}
+              disabled={isUpdatingStatus}
             >
               Add Payment
             </Button>
@@ -460,6 +505,7 @@ const PledgeCard = ({
             variant="outline"
             size="sm"
             onClick={() => onEdit && onEdit(pledge)}
+            disabled={isUpdatingStatus}
           >
             Edit
           </Button>
@@ -468,6 +514,7 @@ const PledgeCard = ({
             variant="danger"
             size="sm"
             onClick={() => onDelete && onDelete(id)}
+            disabled={isUpdatingStatus}
           >
             Delete
           </Button>
@@ -475,7 +522,7 @@ const PledgeCard = ({
       </div>
 
       {/* Quick Actions for Overdue Pledges */}
-      {is_overdue && status === 'active' && (
+      {is_overdue && currentStatus === 'active' && (
         <div className={styles.overdueActions}>
           <div className={styles.overdueWarning}>
             <span className={styles.overdueIcon}>⚠️</span>
@@ -486,6 +533,7 @@ const PledgeCard = ({
               variant="primary"
               size="sm"
               onClick={() => onAddPayment && onAddPayment(pledge)}
+              disabled={isUpdatingStatus}
             >
               Record Payment
             </Button>
@@ -493,6 +541,7 @@ const PledgeCard = ({
               variant="outline"
               size="sm"
               onClick={() => {/* Send reminder functionality */}}
+              disabled={isUpdatingStatus}
             >
               Send Reminder
             </Button>

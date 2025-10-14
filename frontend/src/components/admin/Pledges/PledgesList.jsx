@@ -1,4 +1,4 @@
-// frontend/src/components/admin/Pledges/PledgesList.jsx - ENHANCED with real-time
+// PledgesList.jsx - COMPLETE FIX for Real-time Updates
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { LoadingSpinner, EmptyState, Pagination } from '../../shared';
@@ -46,7 +46,7 @@ const getMemberPhone = (pledge) => {
   return pledge.member?.phone || pledge.member_details?.phone || '';
 };
 
-// ✅ ENHANCED: Member group with real-time stat updates
+// ✅ CRITICAL FIX: Member group with REAL-TIME updates
 const MemberPledgesGroup = ({ 
   memberName, 
   memberEmail, 
@@ -58,13 +58,17 @@ const MemberPledgesGroup = ({
   onUpdateStatus,
   onNavigateToMember,
   selectedPledges,
-  onPledgeSelection
+  onPledgeSelection,
+  triggerUpdate // ✅ NEW: Force update trigger
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [memberStats, setMemberStats] = useState({});
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // ✅ REAL-TIME: Recalculate stats whenever pledges change
+  // ✅ CRITICAL: Recalculate stats when pledges change OR triggerUpdate changes
   useEffect(() => {
+    console.log('[MemberGroup] 🔄 Recalculating stats for:', memberName);
+    
     const totalPledged = pledges.reduce((sum, p) => 
       sum + (parseFloat(p.total_pledged) || parseFloat(p.amount) || 0), 0
     );
@@ -87,32 +91,50 @@ const MemberPledgesGroup = ({
       remainingAmount 
     });
     
-    console.log('[MemberGroup] Stats updated for:', memberName, {
+    setLastUpdate(Date.now());
+    
+    console.log('[MemberGroup] ✅ Stats updated:', {
       totalPledged,
       totalReceived,
-      completionRate: Math.round(completionRate)
+      completionRate: Math.round(completionRate),
+      activePledges,
+      completedPledges
     });
-  }, [pledges, memberName]);
+  }, [pledges, memberName, triggerUpdate]); // ✅ Watch triggerUpdate
 
-  // ✅ REAL-TIME: Handle delete with immediate UI update
-  const handleDelete = useCallback(async (pledgeId) => {
-    try {
-      await onDelete(pledgeId);
-      console.log('[MemberGroup] Pledge deleted, stats will auto-update');
-    } catch (error) {
-      console.error('[MemberGroup] Delete failed:', error);
-    }
-  }, [onDelete]);
-
-  // ✅ REAL-TIME: Handle status update with immediate UI update
+  // ✅ CRITICAL: Force status update with immediate callback
   const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
+    console.log('[MemberGroup] 🔵 Status update requested:', { pledgeId, newStatus });
+    
     try {
       await onUpdateStatus(pledgeId, newStatus);
-      console.log('[MemberGroup] Status updated, stats will auto-update');
+      
+      // ✅ Force immediate re-render
+      setLastUpdate(Date.now());
+      
+      console.log('[MemberGroup] ✅ Status updated successfully');
     } catch (error) {
-      console.error('[MemberGroup] Status update failed:', error);
+      console.error('[MemberGroup] ❌ Status update failed:', error);
+      throw error;
     }
   }, [onUpdateStatus]);
+
+  // ✅ CRITICAL: Force delete with immediate callback
+  const handleDelete = useCallback(async (pledgeId) => {
+    console.log('[MemberGroup] 🗑️ Delete requested:', pledgeId);
+    
+    try {
+      await onDelete(pledgeId);
+      
+      // ✅ Force immediate re-render
+      setLastUpdate(Date.now());
+      
+      console.log('[MemberGroup] ✅ Deleted successfully');
+    } catch (error) {
+      console.error('[MemberGroup] ❌ Delete failed:', error);
+      throw error;
+    }
+  }, [onDelete]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -135,7 +157,7 @@ const MemberPledgesGroup = ({
   };
 
   return (
-    <div className={styles.memberGroupCard}>
+    <div className={styles.memberGroupCard} key={`member-${memberId}-${lastUpdate}`}>
       <div 
         className={styles.memberHeader}
         onClick={() => setIsExpanded(!isExpanded)}
@@ -182,7 +204,7 @@ const MemberPledgesGroup = ({
             </div>
           </div>
 
-          {/* ✅ ENHANCED: Real-time updating stats */}
+          {/* ✅ REAL-TIME: Stats update automatically */}
           <div className={styles.memberStatsSection}>
             <div className={styles.statColumn}>
               <div className={styles.statLabel}>
@@ -258,7 +280,7 @@ const MemberPledgesGroup = ({
       {isExpanded && (
         <div className={styles.pledgesList}>
           {pledges.map((pledge, index) => (
-            <div key={pledge.id} className={styles.pledgeItemWrapper}>
+            <div key={`${pledge.id}-${lastUpdate}`} className={styles.pledgeItemWrapper}>
               <label className={styles.pledgeCheckbox}>
                 <input
                   type="checkbox"
@@ -318,7 +340,7 @@ const MemberPledgesGroup = ({
   );
 };
 
-// ✅ ENHANCED: Main component with real-time aggregate stats
+// ✅ CRITICAL FIX: Main component with forced re-renders
 const PledgesList = ({ 
   pledges: externalPledges, 
   selectedPledges,
@@ -336,16 +358,25 @@ const PledgesList = ({
 }) => {
   const [viewMode, setViewMode] = useState('grouped');
   const [aggregateStats, setAggregateStats] = useState(null);
+  const [updateTrigger, setUpdateTrigger] = useState(0); // ✅ Force update counter
   const { showToast } = useToast();
 
   const pledges = externalPledges || [];
   const loading = externalLoading || false;
 
-  // ✅ REAL-TIME: Group pledges by member
+  // ✅ CRITICAL: Force refresh when pledges change
+  useEffect(() => {
+    console.log('[PledgesList] 📊 Pledges changed, updating stats...');
+    setUpdateTrigger(prev => prev + 1);
+  }, [pledges]);
+
+  // Group pledges by member
   const groupedPledges = useMemo(() => {
     if (!Array.isArray(pledges) || pledges.length === 0) {
       return [];
     }
+
+    console.log('[PledgesList] 🔄 Grouping', pledges.length, 'pledges');
 
     const groups = {};
     
@@ -370,11 +401,13 @@ const PledgesList = ({
     return Object.values(groups).sort((a, b) => 
       a.memberName.localeCompare(b.memberName)
     );
-  }, [pledges]);
+  }, [pledges, updateTrigger]); // ✅ Re-group when trigger changes
 
-  // ✅ REAL-TIME: Calculate aggregate statistics
+  // Calculate aggregate statistics
   useEffect(() => {
     if (pledges.length > 0) {
+      console.log('[PledgesList] 📊 Calculating aggregate stats...');
+      
       const stats = {
         totalMembers: groupedPledges.length,
         totalPledges: pledges.length,
@@ -386,7 +419,7 @@ const PledgesList = ({
       
       setAggregateStats(stats);
       
-      console.log('[PledgesList] ✅ Aggregate stats updated:', {
+      console.log('[PledgesList] ✅ Stats updated:', {
         totalMembers: stats.totalMembers,
         totalPledges: stats.totalPledges,
         overallRate: Math.round(stats.overallRate)
@@ -394,7 +427,7 @@ const PledgesList = ({
     } else {
       setAggregateStats(null);
     }
-  }, [pledges, groupedPledges]);
+  }, [pledges, groupedPledges, updateTrigger]); // ✅ Recalculate on trigger
 
   const handleEditPledge = useCallback((pledge) => {
     if (externalOnEdit) {
@@ -402,33 +435,56 @@ const PledgesList = ({
     }
   }, [externalOnEdit]);
 
+  // ✅ CRITICAL: Enhanced delete with forced refresh
   const handleDeletePledge = useCallback(async (pledgeId) => {
     if (externalOnDelete) {
       try {
+        console.log('[PledgesList] 🗑️ Deleting pledge:', pledgeId);
+        
         await externalOnDelete(pledgeId);
-        console.log('[PledgesList] Pledge deleted, triggering refresh');
-        // ✅ Trigger refresh to update stats
+        
+        // ✅ Force immediate refresh
+        setUpdateTrigger(prev => prev + 1);
+        
         if (onRefresh) {
-          setTimeout(() => onRefresh(), 500);
+          setTimeout(() => {
+            console.log('[PledgesList] 🔄 Triggering external refresh...');
+            onRefresh();
+          }, 300);
         }
+        
+        console.log('[PledgesList] ✅ Delete completed');
       } catch (error) {
-        console.error('[PledgesList] Delete failed:', error);
+        console.error('[PledgesList] ❌ Delete failed:', error);
+        throw error;
       }
     }
   }, [externalOnDelete, onRefresh]);
 
+  // ✅ CRITICAL: Enhanced status update with forced refresh
   const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
     if (externalOnUpdateStatus) {
       try {
+        console.log('[PledgesList] 🔄 Updating status:', { pledgeId, newStatus });
+        
         await externalOnUpdateStatus(pledgeId, newStatus);
-        console.log('[PledgesList] Status updated, triggering refresh');
-        // ✅ Trigger refresh to update stats
+        
+        // ✅ Force immediate update of local state
+        setUpdateTrigger(prev => prev + 1);
+        
+        // ✅ Trigger external refresh
         if (onRefresh) {
-          setTimeout(() => onRefresh(), 500);
+          setTimeout(() => {
+            console.log('[PledgesList] 🔄 Triggering external refresh...');
+            onRefresh();
+          }, 300);
         }
+        
+        console.log('[PledgesList] ✅ Status update completed');
       } catch (error) {
-        console.error('[PledgesList] Status update failed:', error);
+        console.error('[PledgesList] ❌ Status update failed:', error);
         showToast('Failed to update pledge status', 'error');
+        throw error;
       }
     }
   }, [externalOnUpdateStatus, onRefresh, showToast]);
@@ -473,7 +529,7 @@ const PledgesList = ({
   }
 
   return (
-    <div className={styles.pledgesListContainer}>
+    <div className={styles.pledgesListContainer} key={`list-${updateTrigger}`}>
       {/* Enhanced View Mode Toggle with Real-time Stats */}
       <div className={styles.viewModeToggle}>
         <div className={styles.toggleButtons}>
@@ -495,7 +551,7 @@ const PledgesList = ({
           </button>
         </div>
 
-        {/* ✅ REAL-TIME: Summary Info */}
+        {/* ✅ REAL-TIME: Summary updates automatically */}
         <div className={styles.summaryInfo}>
           {viewMode === 'grouped' && aggregateStats ? (
             <div className={styles.aggregateStats}>
@@ -525,7 +581,7 @@ const PledgesList = ({
         </div>
       </div>
 
-      {/* Select All (only in list view) */}
+      {/* Select All */}
       {viewMode === 'list' && pledges.length > 0 && (
         <Card className={styles.selectAllCard}>
           <label className={styles.selectAllLabel}>
@@ -551,30 +607,33 @@ const PledgesList = ({
           icon={<DollarSign size={48} />}
         />
       ) : viewMode === 'grouped' ? (
-        /* Enhanced Grouped View with Real-time Updates */
-        <div className={styles.groupedPledgesContainer}>
-          {groupedPledges.map((group) => (
-            <MemberPledgesGroup
-              key={group.memberId}
-              memberName={group.memberName}
-              memberEmail={group.memberEmail}
-              memberPhone={group.memberPhone}
-              memberId={group.memberId}
-              pledges={group.pledges}
-              onEdit={handleEditPledge}
-              onDelete={handleDeletePledge}
-              onUpdateStatus={handleUpdateStatus}
-              onNavigateToMember={onNavigateToMember}
-              selectedPledges={selectedPledges}
-              onPledgeSelection={onPledgeSelection}
-            />
-          ))}
-        </div>
+        /* Grouped View with Real-time Updates */
+        (
+          <div className={styles.groupedPledgesContainer}>
+            {groupedPledges.map((group) => (
+              <MemberPledgesGroup
+                key={`${group.memberId}-${updateTrigger}`}
+                memberName={group.memberName}
+                memberEmail={group.memberEmail}
+                memberPhone={group.memberPhone}
+                memberId={group.memberId}
+                pledges={group.pledges}
+                onEdit={handleEditPledge}
+                onDelete={handleDeletePledge}
+                onUpdateStatus={handleUpdateStatus}
+                onNavigateToMember={onNavigateToMember}
+                selectedPledges={selectedPledges}
+                onPledgeSelection={onPledgeSelection}
+                triggerUpdate={updateTrigger}
+              />
+            ))}
+          </div>
+        )
       ) : (
         /* List View */
         <div className={styles.listPledgesContainer}>
           {pledges.map((pledge) => (
-            <div key={pledge.id} className={styles.pledgeCardWrapper}>
+            <div key={`${pledge.id}-${updateTrigger}`} className={styles.pledgeCardWrapper}>
               <label className={styles.selectCheckbox}>
                 <input
                   type="checkbox"
@@ -611,3 +670,27 @@ const PledgesList = ({
 };
 
 export default PledgesList;
+
+/* 
+✅ KEY CHANGES FOR REAL-TIME UPDATES:
+
+1. **updateTrigger State**: Forces re-renders when data changes
+2. **Member Group Stats**: Recalculates on every pledge change
+3. **Aggregate Stats**: Updates whenever pledges or trigger changes
+4. **Enhanced Callbacks**: All update/delete functions trigger refresh
+5. **Key Props**: Components use unique keys with updateTrigger
+6. **Forced Refresh**: Calls onRefresh after status changes
+
+HOW IT WORKS:
+- When status changes: handleUpdateStatus → setUpdateTrigger → all stats recalculate
+- When pledge deleted: handleDeletePledge → setUpdateTrigger → groups re-render
+- Stats calculations watch updateTrigger and pledges array
+- React sees new keys and forces full re-render of cards
+- onRefresh() called to fetch fresh data from API
+
+TEST IT:
+1. Change a pledge status → Watch stats update immediately
+2. Check progress bars → Should reflect new completion %
+3. Check member totals → Should update in real-time
+4. Check "Received" amounts → Should change instantly
+*/

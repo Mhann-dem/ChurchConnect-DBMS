@@ -1,4 +1,4 @@
-// PledgeForm.jsx - FIXED VERSION with proper member search
+// PledgeForm.jsx - FIXED VERSION with proper member pre-population
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useFormSubmission } from '../../../hooks/useFormSubmission';
 import FormContainer from '../../shared/FormContainer';
@@ -16,12 +16,10 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
   const [selectedMemberObj, setSelectedMemberObj] = useState(null);
   const [totalCalculated, setTotalCalculated] = useState(0);
   
-  // ✅ FIX: Local state for members with search capability
   const [members, setMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [membersError, setMembersError] = useState(null);
 
-  // Refs for managing dropdown interactions
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const isSelectingRef = useRef(false);
@@ -29,23 +27,111 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
 
   const { showToast } = useToast();
 
-  // Form state
-  const initialValues = {
-    member_id: pledge?.member_id || pledge?.member?.id || '',
-    member_name: pledge?.member_name || (pledge?.member ? `${pledge.member.first_name} ${pledge.member.last_name}`.trim() : ''),
-    amount: pledge?.amount || '',
-    frequency: pledge?.frequency || 'monthly',
-    start_date: pledge?.start_date || new Date().toISOString().split('T')[0],
-    end_date: pledge?.end_date || '',
-    notes: pledge?.notes || '',
-    status: pledge?.status || 'active'
-  };
+  // ✅ CRITICAL FIX: Initialize form with pledge data including member
+  const initialValues = useMemo(() => {
+    if (pledge) {
+      return {
+        member_id: pledge.member_id || pledge.member?.id || '',
+        member_name: pledge.member_name || 
+                     (pledge.member ? `${pledge.member.first_name} ${pledge.member.last_name}`.trim() : '') ||
+                     (pledge.member_details ? `${pledge.member_details.first_name || ''} ${pledge.member_details.last_name || ''}`.trim() : ''),
+        amount: pledge.amount || '',
+        frequency: pledge.frequency || 'monthly',
+        start_date: pledge.start_date || new Date().toISOString().split('T')[0],
+        end_date: pledge.end_date || '',
+        notes: pledge.notes || '',
+        status: pledge.status || 'active'
+      };
+    }
+    return {
+      member_id: '',
+      member_name: '',
+      amount: '',
+      frequency: 'monthly',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      notes: '',
+      status: 'active'
+    };
+  }, [pledge]);
 
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [warnings, setWarnings] = useState([]);
 
-  // ✅ FIX: Fetch members with search functionality
+  // ✅ FIX: Pre-populate member data when editing
+  useEffect(() => {
+    if (pledge && pledge.member_id) {
+      console.log('[PledgeForm] 🔵 EDITING MODE - Pre-populating member:', pledge);
+      
+      // Construct full member object from available data
+      const memberData = pledge.member || pledge.member_details || {
+        id: pledge.member_id,
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: ''
+      };
+
+      // Get display name from various sources
+      const displayName = 
+        pledge.member_name ||
+        (pledge.member ? `${pledge.member.first_name || ''} ${pledge.member.last_name || ''}`.trim() : '') ||
+        (pledge.member_details ? `${pledge.member_details.first_name || ''} ${pledge.member_details.last_name || ''}`.trim() : '') ||
+        'Unknown Member';
+
+      console.log('[PledgeForm] 🔵 Setting member:', {
+        id: pledge.member_id,
+        name: displayName,
+        memberData
+      });
+
+      // Set the selected member
+      setSelectedMemberObj({
+        ...memberData,
+        id: pledge.member_id,
+        first_name: memberData.first_name || displayName.split(' ')[0] || '',
+        last_name: memberData.last_name || displayName.split(' ').slice(1).join(' ') || ''
+      });
+
+      // Set the search field to show member name
+      setMemberSearch(displayName);
+
+      // Update form values
+      setValues(prev => ({
+        ...prev,
+        member_id: pledge.member_id,
+        member_name: displayName
+      }));
+    }
+  }, [pledge]);
+
+  // ✅ FIX: Only trigger search when NOT in edit mode or when user is actively searching
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Don't search if:
+    // 1. Member is already selected (editing mode)
+    // 2. Search query is empty
+    // 3. Search query is too short
+    if (selectedMemberObj || !memberSearch || memberSearch.length < 2) {
+      return;
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      console.log('[PledgeForm] Searching members for:', memberSearch);
+      fetchMembers(memberSearch);
+    }, 300);
+    
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [memberSearch, selectedMemberObj]);
+
   const fetchMembers = useCallback(async (searchQuery = '') => {
     try {
       setMembersLoading(true);
@@ -55,25 +141,16 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
       
       const params = {
         page_size: 100,
-        ordering: '-created_at' // Show recent members first
+        ordering: '-created_at'
       };
       
-      // Add search if provided
       if (searchQuery && searchQuery.trim()) {
         params.search = searchQuery.trim();
       }
       
       const response = await apiMethods.get('members/', { params });
       
-      console.log('[PledgeForm] Members response:', {
-        count: response.data?.count,
-        resultsLength: response.data?.results?.length,
-        hasResults: !!response.data?.results
-      });
-      
-      // Handle paginated response
       const membersList = response.data?.results || response.data || [];
-      
       setMembers(membersList);
       
       if (membersList.length === 0 && searchQuery) {
@@ -89,37 +166,13 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     }
   }, [showToast]);
 
-  // ✅ FIX: Fetch all members on mount
   useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
-
-  // ✅ FIX: Debounced search - fetch members when search changes
-  useEffect(() => {
-    // Clear existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
+    // Only fetch all members on initial mount if NOT editing
+    if (!pledge) {
+      fetchMembers();
     }
-    
-    // Don't search if member already selected or search is too short
-    if (selectedMemberObj || !memberSearch || memberSearch.length < 2) {
-      return;
-    }
-    
-    // Debounce search
-    searchTimeoutRef.current = setTimeout(() => {
-      console.log('[PledgeForm] Searching members for:', memberSearch);
-      fetchMembers(memberSearch);
-    }, 300);
-    
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [memberSearch, selectedMemberObj, fetchMembers]);
+  }, [pledge]);
 
-  // Form submission handler
   const {
     isSubmitting: formSubmitting,
     showSuccess,
@@ -128,15 +181,15 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     clearError
   } = useFormSubmission({
     onSubmit: async (formData) => {
-      console.log('[PledgeForm] Submitting pledge:', formData);
+      console.log('[PledgeForm] 🟢 Submitting pledge:', formData);
       
       if (!formData.member_id) {
         throw new Error('Please select a member');
       }
 
-      // Format data for backend
+      // ✅ FIX: Format data correctly for both create and update
       const submissionData = {
-        member: formData.member_id,
+        member: formData.member_id,  // Django expects 'member' field
         amount: parseFloat(formData.amount),
         frequency: formData.frequency,
         start_date: formData.start_date,
@@ -145,7 +198,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         notes: formData.notes || ''
       };
 
-      console.log('[PledgeForm] Formatted submission:', submissionData);
+      console.log('[PledgeForm] 🟢 Formatted submission:', submissionData);
       
       return await onSubmit(submissionData);
     },
@@ -154,22 +207,8 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     autoCloseDelay: 3000
   });
 
-  // Initialize member data for editing
-  useEffect(() => {
-    if (pledge?.member) {
-      const memberName = pledge.member.first_name && pledge.member.last_name
-        ? `${pledge.member.first_name} ${pledge.member.last_name}`.trim()
-        : pledge.member_name || '';
-      
-      setMemberSearch(memberName);
-      setSelectedMemberObj(pledge.member);
-    }
-  }, [pledge]);
-
-  // Filter members based on search - OPTIMIZED
   const filteredMembers = useMemo(() => {
     if (!memberSearch || !Array.isArray(members) || members.length === 0) {
-      // Show all members if no search
       return members.slice(0, 20);
     }
 
@@ -191,10 +230,9 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                email.includes(searchLower) ||
                phone.includes(searchLower);
       })
-      .slice(0, 20); // Limit to 20 results
+      .slice(0, 20);
   }, [memberSearch, members]);
 
-  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -212,7 +250,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Calculate total pledged amount
   const calculateTotalPledged = useMemo(() => {
     if (!values.amount || values.frequency === 'one-time') {
       return parseFloat(values.amount || 0);
@@ -256,7 +293,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     setTotalCalculated(calculateTotalPledged);
   }, [calculateTotalPledged]);
 
-  // Form validation
   const validateForm = useCallback(() => {
     const newErrors = {};
     const newWarnings = [];
@@ -321,7 +357,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     return Object.keys(newErrors).length === 0;
   }, [values]);
 
-  // Event handlers
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setValues(prev => ({ ...prev, [name]: value }));
@@ -340,6 +375,8 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                        member.name || 
                        'Unknown Member';
     
+    console.log('[PledgeForm] 🟢 Member selected:', { id: member.id, name: memberName });
+    
     setValues(prev => ({
       ...prev,
       member_id: member.id,
@@ -357,8 +394,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     setTimeout(() => {
       isSelectingRef.current = false;
     }, 100);
-    
-    console.log('[PledgeForm] Member selected:', { id: member.id, name: memberName });
   }, [errors.member_id]);
 
   const handleMemberSearchChange = useCallback((e) => {
@@ -366,6 +401,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     setMemberSearch(value);
     setShowMemberDropdown(value.length > 0);
     
+    // ✅ FIX: Only clear selection if user is actively changing the search
     if (!value) {
       setValues(prev => ({ 
         ...prev, 
@@ -377,12 +413,14 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
   }, []);
 
   const handleMemberSearchFocus = useCallback(() => {
-    if (memberSearch && memberSearch.length > 0) {
+    // ✅ FIX: Don't show dropdown if member is already selected (editing mode)
+    if (!selectedMemberObj && memberSearch && memberSearch.length > 0) {
       setShowMemberDropdown(true);
     }
-  }, [memberSearch]);
+  }, [memberSearch, selectedMemberObj]);
 
   const handleClearMemberSelection = useCallback(() => {
+    console.log('[PledgeForm] 🔴 Clearing member selection');
     setMemberSearch('');
     setValues(prev => ({ 
       ...prev, 
@@ -406,7 +444,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
     await handleFormSubmit(values, e);
   };
 
-  // Computed values
   const isLoading = formSubmitting || externalLoading;
   const isValid = values.member_id && values.amount && values.frequency && values.start_date;
 
@@ -439,6 +476,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>
             Member <span className={styles.required}>*</span>
+            {pledge && <span className={styles.editingNote}> (Editing)</span>}
           </label>
           <div className={styles.memberSearchContainer}>
             {selectedMemberObj && values.member_id ? (
@@ -452,12 +490,14 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                     ({selectedMemberObj.email})
                   </span>
                 )}
+                {/* ✅ FIX: Allow changing member even in edit mode */}
                 <button
                   type="button"
                   onClick={handleClearMemberSelection}
                   className={styles.clearMemberButton}
                   disabled={isLoading}
-                  aria-label="Clear member selection"
+                  aria-label="Change member"
+                  title="Click to select a different member"
                 >
                   <X size={14} />
                 </button>
@@ -541,6 +581,7 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
           </div>
         </div>
 
+        {/* Rest of the form fields... (amount, frequency, dates, status, notes) */}
         {/* Amount and Frequency */}
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
@@ -584,12 +625,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
                 </option>
               ))}
             </select>
-            {errors.frequency && (
-              <div className={styles.errorText}>
-                <AlertCircle size={14} />
-                {errors.frequency}
-              </div>
-            )}
           </div>
         </div>
 
@@ -702,12 +737,6 @@ const PledgeForm = ({ pledge, onSubmit, onCancel, loading: externalLoading }) =>
             disabled={isLoading}
             maxLength={1000}
           />
-          {errors.notes && (
-            <div className={styles.errorText}>
-              <AlertCircle size={14} />
-              {errors.notes}
-            </div>
-          )}
           {values.notes && (
             <div className={styles.characterCount}>
               {values.notes.length}/1000 characters
