@@ -1,15 +1,20 @@
 // frontend/src/components/admin/Pledges/PledgeStats.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, ProgressBar, Badge } from '../../ui';
 import styles from './Pledges.module.css'; 
 import { LoadingSpinner } from '../../shared';
 import usePledges from '../../../hooks/usePledges';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
+import { ChevronDown, ChevronUp, Users, TrendingUp } from 'lucide-react';
 
-const PledgeStats = ({ stats, filters = {} }) => {
+const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('current_year');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ NEW: Collapsible sections state
+  const [showTopPledgers, setShowTopPledgers] = useState(false);
+  const [showMonthlyTrends, setShowMonthlyTrends] = useState(false);
 
   // Only use the hook if stats aren't provided as props
   const pledgesHook = !stats ? usePledges() : null;
@@ -34,6 +39,55 @@ const PledgeStats = ({ stats, filters = {} }) => {
     }
   }, [selectedPeriod, selectedFrequency, filters, stats, fetchPledgeStats]);
 
+  // ✅ CRITICAL: Re-fetch stats when updateTrigger changes
+  useEffect(() => {
+    if (updateTrigger > 0) {
+      console.log('[PledgeStats] 🔄 UpdateTrigger changed, refreshing stats...', updateTrigger);
+      handleRefreshStats();
+    }
+  }, [updateTrigger]);
+
+  // ✅ NEW: Listen for pledge data changes
+  useEffect(() => {
+    const handlePledgeDataChanged = (event) => {
+      console.log('[PledgeStats] 🔔 Pledge data changed event received', event.detail);
+      handleRefreshStats();
+    };
+    
+    window.addEventListener('pledgeDataChanged', handlePledgeDataChanged);
+    
+    return () => {
+      window.removeEventListener('pledgeDataChanged', handlePledgeDataChanged);
+    };
+  }, []);
+
+  // ✅ CRITICAL: Enhanced refresh handler
+  const handleRefreshStats = useCallback(async () => {
+    if (onRefresh) {
+      console.log('[PledgeStats] 🔄 External refresh triggered');
+      try {
+        await onRefresh();
+      } catch (error) {
+        console.error('[PledgeStats] ❌ External refresh failed:', error);
+      }
+    } else if (fetchPledgeStats && typeof fetchPledgeStats === 'function') {
+      console.log('[PledgeStats] 🔄 Hook refresh triggered');
+      setIsLoading(true);
+      try {
+        await fetchPledgeStats({
+          period: selectedPeriod,
+          frequency: selectedFrequency,
+          ...filters,
+          forceRefresh: true
+        });
+      } catch (error) {
+        console.error('[PledgeStats] ❌ Hook refresh failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [onRefresh, fetchPledgeStats, selectedPeriod, selectedFrequency, filters]);
+
   // Helper function to safely get numeric values
   const safeNumber = (value, fallback = 0) => {
     const num = Number(value);
@@ -52,7 +106,7 @@ const PledgeStats = ({ stats, filters = {} }) => {
 
   if (loading) {
     return (
-      <div className={styles.statsContainer}>
+      <div className={styles.statsContainer} key={`stats-${updateTrigger}`}>
         <LoadingSpinner message="Loading pledge statistics..." />
       </div>
     );
@@ -141,26 +195,39 @@ const PledgeStats = ({ stats, filters = {} }) => {
   };
 
   return (
-    <div className={styles.statsContainer}>
+    <div className={styles.statsContainer} key={`stats-${updateTrigger}`}>
       {/* Filter Controls - Only show if not using prop stats */}
       {!stats && (
-        <div className={styles.filterControls}>
-          <div className={styles.filterGroup}>
-            <label htmlFor="period-select" className={styles.filterLabel}>
-              Time Period:
-            </label>
-            <select
-              id="period-select"
-              value={selectedPeriod}
-              onChange={(e) => handlePeriodChange(e.target.value)}
-              className={styles.filterSelect}
+        <div>
+          <div className={styles.filterControls}>
+            <div className={styles.filterGroup}>
+              <label htmlFor="frequency-select" className={styles.filterLabel}>
+                Frequency:
+              </label>
+              <select
+                id="frequency-select"
+                value={selectedFrequency}
+                onChange={(e) => setSelectedFrequency(e.target.value)}
+                className={styles.filterSelect}
+              >
+                {frequencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* ✅ ADD THIS NEW BUTTON */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshStats}
+              disabled={loading}
+              style={{ marginLeft: 'auto' }}
             >
-              {periodOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              {loading ? 'Refreshing...' : 'Refresh Stats'}
+            </Button>
           </div>
 
           <div className={styles.filterGroup}>
@@ -349,71 +416,117 @@ const PledgeStats = ({ stats, filters = {} }) => {
       )}
 
       {/* Top Pledgers */}
+      {/* ✅ ENHANCED: Collapsible Top Pledgers */}
       {Array.isArray(top_pledgers) && top_pledgers.length > 0 && (
         <Card className={styles.topPledgersCard}>
-          <h3 className={styles.topPledgersTitle}>Top Contributors</h3>
-          <div className={styles.topPledgersList}>
-            {top_pledgers.slice(0, 10).map((pledger, index) => (
-              <div key={pledger.id || index} className={styles.topPledgerItem}>
-                <div className={styles.pledgerRank}>
-                  #{index + 1}
-                </div>
-                <div className={styles.pledgerInfo}>
-                  <div className={styles.pledgerName}>
-                    {pledger.name || pledger.member_name || 'Unknown'}
-                  </div>
-                  <div className={styles.pledgerDetails}>
-                    {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)} pledged
-                    {pledger.fulfillment_rate && (
-                      <span className={styles.pledgerFulfillment}>
-                        • {Math.round(pledger.fulfillment_rate)}% fulfilled
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.pledgerAmount}>
-                  {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)}
-                </div>
-              </div>
-            ))}
+          <div 
+            className={styles.collapsibleHeader}
+            onClick={() => setShowTopPledgers(!showTopPledgers)}
+            style={{ 
+              cursor: 'pointer', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '1rem',
+              borderBottom: showTopPledgers ? '1px solid #e5e7eb' : 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={20} />
+              <h3 className={styles.topPledgersTitle}>
+                Top Contributors ({top_pledgers.length})
+              </h3>
+            </div>
+            {showTopPledgers ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </div>
+          
+          {showTopPledgers && (
+            <div className={styles.topPledgersList}>
+              {top_pledgers.slice(0, 10).map((pledger, index) => (
+                <div key={pledger.id || index} className={styles.topPledgerItem}>
+                  <div className={styles.pledgerRank}>
+                    #{index + 1}
+                  </div>
+                  <div className={styles.pledgerInfo}>
+                    <div className={styles.pledgerName}>
+                      {pledger.name || pledger.member_name || 'Unknown'}
+                    </div>
+                    <div className={styles.pledgerDetails}>
+                      {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)} pledged
+                      {pledger.fulfillment_rate && (
+                        <span className={styles.pledgerFulfillment}>
+                          • {Math.round(pledger.fulfillment_rate)}% fulfilled
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.pledgerAmount}>
+                    {safeCurrency(pledger.total_pledged || pledger.totalPledged || 0)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       )}
 
       {/* Monthly Trends */}
+      {/* ✅ ENHANCED: Collapsible Monthly Trends */}
       {Array.isArray(monthly_trends) && monthly_trends.length > 0 && (
         <Card className={styles.trendsCard}>
-          <h3 className={styles.trendsTitle}>Monthly Trends</h3>
-          <div className={styles.trendsChart}>
-            {monthly_trends.map((trend, index) => {
-              const maxAmount = Math.max(...monthly_trends.map(t => safeNumber(t.amount || t.total_amount || 0)));
-              const trendAmount = safeNumber(trend.amount || trend.total_amount || 0);
-              const percentage = maxAmount > 0 ? (trendAmount / maxAmount) * 100 : 0;
-              
-              return (
-                <div key={trend.month || index} className={styles.trendItem}>
-                  <div className={styles.trendMonth}>
-                    {trend.month || trend.period || `Month ${index + 1}`}
-                  </div>
-                  <div className={styles.trendBar}>
-                    <div
-                      className={styles.trendBarFill}
-                      style={{ height: `${percentage}%` }}
-                      title={`${safeCurrency(trendAmount)} in ${trend.month}`}
-                    />
-                  </div>
-                  <div className={styles.trendAmount}>
-                    {safeCurrency(trendAmount)}
-                  </div>
-                  {trend.count && (
-                    <div className={styles.trendCount}>
-                      {trend.count} pledges
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div 
+            className={styles.collapsibleHeader}
+            onClick={() => setShowMonthlyTrends(!showMonthlyTrends)}
+            style={{ 
+              cursor: 'pointer', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '1rem',
+              borderBottom: showMonthlyTrends ? '1px solid #e5e7eb' : 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <TrendingUp size={20} />
+              <h3 className={styles.trendsTitle}>
+                Monthly Trends ({monthly_trends.length} months)
+              </h3>
+            </div>
+            {showMonthlyTrends ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </div>
+          
+          {showMonthlyTrends && (
+            <div className={styles.trendsChart} style={{ marginTop: '1rem', padding: '1rem' }}>
+              {monthly_trends.map((trend, index) => {
+                const maxAmount = Math.max(...monthly_trends.map(t => safeNumber(t.amount || t.total_amount || 0)));
+                const trendAmount = safeNumber(trend.amount || trend.total_amount || 0);
+                const percentage = maxAmount > 0 ? (trendAmount / maxAmount) * 100 : 0;
+                
+                return (
+                  <div key={trend.month || index} className={styles.trendItem}>
+                    <div className={styles.trendMonth}>
+                      {trend.month || trend.period || `Month ${index + 1}`}
+                    </div>
+                    <div className={styles.trendBar}>
+                      <div
+                        className={styles.trendBarFill}
+                        style={{ height: `${percentage}%` }}
+                        title={`${safeCurrency(trendAmount)} in ${trend.month}`}
+                      />
+                    </div>
+                    <div className={styles.trendAmount}>
+                      {safeCurrency(trendAmount)}
+                    </div>
+                    {trend.count && (
+                      <div className={styles.trendCount}>
+                        {trend.count} pledges
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 

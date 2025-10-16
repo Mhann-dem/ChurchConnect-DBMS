@@ -60,6 +60,8 @@ const usePledges = (initialOptions = {}) => {
 
   const debouncedSearch = useDebounce(filters.search, options.debounceMs);
   
+  const [statsUpdateTrigger, setStatsUpdateTrigger] = useState(0);
+
   // ✅ FIX: Single mounted ref
   const mountedRef = useRef(true);
   const isFetchingRef = useRef(false);
@@ -404,6 +406,43 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [hasPermission, fetchStatistics, handleError, showToast]);
 
+  // ✅ NEW: Force refresh statistics specifically
+  const forceRefreshStatistics = useCallback(async () => {
+    if (!isAuthenticated || !hasPermission('read')) {
+      console.warn('[usePledges] Cannot refresh statistics - insufficient permissions');
+      return { success: false, error: 'Insufficient permissions' };
+    }
+
+    try {
+      console.log('[usePledges] 🔄 Force refreshing statistics');
+      
+      if (mountedRef.current) {
+        setError(null);
+      }
+      
+      // Force fetch with cache bypass
+      const result = await fetchStatistics({ forceRefresh: true });
+      
+      // Trigger state update
+      if (mountedRef.current) {
+        setStatsUpdateTrigger(prev => prev + 1);
+      }
+      
+      console.log('[usePledges] ✅ Statistics force refresh completed');
+      
+      return result;
+    } catch (error) {
+      console.error('[usePledges] ❌ Statistics refresh failed:', error);
+      
+      if (mountedRef.current) {
+        const errorMessage = handleError(error, 'force refresh statistics');
+        setError(errorMessage);
+      }
+      
+      return { success: false, error: error.message };
+    }
+  }, [isAuthenticated, hasPermission, fetchStatistics, handleError]);
+
   const updateFilters = useCallback((newFilters) => {
     console.log('[usePledges] Updating filters:', newFilters);
     setFilters(prev => ({
@@ -530,7 +569,9 @@ const usePledges = (initialOptions = {}) => {
     updatePagination,
     clearError,
     resetState,
-    refresh
+    refresh,
+    forceRefreshStatistics,
+    statsUpdateTrigger
   };
 };
 

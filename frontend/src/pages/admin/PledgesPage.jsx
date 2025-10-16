@@ -41,6 +41,10 @@ const PledgesPage = () => {
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page')) || 1
   );
+
+  // ✅ NEW: Stats update trigger
+  const [statsUpdateTrigger, setStatsUpdateTrigger] = useState(0);
+
   const [itemsPerPage, setItemsPerPage] = useState(
     parseInt(searchParams.get('limit')) || 25
   );
@@ -90,7 +94,9 @@ const PledgesPage = () => {
     updateFilters,
     updatePagination,
     clearError,
-    refresh
+    refresh,
+    forceRefreshStatistics,      // ✅ ADD THIS LINE
+    statsUpdateTrigger: hookStatsUpdateTrigger  // ✅ ADD THIS LINE
   } = usePledges(pledgesHookOptions) || {};
 
   // ✅ Debug logging
@@ -151,16 +157,34 @@ const PledgesPage = () => {
     }
   }, [currentPage, itemsPerPage, updatePagination]);
 
-  // ✅ FIXED: Clear dashboard cache helper
+  // ✅ ENHANCED: Clear dashboard cache helper
   const clearDashboardCache = useCallback(() => {
     try {
-      dashboardService.clearCache('pledge');
-      dashboardService.clearCache('dashboard');
-      console.log('[PledgesPage] Dashboard cache cleared');
+      // Use the new comprehensive clear method
+      dashboardService.clearPledgeCache();
+      console.log('[PledgesPage] Dashboard cache cleared via clearPledgeCache');
     } catch (error) {
       console.warn('[PledgesPage] Failed to clear dashboard cache:', error);
     }
   }, []);
+
+  // ✅ NEW: Trigger stats refresh with force API call
+  const triggerStatsRefresh = useCallback(async () => {
+    console.log('[PledgesPage] 🔄 Triggering stats refresh');
+    
+    // Increment local trigger
+    setStatsUpdateTrigger(prev => prev + 1);
+    
+    // Force refresh statistics from API
+    if (forceRefreshStatistics) {
+      try {
+        await forceRefreshStatistics();
+        console.log('[PledgesPage] ✅ Stats refreshed successfully');
+      } catch (error) {
+        console.error('[PledgesPage] ❌ Stats refresh failed:', error);
+      }
+    }
+  }, [forceRefreshStatistics]);
 
   // ✅ FIXED: Create pledge with cache clearing
   const handleCreatePledge = useCallback(async (pledgeData) => {
@@ -180,6 +204,9 @@ const PledgesPage = () => {
         
         // ✅ Clear dashboard cache
         clearDashboardCache();
+        
+        // ✅ CRITICAL: Trigger stats refresh
+        await triggerStatsRefresh();
         
         showToast(
           `Pledge for ${formatCurrency(pledgeData.amount)} created successfully`, 
@@ -217,7 +244,11 @@ const PledgesPage = () => {
       // ✅ Clear dashboard cache
       clearDashboardCache();
       
+      // ✅ CRITICAL: Trigger stats refresh
+      await triggerStatsRefresh();
+      
       showToast('Pledge updated successfully', 'success');
+
     } catch (error) {
       console.error('[PledgesPage] Error updating pledge:', error);
       showToast(error.message || 'Failed to update pledge', 'error');
@@ -248,6 +279,9 @@ const PledgesPage = () => {
       // ✅ Clear dashboard cache
       clearDashboardCache();
       
+      // ✅ CRITICAL: Trigger stats refresh
+      await triggerStatsRefresh();
+      
       showToast('Pledge deleted successfully', 'success');
       
       setSelectedPledges(prev => {
@@ -275,6 +309,9 @@ const PledgesPage = () => {
       
       // ✅ Clear dashboard cache
       clearDashboardCache();
+      
+      // ✅ CRITICAL: Trigger stats refresh
+      await triggerStatsRefresh();
       
       showToast('Status updated successfully', 'success');
     } catch (error) {
@@ -431,6 +468,9 @@ const PledgesPage = () => {
           fetchStatistics({ forceRefresh: true })
         ]);
       }
+      
+      // ✅ Trigger stats refresh
+      await triggerStatsRefresh();
       
       showToast('Pledges data refreshed successfully', 'success');
     } catch (error) {
@@ -622,6 +662,8 @@ const PledgesPage = () => {
             stats={statistics} 
             loading={loading}
             selectedCount={selectedPledges.size}
+            updateTrigger={statsUpdateTrigger}     // ✅ ADD THIS LINE
+            onRefresh={handleRefresh}               // ✅ ADD THIS LINE
           />
         ) : !loading && (
           <Card className={styles.infoCard}>

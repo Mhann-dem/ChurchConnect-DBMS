@@ -53,6 +53,32 @@ class DashboardService {
     }
   }
 
+  // ✅ NEW: Clear ALL pledge-related caches and notify components
+  clearPledgeCache() {
+    console.log('[DashboardService] 🧹 Clearing ALL pledge-related caches');
+    
+    // Clear all pledge-related cache entries
+    const pledgePatterns = ['pledge', 'dashboard', 'recent_pledges', 'stats'];
+    
+    pledgePatterns.forEach(pattern => {
+      this.clearCache(pattern);
+    });
+    
+    // Dispatch custom event to notify all listening components
+    try {
+      const event = new CustomEvent('pledgeDataChanged', {
+        detail: { 
+          timestamp: Date.now(),
+          source: 'dashboardService.clearPledgeCache'
+        }
+      });
+      window.dispatchEvent(event);
+      console.log('[DashboardService] ✅ Pledge cache cleared, event dispatched');
+    } catch (error) {
+      console.warn('[DashboardService] Failed to dispatch event:', error);
+    }
+  }
+
   // Retry logic for API calls
   async retryRequest(requestFn, retries = this.retryConfig.maxRetries) {
     for (let attempt = 1; attempt <= retries; attempt++) {
