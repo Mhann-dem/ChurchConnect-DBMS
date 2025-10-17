@@ -1,4 +1,4 @@
-// pages/admin/PledgesPage.jsx - COMPLETE FIXED VERSION
+// pages/admin/PledgesPage.jsx - COMPLETE FIX for updates
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
@@ -9,12 +9,11 @@ import {
   RefreshCw, 
   X, 
   DollarSign, 
-  Calendar,
   AlertCircle
 } from 'lucide-react';
 import { PledgesList, PledgeForm, PledgeStats } from '../../components/admin/Pledges';
 import { SearchBar, LoadingSpinner, ErrorBoundary } from '../../components/shared';
-import { Button, Card, Badge } from '../../components/ui';
+import { Button, Card } from '../../components/ui';
 import usePledges from '../../hooks/usePledges';
 import { useToast } from '../../hooks/useToast';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -41,10 +40,6 @@ const PledgesPage = () => {
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page')) || 1
   );
-
-  // ✅ NEW: Stats update trigger
-  const [statsUpdateTrigger, setStatsUpdateTrigger] = useState(0);
-
   const [itemsPerPage, setItemsPerPage] = useState(
     parseInt(searchParams.get('limit')) || 25
   );
@@ -95,98 +90,48 @@ const PledgesPage = () => {
     updatePagination,
     clearError,
     refresh,
-    forceRefreshStatistics,      // ✅ ADD THIS LINE
-    statsUpdateTrigger: hookStatsUpdateTrigger  // ✅ ADD THIS LINE
+    forceRefreshStatistics,
+    statsUpdateTrigger
   } = usePledges(pledgesHookOptions) || {};
 
-  // ✅ Debug logging
-  useEffect(() => {
-    console.log('[PledgesPage] State Update:', {
-      pledgesCount: pledges?.length,
-      loading,
-      error,
-      statisticsKeys: Object.keys(statistics),
-      timestamp: new Date().toISOString()
-    });
-  }, [pledges, loading, error, statistics]);
-
-  // Update URL params when state changes
-  useEffect(() => {
-    const updateURL = () => {
-      const params = new URLSearchParams();
-      
-      if (debouncedSearchQuery) params.set('search', debouncedSearchQuery);
-      if (currentPage > 1) params.set('page', currentPage.toString());
-      if (itemsPerPage !== 25) params.set('limit', itemsPerPage.toString());
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all' && value !== null) {
-          params.set(key, value.toString());
-        }
-      });
-
-      const newURL = params.toString();
-      const currentURL = searchParams.toString();
-      
-      if (newURL !== currentURL) {
-        setSearchParams(params, { replace: true });
-      }
-    };
-
-    const timeoutId = setTimeout(updateURL, 300);
-    return () => clearTimeout(timeoutId);
-  }, [debouncedSearchQuery, currentPage, itemsPerPage, filters, searchParams, setSearchParams]);
-
-  // Update hook filters when local filters change
-  useEffect(() => {
-    if (updateFilters) {
-      updateFilters({
-        ...filters,
-        search: debouncedSearchQuery
-      });
-    }
-  }, [filters, debouncedSearchQuery, updateFilters]);
-
-  // Update hook pagination when local pagination changes
-  useEffect(() => {
-    if (updatePagination) {
-      updatePagination({
-        currentPage,
-        itemsPerPage
-      });
-    }
-  }, [currentPage, itemsPerPage, updatePagination]);
-
-  // ✅ ENHANCED: Clear dashboard cache helper
+  // ✅ Clear dashboard cache helper
   const clearDashboardCache = useCallback(() => {
     try {
-      // Use the new comprehensive clear method
       dashboardService.clearPledgeCache();
-      console.log('[PledgesPage] Dashboard cache cleared via clearPledgeCache');
+      console.log('[PledgesPage] Dashboard cache cleared');
     } catch (error) {
       console.warn('[PledgesPage] Failed to clear dashboard cache:', error);
     }
   }, []);
 
-  // ✅ NEW: Trigger stats refresh with force API call
-  const triggerStatsRefresh = useCallback(async () => {
-    console.log('[PledgesPage] 🔄 Triggering stats refresh');
-    
-    // Increment local trigger
-    setStatsUpdateTrigger(prev => prev + 1);
-    
-    // Force refresh statistics from API
-    if (forceRefreshStatistics) {
-      try {
-        await forceRefreshStatistics();
-        console.log('[PledgesPage] ✅ Stats refreshed successfully');
-      } catch (error) {
-        console.error('[PledgesPage] ❌ Stats refresh failed:', error);
-      }
+  // ✅ FIXED: Update status with proper data sync
+  const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
+    if (!updatePledge || !pledgeId) {
+      showToast('Update function not available', 'error');
+      return;
     }
-  }, [forceRefreshStatistics]);
 
-  // ✅ FIXED: Create pledge with cache clearing
+    try {
+      console.log('[PledgesPage] 🔵 Updating status:', pledgeId, newStatus);
+      
+      // ✅ Call update with just status field
+      await updatePledge(pledgeId, { status: newStatus });
+      
+      // ✅ Clear dashboard cache
+      clearDashboardCache();
+      
+      console.log('[PledgesPage] ✅ Status updated successfully');
+      
+      // ✅ NO NEED to refresh - usePledges handles it optimistically
+      
+    } catch (error) {
+      console.error('[PledgesPage] ❌ Status update failed:', error);
+      showToast(error.message || 'Failed to update status', 'error');
+      throw error; // Re-throw for PledgeCard to handle rollback
+    }
+  }, [updatePledge, showToast, clearDashboardCache]);
+
+  // ✅ FIXED: Create pledge
   const handleCreatePledge = useCallback(async (pledgeData) => {
     if (!createPledge) {
       showToast('Create function not available', 'error');
@@ -202,18 +147,13 @@ const PledgesPage = () => {
         setShowForm(false);
         setSelectedPledge(null);
         
-        // ✅ Clear dashboard cache
         clearDashboardCache();
-        
-        // ✅ CRITICAL: Trigger stats refresh
-        await triggerStatsRefresh();
         
         showToast(
           `Pledge for ${formatCurrency(pledgeData.amount)} created successfully`, 
           'success'
         );
         
-        // Optionally navigate to member's profile
         if (newPledge?.member_id && window.confirm(
           'Pledge created successfully! Would you like to view this member\'s profile?'
         )) {
@@ -226,7 +166,7 @@ const PledgesPage = () => {
     }
   }, [createPledge, showToast, navigate, clearDashboardCache]);
 
-  // ✅ FIXED: Update pledge with cache clearing
+  // ✅ FIXED: Update pledge
   const handleUpdatePledge = useCallback(async (pledgeData) => {
     if (!updatePledge || !selectedPledge?.id) {
       showToast('Update function not available', 'error');
@@ -241,11 +181,7 @@ const PledgesPage = () => {
       setSelectedPledge(null);
       setShowForm(false);
       
-      // ✅ Clear dashboard cache
       clearDashboardCache();
-      
-      // ✅ CRITICAL: Trigger stats refresh
-      await triggerStatsRefresh();
       
       showToast('Pledge updated successfully', 'success');
 
@@ -255,7 +191,7 @@ const PledgesPage = () => {
     }
   }, [updatePledge, selectedPledge, showToast, clearDashboardCache]);
 
-  // ✅ FIXED: Delete pledge with cache clearing
+  // ✅ FIXED: Delete pledge
   const handleDeletePledge = useCallback(async (pledgeId) => {
     if (!deletePledge || !pledgeId) {
       showToast('Delete function not available', 'error');
@@ -276,11 +212,7 @@ const PledgesPage = () => {
       
       await deletePledge(pledgeId);
       
-      // ✅ Clear dashboard cache
       clearDashboardCache();
-      
-      // ✅ CRITICAL: Trigger stats refresh
-      await triggerStatsRefresh();
       
       showToast('Pledge deleted successfully', 'success');
       
@@ -294,31 +226,6 @@ const PledgesPage = () => {
       showToast(error.message || 'Failed to delete pledge', 'error');
     }
   }, [deletePledge, pledges, showToast, clearDashboardCache]);
-
-  // ✅ FIXED: Update status with cache clearing
-  const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
-    if (!updatePledge || !pledgeId) {
-      showToast('Update function not available', 'error');
-      return;
-    }
-
-    try {
-      console.log('[PledgesPage] Updating status:', pledgeId, newStatus);
-      
-      await updatePledge(pledgeId, { status: newStatus });
-      
-      // ✅ Clear dashboard cache
-      clearDashboardCache();
-      
-      // ✅ CRITICAL: Trigger stats refresh
-      await triggerStatsRefresh();
-      
-      showToast('Status updated successfully', 'success');
-    } catch (error) {
-      console.error('[PledgesPage] Error updating status:', error);
-      showToast(error.message || 'Failed to update status', 'error');
-    }
-  }, [updatePledge, showToast, clearDashboardCache]);
 
   const handleEditPledge = useCallback((pledge) => {
     if (!pledge?.id) {
@@ -450,34 +357,25 @@ const PledgesPage = () => {
     }
   }, [pledges, selectedPledges, showToast]);
 
-  // ✅ FIXED: Refresh with cache clearing
+  // ✅ FIXED: Simplified refresh
   const handleRefresh = useCallback(async () => {
     try {
       if (clearError) clearError();
       
       console.log('[PledgesPage] Manual refresh triggered');
       
-      // ✅ Clear dashboard cache first
       clearDashboardCache();
       
       if (refresh) {
         await refresh();
-      } else if (fetchPledges && fetchStatistics) {
-        await Promise.all([
-          fetchPledges({ forceRefresh: true }), 
-          fetchStatistics({ forceRefresh: true })
-        ]);
       }
-      
-      // ✅ Trigger stats refresh
-      await triggerStatsRefresh();
       
       showToast('Pledges data refreshed successfully', 'success');
     } catch (error) {
       console.error('[PledgesPage] Refresh error:', error);
       showToast('Failed to refresh data', 'error');
     }
-  }, [refresh, fetchPledges, fetchStatistics, clearError, showToast, clearDashboardCache]);
+  }, [refresh, clearError, showToast, clearDashboardCache]);
 
   // Selection handlers
   const handlePledgeSelection = useCallback((pledgeId, isSelected) => {
@@ -600,7 +498,7 @@ const PledgesPage = () => {
     </div>
   ), [handleRefresh]);
 
-  // ✅ Only show initial loading spinner
+  // Only show initial loading spinner
   if (loading && pledges.length === 0 && !error) {
     return (
       <div className={styles.loadingContainer}>
@@ -662,8 +560,8 @@ const PledgesPage = () => {
             stats={statistics} 
             loading={loading}
             selectedCount={selectedPledges.size}
-            updateTrigger={statsUpdateTrigger}     // ✅ ADD THIS LINE
-            onRefresh={handleRefresh}               // ✅ ADD THIS LINE
+            updateTrigger={statsUpdateTrigger}
+            onRefresh={forceRefreshStatistics}
           />
         ) : !loading && (
           <Card className={styles.infoCard}>

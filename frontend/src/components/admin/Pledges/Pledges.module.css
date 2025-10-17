@@ -180,6 +180,239 @@
   flex-wrap: wrap;
 }
 
+/* Add these styles to your existing Pledges.module.css file */
+
+/* ============================================
+   STATUS ERROR STATE
+   ============================================ */
+
+.statusError {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border: 1px solid #f87171;
+  border-radius: 0.375rem;
+  animation: errorShake 0.5s ease-out;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.1);
+}
+
+.statusError span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ============================================
+   ENHANCED ANIMATIONS
+   ============================================ */
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes successFlash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
+   IMPROVED STATUS UPDATING STATE
+   ============================================ */
+
+.statusUpdating {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+  border-radius: 0.375rem;
+  animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
+}
+
+.statusUpdating .spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   CARD SUCCESS STATE
+   ============================================ */
+
+.pledgeCard.statusUpdated {
+  animation: successFlash 0.6s ease-out;
+}
+
+.pledgeCard.statusError {
+  animation: errorShake 0.5s ease-out;
+  border-color: #ef4444 !important;
+}
+
+/* ============================================
+   DROPDOWN DISABLED STATE
+   ============================================ */
+
+.statusDropdown:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #f3f4f6;
+}
+
+/* ============================================
+   SPINNER ANIMATION
+   ============================================ */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   SUCCESS FEEDBACK
+   ============================================ */
+
+.statusBadge.success {
+  animation: successFlash 0.6s ease-out;
+}
+
+/* ============================================
+   LOADING OVERLAY FOR CARDS
+   ============================================ */
+
+.pledgeCard.updating {
+  position: relative;
+}
+
+.pledgeCard.updating::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 5;
+  border-radius: 0.75rem;
+  pointer-events: none;
+}
+
+/* ============================================
+   BUTTON DISABLED STATES
+   ============================================ */
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.addPaymentButton:disabled {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+}
+
+/* ============================================
+   RESPONSIVE IMPROVEMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .statusSection {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .statusDropdown {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .statusError,
+  .statusUpdating {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+.statusDropdown:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+}
+
+.pledgeCard:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================
+   SMOOTH TRANSITIONS
+   ============================================ */
+
+.statusBadge,
+.statusUpdating,
+.statusError {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pledgeCard {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .statusError {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    color: #fecaca;
+    border-color: #dc2626;
+  }
+  
+  .statusUpdating {
+    background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
+    color: #bae6fd;
+    border-color: #0284c7;
+  }
+}
+
 /* ============================================
    MEMBER GROUP CARD
    ============================================ */

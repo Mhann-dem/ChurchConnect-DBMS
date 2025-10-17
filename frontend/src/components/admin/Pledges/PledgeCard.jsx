@@ -1,9 +1,9 @@
-// PledgeCard.jsx - FIXED: Real-time status updates with visual feedback
+// PledgeCard.jsx - COMPLETE FIX for status updates
 import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
-import { Loader } from 'lucide-react';
+import { Loader, CheckCircle } from 'lucide-react';
 import styles from './Pledges.module.css';
 
 const PledgeCard = ({ 
@@ -18,16 +18,18 @@ const PledgeCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(pledge?.status || 'active');
+  const [statusError, setStatusError] = useState(null);
   
-  // ✅ FIX: Update local status when prop changes (real-time sync)
+  // ✅ CRITICAL FIX: Sync status when pledge prop changes
   useEffect(() => {
     if (pledge?.status && pledge.status !== currentStatus) {
       console.log('[PledgeCard] 🔄 Status synced from props:', pledge.status);
       setCurrentStatus(pledge.status);
+      setStatusError(null);
     }
   }, [pledge?.status]);
 
-  // Safely extract pledge data with fallbacks
+  // Extract pledge data safely
   const {
     id,
     member,
@@ -51,25 +53,42 @@ const PledgeCard = ({
     payment_history = []
   } = pledge || {};
 
-  // ✅ FIX: Handle status updates with loading state and optimistic UI
+  // ✅ COMPLETE FIX: Status update with error handling and rollback
   const handleStatusChange = async (newStatus) => {
     if (newStatus === currentStatus || !onUpdateStatus) return;
     
     console.log('[PledgeCard] 🔵 Changing status:', currentStatus, '->', newStatus);
     
-    // Optimistic update
+    // Save previous status for rollback
     const previousStatus = currentStatus;
+    
+    // Optimistic update
     setCurrentStatus(newStatus);
     setIsUpdatingStatus(true);
+    setStatusError(null);
     
     try {
+      // ✅ Call the update function
       await onUpdateStatus(id, newStatus);
       console.log('[PledgeCard] ✅ Status updated successfully');
+      
+      // ✅ Show success feedback
+      setTimeout(() => {
+        setIsUpdatingStatus(false);
+      }, 500);
+      
     } catch (error) {
       console.error('[PledgeCard] ❌ Status update failed:', error);
-      // Rollback on error
+      
+      // ✅ Rollback on error
       setCurrentStatus(previousStatus);
-    } finally {
+      setStatusError(error.message || 'Failed to update status');
+      
+      // Show error briefly then clear
+      setTimeout(() => {
+        setStatusError(null);
+      }, 3000);
+      
       setIsUpdatingStatus(false);
     }
   };
@@ -80,7 +99,7 @@ const PledgeCard = ({
   const remainingAmount = totalPledgedAmount - totalReceivedAmount;
   const completionPercentage = totalPledgedAmount > 0 ? (totalReceivedAmount / totalPledgedAmount) * 100 : 0;
   
-  // Get member display name with multiple fallbacks
+  // Get member display name
   const getMemberDisplayName = () => {
     if (member_details?.full_name) return member_details.full_name;
     if (member_details?.name) return member_details.name;
@@ -99,7 +118,7 @@ const PledgeCard = ({
     return 'Unknown Member';
   };
 
-  // Status and frequency display functions
+  // Status badge color
   const getStatusBadgeColor = (statusValue) => {
     switch (statusValue?.toLowerCase()) {
       case 'active':
@@ -115,6 +134,7 @@ const PledgeCard = ({
     }
   };
 
+  // Frequency badge color
   const getFrequencyBadgeColor = (frequency) => {
     switch (frequency?.toLowerCase()) {
       case 'one-time':
@@ -132,6 +152,7 @@ const PledgeCard = ({
     }
   };
 
+  // Status icon
   const getStatusIcon = (statusValue) => {
     switch (statusValue?.toLowerCase()) {
       case 'active':
@@ -147,6 +168,7 @@ const PledgeCard = ({
     }
   };
 
+  // Frequency display
   const getFrequencyDisplayText = (frequency) => {
     const frequencyMap = {
       'one-time': 'One-time',
@@ -158,7 +180,7 @@ const PledgeCard = ({
     return frequencyMap[frequency?.toLowerCase()] || frequency;
   };
 
-  // Calculate progress for recurring pledges
+  // Calculate progress
   const calculateProgress = () => {
     if (!start_date || !end_date || frequency === 'one-time') {
       return completionPercentage;
@@ -176,7 +198,7 @@ const PledgeCard = ({
     return Math.round((elapsed / total) * 100);
   };
 
-  // Calculate total pledged amount for recurring pledges
+  // Calculate total pledged
   function calculateTotalPledged() {
     if (frequency === 'one-time' || !start_date || !end_date) {
       return amount;
@@ -200,7 +222,7 @@ const PledgeCard = ({
     }
   }
 
-  // Payment status helpers
+  // Next payment info
   const getNextPaymentInfo = () => {
     if (frequency === 'one-time' || currentStatus !== 'active') return null;
     
@@ -259,11 +281,15 @@ const PledgeCard = ({
           
           <div className={styles.statusSection}>
             <div className={styles.badgeContainer}>
-              {/* ✅ FIX: Show loading indicator during status update */}
+              {/* ✅ FIX: Show loading, success, or error state */}
               {isUpdatingStatus ? (
                 <div className={styles.statusUpdating}>
                   <Loader size={14} className={styles.spinner} />
                   <span>Updating...</span>
+                </div>
+              ) : statusError ? (
+                <div className={styles.statusError}>
+                  <span>❌ {statusError}</span>
                 </div>
               ) : (
                 <Badge 
@@ -274,14 +300,14 @@ const PledgeCard = ({
                 </Badge>
               )}
               
-              {is_overdue && currentStatus === 'active' && (
+              {is_overdue && currentStatus === 'active' && !statusError && (
                 <Badge color="danger" className={styles.overdueBadge}>
                   Overdue
                 </Badge>
               )}
             </div>
             
-            {/* ✅ FIX: Disable dropdown during update */}
+            {/* ✅ FIX: Dropdown with proper disabled state */}
             {onUpdateStatus && (
               <Dropdown
                 value={currentStatus}
