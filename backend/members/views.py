@@ -2,7 +2,8 @@
 import csv
 import json
 import re  # <-- ADD THIS MISSING IMPORT
-from datetime import date, datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count, Q, Sum, Avg # <-- ADD MISSING IMPORTS HERE
 from django.http import HttpResponse
@@ -641,8 +642,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     def statistics(self, request):
         """
         Get comprehensive member statistics
-        FIXED: Returns counts at BOTH root level AND nested summary level
-        for compatibility with different frontend code paths
+        FIXED: Proper timezone-aware datetime handling
         """
         try:
             range_param = request.query_params.get('range', '30d')
@@ -660,20 +660,22 @@ class MemberViewSet(viewsets.ModelViewSet):
             }
             days = range_map.get(range_param, 30)
             
+            # FIXED: Create timezone-aware datetime threshold
             if days:
                 date_threshold = now - timedelta(days=days)
             else:
                 date_threshold = None
             
-            # === CORE COUNTS - These are what matter ===
+            # === CORE COUNTS ===
             total_members = Member.objects.count()
             active_members = Member.objects.filter(is_active=True).count()
             inactive_members = total_members - active_members
             
-            # Recent registrations
+            # FIXED: Recent registrations with timezone-aware comparison
             if date_threshold:
+                # Compare timezone-aware datetimes
                 recent_registrations = Member.objects.filter(
-                    registration_date__gte=date_threshold.date()
+                    registration_date__gte=date_threshold  # Both are timezone-aware now
                 ).count()
             else:
                 recent_registrations = total_members
@@ -681,10 +683,10 @@ class MemberViewSet(viewsets.ModelViewSet):
             # Calculate growth rate
             growth_rate = 0
             if date_threshold:
-                previous_period_start = date_threshold - (now - date_threshold)
+                previous_period_start = date_threshold - timedelta(days=days)
                 previous_period_registrations = Member.objects.filter(
-                    registration_date__gte=previous_period_start.date(),
-                    registration_date__lt=date_threshold.date()
+                    registration_date__gte=previous_period_start,
+                    registration_date__lt=date_threshold
                 ).count()
                 
                 if previous_period_registrations > 0:
@@ -700,7 +702,7 @@ class MemberViewSet(viewsets.ModelViewSet):
                 for item in gender_stats
             }
             
-            # Age demographics
+            # Age demographics (using date_of_birth which is DateField, not DateTimeField)
             today = timezone.now().date()
             age_groups = {
                 'under_18': 0,
@@ -730,10 +732,9 @@ class MemberViewSet(viewsets.ModelViewSet):
             
             age_groups['unknown'] += total_members - members_with_birthdate.count()
             
-            # === CRITICAL FIX ===
-            # Return counts at MULTIPLE levels for maximum frontend compatibility
+            # Response data with all count variations
             stats_data = {
-                # ROOT LEVEL - For React useMembers hook
+                # ROOT LEVEL
                 'count': total_members,
                 'total_count': total_members,
                 'active_count': active_members,
@@ -745,7 +746,7 @@ class MemberViewSet(viewsets.ModelViewSet):
                 'recent_registrations': recent_registrations,
                 'growth_rate': round(growth_rate, 2),
                 
-                # NESTED SUMMARY - For dashboard components
+                # NESTED SUMMARY
                 'summary': {
                     'total_members': total_members,
                     'active_members': active_members,
@@ -777,22 +778,15 @@ class MemberViewSet(viewsets.ModelViewSet):
                 f"Recent: {recent_registrations}"
             )
             
-            # DEBUG: Log the actual response structure
-            logger.debug(f"[MemberViewSet] Response keys: {list(stats_data.keys())}")
-            logger.debug(f"[MemberViewSet] Root count: {stats_data['count']}")
-            logger.debug(f"[MemberViewSet] Root active_count: {stats_data['active_count']}")
-            
             return Response(stats_data)
             
         except Exception as e:
             logger.error(f"[MemberViewSet] Statistics ERROR: {str(e)}", exc_info=True)
             
-            # Return safe defaults even on error
+            # Return safe defaults on error
             error_response = {
                 'success': False,
                 'error': 'Failed to get statistics',
-                
-                # Root level defaults
                 'count': 0,
                 'total_count': 0,
                 'active_count': 0,
@@ -803,8 +797,6 @@ class MemberViewSet(viewsets.ModelViewSet):
                 'new_members': 0,
                 'recent_registrations': 0,
                 'growth_rate': 0,
-                
-                # Nested defaults
                 'summary': {
                     'total_members': 0,
                     'active_members': 0,
@@ -819,7 +811,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             }
             
             return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            
     @action(detail=True, methods=['get'], url_path='activity')
     def activity(self, request, pk=None):
         """Get member activity history"""
