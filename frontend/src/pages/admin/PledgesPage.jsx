@@ -61,6 +61,8 @@ const PledgesPage = () => {
     autoFetch: true,
     enableCache: false,
     optimisticUpdates: true,
+    enablePolling: true,        // ✅ NEW: Enable polling
+    pollingInterval: 30000,      // ✅ NEW: Poll every 30 seconds
     filters: {
       search: debouncedSearchQuery,
       status: filters.status,

@@ -1,31 +1,71 @@
-// frontend/src/components/admin/Pledges/PledgeStats.jsx
+// frontend/src/components/admin/Pledges/PledgeStats.jsx - REAL-TIME VERSION
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, ProgressBar, Badge } from '../../ui';
+import { Card, ProgressBar, Badge, Button } from '../../ui';
 import styles from './Pledges.module.css'; 
 import { LoadingSpinner } from '../../shared';
 import usePledges from '../../../hooks/usePledges';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
-import { ChevronDown, ChevronUp, Users, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, TrendingUp, RefreshCw } from 'lucide-react';
 
 const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('current_year');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  // ✅ NEW: Collapsible sections state
+  // ✅ Collapsible sections
   const [showTopPledgers, setShowTopPledgers] = useState(false);
   const [showMonthlyTrends, setShowMonthlyTrends] = useState(false);
 
-  // Only use the hook if stats aren't provided as props
   const pledgesHook = !stats ? usePledges() : null;
   
-  // Use either provided stats or hook stats
   const pledgeStats = stats || pledgesHook?.statistics || {};
   const loading = pledgesHook?.loading || isLoading;
   const error = pledgesHook?.error || null;
   const fetchPledgeStats = pledgesHook?.fetchStatistics;
 
-  // Fetch stats when filters change (only if using hook)
+  // ✅ Listen for pledge data changes
+  useEffect(() => {
+    const handlePledgeDataChanged = (event) => {
+      console.log('[PledgeStats] 🔔 Pledge data changed event received', event.detail);
+      handleRefreshStats();
+    };
+    
+    const handlePledgeUpdated = () => {
+      console.log('[PledgeStats] 🔔 Pledge updated event received');
+      handleRefreshStats();
+    };
+
+    const handleStatsUpdated = (event) => {
+      console.log('[PledgeStats] 🔔 Stats updated event received');
+      setLastUpdated(new Date());
+    };
+    
+    window.addEventListener('pledgeDataChanged', handlePledgeDataChanged);
+    window.addEventListener('pledgeUpdated', handlePledgeUpdated);
+    window.addEventListener('pledgeCreated', handlePledgeUpdated);
+    window.addEventListener('pledgeDeleted', handlePledgeUpdated);
+    window.addEventListener('pledgeStatsUpdated', handleStatsUpdated);
+    
+    return () => {
+      window.removeEventListener('pledgeDataChanged', handlePledgeDataChanged);
+      window.removeEventListener('pledgeUpdated', handlePledgeUpdated);
+      window.removeEventListener('pledgeCreated', handlePledgeUpdated);
+      window.removeEventListener('pledgeDeleted', handlePledgeUpdated);
+      window.removeEventListener('pledgeStatsUpdated', handleStatsUpdated);
+    };
+  }, []);
+
+  // ✅ Refresh when updateTrigger changes
+  useEffect(() => {
+    if (updateTrigger > 0) {
+      console.log('[PledgeStats] 🔄 UpdateTrigger changed, refreshing stats...', updateTrigger);
+      handleRefreshStats();
+    }
+  }, [updateTrigger]);
+
+  // ✅ Fetch stats when filters change
   useEffect(() => {
     if (!stats && fetchPledgeStats && typeof fetchPledgeStats === 'function') {
       setIsLoading(true);
@@ -35,76 +75,59 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
         ...filters
       }).finally(() => {
         setIsLoading(false);
+        setLastUpdated(new Date());
       });
     }
   }, [selectedPeriod, selectedFrequency, filters, stats, fetchPledgeStats]);
 
-  // ✅ CRITICAL: Re-fetch stats when updateTrigger changes
-  useEffect(() => {
-    if (updateTrigger > 0) {
-      console.log('[PledgeStats] 🔄 UpdateTrigger changed, refreshing stats...', updateTrigger);
-      handleRefreshStats();
-    }
-  }, [updateTrigger]);
-
-  // ✅ NEW: Listen for pledge data changes
-  useEffect(() => {
-    const handlePledgeDataChanged = (event) => {
-      console.log('[PledgeStats] 🔔 Pledge data changed event received', event.detail);
-      handleRefreshStats();
-    };
-    
-    window.addEventListener('pledgeDataChanged', handlePledgeDataChanged);
-    
-    return () => {
-      window.removeEventListener('pledgeDataChanged', handlePledgeDataChanged);
-    };
-  }, []);
-
-  // ✅ CRITICAL: Enhanced refresh handler
+  // ✅ Enhanced refresh handler
   const handleRefreshStats = useCallback(async () => {
-    if (onRefresh) {
-      console.log('[PledgeStats] 🔄 External refresh triggered');
-      try {
+    if (isRefreshing) {
+      console.log('[PledgeStats] ⏸️ Already refreshing, skipping');
+      return;
+    }
+
+    setIsRefreshing(true);
+    
+    try {
+      if (onRefresh) {
+        console.log('[PledgeStats] 🔄 External refresh triggered');
         await onRefresh();
-      } catch (error) {
-        console.error('[PledgeStats] ❌ External refresh failed:', error);
-      }
-    } else if (fetchPledgeStats && typeof fetchPledgeStats === 'function') {
-      console.log('[PledgeStats] 🔄 Hook refresh triggered');
-      setIsLoading(true);
-      try {
+      } else if (fetchPledgeStats && typeof fetchPledgeStats === 'function') {
+        console.log('[PledgeStats] 🔄 Hook refresh triggered');
         await fetchPledgeStats({
           period: selectedPeriod,
           frequency: selectedFrequency,
           ...filters,
           forceRefresh: true
         });
-      } catch (error) {
-        console.error('[PledgeStats] ❌ Hook refresh failed:', error);
-      } finally {
-        setIsLoading(false);
       }
+      
+      setLastUpdated(new Date());
+      console.log('[PledgeStats] ✅ Refresh completed');
+    } catch (error) {
+      console.error('[PledgeStats] ❌ Refresh failed:', error);
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
     }
-  }, [onRefresh, fetchPledgeStats, selectedPeriod, selectedFrequency, filters]);
+  }, [onRefresh, fetchPledgeStats, selectedPeriod, selectedFrequency, filters, isRefreshing]);
 
-  // Helper function to safely get numeric values
   const safeNumber = (value, fallback = 0) => {
     const num = Number(value);
     return isNaN(num) ? fallback : num;
   };
 
-  // Helper function to safely format currency
   const safeCurrency = (value) => {
     return formatCurrency(safeNumber(value));
   };
 
-  // Helper function to safely format percentage
   const safePercentage = (value) => {
     return formatPercentage(safeNumber(value) / 100);
   };
 
-  if (loading) {
+  if (loading && !pledgeStats.total_pledged) {
     return (
       <div className={styles.statsContainer} key={`stats-${updateTrigger}`}>
         <LoadingSpinner message="Loading pledge statistics..." />
@@ -117,20 +140,14 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
       <div className={styles.errorContainer}>
         <div className={styles.errorCard}>
           <p className={styles.errorText}>Error loading pledge statistics: {error}</p>
-          {fetchPledgeStats && (
-            <button 
-              onClick={() => fetchPledgeStats()} 
-              className={styles.retryButton}
-            >
-              Retry
-            </button>
-          )}
+          <Button onClick={handleRefreshStats} disabled={isRefreshing}>
+            {isRefreshing ? 'Retrying...' : 'Retry'}
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Extract and validate data from stats
   const {
     total_pledged = 0,
     total_received = 0,
@@ -149,7 +166,6 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
     this_month_target = 0
   } = pledgeStats;
 
-  // Calculate derived statistics
   const totalPledged = safeNumber(total_pledged);
   const totalReceived = safeNumber(total_received);
   const activePledges = safeNumber(active_pledges);
@@ -168,87 +184,36 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
   const totalPledgeCount = activePledges + completedPledges + cancelledPledges;
   const thisMonthProgress = thisMonthTarget > 0 ? (thisMonthReceived / thisMonthTarget) * 100 : 0;
 
-  const frequencyOptions = [
-    { value: 'all', label: 'All Frequencies' },
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Quarterly' },
-    { value: 'annually', label: 'Annually' },
-    { value: 'one-time', label: 'One-time' }
-  ];
-
-  const periodOptions = [
-    { value: 'current_year', label: 'Current Year' },
-    { value: 'last_year', label: 'Last Year' },
-    { value: 'current_month', label: 'Current Month' },
-    { value: 'last_month', label: 'Last Month' },
-    { value: 'current_quarter', label: 'Current Quarter' },
-    { value: 'ytd', label: 'Year to Date' }
-  ];
-
-  const handlePeriodChange = (value) => {
-    setSelectedPeriod(value);
-  };
-
-  const handleFrequencyChange = (value) => {
-    setSelectedFrequency(value);
+  // Format last updated time
+  const getTimeAgo = () => {
+    const seconds = Math.floor((new Date() - lastUpdated) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
   };
 
   return (
     <div className={styles.statsContainer} key={`stats-${updateTrigger}`}>
-      {/* Filter Controls - Only show if not using prop stats */}
-      {!stats && (
-        <div>
-          <div className={styles.filterControls}>
-            <div className={styles.filterGroup}>
-              <label htmlFor="frequency-select" className={styles.filterLabel}>
-                Frequency:
-              </label>
-              <select
-                id="frequency-select"
-                value={selectedFrequency}
-                onChange={(e) => setSelectedFrequency(e.target.value)}
-                className={styles.filterSelect}
-              >
-                {frequencyOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* ✅ ADD THIS NEW BUTTON */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshStats}
-              disabled={loading}
-              style={{ marginLeft: 'auto' }}
-            >
-              {loading ? 'Refreshing...' : 'Refresh Stats'}
-            </Button>
-          </div>
-
-          <div className={styles.filterGroup}>
-            <label htmlFor="frequency-select" className={styles.filterLabel}>
-              Frequency:
-            </label>
-            <select
-              id="frequency-select"
-              value={selectedFrequency}
-              onChange={(e) => handleFrequencyChange(e.target.value)}
-              className={styles.filterSelect}
-            >
-              {frequencyOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* ✅ Header with refresh button */}
+      <div className={styles.statsHeader}>
+        <div className={styles.statsTitle}>
+          <h2>Pledge Statistics</h2>
+          <span className={styles.lastUpdated}>
+            Updated {getTimeAgo()}
+          </span>
         </div>
-      )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefreshStats}
+          disabled={isRefreshing || loading}
+          icon={<RefreshCw size={16} className={isRefreshing ? styles.spinning : ''} />}
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
+      </div>
 
       {/* Main Statistics Cards */}
       <div className={styles.statsGrid}>
@@ -343,7 +308,7 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
         </Card>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bars */}
       <Card className={styles.progressCard}>
         <h3 className={styles.progressTitle}>Overall Pledge Completion Progress</h3>
         <ProgressBar
@@ -366,7 +331,6 @@ const PledgeStats = ({ stats, filters = {}, onRefresh, updateTrigger = 0 }) => {
         </div>
       </Card>
 
-      {/* This Month Progress */}
       {thisMonthTarget > 0 && (
         <Card className={styles.progressCard}>
           <h3 className={styles.progressTitle}>This Month's Target Progress</h3>

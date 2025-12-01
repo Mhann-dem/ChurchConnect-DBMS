@@ -1,5 +1,5 @@
-// PledgeCard.jsx - COMPLETE FIX for status updates
-import React, { useState, useEffect } from 'react';
+// PledgeCard.jsx - COMPLETE FIX for Real-time Progress Updates
+import React, { useState, useEffect, useMemo } from 'react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
@@ -20,7 +20,10 @@ const PledgeCard = ({
   const [currentStatus, setCurrentStatus] = useState(pledge?.status || 'active');
   const [statusError, setStatusError] = useState(null);
   
-  // ✅ CRITICAL FIX: Sync status when pledge prop changes
+  // ✅ CRITICAL: Force recalculation when pledge data changes
+  const [calculationTrigger, setCalculationTrigger] = useState(0);
+  
+  // ✅ Sync status when pledge prop changes
   useEffect(() => {
     if (pledge?.status && pledge.status !== currentStatus) {
       console.log('[PledgeCard] 🔄 Status synced from props:', pledge.status);
@@ -28,6 +31,30 @@ const PledgeCard = ({
       setStatusError(null);
     }
   }, [pledge?.status]);
+
+  // ✅ NEW: Listen for pledge updates and force recalculation
+  useEffect(() => {
+    const handlePledgeUpdate = (event) => {
+      if (event.detail?.pledgeId === pledge?.id) {
+        console.log('[PledgeCard] 🔔 Pledge updated, recalculating progress');
+        setCalculationTrigger(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('pledgeUpdated', handlePledgeUpdate);
+    return () => window.removeEventListener('pledgeUpdated', handlePledgeUpdate);
+  }, [pledge?.id]);
+
+  // ✅ Force recalculation when key pledge fields change
+  useEffect(() => {
+    setCalculationTrigger(prev => prev + 1);
+  }, [
+    pledge?.total_pledged,
+    pledge?.total_received,
+    pledge?.amount,
+    pledge?.status,
+    pledge?.payments_count
+  ]);
 
   // Extract pledge data safely
   const {
@@ -53,13 +80,113 @@ const PledgeCard = ({
     payment_history = []
   } = pledge || {};
 
-  // ✅ COMPLETE FIX: Status update with error handling and rollback
+  // ✅ CRITICAL: Memoized calculations that update when trigger changes
+  const calculations = useMemo(() => {
+    console.log('[PledgeCard] 🔢 Recalculating for pledge:', id, {
+      total_pledged,
+      total_received,
+      amount,
+      trigger: calculationTrigger
+    });
+
+    // Calculate total pledged amount
+    let totalPledgedAmount = parseFloat(total_pledged) || 0;
+    
+    // If total_pledged is 0 or not set, calculate from amount and frequency
+    if (totalPledgedAmount === 0) {
+      if (frequency === 'one-time' || !start_date || !end_date) {
+        totalPledgedAmount = parseFloat(amount) || 0;
+      } else {
+        try {
+          const start = new Date(start_date);
+          const end = new Date(end_date);
+          const monthsDiff = ((end.getFullYear() - start.getFullYear()) * 12) + 
+                            (end.getMonth() - start.getMonth());
+          
+          const amountNum = parseFloat(amount) || 0;
+          
+          switch (frequency?.toLowerCase()) {
+            case 'weekly':
+              totalPledgedAmount = amountNum * Math.ceil(monthsDiff * 4.33);
+              break;
+            case 'monthly':
+              totalPledgedAmount = amountNum * Math.max(1, monthsDiff);
+              break;
+            case 'quarterly':
+              totalPledgedAmount = amountNum * Math.ceil(monthsDiff / 3);
+              break;
+            case 'annually':
+              totalPledgedAmount = amountNum * Math.ceil(monthsDiff / 12);
+              break;
+            default:
+              totalPledgedAmount = amountNum;
+          }
+        } catch (error) {
+          console.error('[PledgeCard] Error calculating total pledged:', error);
+          totalPledgedAmount = parseFloat(amount) || 0;
+        }
+      }
+    }
+
+    const totalReceivedAmount = parseFloat(total_received) || 0;
+    const remainingAmount = Math.max(0, totalPledgedAmount - totalReceivedAmount);
+    const completionPercentage = totalPledgedAmount > 0 
+      ? Math.min(100, (totalReceivedAmount / totalPledgedAmount) * 100) 
+      : 0;
+
+    // Calculate time progress
+    let timeProgress = 0;
+    if (frequency !== 'one-time' && start_date && end_date) {
+      try {
+        const start = new Date(start_date);
+        const end = new Date(end_date);
+        const now = new Date();
+        
+        if (now < start) {
+          timeProgress = 0;
+        } else if (now > end) {
+          timeProgress = 100;
+        } else {
+          const total = end - start;
+          const elapsed = now - start;
+          timeProgress = Math.round((elapsed / total) * 100);
+        }
+      } catch (error) {
+        console.error('[PledgeCard] Error calculating time progress:', error);
+      }
+    }
+
+    console.log('[PledgeCard] ✅ Calculations complete:', {
+      totalPledgedAmount,
+      totalReceivedAmount,
+      completionPercentage: Math.round(completionPercentage),
+      remainingAmount
+    });
+
+    return {
+      totalPledgedAmount,
+      totalReceivedAmount,
+      remainingAmount,
+      completionPercentage,
+      timeProgress
+    };
+  }, [
+    id,
+    amount,
+    frequency,
+    start_date,
+    end_date,
+    total_pledged,
+    total_received,
+    calculationTrigger // ✅ Recalculate when this changes
+  ]);
+
+  // ✅ Status update with proper data refresh
   const handleStatusChange = async (newStatus) => {
     if (newStatus === currentStatus || !onUpdateStatus) return;
     
     console.log('[PledgeCard] 🔵 Changing status:', currentStatus, '->', newStatus);
     
-    // Save previous status for rollback
     const previousStatus = currentStatus;
     
     // Optimistic update
@@ -68,23 +195,22 @@ const PledgeCard = ({
     setStatusError(null);
     
     try {
-      // ✅ Call the update function
       await onUpdateStatus(id, newStatus);
       console.log('[PledgeCard] ✅ Status updated successfully');
       
-      // ✅ Show success feedback
+      // ✅ Force recalculation after status change
       setTimeout(() => {
+        setCalculationTrigger(prev => prev + 1);
         setIsUpdatingStatus(false);
       }, 500);
       
     } catch (error) {
       console.error('[PledgeCard] ❌ Status update failed:', error);
       
-      // ✅ Rollback on error
+      // Rollback on error
       setCurrentStatus(previousStatus);
       setStatusError(error.message || 'Failed to update status');
       
-      // Show error briefly then clear
       setTimeout(() => {
         setStatusError(null);
       }, 3000);
@@ -93,12 +219,6 @@ const PledgeCard = ({
     }
   };
 
-  // Calculate derived values
-  const totalPledgedAmount = total_pledged || (frequency === 'one-time' ? amount : calculateTotalPledged());
-  const totalReceivedAmount = total_received || 0;
-  const remainingAmount = totalPledgedAmount - totalReceivedAmount;
-  const completionPercentage = totalPledgedAmount > 0 ? (totalReceivedAmount / totalPledgedAmount) * 100 : 0;
-  
   // Get member display name
   const getMemberDisplayName = () => {
     if (member_details?.full_name) return member_details.full_name;
@@ -180,48 +300,6 @@ const PledgeCard = ({
     return frequencyMap[frequency?.toLowerCase()] || frequency;
   };
 
-  // Calculate progress
-  const calculateProgress = () => {
-    if (!start_date || !end_date || frequency === 'one-time') {
-      return completionPercentage;
-    }
-    
-    const start = new Date(start_date);
-    const end = new Date(end_date);
-    const now = new Date();
-    
-    if (now < start) return 0;
-    if (now > end) return 100;
-    
-    const total = end - start;
-    const elapsed = now - start;
-    return Math.round((elapsed / total) * 100);
-  };
-
-  // Calculate total pledged
-  function calculateTotalPledged() {
-    if (frequency === 'one-time' || !start_date || !end_date) {
-      return amount;
-    }
-    
-    const start = new Date(start_date);
-    const end = new Date(end_date);
-    const monthsDiff = ((end.getFullYear() - start.getFullYear()) * 12) + (end.getMonth() - start.getMonth());
-    
-    switch (frequency?.toLowerCase()) {
-      case 'weekly':
-        return amount * Math.ceil(monthsDiff * 4.33);
-      case 'monthly':
-        return amount * Math.max(1, monthsDiff);
-      case 'quarterly':
-        return amount * Math.ceil(monthsDiff / 3);
-      case 'annually':
-        return amount * Math.ceil(monthsDiff / 12);
-      default:
-        return amount;
-    }
-  }
-
   // Next payment info
   const getNextPaymentInfo = () => {
     if (frequency === 'one-time' || currentStatus !== 'active') return null;
@@ -245,13 +323,24 @@ const PledgeCard = ({
   ];
 
   const nextPayment = getNextPaymentInfo();
-  const timeProgress = calculateProgress();
   const memberDisplayName = getMemberDisplayName();
   const memberEmail = member?.email || member_details?.email || '';
   const memberPhoto = member?.photo_url || member_details?.photo_url || '';
 
+  // ✅ Use calculations from memoized values
+  const { 
+    totalPledgedAmount, 
+    totalReceivedAmount, 
+    remainingAmount, 
+    completionPercentage,
+    timeProgress 
+  } = calculations;
+
   return (
-    <Card className={`${styles.pledgeCard} ${currentStatus === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}>
+    <Card 
+      className={`${styles.pledgeCard} ${currentStatus === 'cancelled' ? styles.cancelled : ''} ${is_overdue ? styles.overdue : ''}`}
+      key={`card-${id}-${calculationTrigger}`} // ✅ Force re-render on calculation changes
+    >
       {/* Header Section */}
       {!hideHeader && (
         <div className={styles.pledgeHeader}>
@@ -281,7 +370,6 @@ const PledgeCard = ({
           
           <div className={styles.statusSection}>
             <div className={styles.badgeContainer}>
-              {/* ✅ FIX: Show loading, success, or error state */}
               {isUpdatingStatus ? (
                 <div className={styles.statusUpdating}>
                   <Loader size={14} className={styles.spinner} />
@@ -307,7 +395,6 @@ const PledgeCard = ({
               )}
             </div>
             
-            {/* ✅ FIX: Dropdown with proper disabled state */}
             {onUpdateStatus && (
               <Dropdown
                 value={currentStatus}
@@ -360,8 +447,8 @@ const PledgeCard = ({
           )}
         </div>
 
-        {/* Payment Progress Section */}
-        <div className={styles.paymentProgress}>
+        {/* ✅ CRITICAL: Payment Progress Section with Real-time Updates */}
+        <div className={styles.paymentProgress} key={`progress-${calculationTrigger}`}>
           <div className={styles.progressHeader}>
             <span className={styles.progressLabel}>Payment Progress</span>
             <span className={styles.progressPercentage}>
@@ -371,7 +458,10 @@ const PledgeCard = ({
           <div className={styles.progressBar}>
             <div 
               className={styles.progressFill}
-              style={{ width: `${Math.min(completionPercentage, 100)}%` }}
+              style={{ 
+                width: `${Math.min(completionPercentage, 100)}%`,
+                transition: 'width 0.5s ease-in-out' // ✅ Smooth animation
+              }}
             />
           </div>
           <div className={styles.progressDetails}>
@@ -436,7 +526,7 @@ const PledgeCard = ({
 
         {/* Time Progress for Recurring Pledges */}
         {frequency !== 'one-time' && start_date && end_date && (
-          <div className={styles.timeProgressSection}>
+          <div className={styles.timeProgressSection} key={`time-${calculationTrigger}`}>
             <div className={styles.timeProgressLabel}>
               <span>Time Progress</span>
               <span>{timeProgress}%</span>
@@ -444,7 +534,10 @@ const PledgeCard = ({
             <div className={styles.timeProgressBar}>
               <div 
                 className={styles.timeProgressFill}
-                style={{ width: `${timeProgress}%` }}
+                style={{ 
+                  width: `${timeProgress}%`,
+                  transition: 'width 0.5s ease-in-out'
+                }}
               />
             </div>
           </div>

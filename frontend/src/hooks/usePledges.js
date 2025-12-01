@@ -1,4 +1,4 @@
-// hooks/usePledges.js - COMPLETE FIX: Stop infinite loops and improve updates
+// hooks/usePledges.js - COMPLETE FIX with Real-time Polling
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import pledgesService from '../services/pledges';
 import useAuth from './useAuth';
@@ -9,21 +9,25 @@ const usePledges = (initialOptions = {}) => {
   const { isAuthenticated, hasPermission } = useAuth();
   const { showToast } = useToast();
   
-  // ✅ FIX: Stable options with proper memoization
+  // ✅ Stable options
   const options = useMemo(() => ({
     enableCache: initialOptions.enableCache !== false,
     cacheTime: initialOptions.cacheTime || 5 * 60 * 1000,
     staleTime: initialOptions.staleTime || 2 * 60 * 1000,
     debounceMs: initialOptions.debounceMs || 300,
     autoFetch: initialOptions.autoFetch !== false,
-    optimisticUpdates: initialOptions.optimisticUpdates !== false
+    optimisticUpdates: initialOptions.optimisticUpdates !== false,
+    enablePolling: initialOptions.enablePolling !== false, // ✅ NEW
+    pollingInterval: initialOptions.pollingInterval || 30000 // ✅ NEW: 30 seconds
   }), [
     initialOptions.enableCache,
     initialOptions.cacheTime,
     initialOptions.staleTime,
     initialOptions.debounceMs,
     initialOptions.autoFetch,
-    initialOptions.optimisticUpdates
+    initialOptions.optimisticUpdates,
+    initialOptions.enablePolling,
+    initialOptions.pollingInterval
   ]);
 
   const initialFilters = useMemo(() => ({
@@ -59,15 +63,14 @@ const usePledges = (initialOptions = {}) => {
   const debouncedSearch = useDebounce(filters.search, options.debounceMs);
   const [statsUpdateTrigger, setStatsUpdateTrigger] = useState(0);
 
-  // ✅ FIX: Single mounted ref
+  // ✅ Refs
   const mountedRef = useRef(true);
   const isFetchingRef = useRef(false);
   const fetchCountRef = useRef(0);
   const lastFetchParamsRef = useRef(null);
-  
-  // ✅ NEW: Prevent rapid-fire refreshes
   const lastRefreshTimeRef = useRef(0);
-  const MIN_REFRESH_INTERVAL = 1000; // 1 second minimum between refreshes
+  const pollingIntervalRef = useRef(null); // ✅ NEW: Polling timer
+  const MIN_REFRESH_INTERVAL = 1000;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -75,6 +78,10 @@ const usePledges = (initialOptions = {}) => {
     
     return () => {
       mountedRef.current = false;
+      // ✅ Clean up polling on unmount
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
       console.log('[usePledges] Hook unmounting');
     };
   }, []);
@@ -98,7 +105,7 @@ const usePledges = (initialOptions = {}) => {
     return errorMessage;
   }, [showToast]);
 
-  // ✅ FIX: Stable fetchPledges WITHOUT forceRefresh in params
+  // ✅ Fetch pledges
   const fetchPledges = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       const error = 'Insufficient permissions to view pledges';
@@ -107,7 +114,6 @@ const usePledges = (initialOptions = {}) => {
       return { success: false, error };
     }
 
-    // ✅ CRITICAL: Prevent duplicate fetches
     if (isFetchingRef.current && !params._forceRefresh) {
       console.log('[usePledges] Already fetching, skipping duplicate');
       return { success: false, error: 'Already loading' };
@@ -124,18 +130,15 @@ const usePledges = (initialOptions = {}) => {
       ...params
     };
 
-    // ✅ CRITICAL: Remove forceRefresh from API params
     delete mergedParams.forceRefresh;
     delete mergedParams._forceRefresh;
 
-    // Clean undefined params
     Object.keys(mergedParams).forEach(key => {
       if (mergedParams[key] === undefined || mergedParams[key] === '') {
         delete mergedParams[key];
       }
     });
 
-    // ✅ Check if params changed
     const paramsString = JSON.stringify(mergedParams);
     if (!params._forceRefresh && lastFetchParamsRef.current === paramsString) {
       console.log('[usePledges] Same params, using cached data');
@@ -221,7 +224,7 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [isAuthenticated, hasPermission, debouncedSearch, filters.status, filters.frequency, filters.member_id, pagination.currentPage, pagination.itemsPerPage, handleError, pledges, pagination]);
 
-  // ✅ FIX: Fetch statistics with throttling
+  // ✅ Fetch statistics
   const fetchStatistics = useCallback(async (params = {}) => {
     if (!isAuthenticated || !hasPermission('read')) {
       if (mountedRef.current) {
@@ -231,9 +234,8 @@ const usePledges = (initialOptions = {}) => {
     }
 
     try {
-      console.log('[usePledges] Fetching statistics...');
+      console.log('[usePledges] 📊 Fetching statistics...');
       
-      // ✅ Remove forceRefresh from API params
       const cleanParams = { ...params };
       delete cleanParams.forceRefresh;
       delete cleanParams._forceRefresh;
@@ -245,6 +247,11 @@ const usePledges = (initialOptions = {}) => {
       if (mountedRef.current) {
         setStatistics(statsData);
         setStatsUpdateTrigger(prev => prev + 1);
+        
+        // ✅ Dispatch custom event for other components
+        window.dispatchEvent(new CustomEvent('pledgeStatsUpdated', { 
+          detail: statsData 
+        }));
       }
       
       console.log('[usePledges] ✅ Statistics updated');
@@ -261,7 +268,7 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [isAuthenticated, hasPermission]);
 
-  // ✅ FIX: Update pledge with proper data refresh
+  // ✅ Update pledge with optimistic updates
   const updatePledge = useCallback(async (pledgeId, pledgeData) => {
     if (!hasPermission('update')) {
       const error = 'Insufficient permissions to update pledges';
@@ -269,11 +276,20 @@ const usePledges = (initialOptions = {}) => {
       throw new Error(error);
     }
 
+    // ✅ Save original for rollback
+    const originalPledge = pledges.find(p => p.id === pledgeId);
+    
     try {
-      setLoading(true);
       setError(null);
 
       console.log('[usePledges] 🔵 Updating pledge:', pledgeId, pledgeData);
+
+      // ✅ OPTIMISTIC UPDATE: Update immediately
+      if (options.optimisticUpdates && mountedRef.current && originalPledge) {
+        setPledges(prev => prev.map(pledge => 
+          pledge.id === pledgeId ? { ...pledge, ...pledgeData } : pledge
+        ));
+      }
 
       const response = await pledgesService.updatePledge(pledgeId, pledgeData);
       
@@ -281,19 +297,20 @@ const usePledges = (initialOptions = {}) => {
         const updatedPledge = response.data || response;
         console.log('[usePledges] ✅ Pledge updated:', pledgeId);
         
-        // ✅ OPTIMISTIC UPDATE: Update in list immediately
-        if (options.optimisticUpdates && mountedRef.current) {
+        // ✅ Update with server response
+        if (mountedRef.current) {
           setPledges(prev => prev.map(pledge => 
             pledge.id === pledgeId ? { ...pledge, ...updatedPledge } : pledge
           ));
         }
         
-        // ✅ Refresh statistics only (not full pledges list)
-        setTimeout(async () => {
-          if (mountedRef.current) {
-            await fetchStatistics();
-          }
-        }, 300);
+        // ✅ Refresh statistics immediately
+        await fetchStatistics();
+        
+        // ✅ Dispatch update event
+        window.dispatchEvent(new CustomEvent('pledgeUpdated', { 
+          detail: { pledgeId, data: updatedPledge } 
+        }));
         
         if (showToast) {
           showToast('Pledge updated successfully', 'success');
@@ -304,16 +321,20 @@ const usePledges = (initialOptions = {}) => {
         throw new Error(response.error || 'Failed to update pledge');
       }
     } catch (error) {
+      // ✅ ROLLBACK on error
+      if (options.optimisticUpdates && mountedRef.current && originalPledge) {
+        console.warn('[usePledges] ⚠️ Rolling back optimistic update');
+        setPledges(prev => prev.map(pledge => 
+          pledge.id === pledgeId ? originalPledge : pledge
+        ));
+      }
+      
       handleError(error, 'update pledge');
       throw error;
-    } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
     }
-  }, [hasPermission, fetchStatistics, handleError, showToast, options.optimisticUpdates]);
+  }, [hasPermission, fetchStatistics, handleError, showToast, options.optimisticUpdates, pledges]);
 
-  // ✅ FIX: Create pledge with proper refresh
+  // ✅ Create pledge
   const createPledge = useCallback(async (pledgeData) => {
     if (!hasPermission('create')) {
       const error = 'Insufficient permissions to create pledges';
@@ -339,13 +360,18 @@ const usePledges = (initialOptions = {}) => {
           setPagination(prev => ({ ...prev, count: prev.count + 1 }));
         }
         
-        // ✅ Refresh data after creation
+        // ✅ Refresh data
         setTimeout(async () => {
           if (mountedRef.current) {
             await fetchPledges({ _forceRefresh: true });
             await fetchStatistics();
           }
         }, 500);
+        
+        // ✅ Dispatch event
+        window.dispatchEvent(new CustomEvent('pledgeCreated', { 
+          detail: newPledge 
+        }));
         
         if (showToast) {
           showToast('Pledge created successfully', 'success');
@@ -365,7 +391,7 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [hasPermission, fetchPledges, fetchStatistics, handleError, showToast, options.optimisticUpdates]);
 
-  // ✅ FIX: Delete pledge with proper refresh
+  // ✅ Delete pledge
   const deletePledge = useCallback(async (pledgeId) => {
     if (!hasPermission('delete')) {
       const error = 'Insufficient permissions to delete pledges';
@@ -373,29 +399,34 @@ const usePledges = (initialOptions = {}) => {
       throw new Error(error);
     }
 
+    // ✅ Save for rollback
+    const originalPledge = pledges.find(p => p.id === pledgeId);
+    const originalIndex = pledges.findIndex(p => p.id === pledgeId);
+
     try {
       setLoading(true);
       setError(null);
 
       console.log('[usePledges] Deleting pledge:', pledgeId);
 
+      // ✅ Optimistically remove
+      if (mountedRef.current) {
+        setPledges(prev => prev.filter(pledge => pledge.id !== pledgeId));
+        setPagination(prev => ({ ...prev, count: Math.max(0, prev.count - 1) }));
+      }
+
       const response = await pledgesService.deletePledge(pledgeId);
       
       if (response.success !== false) {
         console.log('[usePledges] ✅ Pledge deleted:', pledgeId);
         
-        // ✅ Optimistically remove from list
-        if (mountedRef.current) {
-          setPledges(prev => prev.filter(pledge => pledge.id !== pledgeId));
-          setPagination(prev => ({ ...prev, count: Math.max(0, prev.count - 1) }));
-        }
+        // ✅ Refresh statistics
+        await fetchStatistics();
         
-        // ✅ Refresh statistics only
-        setTimeout(async () => {
-          if (mountedRef.current) {
-            await fetchStatistics();
-          }
-        }, 300);
+        // ✅ Dispatch event
+        window.dispatchEvent(new CustomEvent('pledgeDeleted', { 
+          detail: { pledgeId } 
+        }));
         
         if (showToast) {
           showToast('Pledge deleted successfully', 'success');
@@ -406,6 +437,17 @@ const usePledges = (initialOptions = {}) => {
         throw new Error(response.error || 'Failed to delete pledge');
       }
     } catch (error) {
+      // ✅ ROLLBACK on error
+      if (mountedRef.current && originalPledge) {
+        console.warn('[usePledges] ⚠️ Rolling back delete');
+        setPledges(prev => {
+          const newPledges = [...prev];
+          newPledges.splice(originalIndex, 0, originalPledge);
+          return newPledges;
+        });
+        setPagination(prev => ({ ...prev, count: prev.count + 1 }));
+      }
+      
       handleError(error, 'delete pledge');
       throw error;
     } finally {
@@ -413,16 +455,15 @@ const usePledges = (initialOptions = {}) => {
         setLoading(false);
       }
     }
-  }, [hasPermission, fetchStatistics, handleError, showToast]);
+  }, [hasPermission, fetchStatistics, handleError, showToast, pledges]);
 
-  // ✅ NEW: Throttled refresh to prevent infinite loops
+  // ✅ Force refresh statistics with throttling
   const forceRefreshStatistics = useCallback(async () => {
     if (!isAuthenticated || !hasPermission('read')) {
       console.warn('[usePledges] Cannot refresh statistics - insufficient permissions');
       return { success: false, error: 'Insufficient permissions' };
     }
 
-    // ✅ THROTTLE: Prevent rapid-fire refreshes
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < MIN_REFRESH_INTERVAL) {
       console.log('[usePledges] ⏸️ Refresh throttled, too soon');
@@ -454,21 +495,41 @@ const usePledges = (initialOptions = {}) => {
     }
   }, [isAuthenticated, hasPermission, fetchStatistics, handleError]);
 
-  const updateFilters = useCallback((newFilters) => {
-    console.log('[usePledges] Updating filters:', newFilters);
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }));
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  // ✅ NEW: Start polling for updates
+  const startPolling = useCallback(() => {
+    if (!options.enablePolling || pollingIntervalRef.current) {
+      return;
+    }
+
+    console.log(`[usePledges] 🔄 Starting polling (every ${options.pollingInterval}ms)`);
+
+    pollingIntervalRef.current = setInterval(async () => {
+      if (!mountedRef.current || !isAuthenticated) {
+        return;
+      }
+
+      try {
+        console.log('[usePledges] 🔄 Polling update...');
+        
+        // Silently refresh statistics
+        await fetchStatistics();
+        
+      } catch (error) {
+        console.warn('[usePledges] Polling error (non-critical):', error.message);
+      }
+    }, options.pollingInterval);
+  }, [options.enablePolling, options.pollingInterval, isAuthenticated, fetchStatistics]);
+
+  // ✅ NEW: Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      console.log('[usePledges] ⏹️ Stopping polling');
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
   }, []);
 
-  const updatePagination = useCallback((updates) => {
-    console.log('[usePledges] Updating pagination:', updates);
-    setPagination(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  // ✅ FIX: Auto-fetch with proper dependencies (NO forceRefresh loops)
+  // ✅ Auto-fetch with polling
   useEffect(() => {
     if (!options.autoFetch || !isAuthenticated) {
       return;
@@ -491,6 +552,11 @@ const usePledges = (initialOptions = {}) => {
             console.warn('[usePledges] Statistics fetch failed (non-critical)');
           }
         }
+
+        // ✅ Start polling after initial fetch
+        if (!cancelled && options.enablePolling) {
+          startPolling();
+        }
       } catch (error) {
         if (!cancelled) {
           console.error('[usePledges] Auto-fetch failed:', error);
@@ -503,17 +569,35 @@ const usePledges = (initialOptions = {}) => {
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
+      stopPolling();
     };
   }, [
     options.autoFetch,
+    options.enablePolling,
     isAuthenticated,
     debouncedSearch,
     filters.status,
     filters.frequency,
     filters.member_id,
     pagination.currentPage,
-    pagination.itemsPerPage
-  ]); // ✅ Removed fetchPledges and fetchStatistics from deps
+    pagination.itemsPerPage,
+    startPolling,
+    stopPolling
+  ]);
+
+  const updateFilters = useCallback((newFilters) => {
+    console.log('[usePledges] Updating filters:', newFilters);
+    setFilters(prev => ({
+      ...prev,
+      ...newFilters
+    }));
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, []);
+
+  const updatePagination = useCallback((updates) => {
+    console.log('[usePledges] Updating pagination:', updates);
+    setPagination(prev => ({ ...prev, ...updates }));
+  }, []);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -538,9 +622,8 @@ const usePledges = (initialOptions = {}) => {
     }
   }, []);
 
-  // ✅ FIX: Throttled refresh
+  // ✅ Throttled manual refresh
   const refresh = useCallback(async () => {
-    // ✅ THROTTLE: Prevent rapid refreshes
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < MIN_REFRESH_INTERVAL) {
       console.log('[usePledges] ⏸️ Refresh throttled');
@@ -588,7 +671,9 @@ const usePledges = (initialOptions = {}) => {
     resetState,
     refresh,
     forceRefreshStatistics,
-    statsUpdateTrigger
+    statsUpdateTrigger,
+    startPolling,  // ✅ NEW
+    stopPolling    // ✅ NEW
   };
 };
 
