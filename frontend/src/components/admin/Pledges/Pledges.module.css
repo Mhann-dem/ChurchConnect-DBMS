@@ -1,4 +1,4 @@
-/* frontend/src/components/admin/Pledges/Pledges.module.css - CONSOLIDATED */
+/* frontend/src/components/admin/Pledges/Pledges.module.css - REDESIGNED with Status Colors */
 
 /* ============================================
    ROOT & GLOBAL STYLES
@@ -180,7 +180,6 @@
   flex-wrap: wrap;
 }
 
-/* Add these styles to your existing Pledges.module.css file */
 
 /* ============================================
    STATUS ERROR STATE
@@ -230,15 +229,6 @@
 
 .spinning {
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ============================================
@@ -448,230 +438,827 @@
 }
 
 /* ============================================
+   COMPACT CARD STYLES (for grouped view)
+   ======================================== */
+
+.pledgeCardCompact {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.pledgeCardCompact:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-color: #d1d5db;
+}
+
+/* Status-based card borders */
+.pledgeCardCompact.status-completed {
+  border-left: 4px solid #10b981;
+}
+
+.pledgeCardCompact.status-cancelled {
+  border-left: 4px solid #ef4444;
+  opacity: 0.8;
+}
+
+.pledgeCardCompact.status-suspended,
+.pledgeCardCompact.status-paused {
+  border-left: 4px solid #f59e0b;
+}
+
+.pledgeCardCompact.status-active {
+  border-left: 4px solid #3b82f6;
+}
+
+/* Compact Header */
+.compactHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.compactAmount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amountValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.compactStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compact Progress */
+.compactProgress {
+  margin-bottom: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progressLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Status Icon Colors */
+.icon-green {
+  color: #10b981;
+}
+
+.icon-red {
+  color: #ef4444;
+}
+
+.icon-yellow,
+.icon-orange {
+  color: #f59e0b;
+}
+
+.icon-blue {
+  color: #3b82f6;
+}
+
+.progressPercentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Progress Bar Container */
+.progressBarContainer {
+  height: 8px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Status-based Progress Colors */
+.fill-green {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.fill-red {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+.fill-yellow {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.fill-orange {
+  background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+  box-shadow: 0 0 8px rgba(251, 146, 60, 0.3);
+}
+
+.fill-blue {
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+.progressDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.progressDetail {
+  font-weight: 500;
+}
+
+/* Compact Footer */
+.compactFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.compactDates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dateText {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.compactActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ========================================
+   FULL CARD STYLES (for list view)
+   ======================================== */
+
+.pledgeCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.pledgeCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d1d5db;
+}
+
+/* Status-based full card borders */
+.pledgeCard.status-completed {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(to right, #ecfdf5 0%, white 10%);
+}
+
+.pledgeCard.status-cancelled {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(to right, #fef2f2 0%, white 10%);
+  opacity: 0.85;
+}
+
+.pledgeCard.status-suspended,
+.pledgeCard.status-paused {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(to right, #fffbeb 0%, white 10%);
+}
+
+.pledgeCard.status-active {
+  border-left: 4px solid #3b82f6;
+}
+
+.pledgeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.memberInfo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.memberAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.memberDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.memberName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.memberEmail {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.paymentCount {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.statusSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.badgeContainer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.statusUpdating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.statusError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #ef4444;
+  background: #fef2f2;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.pledgeDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.amountSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.amountInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.totalPledged {
+  display: flex;
+  align-items: center;
+}
+
+.totalAmount {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Payment Progress (same as compact but larger) */
+.paymentProgress {
+  margin: 16px 0;
+}
+
+.paymentProgress .progressBarContainer {
+  height: 12px;
+}
+
+.paymentProgress .progressHeader {
+  margin-bottom: 8px;
+}
+
+.paymentProgress .progressLabel {
+  font-size: 14px;
+}
+
+.paymentProgress .progressPercentage {
+  font-size: 16px;
+}
+
+/* Date Section */
+.dateSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.dateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dateLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dateValue {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Notes Section */
+.notesSection {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.notes {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Footer */
+.pledgeFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.timestampInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================
    MEMBER GROUP CARD
    ============================================ */
 
 .memberGroupCard {
   background: white;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
   overflow: hidden;
-  margin-bottom: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeIn 0.3s ease-out;
+  transition: all 0.2s ease;
 }
-
-.memberGroupCard:nth-child(1) { animation-delay: 0ms; }
-.memberGroupCard:nth-child(2) { animation-delay: 50ms; }
-.memberGroupCard:nth-child(3) { animation-delay: 100ms; }
-.memberGroupCard:nth-child(4) { animation-delay: 150ms; }
-.memberGroupCard:nth-child(5) { animation-delay: 200ms; }
 
 .memberGroupCard:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.memberGroupCard.updated {
-  animation: pulse 0.6s ease-in-out;
-}
-
-/* Member Header */
 .memberHeader {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 1.5rem;
+  padding: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 2px solid #e0f2fe;
-  position: relative;
-}
-
-.memberHeader::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: background 0.2s ease;
 }
 
 .memberHeader:hover {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-}
-
-.memberHeader:hover::before {
-  opacity: 1;
+  background: #f9fafb;
 }
 
 .memberHeaderContent {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 20px;
 }
 
 .memberInfoSection {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 16px;
   flex: 1;
-  min-width: 0;
 }
 
 .memberAvatar {
-  width: 3rem;
-  height: 3rem;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 22px;
   flex-shrink: 0;
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
 }
 
 .memberDetails {
   flex: 1;
-  min-width: 0;
 }
 
 .memberNameRow {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 12px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
 .memberName {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
+}
+
+.pledgeCountBadge {
+  padding: 4px 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.completedBadge {
+  padding: 4px 10px;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.overdueBadge {
+  padding: 4px 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .memberContactItem {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 6px;
+  font-size: 13px;
   color: #6b7280;
-  margin-bottom: 0.25rem;
+  margin-bottom: 4px;
 }
 
-.memberContactItem svg {
-  flex-shrink: 0;
-  color: #9ca3af;
-}
-
+/* Member Stats Section */
 .memberStatsSection {
   display: flex;
+  gap: 24px;
   align-items: center;
-  gap: 1.5rem;
 }
 
 .statColumn {
-  text-align: right;
-  min-width: 8rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 0.5rem;
-  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
 }
 
 .statLabel {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.375rem;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .statValue {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.statSubtext {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 0.25rem;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
 }
 
 .receivedValue {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #10b981;
 }
 
+.statSubtext {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Rate colors */
 .goodRate {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #10b981 !important;
 }
 
 .mediumRate {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f59e0b !important;
 }
 
 .lowRate {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ef4444 !important;
 }
 
 .expandButton {
-  padding: 0.625rem;
-  background: white;
-  border: 2px solid #e2e8f0;
-  color: #475569;
+  background: none;
+  border: none;
   cursor: pointer;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: #6b7280;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .expandButton:hover {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Collapsed Progress */
+.collapsedProgress {
+  margin-top: 16px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressText {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.progressPercentageText {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.progressBar {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease-in-out;
+}
+
+.goodProgress {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.mediumProgress {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.lowProgress {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Pledges List */
+.pledgesList {
+  padding: 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pledgeItemWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.pledgeCheckbox {
+  display: flex;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.pledgeCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.pledgeNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+  margin-top: 16px;
+}
+
+/* Group Footer */
+.groupFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.groupFooterStats {
+  display: flex;
+  gap: 32px;
+}
+
+.footerStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footerStatLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.footerStatValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ============================================
+   PLEDGES LIST
+   ============================================ */
+
+.pledgesList {
+  border-top: 2px solid #e5e7eb;
+}
+
+.pledgeItemWrapper {
+  position: relative;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+  padding-left: 3.5rem;
+}
+
+.pledgeItemWrapper:last-child {
+  border-bottom: none;
+}
+
+.pledgeItemWrapper:hover {
+  background: linear-gradient(90deg, #fafbfc 0%, #f8fafc 100%);
+  transform: translateX(4px);
+}
+
+.pledgeNumber {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  z-index: 5;
+}
+
+.pledgeNumber span {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.pledgeCheckbox {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pledgeCheckbox:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
-.expandButton:active {
-  transform: scale(0.95);
+.pledgeCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: #3b82f6;
 }
 
-.expandButton:focus-visible {
+.pledgeCheckbox input[type="checkbox"]:checked {
+  background: #3b82f6;
+}
+
+.pledgeCheckbox:focus-visible {
   outline: 3px solid #3b82f6;
   outline-offset: 3px;
 }
@@ -868,43 +1455,37 @@
 
 /* Group Footer */
 .groupFooter {
-  padding: 1.5rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  border-top: 2px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .groupFooterStats {
   display: flex;
-  gap: 2rem;
-  align-items: center;
-  flex-wrap: wrap;
-  flex: 1;
+  gap: 32px;
 }
 
 .footerStat {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 4px;
 }
 
 .footerStatLabel {
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .footerStatValue {
-  font-size: 1.25rem;
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
-  line-height: 1;
+  color: #111827;
 }
 
 /* ============================================
@@ -1371,26 +1952,26 @@
 /* Date Information */
 .dateSection {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .dateInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 4px;
 }
 
 .dateLabel {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 12px;
   color: #9ca3af;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.5px;
 }
 
 .dateValue {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #374151;
   font-weight: 500;
 }
@@ -2400,136 +2981,6 @@
   margin-top: 0.5rem;
 }
 
-.errorItem {
-  padding: 0.25rem 0;
-  font-size: 0.875rem;
-  color: #dc2626;
-}
-
-.validationActions {
-  display: flex;
-  justify-content: center;
-}
-
-.validationSuccess {
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  text-align: center;
-}
-
-.successHeader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.successIcon {
-  color: #10b981;
-}
-
-.previewTable {
-  margin: 1.5rem 0;
-}
-
-.tableContainer {
-  overflow-x: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-}
-
-.previewTableElement {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.previewTableElement th {
-  background: #f9fafb;
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.previewTableElement td {
-  padding: 0.75rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.errorRow {
-  background: #fef2f2;
-}
-
-.errorRow td {
-  color: #dc2626;
-}
-
-.processActions, .validationActions, .completeActions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1.5rem;
-}
-
-.resultsHeader {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.resultsIcon {
-  color: #10b981;
-  margin-bottom: 1rem;
-}
-
-.resultsStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.resultsStat {
-  text-align: center;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-}
-
-.statsNumber {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.statsLabel {
-  display: block;
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
-.importErrors {
-  margin: 2rem 0;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
-
-.errorsList {
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 0.5rem;
-}
-
 .moreErrors {
   font-style: italic;
   color: #6b7280;
@@ -2596,6 +3047,7 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Statistics Section */
@@ -2743,7 +3195,7 @@
 
 .progressBar .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  border-radius: 0.5rem;
   transition: width 0.3s ease;
 }
 
@@ -3160,7 +3612,7 @@
 }
 
 .pledgeCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
 }
 
@@ -3172,6 +3624,33 @@
 .pledgeCard.overdue {
   border-left: 4px solid #ef4444;
   background: #fef2f2;
+}
+
+.pledgeCard.statusUpdated {
+  animation: successFlash 0.6s ease-out;
+}
+
+.pledgeCard.statusError {
+  animation: errorShake 0.5s ease-out;
+  border-color: #ef4444 !important;
+}
+
+.pledgeCard.updating {
+  position: relative;
+}
+
+.pledgeCard.updating::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 5;
+  border-radius: 0.75rem;
+  pointer-events: none;
 }
 
 .pledgeHeader {
@@ -3186,10 +3665,6 @@
   align-items: center;
   gap: 0.75rem;
   flex: 1;
-}
-
-.memberAvatar {
-  flex-shrink: 0;
 }
 
 .memberDetails {
@@ -3236,615 +3711,518 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.overdueBadge {
-  font-size: 0.625rem;
-  padding: 0.125rem 0.375rem;
+.statusBadge.updating {
+  animation: shimmer 1.5s infinite;
+}
+
+.statusUpdating {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+  border-radius: 0.375rem;
+  animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
 }
 
 .statusDropdown {
   min-width: 100px;
 }
 
-/* Pledge Details */
-.pledgeDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.statusDropdown:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-.amountSection {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+/* ============================================
+   MEMBER GROUP CARD
+   ======================================== */
 
-.amountInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.amount {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.frequencyBadge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-}
-
-.totalPledged {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.totalAmount {
-  font-weight: 500;
-  cursor: help;
-}
-
-/* Payment Progress */
-.paymentProgress {
-  background: #f9fafb;
-  border-radius: 0.5rem;
-  padding: 1rem;
+.memberGroupCard {
+  background: white;
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.progressHeader {
+.memberGroupCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.memberHeader {
+  padding: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.memberHeader:hover {
+  background: #f9fafb;
+}
+
+.memberHeaderContent {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  gap: 20px;
 }
 
-.progressLabel {
-  font-size: 0.875rem;
+.memberInfoSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.memberAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.memberDetails {
+  flex: 1;
+}
+
+.memberNameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.memberName {
+  font-size: 18px;
   font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.pledgeCountBadge {
+  padding: 4px 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.completedBadge {
+  padding: 4px 10px;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.overdueBadge {
+  padding: 4px 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.memberContactItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+/* Member Stats Section */
+.memberStatsSection {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.statColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.receivedValue {
+  color: #10b981;
+}
+
+.statSubtext {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Rate colors */
+.goodRate {
+  color: #10b981 !important;
+}
+
+.mediumRate {
+  color: #f59e0b !important;
+}
+
+.lowRate {
+  color: #ef4444 !important;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.expandButton:hover {
+  background: #f3f4f6;
   color: #374151;
 }
 
-.progressPercentage {
-  font-size: 0.875rem;
+/* Collapsed Progress */
+.collapsedProgress {
+  margin-top: 16px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressText {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.progressPercentageText {
+  font-size: 14px;
+  color: #111827;
   font-weight: 700;
-  color: #059669;
 }
 
 .progressBar {
-  width: 100%;
-  height: 0.5rem;
-  background-color: #e5e7eb;
-  border-radius: 0.25rem;
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 0.75rem;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
-  transition: width 0.3s ease;
-  border-radius: 0.25rem;
+  border-radius: 4px;
+  transition: width 0.5s ease-in-out;
 }
 
-.progressDetails {
-  display: flex;
-  justify-content: space-between;
+.goodProgress {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.mediumProgress {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.lowProgress {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Badges */
+.completedBadge {
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.progressDetail {
+  gap: 0.375rem;
   font-size: 0.75rem;
-  color: #6b7280;
-}
-
-/* Date Information */
-.dateSection {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.75rem;
-}
-
-.dateInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.dateLabel {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.dateValue {
-  font-size: 0.875rem;
-  color: #374151;
-  font-weight: 500;
-}
-
-/* Next Payment */
-.nextPaymentSection {
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-}
-
-.nextPaymentSection.overdue {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.nextPaymentInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.25rem;
-}
-
-.nextPaymentLabel {
-  font-size: 0.875rem;
+  padding: 0.25rem 0.625rem;
   font-weight: 600;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.1);
+}
+
+.pledgeCountBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #dbeafe;
   color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
-.nextPaymentSection.overdue .nextPaymentLabel {
+.overdueBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #fee2e2;
   color: #dc2626;
-}
-
-.nextPaymentDate {
-  font-size: 0.875rem;
-  color: #374151;
-  font-weight: 500;
-}
-
-.nextPaymentDays {
-  font-size: 0.75rem;
-  color: #6b7280;
-  text-align: right;
-}
-
-/* Time Progress */
-.timeProgressSection {
-  background: #f0f9ff;
-  border: 1px solid #e0f2fe;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-}
-
-.timeProgressLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #0369a1;
-}
-
-.timeProgressBar {
-  width: 100%;
-  height: 0.375rem;
-  background-color: #e0f2fe;
-  border-radius: 0.1875rem;
-  overflow: hidden;
-}
-
-.timeProgressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 100%);
-  transition: width 0.3s ease;
-  border-radius: 0.1875rem;
-}
-
-/* Notes */
-.notesSection {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 1rem;
-}
-
-.notes {
-  font-size: 0.875rem;
-  color: #6b7280;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.expandButton {
-  padding: 0;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-/* Payment History Preview */
-.paymentHistoryPreview {
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-}
-
-.paymentHistoryHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.paymentHistoryTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #166534;
-}
-
-.viewAllButton {
-  font-size: 0.75rem;
-  padding: 0;
-}
-
-.recentPayments {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.recentPayment {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-}
-
-.paymentAmount {
-  font-weight: 600;
-  color: #166534;
-}
-
-.paymentDate {
-  color: #6b7280;
-}
-
-/* Footer */
-.pledgeFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.timestampInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.timestamp {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.addPaymentButton {
-  background-color: #059669;
-  border-color: #059669;
-}
-
-.addPaymentButton:hover {
-  background-color: #047857;
-  border-color: #047857;
-}
-
-/* Overdue Actions */
-.overdueActions {
-  background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-top: 1rem;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.overdueWarning {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+/* ============================================
+   PLEDGES LIST
+   ============================================ */
+
+.pledgesList {
+  border-top: 2px solid #e5e7eb;
 }
 
-.overdueIcon {
-  font-size: 1rem;
-}
-
-.overdueText {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #dc2626;
-}
-
-.overdueButtons {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-/* Form Styles */
-.pledgeForm {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.formHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.formTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-}
-
-.closeButton {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.formLabel {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.memberSearchContainer {
+.pledgeItemWrapper {
   position: relative;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+  padding-left: 3.5rem;
 }
 
-.memberDropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.memberOption {
-  padding: 0.75rem;
-  cursor: pointer;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.memberOption:hover {
-  background: #f9fafb;
-}
-
-.memberOption:last-child {
+.pledgeItemWrapper:last-child {
   border-bottom: none;
 }
 
-.memberOption .memberName {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1f2937;
+.pledgeItemWrapper:hover {
+  background: linear-gradient(90deg, #fafbfc 0%, #f8fafc 100%);
+  transform: translateX(4px);
 }
 
-.memberOption .memberEmail {
+.pledgeNumber {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.125rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  z-index: 5;
 }
 
-.totalCalculation {
+.pledgeNumber span {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.pledgeCheckbox {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pledgeCheckbox:hover {
+  border-color: #3b82f6;
   background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  transform: scale(1.05);
+}
+
+.pledgeCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: #3b82f6;
+}
+
+.pledgeCheckbox input[type="checkbox"]:checked {
+  background: #3b82f6;
+}
+
+.pledgeCheckbox:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+}
+
+/* Collapsed Progress */
+.collapsedProgress {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0f2fe;
+}
+
+.progressInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.625rem;
 }
 
-.calculationLabel {
+.progressText {
   font-size: 0.875rem;
+  color: #475569;
   font-weight: 600;
-  color: #1e40af;
 }
 
-.calculationValue {
-  font-size: 1.125rem;
+.progressPercentageText {
+  font-size: 1rem;
   font-weight: 700;
-  color: #1e40af;
+  color: #0f172a;
 }
 
-.formActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+.progressBar {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-/* Modal */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease-in-out;
+}
+
+.goodProgress {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.mediumProgress {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.lowProgress {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Badges */
+.completedBadge {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 1rem;
-}
-
-.modalContent {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 42rem;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-/* Pagination */
-.paginationContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-/* Error States */
-.errorContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  text-align: center;
-}
-
-.errorMessage {
-  color: #dc2626;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-}
-
-.errorCard {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  text-align: center;
-}
-
-.errorText {
-  color: #dc2626;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.retryButton {
-  background: #dc2626;
-  color: white;
-  border: none;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
   border-radius: 0.375rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.1);
 }
 
-.retryButton:hover {
-  background: #b91c1c;
+.pledgeCountBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
-/* Responsive Design */
+.overdueBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================
+   RESPONSIVE
+   ======================================== */
+
 @media (max-width: 768px) {
-  .pledgesContainer {
-    padding: 1rem;
-  }
-  
-  .headerContent {
+  .memberHeaderContent {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
   }
-  
-  .headerActions {
+
+  .memberStatsSection {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: space-between;
   }
-  
-  .pledgesGrid {
-    grid-template-columns: 1fr;
+
+  .statColumn {
+    min-width: auto;
   }
-  
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .frequencyGrid {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  }
-  
-  .formRow {
-    grid-template-columns: 1fr;
-  }
-  
-  .filters {
+
+  .groupFooter {
     flex-direction: column;
+    gap: 16px;
     align-items: stretch;
   }
-  
-  .bulkActionsContainer {
+
+  .groupFooterStats {
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .compactFooter {
+    flex-direction: column;
+    gap: 12px;
     align-items: stretch;
   }
-  
-  .pledgeFooter {
-    flex-direction: column;
-    align-items: stretch;
+
+  .compactActions {
+    width: 100%;
+    justify-content: stretch;
   }
-  
-  .actions {
-    justify-content: center;
-  }
-  
-  .modalContent {
-    margin: 0;
-    max-height: 100vh;
-    border-radius: 0;
+
+  .compactActions button {
+    flex: 1;
   }
 }
