@@ -1,4 +1,4 @@
-// PledgesList.jsx - REDESIGNED with Unified Layout
+// PledgesList.jsx - FINAL VERSION with Proper Compact Cards
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { LoadingSpinner, EmptyState, Pagination } from '../../shared';
@@ -42,7 +42,7 @@ const getMemberPhone = (pledge) => {
   return pledge.member?.phone || pledge.member_details?.phone || '';
 };
 
-// ✅ Member Group Component with COMPACT cards
+// ✅ CRITICAL FIX: Member Group with automatic recalculation
 const MemberPledgesGroup = ({ 
   memberName, 
   memberEmail, 
@@ -59,13 +59,12 @@ const MemberPledgesGroup = ({
   triggerUpdate
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [memberStats, setMemberStats] = useState({});
   const [recalcTrigger, setRecalcTrigger] = useState(0);
 
-  // Listen for updates
+  // ✅ Listen for ALL pledge updates
   useEffect(() => {
     const handleUpdate = () => {
-      console.log('[MemberGroup] 🔔 Update detected');
+      console.log('[MemberGroup] 🔔 Pledge updated, forcing recalculation');
       setRecalcTrigger(prev => prev + 1);
     };
 
@@ -82,16 +81,18 @@ const MemberPledgesGroup = ({
     };
   }, []);
 
-  // Calculate stats
-  useEffect(() => {
+  // ✅ CRITICAL: Calculate stats EVERY time pledges or trigger changes
+  const memberStats = useMemo(() => {
     console.log('[MemberGroup] 🔢 Recalculating stats for:', memberName);
     
     const totalPledged = pledges.reduce((sum, p) => {
-      return sum + (parseFloat(p.total_pledged) || parseFloat(p.amount) || 0);
+      const pledged = parseFloat(p.total_pledged) || parseFloat(p.amount) || 0;
+      return sum + pledged;
     }, 0);
     
     const totalReceived = pledges.reduce((sum, p) => {
-      return sum + (parseFloat(p.total_received) || 0);
+      const received = parseFloat(p.total_received) || 0;
+      return sum + received;
     }, 0);
     
     const activePledges = pledges.filter(p => p.status === 'active').length;
@@ -100,7 +101,13 @@ const MemberPledgesGroup = ({
     const overduePledges = pledges.filter(p => p.is_overdue).length;
     const remainingAmount = Math.max(0, totalPledged - totalReceived);
 
-    setMemberStats({ 
+    console.log('[MemberGroup] ✅ Stats calculated:', {
+      totalPledged,
+      totalReceived,
+      completionRate: Math.round(completionRate)
+    });
+
+    return { 
       totalPledged, 
       totalReceived, 
       activePledges, 
@@ -108,21 +115,16 @@ const MemberPledgesGroup = ({
       completionRate, 
       overduePledges,
       remainingAmount 
-    });
-    
-    console.log('[MemberGroup] ✅ Stats updated:', {
-      totalPledged,
-      totalReceived,
-      completionRate: Math.round(completionRate)
-    });
+    };
   }, [pledges, memberName, triggerUpdate, recalcTrigger]);
 
   const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
     try {
+      console.log('[MemberGroup] 🔵 Updating status:', pledgeId, newStatus);
       await onUpdateStatus(pledgeId, newStatus);
       setRecalcTrigger(prev => prev + 1);
     } catch (error) {
-      console.error('[MemberGroup] Status update failed:', error);
+      console.error('[MemberGroup] ❌ Status update failed:', error);
       throw error;
     }
   }, [onUpdateStatus]);
@@ -148,23 +150,14 @@ const MemberPledgesGroup = ({
 
   const isPledgeSelected = (pledgeId) => {
     if (!selectedPledges) return false;
-    if (selectedPledges instanceof Set) {
-      return selectedPledges.has(pledgeId);
-    }
-    if (Array.isArray(selectedPledges)) {
-      return selectedPledges.includes(pledgeId);
-    }
+    if (selectedPledges instanceof Set) return selectedPledges.has(pledgeId);
+    if (Array.isArray(selectedPledges)) return selectedPledges.includes(pledgeId);
     return false;
   };
 
-  const groupKey = `member-${memberId}-${recalcTrigger}`;
-
   return (
-    <div className={styles.memberGroupCard} key={groupKey}>
-      <div 
-        className={styles.memberHeader}
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
+    <div className={styles.memberGroupCard} key={`group-${memberId}-${recalcTrigger}`}>
+      <div className={styles.memberHeader} onClick={() => setIsExpanded(!isExpanded)}>
         <div className={styles.memberHeaderContent}>
           <div className={styles.memberInfoSection}>
             <div className={styles.memberAvatar}>
@@ -205,7 +198,8 @@ const MemberPledgesGroup = ({
             </div>
           </div>
 
-          <div className={styles.memberStatsSection} key={`stats-${recalcTrigger}`}>
+          {/* ✅ Real-time updating stats */}
+          <div className={styles.memberStatsSection}>
             <div className={styles.statColumn}>
               <div className={styles.statLabel}>
                 <DollarSign size={12} />
@@ -254,7 +248,7 @@ const MemberPledgesGroup = ({
         </div>
 
         {!isExpanded && (
-          <div className={styles.collapsedProgress} key={`progress-${recalcTrigger}`}>
+          <div className={styles.collapsedProgress}>
             <div className={styles.progressInfo}>
               <span className={styles.progressText}>
                 {formatCurrency(memberStats.totalReceived)} of {formatCurrency(memberStats.totalPledged)}
@@ -283,12 +277,12 @@ const MemberPledgesGroup = ({
       {isExpanded && (
         <div className={styles.pledgesList}>
           {pledges.map((pledge, index) => (
-            <div key={`${pledge.id}-${recalcTrigger}`} className={styles.pledgeItemWrapper}>
+            <div key={`pledge-${pledge.id}-${recalcTrigger}`} className={styles.pledgeItemWrapper}>
               <label className={styles.pledgeCheckbox}>
                 <input
                   type="checkbox"
                   checked={isPledgeSelected(pledge.id)}
-                  onChange={(e) => onPledgeSelection && onPledgeSelection(pledge.id, e.target.checked)}
+                  onChange={(e) => onPledgeSelection?.(pledge.id, e.target.checked)}
                   onClick={(e) => e.stopPropagation()}
                 />
               </label>
@@ -297,7 +291,7 @@ const MemberPledgesGroup = ({
                 <span>#{index + 1}</span>
               </div>
 
-              {/* ✅ Use COMPACT card for grouped view */}
+              {/* ✅ COMPACT CARD for grouped view */}
               <div style={{ flex: 1 }}>
                 <PledgeCard
                   pledge={pledge}
@@ -305,14 +299,14 @@ const MemberPledgesGroup = ({
                   onDelete={handleDelete}
                   onUpdateStatus={handleUpdateStatus}
                   onAddPayment={onAddPayment}
-                  hideHeader={false}
                   compact={true}
                 />
               </div>
             </div>
           ))}
 
-          <div className={styles.groupFooter} key={`footer-${recalcTrigger}`}>
+          {/* ✅ Group footer with real-time stats */}
+          <div className={styles.groupFooter}>
             <div className={styles.groupFooterStats}>
               <div className={styles.footerStat}>
                 <span className={styles.footerStatLabel}>Total Pledged:</span>
@@ -336,7 +330,7 @@ const MemberPledgesGroup = ({
             
             <Button
               variant="outline"
-              onClick={() => onNavigateToMember && onNavigateToMember(memberId)}
+              onClick={() => onNavigateToMember?.(memberId)}
               icon={<User size={16} />}
             >
               View {memberName}'s Profile
@@ -348,7 +342,7 @@ const MemberPledgesGroup = ({
   );
 };
 
-// Main Component
+// Main List Component
 const PledgesList = ({ 
   pledges: externalPledges, 
   selectedPledges,
@@ -366,15 +360,15 @@ const PledgesList = ({
   onRefresh
 }) => {
   const [viewMode, setViewMode] = useState('grouped');
-  const [aggregateStats, setAggregateStats] = useState(null);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const { showToast } = useToast();
 
   const pledges = externalPledges || [];
 
-  // Listen for updates
+  // ✅ Listen for global updates
   useEffect(() => {
     const handleUpdate = () => {
+      console.log('[PledgesList] 🔔 Global update received');
       setUpdateTrigger(prev => prev + 1);
     };
 
@@ -391,18 +385,17 @@ const PledgesList = ({
     };
   }, []);
 
+  // ✅ Trigger update when pledges array changes
   useEffect(() => {
+    console.log('[PledgesList] Pledges array changed:', pledges.length);
     setUpdateTrigger(prev => prev + 1);
   }, [pledges]);
 
-  // Group pledges
+  // ✅ Group pledges by member
   const groupedPledges = useMemo(() => {
-    if (!Array.isArray(pledges) || pledges.length === 0) {
-      return [];
-    }
+    if (!Array.isArray(pledges) || pledges.length === 0) return [];
 
     const groups = {};
-    
     pledges.forEach(pledge => {
       const memberId = getMemberId(pledge);
       const memberName = getMemberDisplayName(pledge);
@@ -421,57 +414,49 @@ const PledgesList = ({
       groups[memberId].pledges.push(pledge);
     });
 
-    return Object.values(groups).sort((a, b) => 
-      a.memberName.localeCompare(b.memberName)
-    );
+    return Object.values(groups).sort((a, b) => a.memberName.localeCompare(b.memberName));
   }, [pledges, updateTrigger]);
 
-  // Calculate aggregate stats
-  useEffect(() => {
-    if (pledges.length > 0) {
-      const stats = {
-        totalMembers: groupedPledges.length,
-        totalPledges: pledges.length,
-        totalPledged: pledges.reduce((sum, p) => sum + (parseFloat(p.total_pledged) || parseFloat(p.amount) || 0), 0),
-        totalReceived: pledges.reduce((sum, p) => sum + (parseFloat(p.total_received) || 0), 0),
-        activeMembers: groupedPledges.filter(g => g.pledges.some(p => p.status === 'active')).length,
-      };
-      stats.overallRate = stats.totalPledged > 0 ? (stats.totalReceived / stats.totalPledged) * 100 : 0;
-      
-      setAggregateStats(stats);
-    } else {
-      setAggregateStats(null);
-    }
+  // ✅ Calculate aggregate stats
+  const aggregateStats = useMemo(() => {
+    if (pledges.length === 0) return null;
+
+    const stats = {
+      totalMembers: groupedPledges.length,
+      totalPledges: pledges.length,
+      totalPledged: pledges.reduce((sum, p) => sum + (parseFloat(p.total_pledged) || parseFloat(p.amount) || 0), 0),
+      totalReceived: pledges.reduce((sum, p) => sum + (parseFloat(p.total_received) || 0), 0),
+      activeMembers: groupedPledges.filter(g => g.pledges.some(p => p.status === 'active')).length,
+    };
+    stats.overallRate = stats.totalPledged > 0 ? (stats.totalReceived / stats.totalPledged) * 100 : 0;
+    
+    return stats;
   }, [pledges, groupedPledges, updateTrigger]);
 
-  const handleEditPledge = useCallback((pledge) => {
-    if (onEdit) onEdit(pledge);
-  }, [onEdit]);
+  const handleEditPledge = useCallback((pledge) => onEdit?.(pledge), [onEdit]);
 
   const handleDeletePledge = useCallback(async (pledgeId) => {
-    if (onDelete) {
-      try {
-        await onDelete(pledgeId);
-        setUpdateTrigger(prev => prev + 1);
-        if (onRefresh) setTimeout(() => onRefresh(), 300);
-      } catch (error) {
-        console.error('[PledgesList] Delete failed:', error);
-        throw error;
-      }
+    if (!onDelete) return;
+    try {
+      await onDelete(pledgeId);
+      setUpdateTrigger(prev => prev + 1);
+      if (onRefresh) setTimeout(onRefresh, 300);
+    } catch (error) {
+      console.error('[PledgesList] Delete failed:', error);
+      throw error;
     }
   }, [onDelete, onRefresh]);
 
   const handleUpdateStatus = useCallback(async (pledgeId, newStatus) => {
-    if (onUpdateStatus) {
-      try {
-        await onUpdateStatus(pledgeId, newStatus);
-        setUpdateTrigger(prev => prev + 1);
-        if (onRefresh) setTimeout(() => onRefresh(), 300);
-      } catch (error) {
-        console.error('[PledgesList] Status update failed:', error);
-        showToast('Failed to update pledge status', 'error');
-        throw error;
-      }
+    if (!onUpdateStatus) return;
+    try {
+      await onUpdateStatus(pledgeId, newStatus);
+      setUpdateTrigger(prev => prev + 1);
+      if (onRefresh) setTimeout(onRefresh, 300);
+    } catch (error) {
+      console.error('[PledgesList] Status update failed:', error);
+      showToast?.('Failed to update pledge status', 'error');
+      throw error;
     }
   }, [onUpdateStatus, onRefresh, showToast]);
 
@@ -507,7 +492,8 @@ const PledgesList = ({
           </button>
         </div>
 
-        <div className={styles.summaryInfo} key={`summary-${updateTrigger}`}>
+        {/* Real-time Summary */}
+        <div className={styles.summaryInfo}>
           {viewMode === 'grouped' && aggregateStats ? (
             <div className={styles.aggregateStats}>
               <span className={styles.aggregateStat}>
@@ -536,13 +522,11 @@ const PledgesList = ({
         </div>
       </div>
 
+      {/* Content */}
       {pledges.length === 0 ? (
         <EmptyState
           title="No pledges found"
-          description={searchQuery ? 
-            "No pledges match your search criteria." : 
-            "No pledges have been recorded yet."
-          }
+          description={searchQuery ? "No pledges match your search criteria." : "No pledges have been recorded yet."}
           icon={<DollarSign size={48} />}
         />
       ) : viewMode === 'grouped' ? (
@@ -574,7 +558,7 @@ const PledgesList = ({
                 <input
                   type="checkbox"
                   checked={selectedPledges?.has?.(pledge.id) || selectedPledges?.includes?.(pledge.id)}
-                  onChange={(e) => onPledgeSelection && onPledgeSelection(pledge.id, e.target.checked)}
+                  onChange={(e) => onPledgeSelection?.(pledge.id, e.target.checked)}
                 />
               </label>
               <PledgeCard
@@ -590,6 +574,7 @@ const PledgesList = ({
         </div>
       )}
 
+      {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className={styles.paginationContainer}>
           <Pagination

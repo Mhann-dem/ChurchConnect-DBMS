@@ -1,9 +1,10 @@
-// PledgeCard.jsx - REDESIGNED with Status-based Progress Colors
+// PledgeCard.jsx - FIXED STATUS DROPDOWN with Real-time Updates
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
-import { Card, Badge, Button, Dropdown, Avatar, Tooltip } from '../../ui';
+import { Card, Badge, Button, Avatar, Tooltip } from '../../ui';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
-import { Loader, CheckCircle, AlertCircle, Clock, XCircle } from 'lucide-react';
+import { Loader, CheckCircle, AlertCircle, Clock, XCircle, ChevronDown } from 'lucide-react';
 import styles from './Pledges.module.css';
 
 const PledgeCard = ({ 
@@ -14,13 +15,14 @@ const PledgeCard = ({
   onAddPayment, 
   showPaymentHistory,
   hideHeader = false,
-  compact = false // NEW: For grouped view
+  compact = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(pledge?.status || 'active');
   const [statusError, setStatusError] = useState(null);
   const [calculationTrigger, setCalculationTrigger] = useState(0);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   
   // ✅ Sync status when pledge changes
   useEffect(() => {
@@ -205,29 +207,44 @@ const PledgeCard = ({
     calculationTrigger
   ]);
 
+  // ✅ IMPROVED: Status change handler with immediate feedback
   const handleStatusChange = async (newStatus) => {
     if (newStatus === currentStatus || !onUpdateStatus) return;
     
     console.log('[PledgeCard] 🔵 Changing status:', currentStatus, '->', newStatus);
     
     const previousStatus = currentStatus;
+    
+    // ✅ Optimistic update
     setCurrentStatus(newStatus);
     setIsUpdatingStatus(true);
     setStatusError(null);
+    setShowStatusDropdown(false);
     
     try {
+      // ✅ Call parent handler
       await onUpdateStatus(id, newStatus);
-      console.log('[PledgeCard] ✅ Status updated');
       
+      console.log('[PledgeCard] ✅ Status updated successfully');
+      
+      // ✅ Force recalculation
       setTimeout(() => {
         setCalculationTrigger(prev => prev + 1);
         setIsUpdatingStatus(false);
+        
+        // ✅ Dispatch local event
+        window.dispatchEvent(new CustomEvent('pledgeStatusChanged', {
+          detail: { pledgeId: id, oldStatus: previousStatus, newStatus }
+        }));
       }, 300);
       
     } catch (error) {
       console.error('[PledgeCard] ❌ Status update failed:', error);
+      
+      // ✅ Rollback on failure
       setCurrentStatus(previousStatus);
       setStatusError(error.message || 'Failed to update status');
+      
       setTimeout(() => setStatusError(null), 3000);
       setIsUpdatingStatus(false);
     }
@@ -282,10 +299,10 @@ const PledgeCard = ({
   };
 
   const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'cancelled', label: 'Cancelled' },
-    { value: 'suspended', label: 'Suspended' }
+    { value: 'active', label: 'Active', color: 'success' },
+    { value: 'completed', label: 'Completed', color: 'info' },
+    { value: 'suspended', label: 'Suspended', color: 'warning' },
+    { value: 'cancelled', label: 'Cancelled', color: 'danger' }
   ];
 
   const memberDisplayName = getMemberDisplayName();
@@ -318,18 +335,54 @@ const PledgeCard = ({
             </Badge>
           </div>
           
+          {/* ✅ NEW: Status Dropdown */}
           <div className={styles.compactStatus}>
             {isUpdatingStatus ? (
-              <Loader size={14} className={styles.spinner} />
+              <div className={styles.statusUpdating}>
+                <Loader size={14} className={styles.spinner} />
+                <span>Updating...</span>
+              </div>
+            ) : statusError ? (
+              <div className={styles.statusError}>
+                <AlertCircle size={12} />
+                <span>{statusError}</span>
+              </div>
             ) : (
-              <Dropdown
-                value={currentStatus}
-                onChange={handleStatusChange}
-                options={statusOptions}
-                variant="minimal"
-                size="sm"
-                disabled={isUpdatingStatus}
-              />
+              <div className={styles.statusDropdownContainer}>
+                <button
+                  className={`${styles.statusDropdownButton} ${styles[`status-${currentStatus}`]}`}
+                  onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                  disabled={isUpdatingStatus}
+                  type="button"
+                >
+                  <Badge color={getStatusBadgeColor(currentStatus)} size="sm">
+                    {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
+                  </Badge>
+                  <ChevronDown size={12} />
+                </button>
+                
+                {showStatusDropdown && (
+                  <div className={styles.statusDropdownMenu}>
+                    {statusOptions.map(option => (
+                      <button
+                        key={option.value}
+                        className={`${styles.statusDropdownOption} ${
+                          option.value === currentStatus ? styles.active : ''
+                        }`}
+                        onClick={() => handleStatusChange(option.value)}
+                        type="button"
+                      >
+                        <Badge color={option.color} size="sm">
+                          {option.label}
+                        </Badge>
+                        {option.value === currentStatus && (
+                          <CheckCircle size={12} className={styles.checkIcon} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -404,13 +457,12 @@ const PledgeCard = ({
     );
   }
 
-  // ✅ FULL VIEW (for list display)
+  // ✅ FULL VIEW - Similar status dropdown integration
   return (
     <Card 
       className={`${styles.pledgeCard} ${styles[`status-${currentStatus}`]}`}
       key={`card-${id}-${calculationTrigger}`}
     >
-      {/* Full card layout */}
       {!hideHeader && (
         <div className={styles.pledgeHeader}>
           <div className={styles.memberInfo}>
@@ -443,27 +495,58 @@ const PledgeCard = ({
                   <span>❌ {statusError}</span>
                 </div>
               ) : (
-                <Badge color={getStatusBadgeColor(currentStatus)}>
-                  {currentStatus?.charAt(0).toUpperCase() + currentStatus?.slice(1)}
-                </Badge>
-              )}
-              {is_overdue && currentStatus === 'active' && (
-                <Badge color="danger">Overdue</Badge>
+                <>
+                  <Badge color={getStatusBadgeColor(currentStatus)}>
+                    {currentStatus?.charAt(0).toUpperCase() + currentStatus?.slice(1)}
+                  </Badge>
+                  {is_overdue && currentStatus === 'active' && (
+                    <Badge color="danger">Overdue</Badge>
+                  )}
+                </>
               )}
             </div>
+            
+            {/* ✅ Status Dropdown for Full View */}
             {onUpdateStatus && (
-              <Dropdown
-                value={currentStatus}
-                onChange={handleStatusChange}
-                options={statusOptions}
-                variant="minimal"
-                disabled={isUpdatingStatus}
-              />
+              <div className={styles.statusDropdownContainer}>
+                <button
+                  className={styles.statusChangeButton}
+                  onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                  disabled={isUpdatingStatus}
+                  type="button"
+                  title="Change status"
+                >
+                  Change Status <ChevronDown size={14} />
+                </button>
+                
+                {showStatusDropdown && (
+                  <div className={styles.statusDropdownMenu}>
+                    {statusOptions.map(option => (
+                      <button
+                        key={option.value}
+                        className={`${styles.statusDropdownOption} ${
+                          option.value === currentStatus ? styles.active : ''
+                        }`}
+                        onClick={() => handleStatusChange(option.value)}
+                        type="button"
+                      >
+                        <Badge color={option.color} size="sm">
+                          {option.label}
+                        </Badge>
+                        {option.value === currentStatus && (
+                          <CheckCircle size={14} className={styles.checkIcon} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
       )}
 
+      {/* Rest of the full card remains the same... */}
       <div className={styles.pledgeDetails}>
         <div className={styles.amountSection}>
           <div className={styles.amountInfo}>

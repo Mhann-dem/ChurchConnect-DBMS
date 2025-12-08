@@ -101,7 +101,7 @@ function App() {
               <Route path="events" element={<PublicEventsPage />} />
               
               {/* Help & Support Routes */}
-              <Route path="help" element={<HelpCenter />} />
+              {/* <Route path="help" element={<HelpCenter />} /> */}
               <Route path="help/faq" element={<FAQ />} />
               <Route path="faq" element={<FAQ />} />
               
