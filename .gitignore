@@ -1,107 +1,108 @@
-frontend/node_modules/.package-lock.json
-frontend/node_modules/@babel/types/package.json
-frontend/node_modules/@babel/types/lib/index-legacy.d.ts
-frontend/node_modules/@babel/types/lib/index.d.ts
-frontend/node_modules/@babel/types/lib/index.js.flow
-frontend/node_modules/@babel/types/lib/ast-types/generated/index.js.map
-frontend/node_modules/@babel/types/lib/builders/generated/lowercase.js.map
-frontend/node_modules/@babel/types/lib/definitions/core.js
-frontend/node_modules/@babel/types/lib/definitions/core.js.map
-frontend/node_modules/@babel/types/lib/validators/generated/index.js
-frontend/node_modules/@babel/types/lib/validators/generated/index.js.map
-frontend/node_modules/electron-to-chromium/full-chromium-versions.js
-frontend/node_modules/electron-to-chromium/full-chromium-versions.json
-frontend/node_modules/electron-to-chromium/full-versions.js
-frontend/node_modules/electron-to-chromium/full-versions.json
-frontend/node_modules/electron-to-chromium/package.json
-frontend/node_modules/react/compiler-runtime.js
-frontend/node_modules/react/index.js
-frontend/node_modules/react/jsx-dev-runtime.js
-frontend/node_modules/react/jsx-dev-runtime.react-server.js
-frontend/node_modules/react/jsx-runtime.js
-frontend/node_modules/react/jsx-runtime.react-server.js
-frontend/node_modules/react/LICENSE
-frontend/node_modules/react/package.json
-frontend/node_modules/react/react.react-server.js
-frontend/node_modules/react/README.md
-frontend/node_modules/react/cjs/react-compiler-runtime.development.js
-frontend/node_modules/react/cjs/react-compiler-runtime.production.js
-frontend/node_modules/react/cjs/react-compiler-runtime.profiling.js
-frontend/node_modules/react/cjs/react-jsx-dev-runtime.development.js
-frontend/node_modules/react/cjs/react-jsx-dev-runtime.production.js
-frontend/node_modules/react/cjs/react-jsx-dev-runtime.profiling.js
-frontend/node_modules/react/cjs/react-jsx-dev-runtime.react-server.development.js
-frontend/node_modules/react/cjs/react-jsx-dev-runtime.react-server.production.js
-frontend/node_modules/react/cjs/react-jsx-runtime.development.js
-frontend/node_modules/react/cjs/react-jsx-runtime.production.js
-frontend/node_modules/react/cjs/react-jsx-runtime.profiling.js
-frontend/node_modules/react/cjs/react-jsx-runtime.react-server.development.js
-frontend/node_modules/react/cjs/react-jsx-runtime.react-server.production.js
-frontend/node_modules/react/cjs/react.development.js
-frontend/node_modules/react/cjs/react.production.js
-frontend/node_modules/react/cjs/react.react-server.development.js
-frontend/node_modules/react/cjs/react.react-server.production.js
-frontend/node_modules/react-dom/client.js
-frontend/node_modules/react-dom/client.react-server.js
-frontend/node_modules/react-dom/index.js
-frontend/node_modules/react-dom/LICENSE
-frontend/node_modules/react-dom/package.json
-frontend/node_modules/react-dom/profiling.js
-frontend/node_modules/react-dom/profiling.react-server.js
-frontend/node_modules/react-dom/react-dom.react-server.js
-frontend/node_modules/react-dom/README.md
-frontend/node_modules/react-dom/server.browser.js
-frontend/node_modules/react-dom/server.bun.js
-frontend/node_modules/react-dom/server.edge.js
-frontend/node_modules/react-dom/server.node.js
-frontend/node_modules/react-dom/server.react-server.js
-frontend/node_modules/react-dom/static.browser.js
-frontend/node_modules/react-dom/static.edge.js
-frontend/node_modules/react-dom/static.js
-frontend/node_modules/react-dom/static.node.js
-frontend/node_modules/react-dom/static.react-server.js
-frontend/node_modules/react-dom/test-utils.js
-frontend/node_modules/react-dom/cjs/react-dom-client.development.js
-frontend/node_modules/react-dom/cjs/react-dom-client.production.js
-frontend/node_modules/react-dom/cjs/react-dom-profiling.development.js
-frontend/node_modules/react-dom/cjs/react-dom-profiling.profiling.js
-frontend/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server-legacy.browser.production.js
-frontend/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server-legacy.node.production.js
-frontend/node_modules/react-dom/cjs/react-dom-server.browser.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server.browser.production.js
-frontend/node_modules/react-dom/cjs/react-dom-server.bun.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server.bun.production.js
-frontend/node_modules/react-dom/cjs/react-dom-server.edge.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server.edge.production.js
-frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js
-frontend/node_modules/react-dom/cjs/react-dom-server.node.production.js
-frontend/node_modules/react-dom/cjs/react-dom-test-utils.development.js
-frontend/node_modules/react-dom/cjs/react-dom-test-utils.production.js
-frontend/node_modules/react-dom/cjs/react-dom.development.js
-frontend/node_modules/react-dom/cjs/react-dom.production.js
-frontend/node_modules/react-dom/cjs/react-dom.react-server.development.js
-frontend/node_modules/react-dom/cjs/react-dom.react-server.production.js
-frontend/node_modules/scheduler/index.js
-frontend/node_modules/scheduler/index.native.js
-frontend/node_modules/scheduler/LICENSE
-frontend/node_modules/scheduler/package.json
-frontend/node_modules/scheduler/unstable_mock.js
-frontend/node_modules/scheduler/unstable_post_task.js
-frontend/node_modules/scheduler/cjs/scheduler-unstable_mock.development.js
-frontend/node_modules/scheduler/cjs/scheduler-unstable_mock.production.js
-frontend/node_modules/scheduler/cjs/scheduler-unstable_post_task.development.js
-frontend/node_modules/scheduler/cjs/scheduler-unstable_post_task.production.js
-frontend/node_modules/scheduler/cjs/scheduler.development.js
-frontend/node_modules/scheduler/cjs/scheduler.native.development.js
-frontend/node_modules/scheduler/cjs/scheduler.native.production.js
-frontend/node_modules/scheduler/cjs/scheduler.production.js
-backend/.env
-backend/.env.example
-backend/ssl
-frontend/node_modules
-frontend/.env
-frontend/.env.example
+# ===================================
+# ROOT .gitignore for ChurchConnect DBMS
+# Place this in the root directory
+# ===================================
+
+# ===================================
+# CRITICAL - NEVER COMMIT THESE
+# ===================================
 .env
-.env.example
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+ssl/
+secrets/
+backend/.env
+frontend/.env
+
+# ===================================
+# Python / Django Backend
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.log
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+backend/staticfiles/
+backend/media/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+backend/venv/
+backend/env/
+
+# ===================================
+# Node.js / React Frontend
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+frontend/node_modules/
+
+# Build outputs
+build/
+dist/
+frontend/build/
+frontend/dist/
+
+# Coverage
+coverage/
+frontend/coverage/
+
+# ===================================
+# Docker & Databases
+# ===================================
+postgres_data/
+redis_data/
+mongo_data/
+docker-compose.override.yml
+
+# ===================================
+# IDE & OS Files
+# ===================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===================================
+# Logs
+# ===================================
+logs/
+*.log
+
+# ===================================
+# Temporary & Cache
+# ===================================
+*.tmp
+*.temp
+*.cache
+.cache/
+*.bak
+*.backup
+*.old
+
+# ===================================
+# Package Manager
+# ===================================
+# Uncomment one of these if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
