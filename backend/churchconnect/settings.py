@@ -9,7 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Point to the .env file in the parent directory (backend folder)
 ENV_PATH = BASE_DIR / '.env'
-config = Config(RepositoryEnv(ENV_PATH))
+# config = Config(RepositoryEnv(ENV_PATH))
+# ✅ Use .env if it exists (local), otherwise use environment variables (Railway)
+if ENV_PATH.exists():
+    config = Config(RepositoryEnv(str(ENV_PATH)))
+else:
+    config = Config()  # Reads from environment variables
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
