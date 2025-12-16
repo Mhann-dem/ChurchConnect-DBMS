@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEnv, AutoConfig
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,10 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / '.env'
 # config = Config(RepositoryEnv(ENV_PATH))
 # ✅ Use .env if it exists (local), otherwise use environment variables (Railway)
-if ENV_PATH.exists():
-    config = Config(RepositoryEnv(str(ENV_PATH)))
-else:
-    config = Config()  # Reads from environment variables
+config = AutoConfig(search_path=str(BASE_DIR))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
