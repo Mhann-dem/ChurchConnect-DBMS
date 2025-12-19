@@ -1,14 +1,13 @@
-# Multi-stage build for production optimization
+# Build stage
 FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -16,21 +15,19 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Production stage - serve with Node
+FROM node:20-alpine
 
-# Copy built application from builder stage
-COPY --from=builder /app/build /usr/share/nginx/html
+WORKDIR /app
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Install serve globally
+RUN npm install -g serve
+
+# Copy built files (change 'build' to 'dist' if using Vite)
+COPY --from=builder /app/build ./build
 
 # Expose port
-EXPOSE 80
+EXPOSE $PORT
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start serve (change 'build' to 'dist' if using Vite)
+CMD serve -s build -l $PORT
