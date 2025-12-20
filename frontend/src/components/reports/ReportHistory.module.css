@@ -1,0 +1,278 @@
+.container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.refreshBtn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* Table */
+.table {
+  overflow-x: auto;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr 1.2fr;
+  gap: 16px;
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tableBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr 1.2fr;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.row:hover {
+  background: #f9fafb;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+/* Columns */
+.colName,
+.colType,
+.colDate,
+.colFormat,
+.colActions {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reportName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #dbeafe;
+  color: #0c4a6e;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.format {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Actions */
+.colActions {
+  white-space: nowrap;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.actionBtn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.deleteBtn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+/* Loading, Empty, Error States */
+.loadingContainer,
+.emptyContainer,
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  text-align: center;
+}
+
+.spinner {
+  color: #0284c7;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p,
+.emptyContainer p,
+.errorContainer p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.emptyContainer span,
+.errorContainer span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.retryBtn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #0284c7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retryBtn:hover {
+  background: #0369a1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .tableHeader,
+  .row {
+    grid-template-columns: 1.5fr 1fr 1.2fr 1fr;
+  }
+
+  .colFormat {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .tableHeader,
+  .row {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .colDate {
+    display: none;
+  }
+
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+    margin-right: 4px;
+  }
+
+  .actionBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    border: none;
+    border-radius: 0;
+  }
+
+  .tableHeader,
+  .row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .colName::before,
+  .colType::before,
+  .colFormat::before,
+  .colActions::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+}

@@ -1,0 +1,260 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.statBox {
+  display: flex;
+  gap: 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.statBox:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.statIcon.success {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.statIcon.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.statIcon.pending {
+  background: #dbeafe;
+  color: #0284c7;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Sections */
+.section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+/* Type Breakdown */
+.typeBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.typeItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.typeName {
+  font-size: 14px;
+  color: #6b7280;
+  min-width: 80px;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.typeBar {
+  flex: 1;
+  height: 24px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.typeBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #0369a1);
+  transition: width 0.3s ease;
+}
+
+.typeCount {
+  font-size: 12px;
+  color: #111827;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Runs List */
+.runsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.runItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.runItem:hover {
+  background: #f3f4f6;
+}
+
+.runName {
+  font-size: 13px;
+  color: #111827;
+  font-weight: 500;
+  flex: 1;
+}
+
+.runStatus {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status_completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status_pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status_failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status_processing {
+  background: #dbeafe;
+  color: #0c4a6e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .statBox {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .statIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .statValue {
+    font-size: 24px;
+  }
+
+  .section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
