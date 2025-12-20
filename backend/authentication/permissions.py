@@ -70,8 +70,14 @@ class IsSuperAdmin(BaseChurchPermission):
 
 class IsAdminOrReadOnly(BaseChurchPermission):
     """
-    Custom permission to allow admins full access and readonly users read access.
+    Custom permission to allow admins full access and staff/viewer users read access.
     Enhanced with method-specific logging and validation.
+    Roles:
+    - super_admin: Full access
+    - admin: Full access
+    - staff: Can read and create (write access to specific resources)
+    - viewer: Read-only access
+    - readonly: Deprecated, same as viewer
     """
     
     def has_permission(self, request, view):
@@ -86,13 +92,22 @@ class IsAdminOrReadOnly(BaseChurchPermission):
             logger.info(f"Admin access granted to {request.user.email} ({user_role}) for {method} {request.path}")
             return True
         
-        # Readonly users can only read
-        if user_role == 'readonly':
+        # Staff can read and some write operations (POST allowed, but not PUT/DELETE)
+        if user_role == 'staff':
+            if method in permissions.SAFE_METHODS or method == 'POST':
+                logger.info(f"Staff access granted to {request.user.email} for {method} {request.path}")
+                return True
+            elif method in ['PUT', 'PATCH', 'DELETE']:
+                logger.warning(f"Staff user {request.user.email} denied {method} operation on {request.path}")
+                return False
+        
+        # Viewer and readonly users can only read
+        if user_role in ['viewer', 'readonly']:
             if method in permissions.SAFE_METHODS:
-                logger.info(f"Read-only access granted to {request.user.email} for {method} {request.path}")
+                logger.info(f"Viewer access granted to {request.user.email} for {method} {request.path}")
                 return True
             else:
-                logger.warning(f"Read-only user {request.user.email} attempted {method} operation on {request.path}")
+                logger.warning(f"Viewer user {request.user.email} attempted {method} operation on {request.path}")
                 return False
         
         logger.warning(f"Unknown role '{user_role}' for user {request.user.email} on {request.path}")

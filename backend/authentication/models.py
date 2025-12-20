@@ -121,7 +121,9 @@ class AdminUser(AbstractUser):
     ROLE_CHOICES = [
         ('super_admin', 'Super Administrator'),
         ('admin', 'Administrator'),
-        ('readonly', 'Read Only User'),
+        ('staff', 'Staff Member'),
+        ('viewer', 'Viewer'),
+        ('readonly', 'Read Only User'),  # Legacy, same as viewer
     ]
     
     # Primary fields
