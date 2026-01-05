@@ -63,10 +63,6 @@ exec gunicorn \
     --max-requests-jitter 50 \
     --access-logfile - \
     --error-logfile - \
-    --log-level debug \
-    --pythonpath /app \
-    --forwarded-allow-ips="*" \
-    --proxy-protocol
-    --error-logfile - \
     --log-level info \
-    --pythonpath /app
+    --pythonpath /app \
+    --forwarded-allow-ips "*"
