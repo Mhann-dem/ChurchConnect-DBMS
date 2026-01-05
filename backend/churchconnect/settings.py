@@ -91,6 +91,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom middleware disabled for debugging
+    # 'core.middleware.SecurityHeadersMiddleware',
+    # 'core.middleware.RateLimitingMiddleware',
 ]
 
 ROOT_URLCONF = 'churchconnect.urls'

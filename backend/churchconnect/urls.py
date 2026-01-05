@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import (
     SpectacularAPIView, 
     SpectacularSwaggerView, 
@@ -12,6 +13,7 @@ from drf_spectacular.views import (
 )
 
 # API health check view - SIMPLE AND BULLETPROOF
+@csrf_exempt
 def api_health_check(request):
     """Simple health check endpoint - no database or complex checks"""
     try:
