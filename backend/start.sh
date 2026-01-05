@@ -13,9 +13,9 @@ export DJANGO_SETTINGS_MODULE=churchconnect.settings
 # Step 1: Verify dependencies are installed
 echo ""
 echo "📦 Verifying Python dependencies..."
-pip install --quiet --upgrade pip setuptools wheel || true
-pip install --quiet -r requirements.txt || true
-pip install --quiet gunicorn || true
+pip install --quiet --upgrade pip setuptools wheel --root-user-action=ignore || true
+pip install --quiet -r requirements.txt --root-user-action=ignore || true
+pip install --quiet gunicorn --root-user-action=ignore || true
 
 # Step 2: Collect static files
 echo "📁 Collecting static files..."
@@ -64,7 +64,9 @@ exec gunicorn \
     --access-logfile - \
     --error-logfile - \
     --log-level debug \
-    --pythonpath /app
+    --pythonpath /app \
+    --forwarded-allow-ips="*" \
+    --proxy-protocol
     --error-logfile - \
     --log-level info \
     --pythonpath /app
