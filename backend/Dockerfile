@@ -14,6 +14,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     postgresql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
@@ -30,15 +31,18 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p /app/staticfiles /app/media /app/logs
 
-# Collect static files
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
+# Collect static files (optional - will be done at runtime)
 RUN python manage.py collectstatic --noinput --clear || true
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:$PORT/api/health/', timeout=5)"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/api/health/ || exit 1
 
 # Expose port (Railway will override)
 EXPOSE 8000
 
-# Run with gunicorn for production
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn churchconnect.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 3 --timeout 60 --access-logfile - --error-logfile -"]
+# Run startup script
+CMD ["/app/start.sh"]
