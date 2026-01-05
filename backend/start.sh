@@ -40,8 +40,7 @@ fi
 # Step 4: Verify database connection
 echo ""
 echo "🔍 Verifying database connection..."
-python manage.py dbshell <<< "SELECT 1;" 2>/dev/null && \
-    echo "✅ Database connection OK" || \
+python manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('✅ Database connection OK')" 2>/dev/null || \
     echo "⚠️  Database might not be ready yet"
 
 # Step 5: Final checks
@@ -59,10 +58,13 @@ exec gunicorn \
     churchconnect.wsgi:application \
     --bind 0.0.0.0:${PORT:-8000} \
     --workers 3 \
-    --timeout 60 \
+    --timeout 120 \
     --max-requests 1000 \
     --max-requests-jitter 50 \
     --access-logfile - \
+    --error-logfile - \
+    --log-level debug \
+    --pythonpath /app
     --error-logfile - \
     --log-level info \
     --pythonpath /app
