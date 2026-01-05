@@ -45,34 +45,20 @@ urlpatterns = [
     # Root test endpoint - SIMPLEST POSSIBLE
     path('test/', lambda request: JsonResponse({'status': 'ok'}), name='root_test'),
     
-    # Admin interface
-    path('admin/', admin.site.urls),
-    
     # API health check
     path('api/health/', api_health_check, name='api_health'),
     
-    # API endpoints with versioning
-    path('api/v1/', include(api_v1_patterns)),
+    # Admin interface (disabled for now)
+    # path('admin/', admin.site.urls),
     
-    # API documentation endpoints
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-
-    # path('', include('events.urls')),
+    # API endpoints with versioning (disabled temporarily to debug)
+    # path('api/v1/', include(api_v1_patterns)),
     
-    # Legacy API endpoints (for backward compatibility)
-    # # Uncomment these if you want to support both /api/ and /api/v1/ paths
-    # path('api/auth/', include('authentication.urls')),
-    # path('api/members/', include('members.urls')),
-    # path('api/families/', include('families.urls')),
-    # path('api/groups/', include('groups.urls')),
-    # path('api/pledges/', include('pledges.urls')),
-    # path('api/reports/', include('reports.urls')),
-    # path('api/core/', include('core.urls')),
-    
-    # Redirect root to API docs
-    path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
+    # API documentation endpoints (disabled temporarily to debug)
+    # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+]
 ]
 
 # Serve media and static files in development
