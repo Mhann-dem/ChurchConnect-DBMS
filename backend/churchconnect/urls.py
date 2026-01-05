@@ -11,14 +11,21 @@ from drf_spectacular.views import (
     SpectacularRedocView
 )
 
-# API health check view
+# API health check view - SIMPLE AND BULLETPROOF
 def api_health_check(request):
-    """Simple health check endpoint"""
-    return JsonResponse({
-        'status': 'healthy',
-        'message': 'ChurchConnect API is running',
-        'version': '1.0.0'
-    })
+    """Simple health check endpoint - no database or complex checks"""
+    try:
+        return JsonResponse({
+            'status': 'healthy',
+            'message': 'ChurchConnect API is running',
+            'version': '1.0.0',
+            'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Health check failed: {str(e)}'
+        }, status=500)
 
 # API versioning patterns
 api_v1_patterns = [
@@ -33,6 +40,9 @@ api_v1_patterns = [
 ]
 
 urlpatterns = [
+    # Root test endpoint - SIMPLEST POSSIBLE
+    path('test/', lambda request: JsonResponse({'status': 'ok'}), name='root_test'),
+    
     # Admin interface
     path('admin/', admin.site.urls),
     
