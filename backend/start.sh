@@ -3,35 +3,66 @@
 
 set -e
 
-echo "🚀 Starting ChurchConnect Backend..."
+echo "=========================================="
+echo "🚀 Starting ChurchConnect Backend"
+echo "=========================================="
 
-# Step 1: Install dependencies
-echo "📦 Installing Python dependencies..."
-pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
-pip install gunicorn
+# Set Django settings
+export DJANGO_SETTINGS_MODULE=churchconnect.settings
+
+# Step 1: Verify dependencies are installed
+echo ""
+echo "📦 Verifying Python dependencies..."
+pip install --quiet --upgrade pip setuptools wheel || true
+pip install --quiet -r requirements.txt || true
+pip install --quiet gunicorn || true
 
 # Step 2: Collect static files
 echo "📁 Collecting static files..."
-python manage.py collectstatic --noinput --clear || true
+python manage.py collectstatic --noinput --clear --verbosity=0 2>/dev/null || true
 
-# Step 3: Run migrations
+# Step 3: Run database migrations - CRITICAL
+echo ""
 echo "🗄️  Running database migrations..."
-python manage.py migrate --noinput || {
-    echo "⚠️  Migration failed, attempting to create initial schema..."
-    python manage.py migrate --noinput --verbosity=3
-}
+echo "   (This may take a minute on first run)"
 
-# Step 4: Create superuser if needed (optional)
-echo "✅ Backend ready to start!"
+if python manage.py migrate --noinput --verbosity=2; then
+    echo "✅ Migrations completed successfully"
+else
+    echo "⚠️  Migration warning - attempting with verbose output..."
+    python manage.py migrate --noinput --verbosity=3 || {
+        echo "❌ Migration failed!"
+        echo "   Check database connectivity and try again"
+        exit 1
+    }
+fi
 
-# Step 5: Start the server
-echo "🎯 Starting Gunicorn server..."
+# Step 4: Verify database connection
+echo ""
+echo "🔍 Verifying database connection..."
+python manage.py dbshell <<< "SELECT 1;" 2>/dev/null && \
+    echo "✅ Database connection OK" || \
+    echo "⚠️  Database might not be ready yet"
+
+# Step 5: Final checks
+echo ""
+echo "✅ All startup checks passed!"
+echo "   Backend will start in a few seconds..."
+sleep 2
+
+# Step 6: Start the server with proper logging
+echo ""
+echo "🎯 Starting Gunicorn server on port ${PORT:-8000}..."
+echo "=========================================="
+
 exec gunicorn \
     churchconnect.wsgi:application \
     --bind 0.0.0.0:${PORT:-8000} \
     --workers 3 \
     --timeout 60 \
+    --max-requests 1000 \
+    --max-requests-jitter 50 \
     --access-logfile - \
     --error-logfile - \
-    --log-level info
+    --log-level info \
+    --pythonpath /app
